@@ -1,0 +1,1181 @@
+@import "tailwindcss";
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Prevent page-level scroll */
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --ncba-primary: #3a2a82;
+  --ncba-bg: #f4f6ff;
+  --ncba-card: #ffffff;
+  --ncba-text: #1a1a1a;
+}
+
+.dark {
+  --ncba-primary: #24185c;
+  --ncba-bg: #0f1120;
+  --ncba-card: #1b1e33;
+  --ncba-text: #ffffff;
+}
+
+body {
+  background: var(--ncba-bg);
+  color: var(--ncba-text);
+  transition: 0.25s ease-in-out;
+}
+
+.system-toast .ant-message-notice-content {
+  border-radius: 14px;
+  border: 1px solid rgba(64, 83, 76, 0.16);
+  background: linear-gradient(180deg, rgba(245, 247, 244, 0.98) 0%, #ffffff 100%);
+  box-shadow: 0 16px 36px rgba(26, 54, 54, 0.12);
+  padding: 12px 16px;
+}
+
+.system-toast .ant-message-custom-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-dark, #1A3636);
+  font-weight: 700;
+}
+
+.system-toast--success .anticon,
+.system-toast--success .ant-message-custom-content {
+  color: #0F6B4D;
+}
+
+/* ✅ FIX: Buttons inherit body color by default - reset this behavior */
+/* Only reset native buttons; Ant buttons need to keep their variant colors */
+button:not(.ant-btn) {
+  color: unset !important; /* Don't inherit body text color */
+}
+
+/* Explicitly set white text for navy buttons */
+button:not(.ant-btn)[class*="bg-[#0A1929]"] {
+  color: white !important;
+}
+
+/* ✅ TOGGLE BUTTONS with PRIMARY_BLUE background - Force white text */
+.ant-btn[style*="rgb(22, 70, 121)"],
+.ant-btn[style*="#164679"] {
+  color: #ffffff !important;
+}
+
+.ant-btn[style*="rgb(22, 70, 121)"] span,
+.ant-btn[style*="#164679"] span {
+  color: #ffffff !important;
+}
+
+/* ✅ TOGGLE BUTTONS with transparent background - Show PRIMARY_BLUE text */
+.ant-btn[style*="transparent"] {
+  color: #164679 !important;
+}
+
+.ant-btn[style*="transparent"] span {
+  color: #164679 !important;
+}
+
+/* ✅ ANT BUTTON TEXT VISIBILITY - keep variant text readable globally */
+.ant-btn.ant-btn-primary,
+.ant-btn.ant-btn-color-primary,
+.ant-btn.ant-btn-variant-solid {
+  color: #ffffff !important;
+}
+
+.ant-btn.ant-btn-primary span,
+.ant-btn.ant-btn-primary .anticon,
+.ant-btn.ant-btn-color-primary span,
+.ant-btn.ant-btn-color-primary .anticon,
+.ant-btn.ant-btn-variant-solid span,
+.ant-btn.ant-btn-variant-solid .anticon {
+  color: #ffffff !important;
+}
+
+.ant-modal .ant-btn.ant-btn-default,
+.ant-modal .ant-btn.ant-btn-color-default,
+.ant-modal .ant-btn.ant-btn-variant-outlined {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #1f2937 !important;
+}
+
+.ant-modal .ant-btn.ant-btn-default span,
+.ant-modal .ant-btn.ant-btn-default .anticon,
+.ant-modal .ant-btn.ant-btn-color-default span,
+.ant-modal .ant-btn.ant-btn-color-default .anticon,
+.ant-modal .ant-btn.ant-btn-variant-outlined span,
+.ant-modal .ant-btn.ant-btn-variant-outlined .anticon {
+  color: #1f2937 !important;
+}
+
+.ant-modal .ant-btn.ant-btn-default:hover,
+.ant-modal .ant-btn.ant-btn-default:focus,
+.ant-modal .ant-btn.ant-btn-color-default:hover,
+.ant-modal .ant-btn.ant-btn-color-default:focus,
+.ant-modal .ant-btn.ant-btn-variant-outlined:hover,
+.ant-modal .ant-btn.ant-btn-variant-outlined:focus {
+  background-color: #fafafa !important;
+  border-color: #bfbfbf !important;
+  color: #111827 !important;
+}
+
+.ant-modal .ant-btn.ant-btn-default:hover span,
+.ant-modal .ant-btn.ant-btn-default:hover .anticon,
+.ant-modal .ant-btn.ant-btn-default:focus span,
+.ant-modal .ant-btn.ant-btn-default:focus .anticon,
+.ant-modal .ant-btn.ant-btn-color-default:hover span,
+.ant-modal .ant-btn.ant-btn-color-default:hover .anticon,
+.ant-modal .ant-btn.ant-btn-color-default:focus span,
+.ant-modal .ant-btn.ant-btn-color-default:focus .anticon,
+.ant-modal .ant-btn.ant-btn-variant-outlined:hover span,
+.ant-modal .ant-btn.ant-btn-variant-outlined:hover .anticon,
+.ant-modal .ant-btn.ant-btn-variant-outlined:focus span,
+.ant-modal .ant-btn.ant-btn-variant-outlined:focus .anticon {
+  color: #111827 !important;
+}
+
+/* ✅ DOCUMENT TABLE ACTION BUTTONS - keep default actions readable */
+.doc-table .ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous):not(.ant-btn-text):not(:disabled):not(.ant-btn-disabled),
+.checker-doc-table .ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous):not(.ant-btn-text):not(:disabled):not(.ant-btn-disabled) {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #1f2937 !important;
+}
+
+.doc-table .ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous):not(.ant-btn-text):not(:disabled):not(.ant-btn-disabled) span,
+.doc-table .ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous):not(.ant-btn-text):not(:disabled):not(.ant-btn-disabled) .anticon,
+.checker-doc-table .ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous):not(.ant-btn-text):not(:disabled):not(.ant-btn-disabled) span,
+.checker-doc-table .ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous):not(.ant-btn-text):not(:disabled):not(.ant-btn-disabled) .anticon {
+  color: #1f2937 !important;
+}
+
+.doc-table .ant-btn.ant-btn-disabled,
+.doc-table .ant-btn:disabled,
+.checker-doc-table .ant-btn.ant-btn-disabled,
+.checker-doc-table .ant-btn:disabled {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #b6bdc7 !important;
+}
+
+.doc-table .ant-btn.ant-btn-disabled span,
+.doc-table .ant-btn:disabled span,
+.doc-table .ant-btn.ant-btn-disabled .anticon,
+.doc-table .ant-btn:disabled .anticon,
+.checker-doc-table .ant-btn.ant-btn-disabled span,
+.checker-doc-table .ant-btn:disabled span,
+.checker-doc-table .ant-btn.ant-btn-disabled .anticon,
+.checker-doc-table .ant-btn:disabled .anticon {
+  color: #b6bdc7 !important;
+}
+
+/* ✅ PRIMARY DCL BUTTON STYLING - Consistent #164679 blue with white text */
+.primary-dcl-button {
+  background: linear-gradient(180deg, #164679 0%, #0f3a56 100%) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+.primary-dcl-button:hover,
+.primary-dcl-button:focus,
+.primary-dcl-button:active {
+  background: linear-gradient(180deg, #0f3a56 0%, #0a2a3d 100%) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+.primary-dcl-button:disabled,
+.primary-dcl-button[disabled] {
+  background: #cccccc !important;
+  border-color: #cccccc !important;
+  color: #ffffff !important;
+}
+
+/* ✅ SUBMIT DEFERRAL BUTTON - White text */
+.submit-deferral-btn {
+  color: #ffffff !important;
+}
+
+/* ✅ TAG & BADGE COLOR CONSISTENCY - Green for success states */
+.ant-tag {
+  font-weight: 500;
+}
+
+.ant-tag-success,
+.ant-tag[color="success"],
+.ant-tag-green {
+  background-color: #ffffff !important;
+  border-color: #a8d5b6 !important;
+  color: #25613a !important;
+}
+
+.ant-tag-green {
+  background-color: #ffffff !important;
+  color: #25613a !important;
+  border: 1px solid #a8d5b6 !important;
+}
+
+/* Status badges - Green for submitted/active */
+.status-tag-success,
+.status-tag-submitted,
+.status-tag-active {
+  background-color: #ffffff !important;
+  border-color: #a8d5b6 !important;
+  color: #25613a !important;
+}
+
+/* Role badges styling */
+.role-badge {
+  font-size: 10px;
+  padding: 0 7px;
+  min-height: 20px;
+  line-height: 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* ✅ CREATE DCL MODAL FOOTER BUTTONS - Blue background with white text when active */
+.create-dcl-modal-footer .ant-btn {
+  color: #ffffff !important;
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+  font-weight: 600;
+}
+
+/* Disabled state - White background with blue text */
+.create-dcl-modal-footer .ant-btn:disabled,
+.create-dcl-modal-footer .ant-btn[disabled] {
+  color: #164679 !important;
+  background-color: #ffffff !important;
+  border-color: #164679 !important;
+  cursor: not-allowed !important;
+}
+
+/* Hover state - Darker blue background */
+.create-dcl-modal-footer .ant-btn:not(:disabled):hover,
+.create-dcl-modal-footer .ant-btn:not([disabled]):hover {
+  color: #ffffff !important;
+  background-color: #0f3a56 !important;
+  border-color: #0f3a56 !important;
+}
+
+/* Active/Click state - Darker blue background with white text */
+.create-dcl-modal-footer .ant-btn:not(:disabled):active,
+.create-dcl-modal-footer .ant-btn:not([disabled]):active {
+  color: #ffffff !important;
+  background-color: #0a2a3d !important;
+  border-color: #0a2a3d !important;
+}
+
+.submit-deferral-btn span {
+  color: #ffffff !important;
+}
+
+/* ✅ MODAL HEADER STYLING - White close button for blue headers */
+.ant-modal-header {
+  background-color: #164679 !important;
+}
+
+.ant-modal-header .ant-modal-close {
+  color: #ffffff !important;
+}
+
+.ant-modal-header .ant-modal-close-x {
+  color: #ffffff !important;
+}
+
+.ant-modal-title {
+  color: #ffffff !important;
+}
+
+.create-dcl-btn,
+.create-dcl-btn * {
+  color: #fff !important;
+  fill: #fff !important;
+}
+
+.create-dcl-btn:hover,
+.create-dcl-btn:focus {
+  color: #fff !important;
+}
+
+/* ✅ DEFERRAL FORM BUTTONS - Smart color handling for buttons */
+.deferral-btn {
+  /* Don't force color here - let inline styles and button state handle it */
+  font-weight: 600;
+}
+
+/* For buttons with colored backgrounds, ensure white text */
+.deferral-btn.ant-btn-primary,
+.deferral-btn[style*="background-color: #164679"],
+.deferral-btn[style*="backgroundColor: #164679"] {
+  color: #ffffff !important;
+}
+
+/* For toggle buttons with the deferral-btn class */
+.deferral-btn .ant-btn-text {
+  color: inherit;
+}
+
+/* ✅ ACTION BUTTONS - Post Comment, Add Row, Add Approvers */
+.action-button-primary.ant-btn {
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+  color: #ffffff !important;
+}
+
+.action-button-primary.ant-btn:hover,
+.action-button-primary.ant-btn:focus {
+  background-color: #0f3a56 !important;
+  border-color: #0f3a56 !important;
+  color: #ffffff !important;
+}
+
+.action-button-primary.ant-btn:active {
+  background-color: #0a1f2e !important;
+  border-color: #0a1f2e !important;
+  color: #ffffff !important;
+}
+
+.action-button-primary.ant-btn span,
+.action-button-primary.ant-btn .ant-btn-icon,
+.action-button-primary.ant-btn .ant-btn-content {
+  color: #ffffff !important;
+}
+/* ✅ NEW DEFERRAL REQUEST BUTTON - Primary blue with guaranteed white text */
+.new-deferral-btn,
+.new-deferral-btn.ant-btn,
+.new-deferral-btn.ant-btn-primary {
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+  color: #ffffff !important;
+}
+
+.new-deferral-btn span,
+.new-deferral-btn .ant-btn-text {
+  color: #ffffff !important;
+}
+
+/* Reports export modal */
+.reports-export-modal .ant-modal-content {
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: 16px !important;
+}
+
+.reports-export-modal .ant-modal-header {
+  margin: 0 !important;
+  padding: 18px 24px !important;
+  background: #164679 !important;
+  border-radius: 16px 16px 0 0 !important;
+  border-bottom: none !important;
+}
+
+.reports-export-modal .ant-modal-title {
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.reports-export-modal .ant-modal-close {
+  top: 14px !important;
+  inset-inline-end: 16px !important;
+  color: #ffffff !important;
+}
+
+.reports-export-modal .ant-modal-close-x,
+.reports-export-modal .ant-modal-close .anticon {
+  color: #ffffff !important;
+}
+
+.reports-export-modal .ant-modal-body {
+  padding: 20px 24px 22px !important;
+  color: #0f172a !important;
+}
+
+.reports-export-modal .ant-modal-body,
+.reports-export-modal .ant-modal-body .ant-typography,
+.reports-export-modal .ant-modal-body .ant-typography-secondary,
+.reports-export-modal .ant-modal-body p,
+.reports-export-modal .ant-modal-body span:not(.anticon) {
+  color: #0f172a !important;
+}
+
+.reports-export-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reports-export-option.ant-btn,
+.reports-export-option.ant-btn-default,
+.reports-export-option.ant-btn-color-default {
+  height: 46px !important;
+  justify-content: flex-start !important;
+  border-radius: 10px !important;
+  border: 1px solid #d6e0ee !important;
+  background: #f8fbff !important;
+  color: #164679 !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.reports-export-option.ant-btn span,
+.reports-export-option.ant-btn .anticon,
+.reports-export-option.ant-btn .ant-btn-icon {
+  color: #164679 !important;
+}
+
+.reports-export-option.ant-btn:hover,
+.reports-export-option.ant-btn:focus {
+  background: #eef5ff !important;
+  border-color: #bdd0ea !important;
+  color: #164679 !important;
+}
+
+.reports-export-option.ant-btn:hover span,
+.reports-export-option.ant-btn:hover .anticon,
+.reports-export-option.ant-btn:focus span,
+.reports-export-option.ant-btn:focus .anticon {
+  color: #164679 !important;
+}
+
+.reports-export-note {
+  font-size: 12px !important;
+  color: #6b7280 !important;
+  margin-top: 2px;
+}
+
+.reports-export-tooltip .ant-tooltip-inner {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #d6e0ee;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+  font-weight: 600;
+}
+
+.reports-export-tooltip .ant-tooltip-arrow::before {
+  background: #ffffff !important;
+}
+
+.new-deferral-btn:hover,
+.new-deferral-btn:focus,
+.new-deferral-btn:active {
+  background-color: #0f3a56 !important;
+  border-color: #0f3a56 !important;
+  color: #ffffff !important;
+}
+
+.new-deferral-btn:hover span,
+.new-deferral-btn:focus span,
+.new-deferral-btn:active span {
+  color: #ffffff !important;
+}
+
+.deferral-btn:hover,
+.deferral-btn:focus,
+.deferral-btn:active {
+  color: #fff !important;
+}
+
+.deferral-btn.ant-btn {
+  color: #fff !important;
+}
+
+.deferral-btn.ant-btn:not(:disabled):not(.ant-btn-disabled):hover,
+.deferral-btn.ant-btn:not(:disabled):not(.ant-btn-disabled):focus {
+  color: #fff !important;
+}
+
+/* ✅ UNIFORM TABLE STYLING - Applied to all tables for professional appearance */
+.ant-table-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(22, 70, 121, 0.08);
+  border: 1px solid #e0e0e0;
+}
+
+/* ✅ Thick green line (4px) below table headers - Professional separator */
+.ant-table-thead > tr > th {
+  background-color: #f7f7f7 !important;
+  color: #164679 !important;
+  font-weight: 700;
+  padding: 16px 12px !important;
+  border-bottom: 4px solid #52c41a !important;
+  text-align: left !important;
+  font-size: 13px;
+}
+
+/* ✅ Table header section with thick green bottom border */
+.ant-table-thead {
+  border-bottom: 4px solid #52c41a;
+}
+
+/* ✅ Table body styling */
+.ant-table-tbody > tr {
+  transition: background-color 0.2s ease;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: rgba(82, 196, 26, 0.1) !important;
+  cursor: pointer;
+}
+
+.ant-table-tbody > tr > td {
+  padding: 14px 12px !important;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0 !important;
+  vertical-align: middle;
+}
+
+/* ✅ MOBILE RESPONSIVE - Horizontal scrolling for tables on mobile (≤375px) */
+@media (max-width: 375px) {
+  /* Make content area scrollable horizontally */
+  .ant-table-wrapper {
+    min-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .ant-table {
+    min-width: 800px;
+  }
+  
+  .ant-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+  }
+  
+  .ant-table-body {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Utility class for forced horizontal scrolling */
+.horizontal-scroll {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* ✅ MOBILE VIEW OPTIMIZATION - Content area horizontal scroll */
+@media (max-width: 375px) {
+  /* Force horizontal scrolling on table wrappers */
+  .ant-table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Ensure main content area allows horizontal scroll */
+  main, [role="main"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* ✅ TABLE MOBILE OPTIMIZATION */
+  .ant-table {
+    font-size: 12px !important;
+    min-width: 600px;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 8px 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 6px 4px !important;
+    font-size: 12px !important;
+    word-break: break-word !important;
+  }
+  
+  .ant-table-cell {
+    padding: 6px 4px !important;
+    max-width: 80px;
+  }
+  
+  /* Reduce Tag size on mobile */
+  .ant-tag {
+    font-size: 10px !important;
+    padding: 2px 4px !important;
+    margin: 2px 0 !important;
+  }
+
+  /* Keep outlined badge text readable across preset tag tones */
+  .ant-tag[style*="#164679"],
+  .ant-tag[style*="rgb(22, 70, 121)"],
+  .ant-tag[color="#164679"],
+  .ant-tag[color="blue"],
+  .ant-tag[color="green"],
+  .ant-tag[color="red"],
+  .ant-tag[color="purple"],
+  .ant-tag[color="cyan"],
+  .ant-tag[color="lime"],
+  .ant-tag[color="volcano"],
+  .ant-tag[color="orange"],
+  .ant-tag[color="magenta"],
+  .ant-tag[color="geekblue"] {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+  }
+
+  /* Document uploader role badges */
+  .document-uploader-role-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 20px !important;
+    padding: 0 7px !important;
+    border-radius: 999px !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    background-color: #ffffff !important;
+  }
+
+  .document-uploader-role-badge.ant-tag-blue {
+    border-color: #9fb8d7 !important;
+    color: #164679 !important;
+  }
+
+  .document-uploader-role-badge.ant-tag-orange {
+    border-color: #f2c18a !important;
+    color: #8a4b14 !important;
+  }
+
+  .document-uploader-role-badge.ant-tag-purple {
+    border-color: #d7baf4 !important;
+    color: #6b21a8 !important;
+  }
+
+  /* Ensure role tags in document sidebar have proper colors */
+  .ant-tag {
+    color: inherit !important;
+  }
+  
+  /* Reduce Button size on mobile */
+  .ant-btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    height: auto !important;
+    min-height: 28px !important;
+  }
+  
+  .ant-btn-sm {
+    padding: 2px 4px !important;
+    font-size: 10px !important;
+    height: auto !important;
+    min-height: 24px !important;
+  }
+  
+  /* Reduce Input size on mobile */
+  .ant-input,
+  .ant-input-number,
+  .ant-picker {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    height: auto !important;
+    min-height: 28px !important;
+  }
+  
+  /* Reduce Select size on mobile */
+  .ant-select-selector {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    height: auto !important;
+    min-height: 28px !important;
+  }
+  
+  /* Reduce Icon size on mobile */
+  .ant-table-cell .anticon {
+    font-size: 12px !important;
+  }
+  
+  /* Pagination mobile optimization */
+  .ant-pagination {
+    font-size: 11px !important;
+  }
+  
+  .ant-pagination-item,
+  .ant-pagination-item-active {
+    min-width: 24px !important;
+    height: 24px !important;
+    line-height: 24px !important;
+    font-size: 11px !important;
+  }
+  
+  /* Reduce Card padding on mobile */
+  .ant-card {
+    padding: 8px !important;
+  }
+  
+  .ant-card > .ant-card-head {
+    padding: 8px !important;
+  }
+  
+  .ant-card > .ant-card-body {
+    padding: 8px !important;
+  }
+  
+  /* Reduce Row gutter spacing on mobile */
+  .ant-row {
+    margin-left: -2px !important;
+    margin-right: -2px !important;
+  }
+  
+  /* Reduce column padding on mobile */
+  .ant-col {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+  
+  /* Reduce input/select padding */
+  .ant-input, 
+  .ant-select-selector,
+  .ant-picker {
+    padding: 4px 8px !important;
+  }
+}
+
+/* Modal positioning - center horizontally within page content area */
+/* This class is applied to Ant Design Modal wrapperClassName */
+.modal-centered-in-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 1000 !important;
+}
+
+.modal-centered-in-content > .ant-modal {
+  pointer-events: auto !important;
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+}
+
+.modal-centered-in-content > .ant-modal-mask {
+  pointer-events: auto !important;
+}
+
+.modal-centered-in-content .ant-modal-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+}
+
+/* Create DCL Modal - Centered with sidebar awareness (like ReviewChecklistModal) */
+.create-dcl-modal {
+  z-index: 1001 !important;
+}
+
+/* Override Ant Design Modal wrapper to match ReviewChecklistModal pattern */
+.ant-modal-wrap.create-dcl-modal-wrapper {
+  position: fixed !important;
+  top: 65px !important;
+  left: var(--sidebar-width, 150px) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0) !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  z-index: 1001 !important;
+  overflow-y: auto !important;
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
+  transition: left 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+  pointer-events: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+}
+
+/* When create-dcl-modal is visible, style the backdrop mask */
+.ant-modal-mask[style*="display: block"] {
+  position: fixed !important;
+  top: 65px !important;
+  left: var(--sidebar-width, 150px) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: 990 !important;
+  transition: left 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+  animation: none !important;
+}
+
+/* Alternative: Target the mask that comes before the create-dcl-modal-wrapper   */
+.create-dcl-modal-wrapper {
+  z-index: 1001 !important;
+}
+
+/* ✅ CONFIRM MODAL OVERLAY - Pushed away from sidebar with horizontal centering */
+.confirm-modal-wrapper {
+  z-index: 1001 !important;
+}
+
+/* Modal mask for confirm modal */
+.ant-modal-mask.ant-modal-mask-for-confirm,
+.ant-modal-wrap.confirm-modal-wrapper ~ .ant-modal-mask {
+  position: fixed !important;
+  top: 65px !important;
+  left: var(--sidebar-width, 150px) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  z-index: 990 !important;
+}
+
+/* Modal wrap container */
+.ant-modal-wrap.confirm-modal-wrapper {
+  position: fixed !important;
+  top: 65px !important;
+  left: var(--sidebar-width, 150px) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  overflow: auto !important;
+  padding-top: 20px !important;
+  padding-bottom: 20px !important;
+  transition: left 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+  pointer-events: none !important;
+}
+
+.ant-modal-wrap.confirm-modal-wrapper .ant-modal {
+  pointer-events: auto !important;
+  width: 1200px !important;
+  max-width: calc(100vw - 310px) !important;
+  margin: 0 auto !important;
+  position: relative !important;
+  z-index: 1001 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+
+/* Confirm Modal Header - Bigger height and better fit */
+.ant-modal-wrap.confirm-modal-wrapper .ant-modal-header {
+  background-color: #164679 !important;
+  padding: 24px 24px !important;
+  border-radius: 12px 12px 0 0 !important;
+  min-height: 70px !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ant-modal-wrap.confirm-modal-wrapper .ant-modal-title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0.5px !important;
+}
+
+.ant-modal-wrap.confirm-modal-wrapper .ant-modal-close-x {
+  color: #ffffff !important;
+}
+
+/* ✅ CONFIRM & SUBMIT BUTTON - Primary blue background with white text */
+.confirm-submit-btn,
+.confirm-submit-btn.ant-btn,
+.confirm-submit-btn.ant-btn-primary {
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+  color: #ffffff !important;
+}
+
+.confirm-submit-btn span,
+.confirm-submit-btn .ant-btn-text {
+  color: #ffffff !important;
+}
+
+.confirm-submit-btn:hover,
+.confirm-submit-btn:focus {
+  background-color: #0f3a56 !important;
+  border-color: #0f3a56 !important;
+  color: #ffffff !important;
+}
+
+.confirm-submit-btn:active {
+  background-color: #0a1f2e !important;
+  border-color: #0a1f2e !important;
+  color: #ffffff !important;
+}
+
+.confirm-submit-btn:disabled,
+.confirm-submit-btn[disabled] {
+  background-color: #c0c0c0 !important;
+  border-color: #c0c0c0 !important;
+  color: #ffffff !important;
+  opacity: 0.6 !important;
+}
+
+/* ✅ CONFIRM CANCEL BUTTON - Default style */
+.confirm-cancel-btn,
+.confirm-cancel-btn.ant-btn,
+.confirm-cancel-btn.ant-btn-default {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #000000 !important;
+}
+
+.confirm-cancel-btn:hover,
+.confirm-cancel-btn:focus {
+  background-color: #fafafa !important;
+  border-color: #b3b3b3 !important;
+  color: #000000 !important;
+}
+
+.confirm-cancel-btn:active {
+  background-color: #f0f0f0 !important;
+  border-color: #b3b3b3 !important;
+  color: #000000 !important;
+}
+.ant-modal-wrap.create-dcl-modal-wrapper .ant-modal {
+  width: 1200px !important;
+  max-width: calc(100vw - 310px) !important;
+  margin: 0 16px 0 116px !important;
+  position: relative !important;
+  z-index: 1001 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Responsive: Tablet */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .ant-modal-wrap.create-dcl-modal-wrapper {
+    left: var(--sidebar-width, 40px) !important;
+  }
+  
+  .ant-modal-mask[style*="display: block"] {
+    left: var(--sidebar-width, 40px) !important;
+  }
+  
+  .ant-modal-wrap.create-dcl-modal-wrapper .ant-modal {
+    width: calc(100vw - 120px) !important;
+    max-width: calc(100vw - 120px) !important;
+    margin: 0 16px 0 86px !important;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 767px) {
+  .ant-modal-wrap.create-dcl-modal-wrapper {
+    left: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 16px !important;
+  }
+  
+  .ant-modal-mask[style*="display: block"] {
+    left: 0 !important;
+  }
+  
+  .ant-modal-wrap.create-dcl-modal-wrapper .ant-modal {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    margin: 0 16px 0 70px !important;
+  }
+}
+
+/* ✅ WITHDRAW REQUEST BUTTON - Primary blue background with white text */
+.withdraw-request-btn,
+.withdraw-request-btn.ant-btn,
+.withdraw-request-btn.ant-btn-default {
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+  color: #ffffff !important;
+}
+
+.withdraw-request-btn span,
+.withdraw-request-btn .ant-btn-text {
+  color: #ffffff !important;
+}
+
+.withdraw-request-btn:hover,
+.withdraw-request-btn:focus {
+  background-color: #0f3a56 !important;
+  border-color: #0f3a56 !important;
+  color: #ffffff !important;
+}
+
+.withdraw-request-btn:active {
+  background-color: #0a1f2e !important;
+  border-color: #0a1f2e !important;
+  color: #ffffff !important;
+}
+
+.withdraw-request-btn:disabled,
+.withdraw-request-btn[disabled] {
+  background-color: #c0c0c0 !important;
+  border-color: #c0c0c0 !important;
+  color: #ffffff !important;
+  opacity: 0.6 !important;
+}
+
+/* ✅ MODAL ACTION BUTTON - White background with black text for confirm/action buttons */
+.modal-action-btn,
+.modal-action-btn.ant-btn {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #000000 !important;
+}
+
+.modal-action-btn span,
+.modal-action-btn .ant-btn-text {
+  color: #000000 !important;
+}
+
+.modal-action-btn:hover,
+.modal-action-btn:focus {
+  background-color: #fafafa !important;
+  border-color: #b3b3b3 !important;
+  color: #000000 !important;
+}
+
+.modal-action-btn:active {
+  background-color: #f0f0f0 !important;
+  border-color: #8c8c8c !important;
+  color: #000000 !important;
+}
+
+.modal-action-btn:disabled,
+.modal-action-btn[disabled] {
+  background-color: #cccccc !important;
+  border-color: #cccccc !important;
+  color: #8c8c8c !important;
+  opacity: 0.6 !important;
+}
+
+/* ✅ MODAL CANCEL BUTTON - White background with dark text */
+.modal-cancel-btn,
+.modal-cancel-btn.ant-btn {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #000000 !important;
+}
+
+.modal-cancel-btn span,
+.modal-cancel-btn .ant-btn-text {
+  color: #000000 !important;
+}
+
+.modal-cancel-btn:hover,
+.modal-cancel-btn:focus {
+  background-color: #fafafa !important;
+  border-color: #b3b3b3 !important;
+  color: #000000 !important;
+}
+
+.modal-cancel-btn:active {
+  background-color: #f0f0f0 !important;
+  border-color: #8c8c8c !important;
+  color: #000000 !important;
+}
+
+.modal-cancel-btn:disabled,
+.modal-cancel-btn[disabled] {
+  background-color: #cccccc !important;
+  border-color: #cccccc !important;
+  color: #8c8c8c !important;
+  opacity: 0.6 !important;
+}
+
+/* ✅ MODAL CLOSE BUTTON - White background with dark text for Close buttons */
+.modal-close-btn,
+.modal-close-btn.ant-btn {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #000000 !important;
+}
+
+.modal-close-btn span,
+.modal-close-btn .ant-btn-text {
+  color: #000000 !important;
+}
+
+.modal-close-btn:hover,
+.modal-close-btn:focus {
+  background-color: #fafafa !important;
+  border-color: #b3b3b3 !important;
+  color: #000000 !important;
+}
+
+.modal-close-btn:active {
+  background-color: #f0f0f0 !important;
+  border-color: #8c8c8c !important;
+  color: #000000 !important;
+}
+
+.modal-close-btn:disabled,
+.modal-close-btn[disabled] {
+  background-color: #cccccc !important;
+  border-color: #cccccc !important;
+  color: #8c8c8c !important;
+  opacity: 0.6 !important;
+}
+
+/* ✅ MODAL SECONDARY ACTION BUTTON - White background with black text (e.g., Apply Extension) */
+.modal-secondary-action-btn,
+.modal-secondary-action-btn.ant-btn {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #000000 !important;
+}
+
+.modal-secondary-action-btn span,
+.modal-secondary-action-btn .ant-btn-text {
+  color: #000000 !important;
+}
+
+.modal-secondary-action-btn:hover,
+.modal-secondary-action-btn:focus {
+  background-color: #fafafa !important;
+  border-color: #b3b3b3 !important;
+  color: #000000 !important;
+}
+
+.modal-secondary-action-btn:active {
+  background-color: #f0f0f0 !important;
+  border-color: #8c8c8c !important;
+  color: #000000 !important;
+}
+
+.modal-secondary-action-btn:disabled,
+.modal-secondary-action-btn[disabled] {
+  background-color: #cccccc !important;
+  border-color: #cccccc !important;
+  color: #8c8c8c !important;
+  opacity: 0.6 !important;
+}

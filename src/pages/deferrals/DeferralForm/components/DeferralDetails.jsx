@@ -1,0 +1,411 @@
+import React from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Input,
+  Select,
+  InputNumber,
+  DatePicker,
+  Upload,
+  Button,
+  Typography,
+} from "antd";
+import {
+  UploadOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+import DocumentPicker from "../../../../components/deferrals/DocumentPicker";
+import FacilityTable from "../../../../components/deferrals/FacilityTable";
+import { renderDocumentItem } from "../utils/fileUtils";
+import { WARNING_ORANGE } from "../utils/constants";
+import "../../../../styles/creatorDesignSystem.css";
+
+const { TextArea } = Input;
+const { Option } = Select;
+
+export default function DeferralDetails({
+  loanAmount,
+  setLoanAmount,
+  selectedDocuments,
+  setSelectedDocuments,
+  perDocumentDays,
+  handlePerDocumentDaysChange,
+  deferralDescription,
+  setDeferralDescription,
+  facilities,
+  setFacilities,
+  dclNumber,
+  setDclNumber,
+  dclFile,
+  additionalFiles,
+  isSearchedByDcl,
+  handleDCLUpload,
+  handleAdditionalFileUpload,
+  removeDCLFile,
+  removeAdditionalFile,
+}) {
+  return (
+    <>
+      <style>{`
+        .deferral-form-details.ant-card {
+          margin-bottom: 20px;
+          border-radius: 10px !important;
+          border: 1px solid rgba(214, 189, 152, 0.2) !important;
+          box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06) !important;
+          overflow: hidden;
+        }
+        .deferral-form-details .ant-card-head,
+        .deferral-form-details .ant-card-small > .ant-card-head {
+          background: var(--color-bg) !important;
+          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+        }
+        .deferral-form-details .ant-card-head-title {
+          padding: 14px 0 !important;
+        }
+        .deferral-form-details .ant-card-body {
+          padding: 16px !important;
+        }
+        .deferral-form-details .ant-typography,
+        .deferral-form-details .ant-form-item-label > label {
+          color: var(--color-text-dark);
+        }
+        .deferral-form-details .ant-select-selector,
+        .deferral-form-details .ant-input,
+        .deferral-form-details .ant-input-number,
+        .deferral-form-details .ant-picker {
+          border: 1px solid rgba(214, 189, 152, 0.2) !important;
+          border-radius: 8px !important;
+          box-shadow: none !important;
+          min-height: 42px;
+        }
+        .deferral-form-details .ant-select-selector:hover,
+        .deferral-form-details .ant-input:hover,
+        .deferral-form-details .ant-input:focus,
+        .deferral-form-details .ant-input-number:hover,
+        .deferral-form-details .ant-picker:hover,
+        .deferral-form-details .ant-select-focused .ant-select-selector,
+        .deferral-form-details .ant-picker-focused,
+        .deferral-form-details .ant-input-number-focused {
+          border-color: var(--color-primary-dark) !important;
+          box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
+        }
+        .deferral-form-details .ant-input-affix-wrapper {
+          border-radius: 8px !important;
+        }
+        .deferral-form-details .ant-upload .ant-btn,
+        .deferral-form-details .deferral-form-upload-btn.ant-btn {
+          border-radius: 8px !important;
+          border: 1px solid rgba(214, 189, 152, 0.28) !important;
+          background: var(--color-white) !important;
+          color: var(--color-text-medium) !important;
+          box-shadow: none !important;
+        }
+        .deferral-form-details .deferral-form-inline-card.ant-card {
+          border: 1px solid rgba(214, 189, 152, 0.16) !important;
+          box-shadow: none !important;
+          border-radius: 10px !important;
+          background: rgba(255, 255, 255, 0.92) !important;
+        }
+        .deferral-form-details .deferral-form-section-heading {
+          color: var(--color-text-dark);
+          font-size: 15px;
+          font-weight: 700;
+          margin: 0;
+        }
+        .deferral-form-details .deferral-form-subsection {
+          display: flex;
+          align-items: center;
+          margin-bottom: 14px;
+        }
+        .deferral-form-details .deferral-form-subsection-title {
+          color: var(--color-text-dark) !important;
+          font-size: 15px !important;
+          font-weight: 700 !important;
+          margin: 0 !important;
+          letter-spacing: -0.02em;
+        }
+        .deferral-form-details .deferral-form-disabled-input.ant-input-affix-wrapper,
+        .deferral-form-details .deferral-form-disabled-input.ant-input {
+          background: rgba(245, 247, 244, 0.9) !important;
+        }
+      `}</style>
+    <Card
+      className="deferral-form-details"
+      title={
+        <div className="deferral-form-section-heading">Deferral Details</div>
+      }
+    >
+      <Row gutter={[16, 16]}>
+        <Col span={12}>
+          <Typography.Text strong>Loan Amount</Typography.Text>
+          <Select
+            value={loanAmount}
+            onChange={setLoanAmount}
+            style={{ width: "100%" }}
+            size="large"
+            placeholder="Select loan amount"
+          >
+            <Option value="below75">Below 75 million</Option>
+            <Option value="above75">Above 75 million</Option>
+          </Select>
+        </Col>
+
+        {/* Per-document days sought */}
+        <Col span={24}>
+          <Card size="small" className="deferral-form-inline-card" style={{ marginBottom: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 8,
+              }}
+            >
+              <div>
+                <Typography.Text strong style={{ display: "block" }}>
+                  Days Sought (per document)
+                </Typography.Text>
+              </div>
+            </div>
+
+            {/* Column labels */}
+            <Row
+              gutter={12}
+              style={{
+                padding: "8px 0",
+                borderBottom: "1px solid #f0f0f0",
+                marginBottom: 12,
+              }}
+            >
+              <Col xs={12} sm={12} md={10}>
+                <Typography.Text strong>Document</Typography.Text>
+              </Col>
+              <Col xs={6} sm={6} md={4}>
+                <Typography.Text strong style={{ display: "inline-block" }}>
+                  Days
+                </Typography.Text>
+              </Col>
+              <Col xs={6} sm={6} md={6}>
+                <Typography.Text strong>New Due Date</Typography.Text>
+              </Col>
+            </Row>
+
+            {selectedDocuments && selectedDocuments.length > 0 ? (
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+              >
+                {selectedDocuments.map((doc, idx) => {
+                  const docKey = doc._id || doc.name || String(idx);
+                  const days = perDocumentDays[docKey];
+                  const computedDate = days
+                    ? dayjs().add(Number(days), "day").format("YYYY-MM-DD")
+                    : "";
+                  return (
+                    <Row
+                      key={docKey}
+                      align="middle"
+                      gutter={12}
+                      style={{ padding: "8px 0", borderRadius: 4 }}
+                    >
+                      <Col xs={24} sm={12} md={10}>
+                        <div
+                          style={{ display: "flex", flexDirection: "column" }}
+                        >
+                          <Typography.Text strong style={{ marginBottom: 4 }}>
+                            {doc.name}
+                          </Typography.Text>
+                          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                            {doc.type || ""}
+                          </Typography.Text>
+                        </div>
+                      </Col>
+
+                      <Col xs={12} sm={6} md={4}>
+                        <InputNumber
+                          min={0}
+                          value={days}
+                          onChange={(v) =>
+                            handlePerDocumentDaysChange(docKey, v)
+                          }
+                          style={{ width: "100%" }}
+                          size="middle"
+                          placeholder="Days"
+                          aria-label={`Days sought for ${doc.name}`}
+                        />
+                      </Col>
+
+                      <Col xs={12} sm={6} md={6}>
+                        <DatePicker
+                          value={computedDate ? dayjs(computedDate) : null}
+                          format="DD/MM/YYYY"
+                          disabled
+                          style={{ width: "100%" }}
+                          size="middle"
+                        />
+                      </Col>
+                    </Row>
+                  );
+                })}
+              </div>
+            ) : (
+              <Typography.Text type="secondary">
+                Select documents to set days sought per document.
+              </Typography.Text>
+            )}
+          </Card>
+        </Col>
+
+        {/* Document Picker Component */}
+        <Col span={24}>
+          <div style={{ marginBottom: 16 }}>
+            <div className="deferral-form-subsection">
+              <Typography.Title level={4} className="deferral-form-subsection-title">
+                Document Name
+              </Typography.Title>
+            </div>
+          </div>
+          <DocumentPicker
+            selectedDocuments={selectedDocuments}
+            setSelectedDocuments={setSelectedDocuments}
+            perDocumentDays={perDocumentDays}
+          />
+        </Col>
+
+        <Col span={24}>
+          <Typography.Text strong>Deferral Description</Typography.Text>
+          <TextArea
+            value={deferralDescription}
+            onChange={(e) => setDeferralDescription(e.target.value)}
+            rows={4}
+            placeholder="Enter reason for deferral..."
+            required
+          />
+        </Col>
+
+        {/* Facility Table Component */}
+        <Col span={24}>
+          <div style={{ marginBottom: 16 }}>
+            <div className="deferral-form-subsection">
+              <Typography.Title level={4} className="deferral-form-subsection-title">
+                Facility Details
+              </Typography.Title>
+            </div>
+          </div>
+          <FacilityTable
+            facilities={facilities}
+            setFacilities={setFacilities}
+          />
+        </Col>
+
+        <Col span={24}>
+          <Typography.Text strong>DCL Number</Typography.Text>
+          <Input
+            className={isSearchedByDcl ? "deferral-form-disabled-input" : undefined}
+            value={dclNumber}
+            onChange={(e) => !isSearchedByDcl && setDclNumber(e.target.value)}
+            placeholder="Enter DCL number"
+            size="large"
+            prefix={<FileTextOutlined />}
+            required
+            disabled={isSearchedByDcl}
+            style={{
+              backgroundColor: isSearchedByDcl ? "#f5f5f5" : "#fff",
+              cursor: isSearchedByDcl ? "not-allowed" : "text",
+              opacity: isSearchedByDcl ? 0.7 : 1,
+            }}
+          />
+        </Col>
+
+        <Col span={24}>
+          {/* DCL Upload */}
+          <Card size="small" className="deferral-form-inline-card" style={{ marginBottom: 16 }}>
+            <div className="deferral-form-subsection">
+              <Typography.Title level={4} className="deferral-form-subsection-title">
+                Mandatory: DCL Upload
+              </Typography.Title>
+            </div>
+            <Upload
+              disabled={!dclNumber}
+              accept=".pdf,.PDF,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              beforeUpload={handleDCLUpload}
+              fileList={[]}
+              maxCount={1}
+              showUploadList={false}
+            >
+              <Button className="deferral-form-upload-btn" icon={<UploadOutlined />} disabled={!dclNumber}>
+                Upload DCL Document
+              </Button>
+            </Upload>
+
+            {dclFile && (
+              <div style={{ marginTop: 16 }}>
+                {renderDocumentItem(dclFile, true, removeDCLFile)}
+              </div>
+            )}
+
+            {!dclNumber ? (
+              <Typography.Text type="secondary" style={{ display: "block", marginTop: 8 }}>
+                Please enter DCL number first
+              </Typography.Text>
+            ) : !dclFile ? (
+              <Typography.Text
+                type="secondary"
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                  color: WARNING_ORANGE,
+                }}
+              >
+                DCL document is required for submission
+              </Typography.Text>
+            ) : null}
+          </Card>
+        </Col>
+
+        <Col span={24}>
+          {/* Additional Documents */}
+          <Card size="small" className="deferral-form-inline-card">
+            <div className="deferral-form-subsection">
+              <Typography.Title level={4} className="deferral-form-subsection-title">
+                Additional Documents
+              </Typography.Title>
+            </div>
+            <Upload
+              accept=".pdf,.PDF,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              beforeUpload={handleAdditionalFileUpload}
+              fileList={[]}
+              multiple
+              showUploadList={false}
+            >
+              <Button className="deferral-form-upload-btn" icon={<UploadOutlined />}>
+                Upload Additional Documents
+              </Button>
+            </Upload>
+
+            {additionalFiles.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                {additionalFiles.map((file, index) => (
+                  <div key={file.uid || index}>
+                    {renderDocumentItem(file, true, () => removeAdditionalFile(file))}
+                  </div>
+                ))}
+                <div>
+                  <Typography.Text
+                    type="success"
+                    style={{ display: "block", marginTop: 8, fontSize: "12px" }}
+                  >
+                    ✓ {additionalFiles.length} additional document
+                    {additionalFiles.length !== 1 ? "s" : ""} ready
+                  </Typography.Text>
+                </div>
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+    </Card>
+    </>
+  );
+}

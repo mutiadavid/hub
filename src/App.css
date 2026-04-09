@@ -1,0 +1,110 @@
+
+/* Global Button Styles */
+.ant-btn {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+}
+
+/* Primary Button */
+.ant-btn-primary {
+  background: linear-gradient(135deg, #164679 0%, #0f3a56 100%) !important;
+  border-color: transparent !important;
+  color: #FFFFFF !important;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background: linear-gradient(135deg, #0f3a56 0%, #06213d 100%) !important;
+  border-color: transparent !important;
+  color: #FFFFFF !important;
+}
+
+/* Modal Header Radius */
+.modal-header {
+  border-radius: 8px 8px 0 0 !important;
+}
+
+/* Confirm Modal Styling */
+.ant-modal-content {
+  border-radius: 8px !important;
+}
+
+/* View Button Styling - Dark text */
+.checker-modal-action {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #1a1a1a !important;
+}
+
+.checker-modal-action .anticon {
+  color: #1a1a1a !important;
+}
+
+.checker-modal-action:hover {
+  background-color: #f5f5f5 !important;
+  border-color: #b3b3b3 !important;
+  color: #000000 !important;
+}
+
+.checker-modal-action:hover .anticon {
+  color: #000000 !important;
+}
+
+.checker-modal-action:active,
+.checker-modal-action:focus {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #1a1a1a !important;
+}
+
+/* Completed Modal View Button - Dark text */
+.completed-modal-view-btn {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #1a1a1a !important;
+  border-radius: 6px !important;
+}
+
+.completed-modal-view-btn .anticon {
+  color: #1a1a1a !important;
+}
+
+.completed-modal-view-btn:hover {
+  background-color: #f5f5f5 !important;
+  border-color: #b3b3b3 !important;
+  color: #000000 !important;
+}
+
+.completed-modal-view-btn:hover .anticon {
+  color: #000000 !important;
+}
+
+.completed-modal-view-btn:active,
+.completed-modal-view-btn:focus {
+  background-color: #ffffff !important;
+  border-color: #d9d9d9 !important;
+  color: #1a1a1a !important;
+}
+
+/* Document Drawer Title Styling */
+.document-drawer-title {
+  color: white !important;
+}
+
+/* Document Drawer Badge - Green with dark text */
+.document-drawer-badge {
+  background-color: #52C41A !important;
+  color: #1a1a1a !important;
+  border-color: #52C41A !important;
+  font-weight: 600 !important;
+}
+
+/* 
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+} */
+ 
+@import "tailwindcss";  

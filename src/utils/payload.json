@@ -1,0 +1,18 @@
+{
+  "customerNumber": "CUST-001",
+  "customerName": "ACME Corp",
+  "businessName": "ACME Business",
+  "loanType": "Term Loan",
+  "loanAmount": 100000,
+  "daysSought": 30,
+  "dclNumber": "DCL-0001",
+  "deferralDescription": "Test deferral via automated test",
+  "selectedDocuments": [
+    { "name": "Financials", "type": "Secondary", "category": "Financial" }
+  ],
+  "approvers": [
+    { "name": "Head of Business Segment", "role": "Head of Business Segment", "userId": "dba03d06-7c80-4d72-bc21-4426c8a37791" },
+    { "name": "Director of Business Unit", "role": "Director of Business Unit", "userId": "4e19a0c3-78fa-4100-9ecc-ffea7dea3c17" },
+    { "name": "Head of Credit Operations", "role": "Head of Credit Operations", "userId": "1b7fc390-4e61-40cd-913d-768819f7d385" }
+  ]
+}

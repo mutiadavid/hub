@@ -1,0 +1,319 @@
+import React, { useMemo } from "react";
+import { Card, Col, Empty, Row, Typography } from "antd";
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  Tooltip as RechartsTooltip,
+  ComposedChart,
+  BarChart,
+  Bar,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import { buildDeferralsAnalytics, formatNumber, formatPercent } from "./reportUtils";
+import {
+  DEFERRAL_BAR_COLORS,
+  DEFERRAL_BUCKET_COLORS,
+  DEFERRAL_LINE_COLORS,
+  DEFERRAL_RISK_COLORS,
+  DEFERRAL_STATUS_COLORS,
+  NCBA_REPORT_THEME,
+  PIE_COLORS,
+  REPORT_COLOR_PALETTES,
+} from "./reportTheme";
+
+const { Text } = Typography;
+
+export default function DeferralsDashboard({ rows }) {
+  const computed = useMemo(() => buildDeferralsAnalytics(rows), [rows]);
+
+  if (!rows.length) {
+    return (
+      <Empty
+        description="No live deferral data found for the selected filters"
+        style={{ marginTop: 24 }}
+      />
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={12} xl={6}>
+          <Card size="small" style={{ borderRadius: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Total Deferrals
+              </Text>
+              <Text style={{ fontSize: 28, fontWeight: 700, color: NCBA_REPORT_THEME.brandDeep }}>
+                {computed.total}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Portfolio currently in the reporting window
+              </Text>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={12} xl={6}>
+          <Card size="small" style={{ borderRadius: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Overdue Ratio
+              </Text>
+              <Text style={{ fontSize: 28, fontWeight: 700, color: NCBA_REPORT_THEME.brandDeep }}>
+                {formatPercent(computed.overdueRate)}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {computed.overdueCount} cases are overdue today
+              </Text>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={12} xl={6}>
+          <Card size="small" style={{ borderRadius: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Total Exposure
+              </Text>
+              <Text style={{ fontSize: 28, fontWeight: 700, color: NCBA_REPORT_THEME.brandDeep }}>
+                {formatNumber(computed.totalExposure)}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Aggregate exposure across all reported deferrals
+              </Text>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={12} xl={6}>
+          <Card size="small" style={{ borderRadius: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Watch + NPL Exposure
+              </Text>
+              <Text style={{ fontSize: 28, fontWeight: 700, color: NCBA_REPORT_THEME.brandDeep }}>
+                {formatNumber(computed.watchAndNplExposure)}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Avg. days sought: {computed.averageDaysSought.toFixed(1)} days
+              </Text>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} xl={10}>
+          <Card title="Overdue Status Mix" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={computed.overduePieData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={90}
+                    innerRadius={48}
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                  >
+                    {computed.overduePieData.map((entry) => (
+                      <Cell
+                        key={entry.name}
+                        fill={DEFERRAL_STATUS_COLORS[entry.name] || DEFERRAL_STATUS_COLORS.unknown}
+                      />
+                    ))}
+                  </Pie>
+                  <Legend verticalAlign="bottom" height={36} />
+                  <RechartsTooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} xl={14}>
+          <Card title="Consumer Deferral Movement" size="small" style={{ borderRadius: 14, height: "100%" }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <ComposedChart data={computed.movementData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} interval={0} />
+                  <YAxis tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip />
+                  <Legend />
+                  <Bar dataKey="total" fill={DEFERRAL_LINE_COLORS.total} name="Total" barSize={24} />
+                  <Line type="monotone" dataKey="historical" stroke={DEFERRAL_LINE_COLORS.historical} strokeWidth={3} name="Historical Deferrals" />
+                  <Line type="monotone" dataKey="newlyDeferred" stroke={DEFERRAL_LINE_COLORS.newlyDeferred} strokeWidth={3} name="New Deferrals" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} xl={12}>
+          <Card title="Overdue Bucket Trend" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.overdueBucketChartData} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis
+                    dataKey="bucket"
+                    angle={-18}
+                    textAnchor="end"
+                    interval={0}
+                    height={64}
+                    tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }}
+                  />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip />
+                  <Bar dataKey="count" radius={[8, 8, 0, 0]} barSize={32}>
+                    {computed.overdueBucketChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.bucket}-${index}`}
+                        fill={DEFERRAL_BUCKET_COLORS[entry.bucket] || DEFERRAL_BUCKET_COLORS.unknown}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} xl={12}>
+          <Card title="Risk Exposure Mix" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.riskClassificationChartData} layout="vertical" margin={{ top: 8, right: 16, left: 18, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis type="category" dataKey="classification" width={84} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip formatter={(value) => formatNumber(value)} />
+                  <Bar dataKey="exposure" radius={[0, 8, 8, 0]} barSize={22}>
+                    {computed.riskClassificationChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.classification}-${index}`}
+                        fill={DEFERRAL_RISK_COLORS[entry.classification] || DEFERRAL_RISK_COLORS.unknown}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} xl={12}>
+          <Card title="Top Relationship Managers" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.rmChartData} layout="vertical" margin={{ top: 8, right: 16, left: 20, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis type="category" dataKey="rm" width={120} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip />
+                  <Bar dataKey="total" radius={[0, 8, 8, 0]} barSize={22}>
+                    {computed.rmChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.rm}-${index}`}
+                        fill={DEFERRAL_BAR_COLORS[index % DEFERRAL_BAR_COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} xl={12}>
+          <Card title="Top Deferred Items" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.deferredItemChartData} layout="vertical" margin={{ top: 8, right: 16, left: 24, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis type="category" dataKey="item" width={140} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip />
+                  <Bar dataKey="total" radius={[0, 8, 8, 0]} barSize={22}>
+                    {computed.deferredItemChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.item}-${index}`}
+                        fill={[
+                          REPORT_COLOR_PALETTES.amber[0],
+                          REPORT_COLOR_PALETTES.ocean[0],
+                          REPORT_COLOR_PALETTES.plum[0],
+                          REPORT_COLOR_PALETTES.citrus[0],
+                          REPORT_COLOR_PALETTES.amber[2],
+                        ][index % 5]}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={8}>
+          <Card size="small" title="Portfolio Signal" style={{ borderRadius: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <Text strong style={{ color: NCBA_REPORT_THEME.brandDeep }}>
+                {computed.topRiskGroup?.group || "Stable mix"}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Largest deferred category right now is {computed.topRiskGroup?.item || "not available"}.
+              </Text>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={8}>
+          <Card size="small" title="Operational Focus" style={{ borderRadius: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <Text strong style={{ color: NCBA_REPORT_THEME.brandDeep }}>
+                {computed.topRm?.rm || "No RM trend yet"}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Highest volume RM with {computed.topRm?.total || 0} tracked deferrals in the current view.
+              </Text>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={8}>
+          <Card size="small" title="Collections Watch" style={{ borderRadius: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <Text strong style={{ color: NCBA_REPORT_THEME.brandDeep }}>
+                {computed.topOverdueBucket?.bucket || "No overdue bucket"}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Largest ageing pocket contains {computed.topOverdueBucket?.count || 0} deferrals.
+              </Text>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Text type="secondary">
+        Live system data summarised for enterprise reporting, with exposure, ageing, ownership and item concentration in one compact view.
+      </Text>
+    </div>
+  );
+}

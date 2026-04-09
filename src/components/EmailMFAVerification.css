@@ -1,0 +1,246 @@
+/* Email MFA Verification Styles */
+
+.email-mfa-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.email-mfa-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.email-mfa-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.email-mfa-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.email-mfa-icon-circle {
+  width: 80px;
+  height: 80px;
+  background: #e3f2fd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: #2196f3;
+}
+
+.email-mfa-header h2 {
+  font-size: 28px;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.email-mfa-header p {
+  color: #666;
+  font-size: 14px;
+}
+
+.email-mfa-input-group {
+  margin-bottom: 24px;
+}
+
+.email-mfa-input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.email-mfa-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 8px;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: 'Courier New', monospace;
+}
+
+.email-mfa-input:focus {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.email-mfa-input:disabled {
+  background-color: #f5f5f5;
+  color: #ccc;
+}
+
+.email-mfa-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  color: #666;
+  font-size: 13px;
+}
+
+.timer-icon {
+  font-size: 16px;
+}
+
+.email-mfa-button {
+  width: 100%;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+}
+
+.email-mfa-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.email-mfa-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.email-mfa-resend {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.email-mfa-resend p {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.email-mfa-resend-btn {
+  background: none;
+  border: none;
+  color: #2196f3;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.email-mfa-resend-btn:hover:not(:disabled) {
+  color: #1976d2;
+  text-decoration: underline;
+}
+
+.email-mfa-resend-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.email-mfa-divider {
+  position: relative;
+  margin: 24px 0;
+}
+
+.email-mfa-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.email-mfa-divider-text {
+  position: relative;
+  background: white;
+  padding: 0 12px;
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  top: -8px;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.email-mfa-back-btn {
+  width: 100%;
+  padding: 10px 24px;
+  background: white;
+  border: 2px solid #e0e0e0;
+  color: #333;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.email-mfa-back-btn:hover:not(:disabled) {
+  border-color: #2196f3;
+  color: #2196f3;
+  background: #f5f9ff;
+}
+
+.email-mfa-back-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #ffebee;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.success-message {
+  color: #388e3c;
+  font-size: 13px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #e8f5e9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-height: 800px) {
+  .email-mfa-header {
+    margin-bottom: 24px;
+  }
+
+  .email-mfa-card {
+    padding: 32px 24px;
+  }
+}

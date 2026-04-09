@@ -1,0 +1,14 @@
+/* Deferral modal button styling is centralized in src/index.css. */
+/* Keep only the checker-specific primary button surface here. */
+
+.ant-modal .ant-btn-primary {
+  color: white !important;
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+}
+
+.ant-modal .ant-btn-primary:hover {
+  color: white !important;
+  background-color: #0f3a52 !important;
+  border-color: #0f3a52 !important;
+}

@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "push current branch to ewer remote",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"push",
+				"ewer"
+			],
+			"isBackground": false,
+			"group": "none"
+		}
+	]
+}

@@ -1,0 +1,441 @@
+// import React, { useState, useMemo } from "react";
+// import { Modal, Button, Space } from "antd";
+// // Import the new components
+// import ChecklistFormFields from "../../components/checker/ChecklistFormFields";
+// import DocumentInputSection from '../../components/checker/DocumentInputSection';
+// import DocumentAccordion from '../../components/checker/DocumentAccordion';
+
+// import { useGetUsersQuery } from '../../api/userApi';
+// import { loanTypes, loanTypeDocuments } from '../docTypes';
+// import { useCreateChecklistMutation } from '../../api/checklistApi';
+
+// const ChecklistsPage = ({ open, onClose }) => {
+//   // State remains centralized here
+//   const [loanType, setLoanType] = useState("");
+//   const [title, setTitle] = useState("");
+//   const [assignedToRM, setAssignedToRM] = useState("");
+//   const [customerId, setCustomerId] = useState("");
+
+//   // customerName and customerNumber states are REMOVED
+
+//   const [documents, setDocuments] = useState([]);
+//   const [selectedCategory, setSelectedCategory] = useState(null);
+//   const [newDocName, setNewDocName] = useState("");
+
+//   // API Hooks and Data Filtering
+//   const { data: users = [] } = useGetUsersQuery();
+// //   const {
+// //   data: users = [],
+// //   isLoading,
+// //   isFetching,
+// //   isError,
+// //   error
+// // } = useGetUsersQuery();
+
+// // console.log(users, "users");
+// // console.log({ isLoading, isFetching, isError, error });
+//   const rms = users.filter((u) => u.role?.toLowerCase() === "rm");
+//   const customers = users.filter((u) => u.role?.toLowerCase() === "customer");
+//   const [createChecklist] = useCreateChecklistMutation();
+
+//   // FIX: Use useMemo to DERIVE customer info instead of using useEffect and setState
+//   const customerInfo = useMemo(() => {
+//     const selected = customers.find((c) => c._id === customerId);
+//     return {
+//       name: selected?.name || "",
+//       number: selected?.customerNumber || "",
+//     };
+//   }, [customerId, customers]); // Recalculates only when customerId or customers change
+
+//   const customerName = customerInfo.name;
+//   const customerNumber = customerInfo.number;
+
+//   // Logic: Handle loan type selection and load default documents
+//   const handleLoanTypeChange = (value) => {
+//     setLoanType(value);
+//     const categories = loanTypeDocuments[value] || [];
+
+//     setDocuments(
+//       categories.map((cat) => ({
+//         category: cat.title,
+//         docList: cat.documents.map((d) => ({
+//           name: d,
+//           status: "pending",
+//           action: "",
+//           comment: "",
+//         })),
+//       }))
+//     );
+//   };
+
+//   // Logic: Add custom document into selected category
+//   const handleAddNewDocument = () => {
+//     if (!newDocName.trim() || selectedCategory === null || selectedCategory >= documents.length) return;
+
+//     const updated = [...documents];
+//     updated[selectedCategory].docList.push({
+//       name: newDocName.trim(),
+//       status: "pending",
+//       action: "",
+//       comment: "",
+//     });
+
+//     setDocuments(updated);
+//     setNewDocName("");
+//   };
+
+//   // Logic: Submit checklist
+//   const handleSubmit = async () => {
+//     if (!assignedToRM || !loanType || !title) {
+//       alert("Please fill all required fields.");
+//       return;
+//     }
+
+//     // Payload construction logic remains here
+//     const payload = {
+//       title,
+//       loanType,
+//       assignedToRM,
+//       customerId,
+//       // Use the DERIVED values directly in the payload
+//       customerName: customerName,
+//       customerNumber: customerNumber,
+//       documents: documents.flatMap((cat) =>
+//         cat.docList.map((doc) => ({
+//           name: doc.name,
+//           category: cat.category,
+//           action: doc.action,
+//           status: doc.status,
+//           comment: doc.comment,
+//         }))
+//       ),
+//     };
+
+//     try {
+//       await createChecklist(payload).unwrap();
+//       alert("Checklist created successfully!");
+//       onClose();
+//     } catch (err) {
+//       console.error(err);
+//       alert("Error creating checklist.");
+//     }
+//   };
+
+//   return (
+//     <Modal title="Create DCL Checklist" open={open} onCancel={onClose} width={1100} footer={null}>
+//       <Space direction="vertical" style={{ width: "100%" }} size="large">
+
+//         {/* Render Form Fields Component */}
+//         <ChecklistFormFields
+//           rms={rms}
+//           customers={customers}
+//           assignedToRM={assignedToRM}
+//           setAssignedToRM={setAssignedToRM}
+//           customerId={customerId}
+//           setCustomerId={setCustomerId}
+//           // Pass derived values as props
+//           customerName={customerName}
+//           customerNumber={customerNumber}
+//           title={title}
+//           setTitle={setTitle}
+//           loanType={loanType}
+//           loanTypes={loanTypes}
+//           handleLoanTypeChange={handleLoanTypeChange}
+//         />
+
+//         {/* Document Section */}
+//         {loanType && (
+//           <>
+//             {/* Render Document Input Section Component */}
+//             <DocumentInputSection
+//               documents={documents}
+//               selectedCategory={selectedCategory}
+//               setSelectedCategory={setSelectedCategory}
+//               newDocName={newDocName}
+//               setNewDocName={setNewDocName}
+//               handleAddNewDocument={handleAddNewDocument}
+//             />
+
+//             {/* Render Document Accordion Component */}
+//             <DocumentAccordion
+//               documents={documents}
+//               setDocuments={setDocuments}
+//             />
+//           </>
+//         )}
+
+//         {/* Submit */}
+//         <Button type="primary" block onClick={handleSubmit}>
+//           Submit Checklist
+//         </Button>
+//       </Space>
+//     </Modal>
+//   );
+// };
+
+// export default ChecklistsPage;
+
+import React, { useMemo, useState } from "react";
+import { Button, Divider, Modal, Table, Tag, Spin, Empty } from "antd";
+import ChecklistsPage from "./ChecklistsPage";
+import ReviewChecklistPage from "../../components/modals/ReviewChecklistModalComponents/ReviewChecklistPage";
+import { useGetAllCoCreatorChecklistsQuery } from "../../api/checklistApi";
+
+// Theme Colors
+const PRIMARY_BLUE = "#164679";
+const ACCENT_LIME = "#b5d334";
+const HIGHLIGHT_GOLD = "#fcb116";
+const LIGHT_YELLOW = "#fcd716";
+const SECONDARY_PURPLE = "#7e6496";
+
+const CoChecklistPage = ({ userId }) => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedChecklist, setSelectedChecklist] = useState(null);
+
+  const {
+    data: rawData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useGetAllCoCreatorChecklistsQuery();
+
+  // Normalize API response
+  const checklists = useMemo(() => {
+    if (!rawData) return [];
+    if (Array.isArray(rawData)) return rawData;
+    if (Array.isArray(rawData.checklists)) return rawData.checklists;
+    if (Array.isArray(rawData.data)) return rawData.data;
+    if (Array.isArray(rawData.items)) return rawData.items;
+    return [];
+  }, [rawData]);
+
+  // Only checklists assigned to user and NOT approved
+  const myChecklists = useMemo(() => {
+    return checklists.filter((c) => {
+      const isAssigned =
+        c.assignedToCoChecker?._id === userId ||
+        c.assignedToCoChecker === userId ||
+        c.createdBy?._id === userId ||
+        c.createdBy === userId ||
+        c.assignedToChecker?._id === userId ||
+        c.assignedToChecker === userId;
+
+      return isAssigned && c.status !== "approved"; // exclude approved
+    });
+  }, [checklists, userId]);
+
+  const customTableStyles = `
+    .ant-table-wrapper { border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(22, 70, 121, 0.08); border: 1px solid #e0e0e0; }
+    .ant-table-thead > tr > th { background-color: #f7f7f7 !important; color: ${PRIMARY_BLUE} !important; font-weight: 700; font-size: 15px; padding: 16px 16px !important; border-bottom: 3px solid ${ACCENT_LIME} !important; border-right: none !important; }
+    .ant-table-tbody > tr > td { border-bottom: 1px solid #f0f0f0 !important; border-right: none !important; padding: 14px 16px !important; font-size: 14px; color: #333; }
+    .ant-table-tbody > tr.ant-table-row:hover > td { background-color: rgba(181, 211, 52, 0.1) !important; cursor: pointer; }
+    .ant-table-bordered .ant-table-container, .ant-table-bordered .ant-table-tbody > tr > td, .ant-table-bordered .ant-table-thead > tr > th { border: none !important; }
+    .ant-pagination .ant-pagination-item-active { background-color: ${ACCENT_LIME} !important; border-color: ${ACCENT_LIME} !important; }
+    .ant-pagination .ant-pagination-item-active a { color: ${PRIMARY_BLUE} !important; font-weight: 600; }
+    .ant-pagination .ant-pagination-item:hover { border-color: ${ACCENT_LIME} !important; }
+    .ant-pagination .ant-pagination-prev:hover .ant-pagination-item-link, .ant-pagination .ant-pagination-next:hover .ant-pagination-item-link { color: ${ACCENT_LIME} !important; }
+    .ant-pagination .ant-pagination-options .ant-select-selector { border-radius: 8px !important; }
+  `;
+
+  const columns = [
+    {
+      title: "DCL No",
+      dataIndex: "dclNo",
+      width: 200,
+      render: (text) => (
+        <span style={{ fontWeight: "bold", color: PRIMARY_BLUE }}>{text}</span>
+      ),
+    },
+    {
+      title: "Customer Number",
+      dataIndex: "customerNumber",
+      width: 180,
+      render: (text) => <span style={{ color: SECONDARY_PURPLE }}>{text}</span>,
+    },
+
+    {
+      title: "IBPS No",
+      dataIndex: "ibpsNo",
+      width: 140,
+      render: (text) => (
+        <span style={{ color: SECONDARY_PURPLE, fontWeight: 500 }}>
+          {text || "N/A"}
+        </span>
+      ),
+    },
+
+    { title: "Loan Type", dataIndex: "loanType", width: 140 },
+    {
+      title: "Assigned RM",
+      dataIndex: "assignedToRM",
+      width: 120,
+      render: (rm) => (
+        <span style={{ color: PRIMARY_BLUE, fontWeight: 500 }}>
+          {rm?.name || "Not Assigned"}
+        </span>
+      ),
+    },
+    {
+      title: "# Docs",
+      dataIndex: "documents",
+      width: 80,
+      align: "center",
+      render: (docs) => (
+        <span style={{ fontWeight: "bold", color: PRIMARY_BLUE }}>
+          {Array.isArray(docs) ? docs.length : 0}
+        </span>
+      ),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      width: 120,
+      render: (status) => {
+        let tagColor, tagText, bgColor;
+        if (status === "approved") {
+          tagText = "Approved";
+          tagColor = ACCENT_LIME;
+          bgColor = ACCENT_LIME;
+        } else if (status === "rejected") {
+          tagText = "Rejected";
+          tagColor = HIGHLIGHT_GOLD;
+          bgColor = HIGHLIGHT_GOLD;
+        } else {
+          tagText = "In Progress";
+          tagColor = SECONDARY_PURPLE;
+          bgColor = LIGHT_YELLOW;
+        }
+        return (
+          <Tag
+            color={tagColor}
+            style={{
+              fontSize: 12,
+              borderRadius: 999,
+              fontWeight: "bold",
+              padding: "2px 6px",
+              color: PRIMARY_BLUE,
+              backgroundColor: bgColor + "40",
+              borderColor: bgColor,
+            }}
+          >
+            {tagText}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Actions",
+      width: 100,
+      render: (_, record) => (
+        <Button
+          size="small"
+          type="link"
+          onClick={() => setSelectedChecklist(record)}
+          style={{
+            color: SECONDARY_PURPLE,
+            fontWeight: "bold",
+            fontSize: 13,
+            borderRadius: 6,
+            "--antd-wave-shadow-color": ACCENT_LIME,
+          }}
+        >
+          View
+        </Button>
+      ),
+    },
+  ];
+
+  const dataSource = Array.isArray(myChecklists) ? myChecklists : [];
+
+  return (
+    <div style={{ padding: 16 }}>
+      <style>{customTableStyles}</style>
+
+      {drawerOpen && (
+        <ChecklistsPage
+          open={drawerOpen}
+          onClose={() => {
+            setDrawerOpen(false);
+            refetch && refetch();
+          }}
+          coCreatorId={userId}
+        />
+      )}
+
+      <Divider style={{ margin: "12px 0" }}>Assigned Checklists</Divider>
+
+      {isLoading || isFetching ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          <Spin tip="Loading checklists...">
+            <div style={{ height: 40 }} />
+          </Spin>
+        </div>
+      ) : error ? (
+        <Empty
+          description="Failed to load checklists. Check console for details."
+          style={{ padding: 24 }}
+        />
+      ) : dataSource.length === 0 ? (
+        <Empty
+          description="No active checklists assigned."
+          style={{ padding: 24 }}
+        />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          rowKey={(record) => record._id || record.id}
+          size="large"
+          pagination={{
+            pageSize: 5,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20", "50"],
+            position: ["bottomCenter"],
+          }}
+          rowClassName={(record, index) =>
+            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+          }
+        />
+      )}
+
+      {selectedChecklist && (
+        <Modal
+          open={!!selectedChecklist}
+          onCancel={() => {
+            setSelectedChecklist(null);
+            refetch && refetch();
+          }}
+          footer={null}
+          closable={false}
+          width="92vw"
+          style={{ top: 24, maxWidth: 1400 }}
+          styles={{
+            body: { padding: 0, maxHeight: "calc(100vh - 80px)", overflow: "auto" },
+            content: { padding: 0, borderRadius: 16, overflow: "hidden" },
+            mask: { backgroundColor: "rgba(15, 23, 42, 0.45)" },
+          }}
+          destroyOnHidden
+        >
+          <ReviewChecklistPage
+            checklistId={selectedChecklist?.id || selectedChecklist?._id}
+            initialChecklist={selectedChecklist}
+            onClose={() => {
+              setSelectedChecklist(null);
+              refetch && refetch();
+            }}
+          />
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+export default CoChecklistPage;

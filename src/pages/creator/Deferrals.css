@@ -1,0 +1,56 @@
+/* Deferrals Modal Button Styling */
+
+/* Make all buttons in the modal have white text */
+.ant-modal .ant-btn {
+  color: white !important;
+}
+
+.ant-modal .ant-btn-primary {
+  color: white !important;
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+}
+
+.ant-modal .ant-btn-primary:hover {
+  color: white !important;
+  background-color: #0f3a52 !important;
+  border-color: #0f3a52 !important;
+}
+
+.ant-modal .ant-btn-default {
+  color: white !important;
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+}
+
+.ant-modal .ant-btn-default:hover {
+  color: white !important;
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+}
+
+/* Modal footer buttons - ensure white text */
+.ant-modal-footer .ant-btn {
+  color: white !important;
+}
+
+.ant-modal-footer .ant-btn-primary {
+  color: white !important;
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+}
+
+/* Cancel buttons */
+.ant-modal .ant-btn-default {
+  color: white !important;
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+}
+
+/* Disabled button states */
+.ant-modal .ant-btn:disabled {
+  color: white !important;
+  background-color: #164679 !important;
+  border-color: #164679 !important;
+  opacity: 0.6;
+}
