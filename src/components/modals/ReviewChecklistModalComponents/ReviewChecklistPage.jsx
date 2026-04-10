@@ -41,6 +41,51 @@ const TABS = [
   { key: "documents", label: "Required Documents" },
 ];
 
+const cloneDraftRecord = (record) => {
+  if (!record || typeof record !== "object") {
+    return record;
+  }
+
+  return JSON.parse(JSON.stringify(record));
+};
+
+const buildDraftCommentTrail = ({ comments, creatorComment, currentUserName }) => {
+  const persistedComments = Array.isArray(comments)
+    ? comments.map((comment) => cloneDraftRecord(comment)).filter(Boolean)
+    : [];
+
+  const normalizedDraftComment = String(creatorComment || "").trim();
+  if (!normalizedDraftComment) {
+    return persistedComments;
+  }
+
+  const alreadyPresent = persistedComments.some((comment) => {
+    const message = String(comment?.message || comment?.comment || "").trim();
+    return message === normalizedDraftComment;
+  });
+
+  if (alreadyPresent) {
+    return persistedComments;
+  }
+
+  return [
+    {
+      _id: "draft-comment",
+      message: normalizedDraftComment,
+      comment: normalizedDraftComment,
+      createdAt: new Date().toISOString(),
+      userName: currentUserName,
+      role: "cocreator",
+      isDraftComment: true,
+      userId: {
+        name: currentUserName,
+        role: "cocreator",
+      },
+    },
+    ...persistedComments,
+  ];
+};
+
 const normalizeLookupValue = (value) =>
   String(value || "")
     .trim()
@@ -110,6 +155,7 @@ const ReviewChecklistPage = ({
   const [isAddDocModalOpen, setIsAddDocModalOpen] = useState(false);
   const [isUploadingSupportingDoc, setIsUploadingSupportingDoc] = useState(false);
   const [deferralValidationByDoc, setDeferralValidationByDoc] = useState({});
+  const [hasLocalEdits, setHasLocalEdits] = useState(false);
   const hasAttemptedLockRef = useRef(false);
   const keepLockOnCloseRef = useRef(false);
   const submittedRef = useRef(false);
@@ -139,6 +185,21 @@ const ReviewChecklistPage = ({
     navigate("/cocreator");
   };
 
+  const { data: comments = [], isLoading: commentsLoading } =
+    useGetChecklistCommentsQuery(checklistId, {
+      skip: !checklistId,
+    });
+
+  const currentUserId = auth?.user?.id || auth?.user?._id;
+  const currentUserName = auth?.user?.name || auth?.user?.username || "Current User";
+  const displayComments = useMemo(() => {
+    if (Array.isArray(restoredDraftData?.commentTrail) && restoredDraftData.commentTrail.length > 0) {
+      return restoredDraftData.commentTrail;
+    }
+
+    return comments;
+  }, [comments, restoredDraftData]);
+
   const persistDraft = useCallback((notify = false) => {
     if (readOnly) {
       return false;
@@ -158,21 +219,23 @@ const ReviewChecklistPage = ({
         loanType: checklist?.loanType,
         status: checklist?.status,
         documents: docs.map((doc) => ({
+          ...cloneDraftRecord(doc),
           _id: doc._id || doc.id,
-          name: doc.name,
-          category: doc.category,
+          id: doc.id || doc._id,
           status: doc.status || doc.action,
-          action: doc.action,
-          creatorStatus: doc.creatorStatus,
+          action: doc.action || doc.status,
           checkerStatus: getResolvedCheckerStatus(doc),
           finalCheckerStatus: getResolvedCheckerStatus(doc),
-          comment: doc.comment,
-          fileUrl: doc.fileUrl,
-          expiryDate: doc.expiryDate,
-          deferralNo: doc.deferralNo,
+          deferralNo: doc.deferralNo || doc.deferralNumber || "",
+          deferralNumber: doc.deferralNumber || doc.deferralNo || "",
         })),
         creatorComment,
-        supportingDocs,
+        supportingDocs: supportingDocs.map((doc) => cloneDraftRecord(doc)),
+        commentTrail: buildDraftCommentTrail({
+          comments,
+          creatorComment,
+          currentUserName,
+        }),
       };
 
       saveDraftToStorage("cocreator", draftData, checklistId);
@@ -189,25 +252,27 @@ const ReviewChecklistPage = ({
       }
       return false;
     }
-  }, [readOnly, checklistId, checklist, docs, creatorComment, supportingDocs]);
+  }, [readOnly, checklistId, checklist, docs, creatorComment, supportingDocs, comments, currentUserName]);
 
   const handleCloseWithoutSavingDraft = () => {
-    keepLockOnCloseRef.current = false;
+    keepLockOnCloseRef.current = hasLocalEdits;
     handleClose();
   };
+
+  const markChecklistEdited = useCallback(() => {
+    if (readOnly) {
+      return;
+    }
+
+    keepLockOnCloseRef.current = true;
+    setHasLocalEdits((prev) => (prev ? prev : true));
+  }, [readOnly]);
 
   const [addDocumentMutation] = useAddDocumentMutation();
   const [deleteDocumentMutation] = useDeleteDocumentMutation();
   const [lockDcl] = useLockDclMutation();
   const [unlockDcl] = useUnlockDclMutation();
 
-  const { data: comments = [], isLoading: commentsLoading } =
-    useGetChecklistCommentsQuery(checklistId, {
-      skip: !checklistId,
-    });
-
-  const currentUserId = auth?.user?.id || auth?.user?._id;
-  const currentUserName = auth?.user?.name || auth?.user?.username || "Current User";
   const lockedByUserId = checklist?.lockedByUserId || checklist?.lockedBy?.id;
   const lockedByUserName = checklist?.lockedBy?.name || checklist?.lockedByUserName;
   const isLockedBySomeoneElse = lockedByUserId && lockedByUserId !== currentUserId;
@@ -221,6 +286,7 @@ const ReviewChecklistPage = ({
     hasAttemptedLockRef.current = false;
     keepLockOnCloseRef.current = false;
     submittedRef.current = false;
+    setHasLocalEdits(false);
 
     if (pendingUnlockTimeoutRef.current) {
       window.clearTimeout(pendingUnlockTimeoutRef.current);
@@ -544,6 +610,7 @@ const ReviewChecklistPage = ({
   };
 
   const handleActionChange = (docIdx, value) => {
+    markChecklistEdited();
     baseHandleActionChange(docIdx, value);
 
     setDocs((prevDocs) =>
@@ -566,8 +633,24 @@ const ReviewChecklistPage = ({
   };
 
   const handleDeferralNoChange = (docIdx, value) => {
+    markChecklistEdited();
     baseHandleDeferralNoChange(docIdx, value);
     markDeferralValidationPending(docIdx);
+  };
+
+  const handleDocumentNameChange = (docIdx, value) => {
+    markChecklistEdited();
+    handleNameChange(docIdx, value);
+  };
+
+  const handleDocumentCommentChange = (docIdx, value) => {
+    markChecklistEdited();
+    handleCommentChange(docIdx, value);
+  };
+
+  const handleDocumentExpiryDateChange = (docIdx, value) => {
+    markChecklistEdited();
+    handleExpiryDateChange(docIdx, value);
   };
 
   const handleChecklistUpdate = (updatedChecklist) => {
@@ -589,7 +672,6 @@ const ReviewChecklistPage = ({
     isSubmittingToRM,
     isCheckerSubmitting,
     isSavingDraft,
-    saveDraft,
     submitToRM,
     submitToCheckers,
   } = useChecklistOperations(
@@ -606,7 +688,7 @@ const ReviewChecklistPage = ({
 
   const handleExplicitDraftSave = async () => {
     keepLockOnCloseRef.current = true;
-    return saveDraft();
+    return persistDraft(true);
   };
 
   const submitToRMWithUnlock = async () => {
@@ -678,6 +760,7 @@ const ReviewChecklistPage = ({
     const documentId = documentToDelete._id || documentToDelete.id;
 
     try {
+      markChecklistEdited();
       if (documentId && !documentToDelete.isNew) {
         await deleteDocumentMutation({ id: checklistId, docId: documentId }).unwrap();
       }
@@ -708,6 +791,7 @@ const ReviewChecklistPage = ({
     }
 
     try {
+      markChecklistEdited();
       const documentData = {
         name: newDoc.name,
         category: newDoc.category,
@@ -762,6 +846,7 @@ const ReviewChecklistPage = ({
     }
 
     try {
+      markChecklistEdited();
       setIsUploadingSupportingDoc(true);
 
       if (!checklistId) {
@@ -977,7 +1062,7 @@ const ReviewChecklistPage = ({
 
     const intervalId = window.setInterval(() => {
       persistDraft(false);
-    }, 15000);
+    }, 2000);
 
     const handleWindowLeave = () => {
       persistDraft(false);
@@ -1249,7 +1334,7 @@ const ReviewChecklistPage = ({
             onUploadSupportingDoc={handleUploadSupportingDoc}
             uploadingSupportingDoc={isUploadingSupportingDoc}
             onClose={handleClose}
-            comments={comments}
+            comments={displayComments}
             isLockedBySomeoneElse={isLockedBySomeoneElse}
             lockedByUserName={lockedByUserName}
           />
@@ -1300,7 +1385,10 @@ const ReviewChecklistPage = ({
                       className="creator-review-comment-box"
                       rows={3}
                       value={creatorComment}
-                      onChange={(event) => setCreatorComment(event.target.value)}
+                      onChange={(event) => {
+                        markChecklistEdited();
+                        setCreatorComment(event.target.value);
+                      }}
                       disabled={isActionDisabled || shouldGrayOut}
                       placeholder="Add a comment for RM or Co-Checker"
                     />
@@ -1309,7 +1397,7 @@ const ReviewChecklistPage = ({
                     </div>
                   </div>
 
-                  <CommentHistory comments={comments} isLoading={commentsLoading} />
+                  <CommentHistory comments={displayComments} isLoading={commentsLoading} />
                 </section>
               </div>
             )}
@@ -1319,13 +1407,13 @@ const ReviewChecklistPage = ({
                 <div className="creator-table-shell">
                   <DocumentTable
                     docs={docs}
-                    onNameChange={handleNameChange}
+                    onNameChange={handleDocumentNameChange}
                     onActionChange={handleActionChange}
-                    onCommentChange={handleCommentChange}
+                    onCommentChange={handleDocumentCommentChange}
                     onDeferralNoChange={handleDeferralNoChange}
                     onClearDeferralValidation={clearDeferralValidation}
                     onDelete={handleDeleteDocument}
-                    onExpiryDateChange={handleExpiryDateChange}
+                    onExpiryDateChange={handleDocumentExpiryDateChange}
                     onViewFile={handleViewFile}
                     isActionDisabled={isActionDisabled || shouldGrayOut}
                     checklistStatus={checklist.status}

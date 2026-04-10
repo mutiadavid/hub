@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { Table, Button, Tag, Spin, Empty, Input, Select } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewChecklistModalComponents/CheckerReviewChecklistModal";
-import { useGetCheckerMyQueueQuery } from "../../api/checklistApi.js";
+import { useGetCheckerMyQueueQuery, useLockDclMutation } from "../../api/checklistApi.js";
 import { showLockToast } from "../../utils/authToast";
 import "../../styles/creatorDesignSystem.css";
 
@@ -32,7 +32,9 @@ const MyQueuePage = () => {
 
   // Get checker ID from Redux auth
   const auth = useSelector((state) => state.auth);
-  const checkerId = auth?.id || auth?._id;
+  const checkerId = auth?.user?.id || auth?.user?._id || auth?.id || auth?._id;
+  const checkerName = auth?.user?.name || auth?.user?.username || auth?.name || auth?.username || "Current User";
+  const [lockDcl] = useLockDclMutation();
 
   const getLockMeta = (checklist) => {
     const lockedByUserId = checklist?.lockedByUserId || checklist?.lockedBy?.id;
@@ -48,15 +50,39 @@ const MyQueuePage = () => {
     };
   };
 
-  const openChecklist = (checklist) => {
-    const { isLockedBySomeoneElse, lockedByUserName } = getLockMeta(checklist);
+  const openChecklist = async (checklist) => {
+    const checklistId = checklist?.id || checklist?._id;
+    const { isLockedBySomeoneElse, isLockedByMe, lockedByUserName } = getLockMeta(checklist);
+
+    if (!checklistId) {
+      return;
+    }
 
     if (isLockedBySomeoneElse) {
       showLockToast(lockedByUserName || "another user");
       return;
     }
 
-    setSelectedChecklist(checklist);
+    if (!isLockedByMe) {
+      try {
+        await lockDcl(checklistId).unwrap();
+      } catch (error) {
+        if (error?.data?.lockedByUserId) {
+          showLockToast(error?.data?.lockedByUserName || "another user");
+          return;
+        }
+
+        console.error("Failed to lock checker checklist before opening:", error);
+        return;
+      }
+    }
+
+    setSelectedChecklist({
+      ...checklist,
+      lockedByUserId: checkerId,
+      lockedByUserName: checkerName,
+      lockedBy: { id: checkerId, name: checkerName },
+    });
   };
 
   // 🔍 DEBUG LOGS

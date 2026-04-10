@@ -8,6 +8,7 @@ const CommentSection = ({
   commentsLoading,
   checkerComment,
   setCheckerComment,
+  onEdit,
   isDisabled,
   className = "",
 }) => {
@@ -65,7 +66,12 @@ const CommentSection = ({
             className="checker-review-comment-box"
             rows={4}
             value={checkerComment}
-            onChange={(e) => setCheckerComment(e.target.value)}
+            onChange={(e) => {
+              if (typeof onEdit === "function") {
+                onEdit();
+              }
+              setCheckerComment(e.target.value);
+            }}
             placeholder="Enter checker remarks..."
             disabled={isDisabled}
           />

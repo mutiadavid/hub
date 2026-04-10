@@ -21,37 +21,53 @@ export const useAutoSaveDraft = ({
 }) => {
   const savedDraftIdRef = useRef(draftId);
   const lastSavedRef = useRef(null);
+  const latestFormDataRef = useRef(formData);
+  const hasSavedOnEnableRef = useRef(false);
 
   useEffect(() => {
-    if (!enabled || !type || !formData) {
+    latestFormDataRef.current = formData;
+  }, [formData]);
+
+  useEffect(() => {
+    savedDraftIdRef.current = draftId;
+  }, [draftId]);
+
+  useEffect(() => {
+    if (!enabled || !type || !latestFormDataRef.current) {
+      hasSavedOnEnableRef.current = false;
       return;
     }
 
-    // Save immediately when draftId changes or on mount
-    if (formData && Object.keys(formData).length > 0) {
-      const saved = saveDraft(type, formData, savedDraftIdRef.current);
+    const saveCurrentDraft = () => {
+      const currentFormData = latestFormDataRef.current;
+      if (!currentFormData || Object.keys(currentFormData).length === 0) {
+        return null;
+      }
+
+      const saved = saveDraft(type, currentFormData, savedDraftIdRef.current);
       if (saved) {
         savedDraftIdRef.current = saved.id;
         lastSavedRef.current = saved.updatedAt;
       }
+      return saved;
+    };
+
+    if (!hasSavedOnEnableRef.current) {
+      saveCurrentDraft();
+      hasSavedOnEnableRef.current = true;
     }
 
-    // Set up auto-save interval
     const intervalId = setInterval(() => {
-      if (formData && Object.keys(formData).length > 0) {
-        const saved = saveDraft(type, formData, savedDraftIdRef.current);
-        if (saved) {
-          savedDraftIdRef.current = saved.id;
-          lastSavedRef.current = saved.updatedAt;
-          console.log('📝 Auto-saved draft:', saved.id);
-        }
+      const saved = saveCurrentDraft();
+      if (saved) {
+        console.log('📝 Auto-saved draft:', saved.id);
       }
     }, interval);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, [type, formData, interval, enabled]);
+  }, [type, interval, enabled]);
 
   return {
     draftId: savedDraftIdRef.current,

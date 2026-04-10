@@ -7,6 +7,7 @@ import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewCh
 import {
   useGetAllCoCreatorChecklistsQuery,
   useGetCheckerMyQueueQuery,
+  useLockDclMutation,
 } from "../../api/checklistApi.js";
 import { showLockToast } from "../../utils/authToast";
 import "../../styles/creatorDesignSystem.css";
@@ -58,6 +59,7 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
   const [searchText, setSearchText] = useState("");
   const [activeTab, setActiveTab] = useState("assigned");
   const [loanTypeFilter, setLoanTypeFilter] = useState("all");
+  const [lockDcl] = useLockDclMutation();
 
   useEffect(() => {
     if (draftToRestore && draftToRestore.data) {
@@ -71,6 +73,18 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
         loanType: draftToRestore.data.loanType,
         status: draftToRestore.data.status,
         documents: draftToRestore.data.documents || [],
+        supportingDocs: draftToRestore.data.supportingDocs || [],
+        checkerComment:
+          draftToRestore.data.checkerComment ||
+          draftToRestore.data.creatorComment ||
+          "",
+        _checkerComment:
+          draftToRestore.data.checkerComment ||
+          draftToRestore.data.creatorComment ||
+          "",
+        commentTrail: draftToRestore.data.commentTrail || [],
+        _draftCommentTrail: draftToRestore.data.commentTrail || [],
+        _draftRestored: true,
       };
 
       const restoreId = window.setTimeout(() => {
@@ -123,17 +137,41 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
   );
 
   const openChecklist = useCallback(
-    (checklist) => {
-      const { isLockedBySomeoneElse, lockedByUserName } = getLockMeta(checklist);
+    async (checklist) => {
+      const checklistId = checklist?.id || checklist?._id;
+      const { isLockedBySomeoneElse, isLockedByMe, lockedByUserName } = getLockMeta(checklist);
+
+      if (!checklistId) {
+        return;
+      }
 
       if (isLockedBySomeoneElse) {
         showLockToast(lockedByUserName || "another user");
         return;
       }
 
-      setSelectedChecklist(checklist);
+      if (!isLockedByMe) {
+        try {
+          await lockDcl(checklistId).unwrap();
+        } catch (error) {
+          if (error?.data?.lockedByUserId) {
+            showLockToast(error?.data?.lockedByUserName || "another user");
+            return;
+          }
+
+          console.error("Failed to lock checker checklist before opening:", error);
+          return;
+        }
+      }
+
+      setSelectedChecklist({
+        ...checklist,
+        lockedByUserId: userId,
+        lockedByUserName: "Current User",
+        lockedBy: { id: userId, name: "Current User" },
+      });
     },
-    [getLockMeta],
+    [getLockMeta, lockDcl, userId],
   );
 
   const applyCommonFilters = useCallback(

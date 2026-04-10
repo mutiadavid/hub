@@ -188,6 +188,11 @@ export default function DeferralForm() {
 
       const checklist = await res.json();
 
+      const checklistCommentTrail = [
+        ...(Array.isArray(checklist.comments) ? checklist.comments : []),
+        ...(Array.isArray(checklist.history) ? checklist.history : []),
+      ];
+
       searchState.setSelectedChecklistStatus(checklist.status || "");
 
       const allDocs = [];
@@ -204,7 +209,8 @@ export default function DeferralForm() {
           checklist,
           allDocs,
           {},
-          checklist.comments || []
+          checklistCommentTrail,
+          { commentTrailOnFinalPage: true }
         );
         if (blob) {
           const fileName = `${dclNumber || checklist.dclNo || "DCL"}.pdf`;

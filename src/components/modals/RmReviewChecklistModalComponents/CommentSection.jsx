@@ -6,6 +6,7 @@ import "../../../styles/creatorDesignSystem.css";
 const CommentSection = ({
   rmGeneralComment,
   setRmGeneralComment,
+  onEdit,
   isActionAllowed,
   comments,
   commentsLoading,
@@ -83,7 +84,12 @@ const CommentSection = ({
             className="rm-review-comment-box"
             rows={3}
             value={rmGeneralComment}
-            onChange={(e) => setRmGeneralComment(e.target.value)}
+            onChange={(e) => {
+              if (typeof onEdit === "function") {
+                onEdit();
+              }
+              setRmGeneralComment(e.target.value);
+            }}
             placeholder="Enter RM general remarks..."
             disabled={!isActionAllowed}
           />

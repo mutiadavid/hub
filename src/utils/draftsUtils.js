@@ -4,6 +4,56 @@
 
 const DRAFTS_STORAGE_KEY = 'ncba_dcl_drafts';
 
+export const cloneDraftRecord = (record) => {
+  if (!record || typeof record !== 'object') {
+    return record;
+  }
+
+  return JSON.parse(JSON.stringify(record));
+};
+
+export const buildDraftCommentTrail = ({
+  comments = [],
+  currentComment = '',
+  currentUserName = 'Current User',
+  role = 'user',
+}) => {
+  const persistedComments = Array.isArray(comments)
+    ? comments.map((comment) => cloneDraftRecord(comment)).filter(Boolean)
+    : [];
+
+  const normalizedComment = String(currentComment || '').trim();
+  if (!normalizedComment) {
+    return persistedComments;
+  }
+
+  const alreadyPresent = persistedComments.some((comment) => {
+    const message = String(comment?.message || comment?.comment || '').trim();
+    return message === normalizedComment;
+  });
+
+  if (alreadyPresent) {
+    return persistedComments;
+  }
+
+  return [
+    {
+      _id: `draft-comment-${role}`,
+      message: normalizedComment,
+      comment: normalizedComment,
+      createdAt: new Date().toISOString(),
+      userName: currentUserName,
+      role,
+      isDraftComment: true,
+      userId: {
+        name: currentUserName,
+        role,
+      },
+    },
+    ...persistedComments,
+  ];
+};
+
 /**
  * Save a draft to localStorage
  * @param {string} type - Type of draft (e.g., 'checklist', 'deferral', 'cocreator')

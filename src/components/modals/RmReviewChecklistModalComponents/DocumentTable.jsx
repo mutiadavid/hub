@@ -75,6 +75,7 @@ const getStatusTextColor = (status) => {
 const DocumentTable = ({
   docs,
   setDocs,
+  onEdit,
   isActionAllowed,
   handleFileUpload,
   getFullUrl,
@@ -154,6 +155,10 @@ const DocumentTable = ({
   }, [deferralValidationByDoc]);
 
   const handleRmStatusChange = (docIdx, newRmStatus) => {
+    if (typeof onEdit === "function") {
+      onEdit();
+    }
+
     setDocs((prev) =>
       prev.map((doc, idx) =>
         idx === docIdx
@@ -164,6 +169,10 @@ const DocumentTable = ({
   };
 
   const handleDeferralNumberChange = (docIdx, value) => {
+    if (typeof onEdit === "function") {
+      onEdit();
+    }
+
     setDocs((prev) =>
       prev.map((doc, idx) =>
         idx === docIdx

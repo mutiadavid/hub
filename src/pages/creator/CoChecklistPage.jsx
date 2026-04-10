@@ -43,7 +43,11 @@ const CoChecklistPage = ({
   const [statusFilter, setStatusFilter] = useState(undefined);
   const [loanTypeFilter, setLoanTypeFilter] = useState(undefined);
   const [rmFilter, setRmFilter] = useState(undefined);
-  const isDrawerOpen = drawerOpen || Boolean(draftToRestore);
+  const restoredDraftId =
+    typeof draftToRestore === "string"
+      ? draftToRestore
+      : draftToRestore?.id || null;
+  const isDrawerOpen = drawerOpen || Boolean(restoredDraftId);
 
   const { data: checklists = [], refetch } =
     useGetAllCoCreatorChecklistsQuery();
@@ -424,7 +428,7 @@ const CoChecklistPage = ({
       {isDrawerOpen ? (
         <ChecklistsPage
           open={isDrawerOpen}
-          draftId={draftToRestore}
+          draftId={restoredDraftId}
           onClose={() => {
             setDrawerOpen(false);
             setDraftToRestore?.(null);

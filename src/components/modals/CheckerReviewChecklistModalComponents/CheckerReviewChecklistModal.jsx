@@ -24,7 +24,11 @@ import ChecklistHeader from "../ReviewChecklistModalComponents/ChecklistHeader";
 import ProgressStats from "../ReviewChecklistModalComponents/ProgressStats";
 import { calculateDocumentStats } from "../../../utils/checklistUtils";
 import { generateChecklistPDF } from "../../../utils/reportGenerator";
-import { saveDraft as saveDraftToStorage } from "../../../utils/draftsUtils";
+import {
+  buildDraftCommentTrail,
+  cloneDraftRecord,
+  saveDraft as saveDraftToStorage,
+} from "../../../utils/draftsUtils";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
@@ -79,6 +83,7 @@ const CheckerReviewChecklistModal = ({
   const [localChecklist, setLocalChecklist] = useState(checklist);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const [hasLocalEdits, setHasLocalEdits] = useState(false);
   const hasAttemptedLockRef = useRef(false);
   const keepLockOnCloseRef = useRef(false);
   const submittedRef = useRef(false);
@@ -124,7 +129,19 @@ const CheckerReviewChecklistModal = ({
     documentStats;
   const currentUserId = auth?.user?.id || auth?.user?._id || auth?.id || auth?._id;
   const currentUserName = auth?.user?.name || auth?.user?.username || "Current User";
-  const activeChecklist = checklistDetail || localChecklist || checklist;
+  const activeChecklist = localChecklist || checklistDetail || checklist;
+  const isDraftRestored = Boolean(localChecklist?._draftRestored || checklist?._draftRestored);
+  const displayComments = useMemo(() => {
+    if (Array.isArray(localChecklist?.commentTrail) && localChecklist.commentTrail.length > 0) {
+      return localChecklist.commentTrail;
+    }
+
+    if (Array.isArray(checklist?.commentTrail) && checklist.commentTrail.length > 0) {
+      return checklist.commentTrail;
+    }
+
+    return comments || [];
+  }, [comments, checklist, localChecklist]);
   const lockedByUserId = activeChecklist?.lockedByUserId || activeChecklist?.lockedBy?.id;
   const lockedByUserName = activeChecklist?.lockedBy?.name || activeChecklist?.lockedByUserName;
   const isLockedBySomeoneElse = !!lockedByUserId && lockedByUserId !== currentUserId;
@@ -158,14 +175,82 @@ const CheckerReviewChecklistModal = ({
     }
   };
 
+  const markChecklistEdited = useCallback(() => {
+    if (effectiveReadOnly) {
+      return;
+    }
+
+    keepLockOnCloseRef.current = true;
+    setHasLocalEdits((prev) => (prev ? prev : true));
+  }, [effectiveReadOnly]);
+
   useEffect(() => {
-    setLocalChecklist(checklistDetail || checklist);
+    const nextChecklist = checklistDetail || checklist;
+
+    if (!nextChecklist && !checklist?._draftRestored) {
+      return;
+    }
+
+    setLocalChecklist((previousChecklist) => {
+      const restoredChecklist = previousChecklist?._draftRestored
+        ? previousChecklist
+        : checklist?._draftRestored
+          ? checklist
+          : null;
+
+      if (!restoredChecklist) {
+        return nextChecklist;
+      }
+
+      return {
+        ...(nextChecklist || {}),
+        ...restoredChecklist,
+        documents:
+          restoredChecklist.documents ||
+          nextChecklist?.documents ||
+          nextChecklist?.docList ||
+          [],
+        supportingDocs:
+          restoredChecklist.supportingDocs ||
+          restoredChecklist._supportingDocs ||
+          nextChecklist?.supportingDocs ||
+          [],
+        commentTrail:
+          restoredChecklist.commentTrail ||
+          restoredChecklist._draftCommentTrail ||
+          nextChecklist?.commentTrail ||
+          [],
+      };
+    });
   }, [checklist, checklistDetail]);
+
+  useEffect(() => {
+    if (isDraftRestored) {
+      setCheckerComment(
+        localChecklist?.checkerComment ||
+          localChecklist?._checkerComment ||
+          checklist?.checkerComment ||
+          checklist?._checkerComment ||
+          checklist?.creatorComment ||
+          "",
+      );
+      return;
+    }
+
+    setCheckerComment(
+      checklistDetail?.checkerComment ||
+        checklist?.checkerComment ||
+        checklistDetail?.creatorComment ||
+        checklist?.creatorComment ||
+        "",
+    );
+  }, [checklist, checklistDetail, isDraftRestored, localChecklist]);
 
   useEffect(() => {
     hasAttemptedLockRef.current = false;
     keepLockOnCloseRef.current = false;
     submittedRef.current = false;
+    setHasLocalEdits(false);
   }, [resolvedChecklistId]);
 
   useEffect(() => {
@@ -339,10 +424,10 @@ const CheckerReviewChecklistModal = ({
     setIsGeneratingPDF(true);
     try {
       generateChecklistPDF(
-        checklist,
+        activeChecklist,
         docs,
         documentStats,
-        comments?.data || comments || [],
+        displayComments,
       );
       message.success("Checklist PDF generated successfully!");
     } catch (error) {
@@ -355,9 +440,10 @@ const CheckerReviewChecklistModal = ({
 
   const handleUploadSupportingDoc = async (file) => {
     try {
+      markChecklistEdited();
       setUploadingSupportingDoc(true);
 
-      const checklistId = checklist?.id || checklist?._id;
+      const checklistId = activeChecklist?.id || activeChecklist?._id;
       if (!checklistId) {
         throw new Error("Checklist ID missing");
       }
@@ -433,6 +519,7 @@ const CheckerReviewChecklistModal = ({
   };
 
   const handleDocApprove = (index) => {
+    markChecklistEdited();
     setDocs((prev) => {
       const updated = [...prev];
       updated[index].approved = true;
@@ -442,6 +529,7 @@ const CheckerReviewChecklistModal = ({
   };
 
   const handleDocReject = (index) => {
+    markChecklistEdited();
     setDocs((prev) => {
       const updated = [...prev];
       updated[index].approved = false;
@@ -451,6 +539,7 @@ const CheckerReviewChecklistModal = ({
   };
 
   const handleDocReset = (index) => {
+    markChecklistEdited();
     setDocs((prev) => {
       const updated = [...prev];
       updated[index].approved = false;
@@ -558,27 +647,28 @@ const CheckerReviewChecklistModal = ({
 
       const draftData = {
         checklistId: checklistId,
-        dclNo: checklist?.dclNo,
-        title: checklist?.title,
-        customerName: checklist?.customerName,
-        customerNumber: checklist?.customerNumber,
-        loanType: checklist?.loanType,
-        status: checklist?.status,
+        dclNo: activeChecklist?.dclNo,
+        title: activeChecklist?.title,
+        customerName: activeChecklist?.customerName,
+        customerNumber: activeChecklist?.customerNumber,
+        loanType: activeChecklist?.loanType,
+        status: activeChecklist?.status,
         documents: docs.map((doc) => ({
+          ...cloneDraftRecord(doc),
           _id: doc.id || doc._id,
-          name: doc.name,
-          category: doc.category,
-          status: doc.status,
-          action: doc.action,
-          checkerStatus: doc.checkerStatus,
-          checkerComment: doc.checkerComment || "",
-          comment: doc.comment,
-          fileUrl: doc.fileUrl,
-          expiryDate: doc.expiryDate,
-          deferralNo: doc.deferralNo,
+          id: doc.id || doc._id,
+          deferralNo: doc.deferralNo || doc.deferralNumber || "",
+          deferralNumber: doc.deferralNumber || doc.deferralNo || "",
         })),
         creatorComment: checkerComment,
-        supportingDocs: supportingDocs,
+        checkerComment,
+        supportingDocs: supportingDocs.map((doc) => cloneDraftRecord(doc)),
+        commentTrail: buildDraftCommentTrail({
+          comments: displayComments,
+          currentComment: checkerComment,
+          currentUserName,
+          role: "checker",
+        }),
       };
 
       saveDraftToStorage("checker", draftData, checklistId);
@@ -605,34 +695,35 @@ const CheckerReviewChecklistModal = ({
     }
 
     try {
-      const checklistId = checklist?.id || checklist?._id;
+      const checklistId = activeChecklist?.id || activeChecklist?._id;
       if (!checklistId) {
         return false;
       }
 
       const draftData = {
         checklistId,
-        dclNo: checklist?.dclNo,
-        title: checklist?.title,
-        customerName: checklist?.customerName,
-        customerNumber: checklist?.customerNumber,
-        loanType: checklist?.loanType,
-        status: checklist?.status,
+        dclNo: activeChecklist?.dclNo,
+        title: activeChecklist?.title,
+        customerName: activeChecklist?.customerName,
+        customerNumber: activeChecklist?.customerNumber,
+        loanType: activeChecklist?.loanType,
+        status: activeChecklist?.status,
         documents: docs.map((doc) => ({
+          ...cloneDraftRecord(doc),
           _id: doc.id || doc._id,
-          name: doc.name,
-          category: doc.category,
-          status: doc.status,
-          action: doc.action,
-          checkerStatus: doc.checkerStatus,
-          checkerComment: doc.checkerComment || "",
-          comment: doc.comment,
-          fileUrl: doc.fileUrl,
-          expiryDate: doc.expiryDate,
-          deferralNo: doc.deferralNo,
+          id: doc.id || doc._id,
+          deferralNo: doc.deferralNo || doc.deferralNumber || "",
+          deferralNumber: doc.deferralNumber || doc.deferralNo || "",
         })),
         creatorComment: checkerComment,
-        supportingDocs,
+        checkerComment,
+        supportingDocs: supportingDocs.map((doc) => cloneDraftRecord(doc)),
+        commentTrail: buildDraftCommentTrail({
+          comments: displayComments,
+          currentComment: checkerComment,
+          currentUserName,
+          role: "checker",
+        }),
       };
 
       saveDraftToStorage("checker", draftData, checklistId);
@@ -649,10 +740,10 @@ const CheckerReviewChecklistModal = ({
       }
       return false;
     }
-  }, [effectiveReadOnly, checklist, docs, checkerComment, supportingDocs]);
+  }, [effectiveReadOnly, activeChecklist, docs, checkerComment, supportingDocs, displayComments, currentUserName]);
 
   const handleCloseWithoutSavingDraft = () => {
-    keepLockOnCloseRef.current = false;
+    keepLockOnCloseRef.current = hasLocalEdits;
     onClose?.();
   };
 
@@ -660,7 +751,7 @@ const CheckerReviewChecklistModal = ({
     effectiveReadOnly ||
     !["CoCheckerReview", "co_checker_review", "check_review"].some(
       (status) =>
-        (checklist?.status || "").toLowerCase() === status.toLowerCase(),
+        (activeChecklist?.status || "").toLowerCase() === status.toLowerCase(),
     );
   const shouldGrayOut = effectiveReadOnly || isDisabled || isLockedBySomeoneElse;
 
@@ -671,7 +762,7 @@ const CheckerReviewChecklistModal = ({
 
     const intervalId = window.setInterval(() => {
       persistDraft(false);
-    }, 15000);
+    }, 2000);
 
     const handleWindowLeave = () => {
       persistDraft(false);
@@ -1038,7 +1129,7 @@ const CheckerReviewChecklistModal = ({
                   <div>
                     <h1 className="checker-review-title">Review Checklist</h1>
                     <div className="checker-review-subtitle">
-                      DCL: {checklist?.dclNo || "N/A"}
+                      DCL: {activeChecklist?.dclNo || "N/A"}
                     </div>
                   </div>
                 </div>
@@ -1059,7 +1150,7 @@ const CheckerReviewChecklistModal = ({
                 <ActionButtons
                   checklist={localChecklist}
                   docs={docs}
-                  comments={comments || []}
+                  comments={displayComments}
                   auth={auth}
                   effectiveReadOnly={effectiveReadOnly}
                   isGeneratingPDF={isGeneratingPDF}
@@ -1118,15 +1209,16 @@ const CheckerReviewChecklistModal = ({
                 {activeTab === "details" && (
                   <div className="checker-review-details-layout">
                     <div className="checker-review-details-main">
-                      <ChecklistHeader checklist={checklist} />
+                      <ChecklistHeader checklist={activeChecklist} />
                       <ProgressStats docs={docs} />
                     </div>
 
                     <CommentSection
-                      comments={comments}
+                      comments={displayComments}
                       commentsLoading={commentsLoading}
                       checkerComment={checkerComment}
                       setCheckerComment={setCheckerComment}
+                      onEdit={markChecklistEdited}
                       isDisabled={shouldGrayOut}
                       className="checker-review-comments-card--inline"
                     />
@@ -1185,7 +1277,7 @@ const CheckerReviewChecklistModal = ({
                     <div>
                       <h1 className="checker-review-title">Review Checklist</h1>
                       <div className="checker-review-subtitle">
-                        DCL: {checklist?.dclNo || "N/A"}
+                        DCL: {activeChecklist?.dclNo || "N/A"}
                       </div>
                     </div>
                   </div>
@@ -1211,7 +1303,7 @@ const CheckerReviewChecklistModal = ({
                   <ActionButtons
                     checklist={localChecklist}
                     docs={docs}
-                    comments={comments || []}
+                    comments={displayComments}
                     auth={auth}
                     effectiveReadOnly={effectiveReadOnly}
                     isGeneratingPDF={isGeneratingPDF}
@@ -1270,15 +1362,16 @@ const CheckerReviewChecklistModal = ({
                   {activeTab === "details" && (
                     <div className="checker-review-details-layout">
                       <div className="checker-review-details-main">
-                        <ChecklistHeader checklist={checklist} />
+                        <ChecklistHeader checklist={activeChecklist} />
                         <ProgressStats docs={docs} />
                       </div>
 
                       <CommentSection
-                        comments={comments}
+                        comments={displayComments}
                         commentsLoading={commentsLoading}
                         checkerComment={checkerComment}
                         setCheckerComment={setCheckerComment}
+                        onEdit={markChecklistEdited}
                         isDisabled={shouldGrayOut}
                         className="checker-review-comments-card--inline"
                       />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Modal, Button, message, Upload, Tag, Space } from "antd";
 import dayjs from "dayjs";
@@ -16,11 +16,20 @@ import DocumentTable from "./DocumentTable";
 import CommentSection from "./CommentSection";
 import PDFGenerator from "./PDFGenerator.jsx";
 import SaveDraftButton from "./SaveDraftButton";
-import { useRmSubmitChecklistToCoCreatorMutation } from "../../../api/checklistApi";
-import { useGetChecklistCommentsQuery, useGetChecklistByIdRMQuery } from "../../../api/checklistApi";
+import {
+  useRmSubmitChecklistToCoCreatorMutation,
+  useGetChecklistCommentsQuery,
+  useGetChecklistByIdRMQuery,
+  useLockDclMutation,
+  useUnlockDclMutation,
+} from "../../../api/checklistApi";
 import deferralApi from "../../../service/deferralApi";
 import { uploadFileToBackend } from "../../../utils/uploadUtils";
-import { saveDraft as saveDraftToStorage } from "../../../utils/draftsUtils";
+import {
+  buildDraftCommentTrail,
+  cloneDraftRecord,
+  saveDraft as saveDraftToStorage,
+} from "../../../utils/draftsUtils";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
@@ -33,6 +42,12 @@ const normalizeLookupValue = (value) =>
   String(value || "")
     .trim()
     .toLowerCase();
+
+const normalizeChecklistStatus = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
 
 const isDeferralRequestedStatus = (status) => {
   const normalized = normalizeLookupValue(status).replace(/[^a-z]/g, "");
@@ -150,12 +165,18 @@ const RmReviewChecklistModal = ({
   const [localChecklist, setLocalChecklist] = useState(checklist);
   const [activeTab, setActiveTab] = useState("details");
   const [deferralValidationByDoc, setDeferralValidationByDoc] = useState({});
+  const [hasLocalEdits, setHasLocalEdits] = useState(false);
+  const hasAttemptedLockRef = useRef(false);
+  const keepLockOnCloseRef = useRef(false);
+  const submittedRef = useRef(false);
   const resolvedChecklistId = localChecklist?.id || localChecklist?._id || checklist?.id || checklist?._id;
   const activeChecklist = localChecklist || checklistDetail || checklist;
   const isDraftRestored = Boolean(localChecklist?._draftRestored || checklist?._draftRestored);
 
   const [submitRmChecklistToCoCreator, { isLoading }] =
     useRmSubmitChecklistToCoCreatorMutation();
+  const [lockDcl] = useLockDclMutation();
+  const [unlockDcl] = useUnlockDclMutation();
   const { data: checklistDetail } = useGetChecklistByIdRMQuery(resolvedChecklistId, {
     skip: !resolvedChecklistId,
     refetchOnMountOrArgChange: true,
@@ -165,6 +186,26 @@ const RmReviewChecklistModal = ({
     useGetChecklistCommentsQuery(resolvedChecklistId, {
       skip: !resolvedChecklistId,
     });
+  const currentUserName =
+    auth?.user?.name || auth?.user?.username || "Current User";
+  const currentUserId = auth?.user?.id || auth?.user?._id || auth?.user?.userId;
+  const displayComments = useMemo(() => {
+    if (Array.isArray(localChecklist?.commentTrail) && localChecklist.commentTrail.length > 0) {
+      return localChecklist.commentTrail;
+    }
+
+    if (Array.isArray(checklist?.commentTrail) && checklist.commentTrail.length > 0) {
+      return checklist.commentTrail;
+    }
+
+    return comments || [];
+  }, [comments, checklist, localChecklist]);
+  const lockedByUserId =
+    activeChecklist?.lockedByUserId || activeChecklist?.lockedBy?.id;
+  const isLockedBySomeoneElse =
+    Boolean(lockedByUserId) && String(lockedByUserId) !== String(currentUserId);
+  const isLockedByMe =
+    Boolean(lockedByUserId) && String(lockedByUserId) === String(currentUserId);
 
   const API_BASE_URL = API_ORIGIN;
 
@@ -218,20 +259,21 @@ const RmReviewChecklistModal = ({
         loanType: activeChecklist?.loanType,
         status: activeChecklist?.status,
         documents: docs.map((doc) => ({
+          ...cloneDraftRecord(doc),
           _id: doc._id || doc.id,
-          name: doc.name,
-          category: doc.category,
-          status: doc.status,
-          action: doc.action,
-          rmStatus: doc.rmStatus,
-          comment: doc.comment,
-          fileUrl: doc.fileUrl,
-          expiryDate: doc.expiryDate,
-          deferralNo: doc.deferralNo || doc.deferralNumber,
+          id: doc.id || doc._id,
+          deferralNo: doc.deferralNo || doc.deferralNumber || "",
+          deferralNumber: doc.deferralNumber || doc.deferralNo || "",
         })),
         creatorComment: rmGeneralComment,
         rmGeneralComment,
-        supportingDocs,
+        supportingDocs: supportingDocs.map((doc) => cloneDraftRecord(doc)),
+        commentTrail: buildDraftCommentTrail({
+          comments: displayComments,
+          currentComment: rmGeneralComment,
+          currentUserName,
+          role: "rm",
+        }),
       };
 
       saveDraftToStorage("rm", draftData, checklistId);
@@ -248,12 +290,118 @@ const RmReviewChecklistModal = ({
       }
       return false;
     }
-  }, [readOnly, activeChecklist, docs, rmGeneralComment, supportingDocs]);
+  }, [readOnly, activeChecklist, docs, rmGeneralComment, supportingDocs, displayComments, currentUserName]);
 
   const handleCloseWithDraft = () => {
+    if (hasLocalEdits) {
+      keepLockOnCloseRef.current = true;
+    }
     persistDraft(false);
     onClose?.();
   };
+
+  const markChecklistEdited = useCallback(() => {
+    if (readOnly) {
+      return;
+    }
+
+    keepLockOnCloseRef.current = true;
+    setHasLocalEdits((prev) => (prev ? prev : true));
+  }, [readOnly]);
+
+  useEffect(() => {
+    hasAttemptedLockRef.current = false;
+    keepLockOnCloseRef.current = false;
+    submittedRef.current = false;
+    setHasLocalEdits(false);
+  }, [resolvedChecklistId]);
+
+  useEffect(() => {
+    const normalizedStatus = normalizeChecklistStatus(activeChecklist?.status);
+    const canLock = ["rmreview"].includes(normalizedStatus);
+
+    if (
+      readOnly ||
+      !open ||
+      !resolvedChecklistId ||
+      !currentUserId ||
+      !canLock ||
+      isLockedBySomeoneElse ||
+      isLockedByMe ||
+      hasAttemptedLockRef.current
+    ) {
+      return;
+    }
+
+    let isCancelled = false;
+    hasAttemptedLockRef.current = true;
+
+    const acquireLock = async () => {
+      try {
+        await lockDcl(resolvedChecklistId).unwrap();
+        if (isCancelled) {
+          return;
+        }
+
+        setLocalChecklist((prev) => ({
+          ...(prev || activeChecklist || {}),
+          lockedByUserId: currentUserId,
+          lockedByUserName: currentUserName,
+          lockedBy: { id: currentUserId, name: currentUserName },
+        }));
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        const conflictingUserId = error?.data?.lockedByUserId;
+        const conflictingUserName = error?.data?.lockedByUserName;
+
+        if (conflictingUserId) {
+          setLocalChecklist((prev) => ({
+            ...(prev || activeChecklist || {}),
+            lockedByUserId: conflictingUserId,
+            lockedByUserName: conflictingUserName,
+            lockedBy:
+              error?.data?.lockedBy ||
+              (conflictingUserName
+                ? { id: conflictingUserId, name: conflictingUserName }
+                : undefined),
+          }));
+        } else {
+          hasAttemptedLockRef.current = false;
+        }
+      }
+    };
+
+    acquireLock();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    activeChecklist,
+    currentUserId,
+    currentUserName,
+    isLockedByMe,
+    isLockedBySomeoneElse,
+    lockDcl,
+    open,
+    readOnly,
+    resolvedChecklistId,
+  ]);
+
+  useEffect(() => {
+    if (readOnly || !open || !resolvedChecklistId || !currentUserId) {
+      return undefined;
+    }
+
+    return () => {
+      if (!keepLockOnCloseRef.current && !submittedRef.current) {
+        unlockDcl(resolvedChecklistId).unwrap().catch(() => {});
+      }
+    };
+  }, [currentUserId, open, readOnly, resolvedChecklistId, unlockDcl]);
 
   useEffect(() => {
     const nextChecklist = checklistDetail || checklist;
@@ -284,6 +432,11 @@ const RmReviewChecklistModal = ({
           restoredChecklist.supportingDocs ||
           restoredChecklist._supportingDocs ||
           nextChecklist?.supportingDocs ||
+          [],
+        commentTrail:
+          restoredChecklist.commentTrail ||
+          restoredChecklist._draftCommentTrail ||
+          nextChecklist?.commentTrail ||
           [],
       };
     });
@@ -687,6 +840,7 @@ const RmReviewChecklistModal = ({
     }
 
     setUploadingDocs((prev) => ({ ...prev, [docIdx]: true }));
+    markChecklistEdited();
 
     try {
       const resolvedChecklistId = checklist?.id || checklist?._id;
@@ -816,6 +970,12 @@ const RmReviewChecklistModal = ({
       console.log("   Main docs being submitted:", payload.documents.length);
 
       await submitRmChecklistToCoCreator(payload).unwrap();
+      submittedRef.current = true;
+      try {
+        await unlockDcl(checklistId).unwrap();
+      } catch (unlockError) {
+        console.warn("Failed to unlock DCL after RM submission:", unlockError);
+      }
       if (refetch) refetch();
 
       handleChecklistUpdate({ ...localChecklist, status: "CoCreatorReview" });
@@ -850,7 +1010,7 @@ const RmReviewChecklistModal = ({
 
     const intervalId = window.setInterval(() => {
       persistDraft(false);
-    }, 15000);
+    }, 2000);
 
     const handleWindowLeave = () => {
       persistDraft(false);
@@ -1179,7 +1339,7 @@ const RmReviewChecklistModal = ({
                   supportingDocs={supportingDocs || []}
                   creatorComment=""
                   rmGeneralComment={rmGeneralComment || ""}
-                  comments={comments || []}
+                  comments={displayComments}
                   buttonText="Download PDF"
                   variant="primary"
                   className="rm-review-pdf"
@@ -1193,6 +1353,8 @@ const RmReviewChecklistModal = ({
                   docs={docs}
                   rmGeneralComment={rmGeneralComment}
                   supportingDocs={supportingDocs || []}
+                  comments={displayComments}
+                  currentUserName={currentUserName}
                   className="rm-review-save-draft"
                   icon={<SaveOutlined />}
                 />
@@ -1236,38 +1398,40 @@ const RmReviewChecklistModal = ({
             ))}
           </div>
 
-          {checklist && activeTab === "details" && (
+          {activeChecklist && activeTab === "details" && (
             <div className="rm-review-details-layout">
               <div className="rm-review-details-main">
-                <ChecklistInfoCard checklist={checklist} />
+                <ChecklistInfoCard checklist={activeChecklist} />
                 <ProgressSummary documentStats={documentStats} />
               </div>
 
               <CommentSection
-                checklist={checklist}
+                checklist={activeChecklist}
                 rmGeneralComment={rmGeneralComment}
                 setRmGeneralComment={setRmGeneralComment}
+                onEdit={markChecklistEdited}
                 isActionAllowed={isActionAllowed}
-                comments={comments}
+                comments={displayComments}
                 commentsLoading={commentsLoading}
               />
             </div>
           )}
 
-          {checklist && activeTab === "documents" && (
+          {activeChecklist && activeTab === "documents" && (
             <div className="rm-review-documents-card">
               <div className="rm-review-documents-card-header">Required Documents</div>
               <div className="rm-review-documents-card-body">
                 <DocumentTable
                   docs={docs}
                   setDocs={setDocs}
-                  checklist={checklist}
+                  onEdit={markChecklistEdited}
+                  checklist={activeChecklist}
                   isActionAllowed={isActionAllowed}
                   handleFileUpload={handleFileUpload}
                   uploadingDocs={uploadingDocs}
                   getFullUrl={getFullUrl}
                   readOnly={!isActionAllowed}
-                  checklistStatus={checklist?.status}
+                  checklistStatus={activeChecklist?.status}
                   deferralValidationByDoc={deferralValidationByDoc}
                   onValidateDeferralNumber={validateDeferralNumberForDoc}
                   onDeferralNumberEdit={markDeferralValidationPending}

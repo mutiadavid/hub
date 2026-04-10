@@ -1,14 +1,19 @@
 import React from "react";
 import { Button } from "antd";
 import { message } from "antd";
-import { saveDraft as saveDraftToStorage } from "../../../utils/draftsUtils";
+import {
+  buildDraftCommentTrail,
+  cloneDraftRecord,
+  saveDraft as saveDraftToStorage,
+} from "../../../utils/draftsUtils";
 
 const SaveDraftButton = ({
   checklist,
   docs,
   rmGeneralComment,
   supportingDocs,
-  isActionAllowed,
+  comments = [],
+  currentUserName = "Current User",
   className = "",
   icon,
 }) => {
@@ -34,20 +39,21 @@ const SaveDraftButton = ({
         loanType: checklist?.loanType,
         status: checklist?.status,
         documents: docs.map((doc) => ({
+          ...cloneDraftRecord(doc),
           _id: doc._id || doc.id,
-          name: doc.name,
-          category: doc.category,
-          status: doc.status,
-          action: doc.action,
-          rmStatus: doc.rmStatus,
-          comment: doc.comment,
-          fileUrl: doc.fileUrl,
-          expiryDate: doc.expiryDate,
-          deferralNo: doc.deferralNo || doc.deferralNumber,
+          id: doc.id || doc._id,
+          deferralNo: doc.deferralNo || doc.deferralNumber || "",
+          deferralNumber: doc.deferralNumber || doc.deferralNo || "",
         })),
         creatorComment: rmGeneralComment,
         rmGeneralComment,
-        supportingDocs: supportingDocs,
+        supportingDocs: supportingDocs.map((doc) => cloneDraftRecord(doc)),
+        commentTrail: buildDraftCommentTrail({
+          comments,
+          currentComment: rmGeneralComment,
+          currentUserName,
+          role: "rm",
+        }),
       };
 
       // Save to localStorage instead of API

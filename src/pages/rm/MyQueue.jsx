@@ -1,5 +1,5 @@
 // export default MyQueue;
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   Button,
   Table,
@@ -12,12 +12,14 @@ import {
   SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { useSelector } from "react-redux";
 import { formatDateTime } from "../../utils/checklistUtils";
 import { getStatusColor } from "../../utils/statusColors";
 import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 
 import RmReviewChecklistModal from "../../components/modals/RmReviewChecklistModalComponents/RmReviewChecklistModal";
-import { useGetAllCoCreatorChecklistsQuery } from "../../api/checklistApi";
+import { useGetAllCoCreatorChecklistsQuery, useLockDclMutation } from "../../api/checklistApi";
+import { showLockToast } from "../../utils/authToast";
 import { useEffect } from "react";
 import "../../styles/creatorDesignSystem.css";
 
@@ -28,38 +30,76 @@ const MyQueue = ({
   draftToRestore = null,
   setDraftToRestore = null,
 }) => {
+  const auth = useSelector((state) => state.auth);
+  const currentUserId = auth?.user?.id || auth?.user?._id || auth?.user?.userId || auth?.id || auth?._id;
+  const currentUserName = auth?.user?.name || auth?.user?.username || auth?.name || auth?.username || "Current User";
   const [selectedChecklist, setSelectedChecklist] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [lockDcl] = useLockDclMutation();
+
+  const getLockMeta = useCallback(
+    (checklist) => {
+      const lockedByUserId = checklist?.lockedByUserId || checklist?.lockedBy?.id;
+      const lockedByUserName = checklist?.lockedBy?.name || checklist?.lockedByUserName;
+      const isLockedBySomeoneElse =
+        Boolean(lockedByUserId) && String(lockedByUserId) !== String(currentUserId);
+      const isLockedByMe =
+        Boolean(lockedByUserId) && String(lockedByUserId) === String(currentUserId);
+
+      return {
+        lockedByUserId,
+        lockedByUserName,
+        isLockedBySomeoneElse,
+        isLockedByMe,
+      };
+    },
+    [currentUserId],
+  );
+
+  const openChecklist = useCallback(
+    async (checklist) => {
+      const checklistId = checklist?.id || checklist?._id;
+      const { isLockedBySomeoneElse, isLockedByMe, lockedByUserName } = getLockMeta(checklist);
+
+      if (!checklistId) {
+        return;
+      }
+
+      if (isLockedBySomeoneElse) {
+        showLockToast(lockedByUserName || "another user");
+        return;
+      }
+
+      if (!isLockedByMe) {
+        try {
+          await lockDcl(checklistId).unwrap();
+        } catch (error) {
+          if (error?.data?.lockedByUserId) {
+            showLockToast(error?.data?.lockedByUserName || "another user");
+            return;
+          }
+
+          console.error("Failed to lock DCL before opening RM modal:", error);
+          return;
+        }
+      }
+
+      setSelectedChecklist({
+        ...checklist,
+        lockedByUserId: currentUserId,
+        lockedByUserName: currentUserName,
+        lockedBy: { id: currentUserId, name: currentUserName },
+      });
+      setModalOpen(true);
+    },
+    [currentUserId, currentUserName, getLockMeta, lockDcl],
+  );
 
   // Handle draft restoration - open modal with draft data
   useEffect(() => {
     if (draftToRestore && draftToRestore.data) {
       console.log("🔄 RM MyQueue - Restoring draft:", draftToRestore);
-
-      // Reconstruct documents in nested format (categories with docList)
-      const draftDocuments = draftToRestore.data.documents || [];
-
-      // Group documents by category
-      const groupedDocs = {};
-      draftDocuments.forEach((doc) => {
-        const category = doc.category || "General Documents";
-        if (!groupedDocs[category]) {
-          groupedDocs[category] = [];
-        }
-        groupedDocs[category].push(doc);
-      });
-
-      // Convert to nested format
-      const nestedDocuments = Object.keys(groupedDocs).map((category) => ({
-        category,
-        docList: groupedDocs[category],
-      }));
-
-      console.log(
-        "📋 RM MyQueue - Reconstructed nested documents:",
-        nestedDocuments,
-      );
 
       // Reconstruct checklist object from draft data
       const draftChecklist = {
@@ -71,8 +111,7 @@ const MyQueue = ({
         customerNumber: draftToRestore.data.customerNumber,
         loanType: draftToRestore.data.loanType,
         status: draftToRestore.data.status,
-        // Documents in nested format that RM modal expects
-        documents: nestedDocuments,
+        documents: draftToRestore.data.documents || [],
         supportingDocs: draftToRestore.data.supportingDocs || [],
         rmGeneralComment:
           draftToRestore.data.rmGeneralComment ||
@@ -85,6 +124,8 @@ const MyQueue = ({
           draftToRestore.data.creatorComment ||
           "",
         _supportingDocs: draftToRestore.data.supportingDocs || [],
+        commentTrail: draftToRestore.data.commentTrail || [],
+        _draftCommentTrail: draftToRestore.data.commentTrail || [],
       };
 
       console.log(
@@ -111,7 +152,11 @@ const MyQueue = ({
     data: checklists = [],
     isLoading,
     refetch,
-  } = useGetAllCoCreatorChecklistsQuery();
+  } = useGetAllCoCreatorChecklistsQuery(undefined, {
+    pollingInterval: 2000,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+  });
 
   // Filter checklists assigned to this RM and queue status
   const filteredData = useMemo(() => {
@@ -283,6 +328,28 @@ const MyQueue = ({
       dataIndex: "displayStatus",
       width: 135,
       render: (status) => renderStatusTag(status),
+    },
+    {
+      title: "LOCK",
+      width: 136,
+      ellipsis: true,
+      render: (_, record) => {
+        const { isLockedByMe, isLockedBySomeoneElse, lockedByUserName } = getLockMeta(record);
+
+        if (isLockedByMe) {
+          return <span className="creator-lock-badge creator-lock-badge--mine">Locked by you</span>;
+        }
+
+        if (isLockedBySomeoneElse) {
+          return (
+            <span className="creator-lock-badge creator-lock-badge--locked" title={lockedByUserName || "Locked"}>
+              {`Locked by ${lockedByUserName || "user"}`}
+            </span>
+          );
+        }
+
+        return <span className="creator-lock-badge creator-lock-badge--open">Available</span>;
+      },
     },
     {
       title: "SLA",
@@ -544,6 +611,35 @@ const MyQueue = ({
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .creator-lock-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border: 1px solid transparent;
+    }
+    .creator-lock-badge--mine {
+      background: rgba(82, 196, 26, 0.12);
+      color: #237804;
+      border-color: rgba(82, 196, 26, 0.18);
+    }
+    .creator-lock-badge--locked {
+      background: rgba(255, 77, 79, 0.1);
+      color: #C62828;
+      border-color: rgba(255, 77, 79, 0.14);
+    }
+    .creator-lock-badge--open {
+      background: rgba(64, 83, 76, 0.08);
+      color: var(--color-text-medium);
+      border-color: rgba(64, 83, 76, 0.14);
+    }
     .rm-queue-state,
     .rm-queue-footer {
       padding: 16px;
@@ -656,11 +752,10 @@ const MyQueue = ({
                     showTotal: (total, range) =>
                       `${range[0]}-${range[1]} of ${total} DCLs`,
                   }}
-                  scroll={{ x: 1130 }}
+                  scroll={{ x: 1266 }}
                   onRow={(record) => ({
                     onClick: () => {
-                      setSelectedChecklist(record);
-                      setModalOpen(true);
+                      openChecklist(record);
                     },
                   })}
                 />

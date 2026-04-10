@@ -46,11 +46,11 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
     documents,
   };
 
-  // Auto-save hook - saves every 5 seconds when form has data
+  // Auto-save hook - saves every 2 seconds when form has data
   const { draftId: autoSavedDraftId, lastSaved } = useAutoSaveDraft({
     type: "cocreator",
     formData,
-    interval: 5000,
+    interval: 2000,
     draftId: currentDraftId,
     enabled: open && (loanType || assignedToRM || customerNumber), // Only enable when modal is open and has some data
   });
@@ -105,8 +105,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         }
 
         setDocuments(docsToLoad);
-        deleteDraft(id);
-        setCurrentDraftId(null);
+        setCurrentDraftId(draft.id);
         message.success("Draft restored successfully!");
       }
     } catch (error) {

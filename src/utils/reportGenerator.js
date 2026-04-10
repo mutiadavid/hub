@@ -599,18 +599,44 @@ const formatChecklistUserName = (value) => {
 };
 
 const extractChecklistCommentMessage = (comment) =>
-  comment?.message || comment?.text || comment?.comment || comment?.content || "";
+  comment?.message ||
+  comment?.text ||
+  comment?.comment ||
+  comment?.content ||
+  comment?.notes ||
+  comment?.Comment ||
+  comment?.Message ||
+  "";
 
 const extractChecklistCommentRole = (comment) => {
   if (comment?.role) return comment.role;
   if (comment?.user?.role) return comment.user.role;
   if (comment?.userId?.role) return comment.userId.role;
   if (comment?.createdBy?.role) return comment.createdBy.role;
+  if (comment?.authorRole) return comment.authorRole;
+  if (comment?.author?.role) return comment.author.role;
   return comment?.userRole || "";
 };
 
 const extractChecklistCommentUserName = (comment) =>
-  comment?.userId?.name || comment?.user?.name || comment?.userName || comment?.author?.name || comment?.createdBy?.name || comment?.name || "N/A";
+  comment?.userId?.name ||
+  comment?.user?.name ||
+  comment?.userName ||
+  comment?.authorName ||
+  comment?.author?.name ||
+  comment?.createdBy?.name ||
+  comment?.name ||
+  comment?.user ||
+  "N/A";
+
+const extractChecklistCommentDate = (comment, checklist) =>
+  comment?.createdAt ||
+  comment?.timestamp ||
+  comment?.date ||
+  comment?.updatedAt ||
+  checklist?.updatedAt ||
+  checklist?.createdAt ||
+  null;
 
 const isSystemChecklistComment = (message) => {
   if (!message) return true;
@@ -662,7 +688,7 @@ const buildChecklistCommentRows = (checklist, comments = []) => {
     .map((comment) => ({
       userName: formatChecklistUserName(extractChecklistCommentUserName(comment)),
       role: String(extractChecklistCommentRole(comment) || "N/A").toLowerCase(),
-      date: comment?.createdAt || comment?.timestamp || checklist?.updatedAt || checklist?.createdAt || null,
+      date: extractChecklistCommentDate(comment, checklist),
       message: cleanChecklistCommentText(extractChecklistCommentMessage(comment)),
     }))
     .filter((comment) => comment.message);
@@ -721,7 +747,7 @@ export const generateChecklistPDF = (
   docs = [],
   documentStats = {},
   comments = [],
-  options = { save: true }
+  options = { save: true, commentTrailOnFinalPage: false }
 ) => {
   const doc = new jsPDF("p", "mm", "a4", { putOnlyUsedFonts: true, compress: true });
   const PAGE_WIDTH = doc.internal.pageSize.getWidth();
@@ -1014,7 +1040,10 @@ export const generateChecklistPDF = (
   const commentRows = buildChecklistCommentRows(checklist, normalizedComments);
 
   if (commentRows.length > 0) {
-    if (yPos > PAGE_HEIGHT - 50) {
+    if (options.commentTrailOnFinalPage) {
+      doc.addPage();
+      yPos = 20;
+    } else if (yPos > PAGE_HEIGHT - 50) {
       doc.addPage();
       yPos = 20;
     }
@@ -1062,9 +1091,12 @@ export const generateChecklistPDF = (
 };
 
 // Convenience: return a Blob instead of triggering a download
-export const generateChecklistPDFBlob = async (checklist, docs = [], documentStats = {}, comments = []) => {
+export const generateChecklistPDFBlob = async (checklist, docs = [], documentStats = {}, comments = [], options = {}) => {
   const normalized = normalizeChecklistPdfArgs(documentStats, comments);
-  return generateChecklistPDF(checklist, docs, normalized.documentStats, normalized.comments, { save: false });
+  return generateChecklistPDF(checklist, docs, normalized.documentStats, normalized.comments, {
+    save: false,
+    ...options,
+  });
 };
 
 /**
