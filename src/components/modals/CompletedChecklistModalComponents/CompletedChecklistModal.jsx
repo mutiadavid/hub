@@ -130,7 +130,7 @@ const CompletedChecklistModal = ({
         status: doc.status || doc.action || "pending",
         action: doc.action || doc.status || "pending",
         comment: doc.comment || "",
-        expiryDate: doc.expiryDate || null,
+        expiryDate: doc.expiryDate || doc.ExpiryDate || null,
         fileUrl: doc.fileUrl || null,
         checkerStatus:
           doc.checkerStatus || doc.finalCheckerStatus || "approved",

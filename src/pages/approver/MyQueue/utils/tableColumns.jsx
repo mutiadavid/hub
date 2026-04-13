@@ -210,7 +210,7 @@ export const getDeferralColumns = (onRowClick) => [
     render: (status) => renderQueueStatusTag(status),
   },
   {
-    title: "SLA",
+    title: "TAT consumed",
     dataIndex: "slaExpiry",
     width: 110,
     render: (date, record) => renderQueueSla(date, record),
@@ -269,7 +269,7 @@ export const getExtensionColumns = (onRowClick) => [
     render: (status) => renderQueueStatusTag(status),
   },
   {
-    title: "SLA",
+    title: "TAT consumed",
     dataIndex: "slaExpiry",
     width: 110,
     render: (_, record) =>

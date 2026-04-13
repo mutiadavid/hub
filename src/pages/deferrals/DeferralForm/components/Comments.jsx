@@ -9,9 +9,9 @@ import {
   Typography,
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { message } from "antd";
 import { PRIMARY_BLUE } from "../utils/constants";
 import { validateComment } from "../utils/validation";
+import { showSuccessToast } from "../../../../utils/authToast";
 import "../../../../styles/creatorDesignSystem.css";
 
 const { TextArea } = Input;
@@ -37,7 +37,7 @@ export default function Comments({
     };
     setPostedComments((p) => [newComment, ...p]);
     setComments("");
-    message.success("Comment posted");
+    showSuccessToast("Comment posted");
   };
 
   return (

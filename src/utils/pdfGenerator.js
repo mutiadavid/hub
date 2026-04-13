@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { formatDate } from "./checklistUtils";
+import { getExpiryMeta } from "./documentUtils";
 
 export const generateChecklistPDF = async (checklist, documents, comments = []) => {
   try {
@@ -278,7 +278,7 @@ export const generateChecklistPDF = async (checklist, documents, comments = []) 
             <th width="20%">Category</th>
             <th width="25%">Document Name</th>
             <th width="15%">Status</th>
-            <th width="10%">Expiry</th>
+            <th width="10%">Expiry Status</th>
             <th width="20%">Latest Comment</th>
             <th width="10%">File</th>
           </tr>
@@ -287,7 +287,8 @@ export const generateChecklistPDF = async (checklist, documents, comments = []) 
           ${documents
         .map((doc) => {
           const statusColor = getStatusColor(doc.status || doc.rmStatus || doc.checkerStatus);
-          const expiryDate = formatDate(doc.expiryDate);
+          const expiryMeta = getExpiryMeta(doc.expiryDate);
+          const isComplianceDocument = (doc.category || "").toLowerCase().trim() === "compliance documents";
           const hasFile = doc.fileUrl ? "Yes" : "No";
 
           return `
@@ -299,7 +300,9 @@ export const generateChecklistPDF = async (checklist, documents, comments = []) 
                     ${(doc.status || doc.rmStatus || doc.checkerStatus || "Pending").toUpperCase()}
                   </span>
                 </td>
-                <td>${expiryDate}</td>
+                <td style="line-height: 1.35; font-size: 8px; font-weight: 600; color: ${expiryMeta?.isExpired ? "#991b1b" : "#166534"};">
+                  ${!isComplianceDocument ? "—" : expiryMeta ? `${expiryMeta.label} • ${expiryMeta.detail}` : "No expiry set"}
+                </td>
                 <td>${doc.comment || "—"}</td>
                 <td>${hasFile}</td>
               </tr>

@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { message } from "antd";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import deferralApi from "../../../../service/deferralApi";
@@ -10,6 +9,7 @@ import {
 } from "../utils/helpers";
 import { validateDeferralSubmission, validateDclSearch } from "../utils/validation";
 import { GUID_REGEX } from "../utils/constants";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../../../utils/authToast";
 
 /**
  * Custom hook to handle form submission logic
@@ -144,7 +144,7 @@ export const useFormSubmission = () => {
         try {
           newDeferral = await deferralApi.createDeferral(payload);
         } catch (err) {
-          message.error(err.message || "Failed to create deferral");
+          showErrorToast(err.message || "Failed to create deferral");
           setIsSubmitting(false);
           return;
         }
@@ -154,7 +154,7 @@ export const useFormSubmission = () => {
 
         if (!createdDeferralId) {
           console.error("Create deferral succeeded but response had no id/_id", newDeferral);
-          message.warning(
+          showWarningToast(
             "Deferral created but document linking failed: missing deferral ID"
           );
           navigate("/rm/deferrals/pending");
@@ -209,13 +209,13 @@ export const useFormSubmission = () => {
         const hadDispatchError = !!newDeferral?.emailNotification?.hadDispatchError;
 
         if (attemptedRecipients > 0) {
-          message.success(
+          showSuccessToast(
             hadDispatchError
               ? `Deferral request created. Email notifications attempted for ${attemptedRecipients} recipient(s), but dispatch had issues.`
               : `Deferral request created. Email notifications queued for ${attemptedRecipients} recipient(s).`
           );
         } else {
-          message.success("Deferral request created");
+          showSuccessToast("Deferral request created");
         }
 
         // Dispatch global event
@@ -228,7 +228,7 @@ export const useFormSubmission = () => {
         }
       } catch (err) {
         console.error(err);
-        message.error("Failed to submit deferral");
+        showErrorToast("Failed to submit deferral");
       } finally {
         setIsSubmitting(false);
       }

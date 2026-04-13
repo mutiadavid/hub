@@ -6,6 +6,7 @@ import { PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons"
 import { useGetApproversQuery } from "../../../api/userApi";
 import deferralApi from "../../../service/deferralApi";
 import { getDeferralDocumentBuckets } from "../../../utils/deferralDocuments";
+import { showErrorToast, showSuccessToast } from "../../../utils/authToast";
 
 // Hooks
 import { useDeferralData } from "./hooks/useDeferralData";
@@ -170,10 +171,10 @@ const DeferralPending = ({ userId = "rm_current" }) => {
         try {
           const token = localStorage.getItem("token");
           await deferralApi.sendReminder(deferralId, token);
-          message.success("Reminder sent to approver successfully");
+          showSuccessToast("Reminder sent to approver successfully");
         } catch (error) {
           console.error("Error sending reminder:", error);
-          message.error(error.message || "Failed to send reminder");
+          showErrorToast(error.message || "Failed to send reminder");
         }
       })();
       
@@ -489,7 +490,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
         onSubmit={async () => {
           // Validate
           if (!extensionModal.extensionDaysByDoc || Object.keys(extensionModal.extensionDaysByDoc).length === 0) {
-            message.error("Please enter extension days for at least one document");
+            showErrorToast("Please enter extension days for at least one document");
             return;
           }
 
@@ -497,7 +498,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
             (days) => typeof days === "number" && days > 0,
           );
           if (!hasDays) {
-            message.error("Please enter valid extension days");
+            showErrorToast("Please enter valid extension days");
             return;
           }
 
@@ -533,7 +534,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
               .filter((days) => Number.isFinite(days) && days > 0);
 
             if (requestedAbsoluteValues.length === 0) {
-              message.error("Please enter valid extension days");
+              showErrorToast("Please enter valid extension days");
               extensionModal.setExtensionSubmitting(false);
               return;
             }
@@ -553,7 +554,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
               token,
             );
 
-            message.success("Extension application submitted successfully");
+            showSuccessToast("Extension application submitted successfully");
 
             // Refresh deferral data
             await loadDeferrals();
@@ -570,7 +571,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
             extensionModal.setExtensionSubmissionSuccess(true);
           } catch (error) {
             console.error("Error submitting extension:", error);
-            message.error(error.message || "Failed to submit extension application");
+            showErrorToast(error.message || "Failed to submit extension application");
           } finally {
             extensionModal.setExtensionSubmitting(false);
           }

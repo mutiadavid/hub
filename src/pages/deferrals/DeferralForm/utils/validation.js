@@ -1,4 +1,3 @@
-import { message } from "antd";
 import {
   hasDuplicateApprovers,
   validateApproverSequence,
@@ -6,13 +5,14 @@ import {
   computeDefaultRoles,
 } from "./helpers";
 import { GUID_REGEX } from "./constants";
+import { showErrorToast } from "../../../../utils/authToast";
 
 /**
  * Validate customer selection
  */
 export const validateCustomer = (selectedCustomerId, customerNumber) => {
   if (!selectedCustomerId && !String(customerNumber || "").trim()) {
-    message.error("Please fetch and confirm a customer before submitting");
+    showErrorToast("Please fetch and confirm a customer before submitting");
     return false;
   }
   return true;
@@ -23,7 +23,7 @@ export const validateCustomer = (selectedCustomerId, customerNumber) => {
  */
 export const validateDclNumber = (dclNumber) => {
   if (!dclNumber || !dclNumber.trim()) {
-    message.error("Please enter DCL number");
+    showErrorToast("Please enter DCL number");
     return false;
   }
   return true;
@@ -34,7 +34,7 @@ export const validateDclNumber = (dclNumber) => {
  */
 export const validateDocumentsSelected = (selectedDocuments) => {
   if (!Array.isArray(selectedDocuments) || selectedDocuments.length === 0) {
-    message.error("Please select at least one document before submitting");
+    showErrorToast("Please select at least one document before submitting");
     return false;
   }
   return true;
@@ -45,7 +45,7 @@ export const validateDocumentsSelected = (selectedDocuments) => {
  */
 export const validateDclFileUploaded = (dclFile) => {
   if (!dclFile) {
-    message.error("DCL document is required for submission");
+    showErrorToast("DCL document is required for submission");
     return false;
   }
   return true;
@@ -62,7 +62,7 @@ export const validateApprovers = (
 ) => {
   // Check for duplicate approvers
   if (hasDuplicateApprovers(approverSlots)) {
-    message.error(
+    showErrorToast(
       "Same approver cannot be selected for multiple approval steps"
     );
     return false;
@@ -71,7 +71,7 @@ export const validateApprovers = (
   // Check all slots are filled
   const selectedSlots = approverSlots.filter((slot) => !!slot.userId);
   if (selectedSlots.length !== approverSlots.length) {
-    message.error("Please assign all approvers before submitting");
+    showErrorToast("Please assign all approvers before submitting");
     return false;
   }
 
@@ -81,13 +81,13 @@ export const validateApprovers = (
   const roleValidation = validateApproverSequence(selectedRoles, expectedRoles);
   
   if (!roleValidation.valid) {
-    message.error(roleValidation.message);
+    showErrorToast(roleValidation.message);
     return false;
   }
 
   // Check approver IDs are valid GUIDs
   if (!areApproverIdsValid(selectedSlots, GUID_REGEX)) {
-    message.error(
+    showErrorToast(
       "One or more selected approvers have invalid IDs. Please reselect approvers and try again."
     );
     return false;
@@ -144,7 +144,7 @@ export const validateCustomerSearch = (customerNumber, loanType) => {
   }
 
   if (errors.length > 0) {
-    message.error(errors[0]);
+    showErrorToast(errors[0]);
     return false;
   }
 
@@ -156,7 +156,7 @@ export const validateCustomerSearch = (customerNumber, loanType) => {
  */
 export const validateDclSearch = (searchDclNumber) => {
   if (!searchDclNumber || !searchDclNumber.trim()) {
-    message.error("Please enter DCL number");
+    showErrorToast("Please enter DCL number");
     return false;
   }
   return true;
@@ -167,7 +167,7 @@ export const validateDclSearch = (searchDclNumber) => {
  */
 export const validateComment = (comment) => {
   if (!comment || !comment.trim()) {
-    message.error("Please enter a comment before posting");
+    showErrorToast("Please enter a comment before posting");
     return false;
   }
   return true;

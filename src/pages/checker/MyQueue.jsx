@@ -5,6 +5,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewChecklistModalComponents/CheckerReviewChecklistModal";
 import { useGetCheckerMyQueueQuery, useLockDclMutation } from "../../api/checklistApi.js";
 import { showLockToast } from "../../utils/authToast";
+import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 import "../../styles/creatorDesignSystem.css";
 
 const getQueueStatusMeta = (status) => {
@@ -283,8 +284,26 @@ const MyQueuePage = () => {
       },
     },
     {
+      title: "TAT CONSUMED",
+      dataIndex: "slaExpiry",
+      width: 116,
+      fixed: "right",
+      ellipsis: true,
+      render: (date, record) => (
+        <RealTimeSlaTag
+          slaExpiry={date}
+          startedAt={record?.createdAt}
+          emptyLabel="N/A"
+          minWidth={60}
+          fontSize={12}
+          displayStyle="text"
+        />
+      ),
+    },
+    {
       title: "ACTION",
       width: 100,
+      fixed: "right",
       render: (_, record) => (
         <Button
           type="link"
@@ -533,6 +552,16 @@ const MyQueuePage = () => {
           font-weight: 700;
         }
 
+        .creator-table-primary-value {
+          color: var(--color-text-dark);
+          font-size: 13px;
+          font-weight: 400;
+          letter-spacing: -0.01em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
         .creator-tab-empty,
         .creator-tab-loading {
           padding: 24px 16px;
@@ -627,7 +656,7 @@ const MyQueuePage = () => {
                     dataSource={pendingChecklists}
                     rowKey={(record) => record.id || record._id || record.dclNo}
                     tableLayout="fixed"
-                    scroll={{ x: 1060 }}
+                    scroll={{ x: 1180 }}
                     pagination={{
                       pageSize: 5,
                       showSizeChanger: true,

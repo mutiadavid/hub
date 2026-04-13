@@ -7,6 +7,7 @@ import {
 } from "../../src/api/checklistApi";
 import { API_BASE_URL } from "../utils/constants";
 import { saveDraft as saveDraftToStorage } from "../utils/draftsUtils";
+import { showErrorToast, showSuccessToast } from "../utils/authToast";
 
 const getResolvedCheckerStatus = (doc) =>
   doc?.checkerStatus ||
@@ -61,6 +62,7 @@ export const useChecklistOperations = (
             finalCheckerStatus: getResolvedCheckerStatus(doc),
             comment: doc.comment,
             fileUrl: doc.fileUrl,
+            expiryDate: doc.expiryDate || doc.ExpiryDate || null,
             deferralNumber: doc.deferralNo,
             deferralReason: doc.deferralReason,
           });
@@ -87,7 +89,7 @@ export const useChecklistOperations = (
         body: payload,
       }).unwrap();
 
-      message.success("Checklist submitted to RM successfully!");
+      showSuccessToast("Checklist submitted to RM successfully!");
 
       // Trigger parent callback with updated checklist data from server
       if (onChecklistUpdate) {
@@ -109,7 +111,7 @@ export const useChecklistOperations = (
       return result;
     } catch (err) {
       console.error("Submit to RM error:", err);
-      message.error(
+      showErrorToast(
         err?.data?.error || err?.message || "Failed to submit checklist to RM",
       );
       throw err;
@@ -149,7 +151,7 @@ export const useChecklistOperations = (
           finalCheckerStatus: getResolvedCheckerStatus(doc),
           comment: doc.comment || "",
           fileUrl: doc.fileUrl || null,
-          expiryDate: doc.expiryDate || null,
+          expiryDate: doc.expiryDate || doc.ExpiryDate || null,
           deferralNo: doc.deferralNo || null,
           deferralReason: doc.deferralReason || null,
         });
@@ -180,11 +182,7 @@ export const useChecklistOperations = (
         });
       }
 
-      message.success({
-        content: "Checklist submitted to Co-Checker!",
-        key: "checkerSubmit",
-        duration: 3,
-      });
+      showSuccessToast("Checklist submitted to Co-Checker!");
 
       // Trigger parent callback with updated checklist data from server
       if (onChecklistUpdate) {
@@ -209,14 +207,12 @@ export const useChecklistOperations = (
       return result;
     } catch (err) {
       console.error("Submit Error Details:", err);
-      message.error({
-        content:
-          err?.data?.message ||
+      showErrorToast(
+        err?.data?.message ||
           err?.data?.error ||
           err?.message ||
           "Failed to submit checklist.",
-        key: "checkerSubmit",
-      });
+      );
       throw err;
     }
   };
@@ -255,7 +251,7 @@ export const useChecklistOperations = (
           finalCheckerStatus: getResolvedCheckerStatus(doc),
           comment: doc.comment,
           fileUrl: doc.fileUrl,
-          expiryDate: doc.expiryDate,
+          expiryDate: doc.expiryDate ?? doc.ExpiryDate ?? null,
           deferralNo: doc.deferralNo,
         })),
         creatorComment,

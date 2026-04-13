@@ -352,7 +352,7 @@ const MyQueue = ({
       },
     },
     {
-      title: "SLA",
+      title: "TAT consumed",
       dataIndex: "slaExpiry",
       width: 100,
       fixed: "right",
@@ -589,7 +589,7 @@ const MyQueue = ({
     .rm-queue-primary-value {
       color: var(--color-text-dark);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 400;
       letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;

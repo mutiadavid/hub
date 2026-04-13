@@ -92,8 +92,7 @@ const LoginPage = () => {
 
   const handleResendCode = async (sessionToken) => {
     try {
-      await resendMFACode(sessionToken).unwrap();
-      return true;
+      return await resendMFACode(sessionToken).unwrap();
     } catch (err) {
       throw new Error(err?.data?.message || "Failed to resend code");
     }

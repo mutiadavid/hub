@@ -11,7 +11,7 @@ import {
   Popover,
 } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import { getExpiryStatus } from "../../../utils/documentUtils";
+import { getExpiryMeta, getExpiryStatus } from "../../../utils/documentUtils";
 import { getFullUrl } from "../../../utils/checklistUtils";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
@@ -482,35 +482,61 @@ const DocumentTable = ({
 
         const dateValue = record.expiryDate ? dayjs(record.expiryDate) : null;
         const expiryStatus = getExpiryStatus(record.expiryDate);
+        const expiryMeta = getExpiryMeta(record.expiryDate);
+        const canEditExpiry = canActOnDoc(record);
 
         return (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 130 }}>
-            <DatePicker
-              value={dateValue}
-              onChange={(date) => onExpiryDateChange(record.docIdx, date)}
-              allowClear
-              disabled={!canActOnDoc(record)}
-              style={{ width: "100%", fontSize: 12 }}
-              placeholder="Select expiry"
-              size="small"
-            />
-            {expiryStatus ? (
-              <Button
-                size="small"
-                type="primary"
-                danger={expiryStatus === "expired"}
-                style={{
-                  alignSelf: "flex-start",
-                  backgroundColor: expiryStatus === "current" ? "#52c41a" : undefined,
-                  borderColor: expiryStatus === "current" ? "#52c41a" : undefined,
-                  cursor: "default",
-                  fontSize: 11,
-                  height: 24,
-                  padding: "0 8px",
-                }}
-              >
-                {expiryStatus === "current" ? "Current" : "Expired"}
-              </Button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 104 }}>
+            {canEditExpiry ? (
+              <DatePicker
+                value={dateValue}
+                onChange={(date) => onExpiryDateChange(record.docIdx, date)}
+                allowClear
+                disabled={!canEditExpiry}
+                style={{ width: "100%", fontSize: 13 }}
+                placeholder="Select expiry"
+                size="middle"
+              />
+            ) : (
+              !expiryMeta ? (
+                <span
+                  style={{
+                    color: "#64748b",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  No expiry set
+                </span>
+              ) : null
+            )}
+            {expiryStatus && expiryMeta ? (
+              <>
+                <span
+                  style={{
+                    alignSelf: "flex-start",
+                    color: expiryStatus === "expired" ? "#cf1322" : "#237804",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    lineHeight: 1.1,
+                    margin: 0,
+                  }}
+                >
+                  {expiryMeta.label}
+                </span>
+                <span
+                  style={{
+                    color: expiryMeta.isExpired ? "#cf1322" : "#237804",
+                    fontSize: 11,
+                    fontWeight: 500,
+                    lineHeight: 1.15,
+                    margin: 0,
+                  }}
+                >
+                  {expiryMeta.detail}
+                </span>
+              </>
             ) : null}
           </div>
         );

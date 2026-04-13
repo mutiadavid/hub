@@ -35,7 +35,7 @@ const CompletedQueue = ({ userId }) => {
   return (
     <div style={{ padding: 16 }}>
       <h2>Completed Checklists</h2>
-      <ChecklistTable data={completedQueue} onView={setSelectedChecklist} />
+      <ChecklistTable data={completedQueue} onView={setSelectedChecklist} showTat />
 
       {selectedChecklist && (
         <Modal

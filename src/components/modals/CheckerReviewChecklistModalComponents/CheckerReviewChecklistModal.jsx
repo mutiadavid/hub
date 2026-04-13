@@ -28,7 +28,9 @@ import {
   buildDraftCommentTrail,
   cloneDraftRecord,
   saveDraft as saveDraftToStorage,
+  deleteDraft,
 } from "../../../utils/draftsUtils";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../../utils/authToast";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
@@ -401,7 +403,7 @@ const CheckerReviewChecklistModal = ({
         finalCheckerStatus: resolvedCheckerStatus,
         comment: doc.comment || "",
         fileUrl: doc.fileUrl || null,
-        expiryDate: doc.expiryDate || null,
+        expiryDate: doc.expiryDate || doc.ExpiryDate || null,
         deferralNo: doc.deferralNo || null,
       };
     });
@@ -550,14 +552,17 @@ const CheckerReviewChecklistModal = ({
 
   const submitCheckerAction = async (action) => {
     const checklistId = checklist?.id || checklist?._id;
-    if (!checklistId) return alert("Checklist ID missing");
+    if (!checklistId) {
+      showErrorToast("Checklist ID missing");
+      return;
+    }
 
     if (action === "approved") {
       const hasRejectedDocuments = docs.some(
         (doc) => doc.checkerStatus === "rejected",
       );
       if (hasRejectedDocuments) {
-        message.error("Cannot approve checklist: Some documents are rejected");
+        showWarningToast("Cannot approve checklist: Some documents are rejected");
         setConfirmAction(null);
         return;
       }
@@ -568,7 +573,7 @@ const CheckerReviewChecklistModal = ({
       });
 
       if (hasUnreviewedDocuments) {
-        message.error(
+        showWarningToast(
           "Cannot approve checklist: Not all documents have been reviewed",
         );
         setConfirmAction(null);
@@ -580,7 +585,7 @@ const CheckerReviewChecklistModal = ({
       );
 
       if (hasNonApprovedDocuments) {
-        message.error(
+        showWarningToast(
           "Cannot approve checklist: All documents must be approved",
         );
         setConfirmAction(null);
@@ -617,6 +622,7 @@ const CheckerReviewChecklistModal = ({
       await submitCheckerStatus(payload).unwrap();
       submittedRef.current = true;
       if (checklistId) {
+        deleteDraft(checklistId);
         try {
           await unlockDcl(checklistId).unwrap();
         } catch (unlockError) {
@@ -625,10 +631,15 @@ const CheckerReviewChecklistModal = ({
       }
       setConfirmAction(null);
       handleChecklistUpdate({ ...localChecklist, status: action });
+      showSuccessToast(
+        action === "approved"
+          ? "Checklist approved successfully!"
+          : "Checklist returned successfully!",
+      );
       onClose();
     } catch (err) {
       console.error(err);
-      alert(err?.data?.message || "Failed");
+      showErrorToast(err?.data?.message || "Failed to submit checklist");
     } finally {
       setLoading(false);
     }

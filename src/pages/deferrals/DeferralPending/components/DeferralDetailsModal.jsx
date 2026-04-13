@@ -35,6 +35,7 @@ import {
   LeftOutlined,
   UnorderedListOutlined,
 } from "@ant-design/icons";
+import { showErrorToast, showSuccessToast } from "../../../../utils/authToast";
 import dayjs from "dayjs";
 import deferralApi from "../../../../service/deferralApi";
 import getFacilityColumns from "../../../../utils/facilityColumns";
@@ -165,7 +166,15 @@ const dedupeHistoryEntries = (entries) => {
 
   return deduped
     .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
-    .map(({ __index, __score, __user, __comment, __time, ...entry }) => entry);
+    .map((entry) => {
+      const nextEntry = { ...entry };
+      delete nextEntry.__index;
+      delete nextEntry.__score;
+      delete nextEntry.__user;
+      delete nextEntry.__comment;
+      delete nextEntry.__time;
+      return nextEntry;
+    });
 };
 
 const MODAL_STYLES = `
@@ -783,37 +792,6 @@ const DeferralDetailsModal = ({
         onAction({ action: "remindApprover", deferral });
       }
 
-      // Post a comment about the reminder
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-     
-      // Find the current approver's name
-      const currentApprover = deferral.approverFlow?.find((a) => {
-        const previousComplete = deferral.approverFlow
-          .slice(0, deferral.approverFlow.indexOf(a))
-          .every((x) => x.approved || x.approvalStatus === "approved");
-        const isCurrent = !(a.approved || a.approvalStatus === "approved") && previousComplete;
-        return isCurrent;
-      });
-
-      const reminderComment = `Reminder sent to ${currentApprover?.name || currentApprover?.approverName || "approver"}`;
-
-      const commentData = {
-        text: reminderComment,
-        author: {
-          name: currentUser.name || currentUser.user?.name || "System",
-          role: currentUser.role || currentUser.user?.role || "system",
-        },
-        createdAt: new Date().toISOString(),
-        isSystemComment: true,
-      };
-
-      try {
-        await deferralApi.postComment(deferral._id, commentData);
-      } catch (err) {
-        console.error("Failed to post reminder comment:", err);
-        // Don't block the reminder from being sent if comment fails
-      }
-
       // Block remind button for 1 hour
       const deferralId = deferral._id || deferral.id;
       const expiryTime = Date.now() + 60 * 60 * 1000;
@@ -825,7 +803,7 @@ const DeferralDetailsModal = ({
       // Collapse the approval flow section
       setApprovalFlowExpanded(false);
 
-      message.success("Reminder sent successfully");
+      showSuccessToast("Reminder sent successfully");
     } catch (err) {
       console.error("Error sending reminder", err);
     } finally {
@@ -835,26 +813,26 @@ const DeferralDetailsModal = ({
 
   const handleWithdraw = async () => {
     if (!deferral || !deferral._id) {
-      message.error("No deferral selected");
+      showErrorToast("No deferral selected");
       return;
     }
 
     if (!withdrawReason.trim()) {
-      message.error("Please provide a reason for withdrawal");
+      showErrorToast("Please provide a reason for withdrawal");
       return;
     }
 
     setWithdrawLoading(true);
     try {
       await deferralApi.withdrawDeferral(deferral._id, { reason: withdrawReason });
-      message.success("Deferral withdrawn successfully");
+      showSuccessToast("Deferral withdrawn successfully");
       if (onAction) onAction({ action: "refreshQueue" });
       setWithdrawReason("");
       setWithdrawModalVisible(false);
       onClose();
     } catch (error) {
       console.error("Failed to withdraw deferral:", error);
-      message.error(error.message || "Failed to withdraw deferral");
+      showErrorToast(error.message || "Failed to withdraw deferral");
     } finally {
       setWithdrawLoading(false);
     }
@@ -862,7 +840,7 @@ const DeferralDetailsModal = ({
 
   const handleResubmitDeferral = () => {
     if (!deferral || !deferral._id) {
-      message.error("No deferral selected");
+      showErrorToast("No deferral selected");
       return;
     }
     setResubmitModalVisible(true);
@@ -874,7 +852,7 @@ const DeferralDetailsModal = ({
       if (updatedData && (updatedData._id || updatedData.id)) {
         setFullDeferral((prev) => ({ ...(prev || {}), ...updatedData }));
       }
-      message.success("Deferral resubmitted successfully");
+      showSuccessToast("Deferral resubmitted successfully");
       setResubmitModalVisible(false);
 
       if (updatedData && (updatedData._id || updatedData.id)) {
@@ -897,7 +875,7 @@ const DeferralDetailsModal = ({
       }
     } catch (error) {
       console.error("Failed to update deferral:", error);
-      message.error(error.message || "Failed to resubmit deferral");
+      showErrorToast(error.message || "Failed to resubmit deferral");
     } finally {
       setResubmitLoading(false);
     }
@@ -905,7 +883,7 @@ const DeferralDetailsModal = ({
 
   const handleSubmitCloseRequest = async ({ comment, documents }) => {
     if (!deferral || !deferral._id) {
-      message.error("No deferral selected");
+      showErrorToast("No deferral selected");
       return;
     }
 
@@ -968,7 +946,7 @@ const DeferralDetailsModal = ({
           .getDeferralById(deferral._id, token)
           .catch(() => response?.deferral || response);
 
-        message.success("Close request submitted successfully!");
+        showSuccessToast("Close request submitted successfully!");
         setCloseRequestModalOpen(false);
 
         try {
@@ -994,7 +972,7 @@ const DeferralDetailsModal = ({
       }
     } catch (error) {
       console.error("Error submitting close request:", error);
-      message.error(error.message || "Failed to submit close request");
+      showErrorToast(error.message || "Failed to submit close request");
     } finally {
       setCloseLoading(false);
     }
@@ -1002,12 +980,12 @@ const DeferralDetailsModal = ({
 
   const handleApplyExtension = async () => {
     if (!deferral || !deferral._id) {
-      message.error("No deferral selected");
+      showErrorToast("No deferral selected");
       return;
     }
 
     if (!extensionDaysByDoc || Object.keys(extensionDaysByDoc).length === 0) {
-      message.error("Please specify extension days for at least one document");
+      showErrorToast("Please specify extension days for at least one document");
       return;
     }
 
@@ -1040,7 +1018,7 @@ const DeferralDetailsModal = ({
     const requestedAbsoluteValues = Object.values(requestedAbsoluteDays);
 
     if (requestedAbsoluteValues.length === 0) {
-      message.error("Please enter valid extension days");
+      showErrorToast("Please enter valid extension days");
       return;
     }
 
@@ -1077,7 +1055,7 @@ const DeferralDetailsModal = ({
       const response = await deferralApi.submitExtension(deferral._id, payload, token);
 
       if (response && (response.success || response.status === 201 || response.id)) {
-        message.success("Extension submitted successfully!");
+        showSuccessToast("Extension submitted successfully!");
         const createdExtension = response.extension || response;
         const existingExtensions = Array.isArray((fullDeferral || deferral)?.extensions)
           ? (fullDeferral || deferral).extensions
@@ -1114,11 +1092,11 @@ const DeferralDetailsModal = ({
      
       // Provide more specific error messages
       if (errorMessage.includes("approved")) {
-        message.error("Extension can only be applied to approved deferrals");
+        showErrorToast("Extension can only be applied to approved deferrals");
       } else if (errorMessage.includes("greater than")) {
-        message.error("Requested extension days must be more than current days");
+        showErrorToast("Requested extension days must be more than current days");
       } else {
-        message.error(errorMessage);
+        showErrorToast(errorMessage);
       }
     } finally {
       setExtensionSubmitting(false);
@@ -1136,7 +1114,7 @@ const DeferralDetailsModal = ({
 
   const downloadDeferralAsPDF = async () => {
     if (!deferral || !deferral._id) {
-      message.error("No deferral selected");
+      showErrorToast("No deferral selected");
       return;
     }
 
@@ -1147,10 +1125,10 @@ const DeferralDetailsModal = ({
         history,
         closeRequestDocuments,
       });
-      message.success("Deferral downloaded as PDF successfully!");
+      showSuccessToast("Deferral downloaded as PDF successfully!");
     } catch (error) {
       console.error("PDF generation error:", error);
-      message.error("Failed to generate PDF");
+      showErrorToast("Failed to generate PDF");
     } finally {
       setDownloadLoading(false);
     }
@@ -1168,7 +1146,7 @@ const DeferralDetailsModal = ({
       setApproversFromDb(users || []);
     } catch (error) {
       console.error("Error loading approvers:", error);
-      message.error("Failed to load approvers from database");
+      showErrorToast("Failed to load approvers from database");
       setApproversFromDb([]);
     } finally {
       setLoadingApprovers(false);
@@ -1182,7 +1160,7 @@ const DeferralDetailsModal = ({
       (editedApprovers[afterIndex + 1].approved ||
         editedApprovers[afterIndex + 1].approvalStatus === "approved")
     ) {
-      message.error("You cannot insert a new approver before an approver who has already approved");
+      showErrorToast("You cannot insert a new approver before an approver who has already approved");
       return;
     }
 
@@ -1207,12 +1185,12 @@ const DeferralDetailsModal = ({
 
   const handleRemoveApprover = (idx) => {
     if (editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") {
-      message.error("Approved approvers cannot be removed");
+      showErrorToast("Approved approvers cannot be removed");
       return;
     }
 
     if (editedApprovers.length <= 1) {
-      message.error("At least one approver is required");
+      showErrorToast("At least one approver is required");
       return;
     }
     const updated = editedApprovers.filter((_, i) => i !== idx);
@@ -1256,7 +1234,7 @@ const DeferralDetailsModal = ({
     console.log("All valid?", allValid);
 
     if (!allValid) {
-      message.error("Please fill in all approver details");
+      showErrorToast("Please fill in all approver details");
       return;
     }
 
@@ -1280,7 +1258,7 @@ const DeferralDetailsModal = ({
       console.log("[EditApprovers] Token available:", !!token);
 
       if (!deferral || !deferral._id) {
-        message.error("No deferral selected");
+        showErrorToast("No deferral selected");
         return;
       }
 
@@ -1294,7 +1272,7 @@ const DeferralDetailsModal = ({
 
       const updatedDeferral = result?.deferral || result;
 
-      message.success("Approvers updated successfully");
+      showSuccessToast("Approvers updated successfully");
 
       if (updatedDeferral && (updatedDeferral._id || updatedDeferral.id)) {
         setFullDeferral(updatedDeferral);
@@ -1315,7 +1293,7 @@ const DeferralDetailsModal = ({
       setEditingApprovers(false);
     } catch (error) {
       console.error("[EditApprovers] Error:", error);
-      message.error(error.message || "Failed to update approvers");
+      showErrorToast(error.message || "Failed to update approvers");
     } finally {
       setConfirmingApprovers(false);
     }
@@ -1558,21 +1536,14 @@ const DeferralDetailsModal = ({
 
   const history = (function renderHistory() {
     const events = [];
-    const hasMatchingHistoryEntry = (needle) =>
-      events.some((event) =>
-        String(event.comment || "")
-          .toLowerCase()
-          .includes(String(needle || "").toLowerCase()),
-      );
-    const findActionHistoryEntry = (keyword) =>
-      events.find((event) =>
-        String(event.comment || "")
-          .toLowerCase()
-          .includes(keyword),
-      );
-
     if (displayDeferral.comments && Array.isArray(displayDeferral.comments)) {
       displayDeferral.comments.forEach((c) => {
+        if (c.isSystemComment || c.isSystem) {
+          return;
+        }
+        if (!String(c.text || "").trim()) {
+          return;
+        }
         const commentAuthorName =
           c.author?.name || c.authorName || c.userName || "User";
         const commentAuthorRole = c.author?.role || c.authorRole || "User";
@@ -1581,63 +1552,8 @@ const DeferralDetailsModal = ({
           userRole: commentAuthorRole,
           date: c.createdAt,
           comment: c.text || "",
+          isSystemComment: Boolean(c.isSystemComment || c.isSystem),
         });
-      });
-    }
-
-    if (deferral.history && Array.isArray(deferral.history)) {
-      deferral.history.forEach((h) => {
-        if (h.action === "moved") return;
-        const userName = h.userName || h.user?.name || h.user || "System";
-        const userRole = h.userRole || h.user?.role || "System";
-        events.push({
-          user: userName,
-          userRole: userRole,
-          date: h.date || h.createdAt || h.timestamp,
-          comment: h.comment || h.notes || "",
-        });
-      });
-    }
-
-    const existingRejectionEntry = findActionHistoryEntry("reject");
-    if (
-      existingRejectionEntry &&
-      rejectionReasonRaw &&
-      !String(existingRejectionEntry.comment || "")
-        .toLowerCase()
-        .includes(rejectionReasonRaw.toLowerCase())
-    ) {
-      existingRejectionEntry.comment = `${existingRejectionEntry.comment}. Reason: ${rejectionReasonRaw}`;
-    } else if (rejectionReasonRaw && !hasMatchingHistoryEntry(rejectionReasonRaw)) {
-      events.push({
-        user: rejectionActor,
-        userRole: rejectedApprover?.role || rejectedApprover?.designation || "Approver",
-        date:
-          rejectedApprover?.rejectedAt ||
-          displayDeferral?.updatedAt ||
-          displayDeferral?.createdAt,
-        comment: `Rejected deferral. Reason: ${rejectionReasonRaw}`,
-      });
-    }
-
-    const existingWithdrawalEntry = findActionHistoryEntry("withdraw");
-    if (
-      existingWithdrawalEntry &&
-      withdrawalReasonRaw &&
-      !String(existingWithdrawalEntry.comment || "")
-        .toLowerCase()
-        .includes(withdrawalReasonRaw.toLowerCase())
-    ) {
-      existingWithdrawalEntry.comment = `${existingWithdrawalEntry.comment}. Reason: ${withdrawalReasonRaw}`;
-    } else if (withdrawalReasonRaw && !hasMatchingHistoryEntry(withdrawalReasonRaw)) {
-      events.push({
-        user: withdrawalActor,
-        userRole: "RM",
-        date:
-          displayDeferral?.closedAt ||
-          displayDeferral?.updatedAt ||
-          displayDeferral?.createdAt,
-        comment: `Withdrew deferral. Reason: ${withdrawalReasonRaw}`,
       });
     }
 

@@ -9,6 +9,7 @@ import DocumentAccordion from "../../components/rm/DocumentAccordion";
 import { useGetUsersQuery } from "../../api/userApi";
 import { loanTypes, loanTypeDocuments } from "../docTypes";
 import { useCreateCoCreatorChecklistMutation } from "../../api/checklistApi";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/authToast";
 
 const ChecklistsPage = ({ open, onClose }) => {
   // State remains centralized here
@@ -93,7 +94,7 @@ const ChecklistsPage = ({ open, onClose }) => {
   // Logic: Submit checklist
   const handleSubmit = async () => {
     if (!assignedToRM || !loanType || !title) {
-      alert("Please fill all required fields.");
+      showWarningToast("Please fill all required fields.");
       return;
     }
 
@@ -119,11 +120,11 @@ const ChecklistsPage = ({ open, onClose }) => {
 
     try {
       await createChecklist(payload).unwrap();
-      alert("Checklist created successfully!");
+      showSuccessToast("Checklist created successfully!");
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Error creating checklist.");
+      showErrorToast("Error creating checklist.");
     }
   };
 

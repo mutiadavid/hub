@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable'; // Side-effect import to register autoTable
 import { format } from 'date-fns';
+import { getExpiryMeta } from './documentUtils';
 
 // Import logo - make sure this path is correct
 import ncbaLogoPNG from '../assets/ncbabanklogo.png';
@@ -225,13 +226,20 @@ export const generateChecklistPDF = async ({
         formatStatusValue(doc_item.status || doc_item.coStatus, 'pendingco'),
         formatText(doc_item.checkerStatus || doc_item.finalCheckerStatus || 'PENDING'),
         formatText(doc_item.comment || doc_item.remarks || doc_item.coComment || 'OK'),
-        doc_item.expiryDate ? format(new Date(doc_item.expiryDate), 'yyyy-MM-dd') : '—',
+        (() => {
+          const isComplianceDocument = (doc_item.category || '').toLowerCase().trim() === 'compliance documents';
+          if (!isComplianceDocument) return '—';
+          const expiryMeta = getExpiryMeta(doc_item.expiryDate);
+          return expiryMeta
+            ? `${expiryMeta.label} - ${expiryMeta.detail}`
+            : 'No expiry set';
+        })(),
       ]);
 
       if (typeof doc.autoTable === 'function') {
         doc.autoTable({
           startY: yPos,
-          head: [['CATEGORY', 'DOCUMENT NAME', 'STATUS', 'CHECKER STATUS', 'CO COMMENT', 'EXPIRY DATE']],
+          head: [['CATEGORY', 'DOCUMENT NAME', 'STATUS', 'CHECKER STATUS', 'CO COMMENT', 'EXPIRY STATUS']],
           body: docRows,
           theme: 'grid',
           styles: {

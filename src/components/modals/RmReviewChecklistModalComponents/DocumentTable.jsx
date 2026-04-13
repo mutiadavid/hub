@@ -6,13 +6,11 @@ import {
   Upload,
   Select,
   Input,
-  Tag,
   Tooltip,
   Popover,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
-import { getExpiryStatus } from "../../../utils/documentStats";
+import { getExpiryMeta, getExpiryStatus } from "../../../utils/documentStats";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
 
@@ -263,29 +261,46 @@ const DocumentTable = ({
       ),
     },
     {
-      title: "Expiry",
-      dataIndex: "expiryDate",
-      width: 120,
-      render: (_, record) =>
-        record.expiryDate ? dayjs(record.expiryDate).format("YYYY-MM-DD") : "-",
-    },
-    {
       title: "Expiry Status",
-      width: 120,
+      width: 150,
       render: (_, record) => {
-        const status = getExpiryStatus(record.expiryDate);
+        const category = (record.category || "").toLowerCase().trim();
 
-        if (!status) return "-";
+        if (category !== "compliance documents") {
+          return "-";
+        }
+
+        const status = getExpiryStatus(record.expiryDate);
+        const expiryMeta = getExpiryMeta(record.expiryDate);
+
+        if (!status || !expiryMeta) return "No expiry set";
 
         return (
-          <Tooltip title={status === "current" ? "Current" : "Expired"}>
-            <Tag
-              color={status === "current" ? "green" : "red"}
-              style={{ fontWeight: 600, fontSize: 12, borderRadius: 999, padding: "2px 10px" }}
+          <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 104 }}>
+            <Tooltip title={expiryMeta.label}>
+              <span
+                style={{
+                  color: status === "current" ? "#237804" : "#b42318",
+                  fontWeight: 600,
+                  fontSize: 11,
+                  lineHeight: 1.1,
+                }}
+              >
+                {expiryMeta.label}
+              </span>
+            </Tooltip>
+            <span
+              style={{
+                color: expiryMeta.isExpired ? "#cf1322" : "#237804",
+                fontSize: 11,
+                fontWeight: 500,
+                lineHeight: 1.15,
+                margin: 0,
+              }}
             >
-              {status === "current" ? "Current" : "Expired"}
-            </Tag>
-          </Tooltip>
+              {expiryMeta.detail}
+            </span>
+          </div>
         );
       },
     },

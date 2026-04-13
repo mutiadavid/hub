@@ -646,23 +646,13 @@ const deferralApi = {
     return res.json();
   },
 
-  // Send reminder and log a system comment to the deferral history
-  sendReminderAndLog: async (id, token, options = {}) => {
-    const actor = options.actorName || 'System';
+  // Send reminder without writing a comment into the deferral trail
+  sendReminderAndLog: async (id, token) => {
     try {
-      // Attempt to send reminder (email/notification)
       await deferralApi.sendReminder(id, token, {});
     } catch (e) {
-      // ignore individual send failures - still record the remark
       console.warn('sendReminder failed:', e?.message || e);
-    }
-
-    // Add a permanent system comment in the deferral's comment trail
-    const text = options.text || `${actor} initiated a reminder for this deferral.`;
-    try {
-      await deferralApi.addComment(id, text, token);
-    } catch (e) {
-      console.warn('addComment (reminder) failed:', e?.message || e);
+      throw e;
     }
 
     return { ok: true };
@@ -800,7 +790,11 @@ const deferralApi = {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || "Failed to return deferral for rework");
+      throw new Error(
+        err?.error ||
+          err?.message ||
+          `Failed to return deferral for rework (${res.status})`,
+      );
     }
     return res.json();
   },
@@ -1530,7 +1524,7 @@ const deferralApi = {
   // Fetch all users with approver role
   getApprovers: async (token) => {
     try {
-      const usersApiUrl = `${normalizedApiUrl.replace(/\/+$/, "")}/api/users?role=approver`;
+      const usersApiUrl = `${API_BASE_URL}/users?role=approver`;
       const res = await fetch(usersApiUrl, {
         headers: getAuthHeaders(token),
       });

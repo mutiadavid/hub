@@ -22,6 +22,7 @@ const EmailMFAVerification = ({
   const [timeRemaining, setTimeRemaining] = useState(600); // 10 minutes
   const [resendCountdown, setResendCountdown] = useState(0);
   const [isResending, setIsResending] = useState(false);
+  const [currentTestCode, setCurrentTestCode] = useState(testCode || "");
   const [showTestCodePopup, setShowTestCodePopup] = useState(!!testCode);
 
   // 🔐 LOG MFA SESSION INFO FOR TESTING
@@ -32,6 +33,7 @@ const EmailMFAVerification = ({
     console.log(
       "⏱️  Code expires in 10 minutes. Enter the 6-digit code sent to your email.",
     );
+    setCurrentTestCode(testCode || "");
     if (testCode) {
       setShowTestCodePopup(true);
       const timer = setTimeout(() => setShowTestCodePopup(false), 5000);
@@ -87,8 +89,14 @@ const EmailMFAVerification = ({
   const handleResendCode = async () => {
     setIsResending(true);
     try {
-      await onResendCode(mfaSessionToken);
-      message.success("Code resent to your email");
+      const response = await onResendCode(mfaSessionToken);
+      const nextTestCode = response?.devTestCode;
+      if (nextTestCode) {
+        setCurrentTestCode(nextTestCode);
+        setShowTestCodePopup(true);
+        setTimeout(() => setShowTestCodePopup(false), 8000);
+      }
+      message.success(response?.message || "Code resent to your email");
       setCode("");
       setError("");
       setResendCountdown(60); // 60 second cooldown
@@ -126,11 +134,11 @@ const EmailMFAVerification = ({
         }}
         className="auth-form"
       >
-        {showTestCodePopup && testCode ? (
+        {showTestCodePopup && currentTestCode ? (
           <div className="auth-card auth-card--warning">
             <p className="auth-card__eyebrow">Development Code</p>
             <p className="auth-card__title" style={{ letterSpacing: "0.28em", fontFamily: 'Consolas, monospace' }}>
-              {testCode}
+              {currentTestCode}
             </p>
           </div>
         ) : null}

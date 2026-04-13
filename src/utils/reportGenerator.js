@@ -857,6 +857,26 @@ export const generateChecklistPDF = (
     return formatText(value);
   };
 
+  const formatExpiryStatusForPdf = (item) => {
+    const category = String(item.category || "").toLowerCase().trim();
+    if (category !== "compliance documents") return "—";
+    if (!item.expiryDate) return "No expiry set";
+
+    const today = dayjs().startOf("day");
+    const expiry = dayjs(item.expiryDate).startOf("day");
+    if (!expiry.isValid()) return "No expiry set";
+
+    const diffDays = expiry.diff(today, "day");
+    if (diffDays < 0) {
+      const absoluteDays = Math.abs(diffDays);
+      return `Expired - Overdue by ${absoluteDays} day${absoluteDays === 1 ? "" : "s"}`;
+    }
+    if (diffDays > 0) {
+      return `Current - Due in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+    }
+    return "Current - Due today";
+  };
+
   const renderInfoLine = (label, value, y) => {
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
@@ -953,13 +973,13 @@ export const generateChecklistPDF = (
     formatStatusForDisplay(item.rmStatus || item.action || "COMPLETED"),
     formatStatusForDisplay(item.checkerStatus || item.finalCheckerStatus || "PENDING"),
     formatText(item.coComment || item.comment || "OK"),
-    item.expiryDate ? dayjs(item.expiryDate).format("YYYY-MM-DD") : "—",
+    formatExpiryStatusForPdf(item),
   ]);
 
   autoTable(doc, {
     startY: yPos,
     margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
-    head: [["CATEGORY", "DOCUMENT NAME", "CO STATUS", "RM STATUS", "CHECKER STATUS", "CO COMMENT", "EXPIRY DATE"]],
+    head: [["CATEGORY", "DOCUMENT NAME", "CO STATUS", "RM STATUS", "CHECKER STATUS", "CO COMMENT", "EXPIRY STATUS"]],
     body: documentRows,
     theme: "grid",
     headStyles: {

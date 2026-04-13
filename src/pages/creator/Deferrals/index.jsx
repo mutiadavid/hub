@@ -1516,7 +1516,7 @@ const Deferrals = ({ userId }) => {
         render: (d) => <span className="deferrals-table__days">{d || 0} days</span>,
       },
       {
-        title: "SLA",
+        title: "TAT consumed",
         dataIndex: "slaExpiry",
         width: 160,
         render: (s, record) => (

@@ -1,5 +1,4 @@
 import React from "react";
-import { WarningOutlined } from "@ant-design/icons";
 import { Button, Input, Modal } from "antd";
 import "../../../../styles/creatorDesignSystem.css";
 
@@ -19,21 +18,6 @@ const RMWithdrawModal = ({ open, withdrawReason, withdrawLoading, onReasonChange
       title={null}
     >
       <div className="admin-page__modal-header">
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(255,255,255,0.18)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            borderRadius: 12,
-            marginBottom: 14,
-          }}
-        >
-          <WarningOutlined style={{ color: "white", fontSize: 24 }} />
-        </div>
         <h2 className="admin-page__modal-title">Withdraw Deferral Request</h2>
       </div>
 
@@ -70,12 +54,7 @@ const RMWithdrawModal = ({ open, withdrawReason, withdrawLoading, onReasonChange
             loading={withdrawLoading}
             onClick={onConfirm}
             disabled={!withdrawReason.trim()}
-            className="admin-page__action-button admin-page__action-button--primary"
-            style={{
-              background: "linear-gradient(135deg, #1A3636 0%, #40534C 100%)",
-              borderColor: "transparent",
-              boxShadow: "none",
-            }}
+            className="admin-page__action-button admin-page__action-button--primary deferral-review-actionbar__button"
           >
             Withdraw Deferral
           </Button>

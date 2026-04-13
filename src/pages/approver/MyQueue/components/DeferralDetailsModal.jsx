@@ -16,9 +16,14 @@ import {
   DownloadOutlined,
   EyeOutlined,
   FilePdfOutlined,
+  RedoOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import deferralApi from "../../../../service/deferralApi";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "../../../../utils/authToast";
 import getFacilityColumns from "../../../../utils/facilityColumns";
 import { getDeferralDocumentBuckets } from "../../../../utils/deferralDocuments";
 import { getLivePartyApprovalStatuses } from "../../../../utils/deferralApprovalStatus";
@@ -129,7 +134,15 @@ const dedupeHistoryEntries = (entries) => {
 
   return deduped
     .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
-    .map(({ __index, __score, __user, __comment, __time, ...entry }) => entry);
+    .map((entry) => {
+      const cleanedEntry = { ...entry };
+      delete cleanedEntry.__index;
+      delete cleanedEntry.__score;
+      delete cleanedEntry.__user;
+      delete cleanedEntry.__comment;
+      delete cleanedEntry.__time;
+      return cleanedEntry;
+    });
 };
 
 const REVIEW_STYLES = `
@@ -289,15 +302,281 @@ const REVIEW_STYLES = `
     gap: 8px;
   }
 
-  .approver-deferral-review__decision-card .ant-input {
-    padding: 8px !important;
-    font-size: 12px !important;
-    border-radius: 6px !important;
-    border: 1px solid rgba(214, 189, 152, 0.2) !important;
+  .approver-decision-modal .ant-modal-content {
+    border-radius: 0 !important;
+    overflow: hidden;
+    padding: 0 !important;
+    background: var(--color-white) !important;
+    border: none !important;
+    box-shadow: 0 32px 72px rgba(18, 36, 36, 0.24) !important;
   }
 
-  .approver-deferral-review__primary-btn.ant-btn,
+  .approver-decision-modal .ant-modal-header {
+    margin: 0 !important;
+    padding: 22px 26px 18px !important;
+    background: linear-gradient(180deg, #34504c 0%, #2b4541 100%) !important;
+    border-bottom: none !important;
+  }
+
+  .approver-decision-modal .ant-modal-title {
+    color: var(--color-white) !important;
+  }
+
+  .approver-decision-modal .ant-modal-close {
+    top: 20px !important;
+    inset-inline-end: 20px !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .approver-decision-modal .ant-modal-close:hover {
+    color: var(--color-white) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .approver-decision-modal .ant-modal-body {
+    padding: 28px 26px 24px !important;
+    background: #f7f6f2 !important;
+  }
+
+  .approver-decision-modal .ant-modal-footer {
+    margin: 0 !important;
+    padding: 0 26px 24px !important;
+    background: #f7f6f2 !important;
+  }
+
+  .approver-deferral-review__decision-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding-right: 36px;
+  }
+
+  .approver-deferral-review__decision-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.92);
+    flex-shrink: 0;
+  }
+
+  .approver-deferral-review__decision-title-icon .anticon {
+    font-size: 22px;
+  }
+
+  .approver-deferral-review__decision-title-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .approver-deferral-review__decision-title-copy strong {
+    color: var(--color-white);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .approver-deferral-review__decision-title-copy span {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .approver-deferral-review__decision-card {
+    padding: 20px;
+    border: 1px solid rgba(214, 189, 152, 0.18);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 10px 28px rgba(26, 54, 54, 0.06);
+  }
+
+  .approver-deferral-review__decision-summary {
+    margin-bottom: 20px;
+    padding: 18px;
+    border-radius: 14px;
+    background: #f4efe7;
+  }
+
+  .approver-deferral-review__decision-summary-title {
+    color: var(--color-text-dark);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .approver-deferral-review__decision-summary-subtitle {
+    margin-top: 8px;
+    color: var(--color-text-medium);
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .approver-deferral-review__decision-summary-copy {
+    margin-top: 16px;
+    color: var(--color-text-medium);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .approver-deferral-review__decision-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .approver-deferral-review__decision-label {
+    display: block;
+    color: var(--color-text-medium);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .approver-deferral-review__decision-card .ant-input {
+    border: 1px solid #eaecf0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    min-height: 132px !important;
+    background: var(--color-white) !important;
+    color: var(--color-text-dark) !important;
+    font-size: 15px !important;
+    padding: 14px !important;
+    resize: vertical !important;
+  }
+
+  .approver-deferral-review__decision-card .ant-input::placeholder {
+    color: #98a2b3 !important;
+  }
+
+  .approver-deferral-review__decision-card .ant-input:hover,
+  .approver-deferral-review__decision-card .ant-input:focus {
+    border-color: var(--color-primary-dark) !important;
+    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
+  }
+
+  .approver-deferral-review__decision-secondary.ant-btn {
+    min-width: 92px;
+    height: 44px;
+    border-radius: 10px !important;
+    border: 1px solid #d0d5dd !important;
+    background: var(--color-white) !important;
+    color: var(--color-text-medium) !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+  }
+
+  .approver-deferral-review__decision-secondary.ant-btn:hover,
+  .approver-deferral-review__decision-secondary.ant-btn:focus,
+  .approver-deferral-review__decision-secondary.ant-btn:active {
+    border-color: #d0d5dd !important;
+    background: #f8fafc !important;
+    color: var(--color-text-dark) !important;
+    box-shadow: none !important;
+  }
+
   .approver-deferral-review__decision-primary.ant-btn {
+    min-width: 156px;
+    height: 44px;
+    border-radius: 10px !important;
+    border: none !important;
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    color: var(--color-white) !important;
+    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    font-weight: 700 !important;
+  }
+
+  .approver-deferral-review__decision-primary.ant-btn:hover,
+  .approver-deferral-review__decision-primary.ant-btn:focus,
+  .approver-deferral-review__decision-primary.ant-btn:active {
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    color: var(--color-white) !important;
+    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+  }
+
+  .approver-deferral-review__warning-btn.ant-btn,
+  .approver-deferral-review__warning-btn.ant-btn:hover,
+  .approver-deferral-review__warning-btn.ant-btn:focus,
+  .approver-deferral-review__warning-btn.ant-btn:active,
+  .approver-deferral-review__warning-btn.ant-btn > span {
+    color: var(--color-white) !important;
+  }
+
+  .approver-deferral-review__decision-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  @media (max-width: 640px) {
+    .approver-decision-modal .ant-modal {
+      max-width: calc(100vw - 24px) !important;
+      margin: 12px auto !important;
+    }
+
+    .approver-decision-modal .ant-modal-header {
+      padding: 18px 18px 16px !important;
+    }
+
+    .approver-decision-modal .ant-modal-body,
+    .approver-decision-modal .ant-modal-footer {
+      padding-left: 18px !important;
+      padding-right: 18px !important;
+    }
+
+    .approver-decision-modal .ant-modal-body {
+      padding-top: 20px !important;
+      padding-bottom: 18px !important;
+    }
+
+    .approver-decision-modal .ant-modal-footer {
+      padding-bottom: 20px !important;
+    }
+
+    .approver-deferral-review__decision-title {
+      gap: 12px;
+      padding-right: 24px;
+    }
+
+    .approver-deferral-review__decision-title-icon {
+      width: 44px;
+      height: 44px;
+    }
+
+    .approver-deferral-review__decision-title-copy strong {
+      font-size: 18px;
+    }
+
+    .approver-deferral-review__decision-summary-title {
+      font-size: 22px;
+    }
+
+    .approver-deferral-review__decision-summary-subtitle {
+      font-size: 16px;
+    }
+
+    .approver-deferral-review__decision-summary-copy {
+      font-size: 14px;
+    }
+
+    .approver-deferral-review__decision-actions {
+      flex-direction: column-reverse;
+    }
+
+    .approver-deferral-review__decision-secondary.ant-btn,
+    .approver-deferral-review__decision-primary.ant-btn {
+      width: 100%;
+    }
+  }
+
+  .approver-deferral-review__primary-btn.ant-btn {
     border: none !important;
     background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
     color: var(--color-white) !important;
@@ -308,10 +587,7 @@ const REVIEW_STYLES = `
 
   .approver-deferral-review__primary-btn.ant-btn:hover,
   .approver-deferral-review__primary-btn.ant-btn:focus,
-  .approver-deferral-review__primary-btn.ant-btn:active,
-  .approver-deferral-review__decision-primary.ant-btn:hover,
-  .approver-deferral-review__decision-primary.ant-btn:focus,
-  .approver-deferral-review__decision-primary.ant-btn:active {
+  .approver-deferral-review__primary-btn.ant-btn:active {
     border: none !important;
     background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
     color: var(--color-white) !important;
@@ -319,8 +595,7 @@ const REVIEW_STYLES = `
     box-shadow: none !important;
   }
 
-  .approver-deferral-review__secondary-btn.ant-btn,
-  .approver-deferral-review__decision-secondary.ant-btn {
+  .approver-deferral-review__secondary-btn.ant-btn {
     border: 1px solid var(--color-primary-soft) !important;
     background: transparent !important;
     color: var(--color-primary-medium) !important;
@@ -330,10 +605,7 @@ const REVIEW_STYLES = `
 
   .approver-deferral-review__secondary-btn.ant-btn:hover,
   .approver-deferral-review__secondary-btn.ant-btn:focus,
-  .approver-deferral-review__secondary-btn.ant-btn:active,
-  .approver-deferral-review__decision-secondary.ant-btn:hover,
-  .approver-deferral-review__decision-secondary.ant-btn:focus,
-  .approver-deferral-review__decision-secondary.ant-btn:active {
+  .approver-deferral-review__secondary-btn.ant-btn:active {
     border-color: var(--color-primary-soft) !important;
     background: rgba(214, 189, 152, 0.1) !important;
     color: var(--color-primary-dark) !important;
@@ -558,28 +830,7 @@ const DeferralDetailsModal = ({
         approveComment.trim() || "",
         token,
       );
-      message.success("Deferral approved successfully");
-
-      if (approveComment.trim()) {
-        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-        const currentUser = storedUser?.user || storedUser;
-        const authorName = currentUser?.name || currentUser?.userName || "Approver";
-        const authorRole = currentUser?.role || currentUser?.user?.role || "Approver";
-
-        try {
-          await deferralApi.postComment(
-            safeDeferral._id,
-            {
-              text: approveComment.trim(),
-              author: { name: authorName, role: authorRole },
-              createdAt: new Date().toISOString(),
-            },
-            token,
-          );
-        } catch (error) {
-          console.error("Failed to post approval comment:", error);
-        }
-      }
+      showSuccessToast("Deferral approved successfully");
 
       if (onAction) {
         onAction("refreshQueue");
@@ -596,7 +847,7 @@ const DeferralDetailsModal = ({
       setApproveComment("");
       onClose();
     } catch (error) {
-      message.error(error.message || "Failed to approve");
+      showErrorToast(error.message || "Failed to approve");
     } finally {
       setApproveLoading(false);
     }
@@ -604,7 +855,7 @@ const DeferralDetailsModal = ({
 
   const handleReject = async () => {
     if (!rejectComment.trim()) {
-      message.error("Please provide a rejection reason");
+      showErrorToast("Please provide a rejection reason");
       return;
     }
 
@@ -615,22 +866,7 @@ const DeferralDetailsModal = ({
         { reason: rejectComment.trim() },
         token,
       );
-      message.success("Deferral rejected");
-
-      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-      const currentUser = storedUser?.user || storedUser;
-      const authorName = currentUser?.name || currentUser?.userName || "Approver";
-      const authorRole = currentUser?.role || currentUser?.user?.role || "Approver";
-
-      await deferralApi.postComment(
-        safeDeferral._id,
-        {
-          text: rejectComment.trim(),
-          author: { name: authorName, role: authorRole },
-          createdAt: new Date().toISOString(),
-        },
-        token,
-      );
+      showSuccessToast("Deferral rejected");
 
       if (onAction) {
         onAction("refreshQueue");
@@ -647,7 +883,7 @@ const DeferralDetailsModal = ({
       setRejectComment("");
       onClose();
     } catch (error) {
-      message.error(error.message || "Failed to reject");
+      showErrorToast(error.message || "Failed to reject");
     } finally {
       setRejecting(false);
     }
@@ -655,7 +891,7 @@ const DeferralDetailsModal = ({
 
   const executeReturnForRework = async () => {
     if (!reworkComment.trim()) {
-      message.error("Please provide rework instructions");
+      showErrorToast("Please provide rework instructions");
       return;
     }
 
@@ -667,9 +903,10 @@ const DeferralDetailsModal = ({
           comment: reworkComment,
           reworkInstructions: reworkComment,
         },
+        token,
       );
 
-      message.success(
+      showSuccessToast(
         "Deferral returned for rework. Relationship Manager has been notified.",
       );
 
@@ -688,7 +925,7 @@ const DeferralDetailsModal = ({
       onClose();
     } catch (error) {
       console.error("Return for rework error:", error);
-      message.error(error.message || "Failed to return for rework");
+      showErrorToast(error.message || "Failed to return for rework");
     } finally {
       setReturnReworkLoading(false);
     }
@@ -717,26 +954,18 @@ const DeferralDetailsModal = ({
 
     if (Array.isArray(safeDeferral.comments)) {
       safeDeferral.comments.forEach((comment) => {
+        if (comment.isSystemComment || comment.isSystem) {
+          return;
+        }
+        if (!String(comment.text || "").trim()) {
+          return;
+        }
         events.push({
           user: comment.author?.name || comment.authorName || comment.userName || "User",
           userRole: comment.author?.role || comment.authorRole || "User",
           date: comment.createdAt,
           comment: comment.text || "",
-        });
-      });
-    }
-
-    if (Array.isArray(safeDeferral.history)) {
-      safeDeferral.history.forEach((entry) => {
-        if (entry.action === "moved") {
-          return;
-        }
-
-        events.push({
-          user: entry.userName || entry.user?.name || entry.user || "System",
-          userRole: entry.userRole || entry.user?.role || "System",
-          date: entry.date || entry.createdAt || entry.timestamp,
-          comment: entry.comment || entry.notes || "",
+          isSystemComment: Boolean(comment.isSystemComment || comment.isSystem),
         });
       });
     }
@@ -891,6 +1120,8 @@ const DeferralDetailsModal = ({
 
   const renderDecisionModal = ({
     title,
+    subtitle,
+    titleIcon,
     open: modalOpen,
     onCancel,
     onConfirm,
@@ -906,54 +1137,67 @@ const DeferralDetailsModal = ({
     inputPlaceholder,
   }) => (
     <Modal
-      title={title}
+      title={(
+        <div className="approver-deferral-review__decision-title">
+          {titleIcon ? (
+            <span className="approver-deferral-review__decision-title-icon">{titleIcon}</span>
+          ) : null}
+          <span className="approver-deferral-review__decision-title-copy">
+            <strong>{title}</strong>
+            <span>{subtitle}</span>
+          </span>
+        </div>
+      )}
       open={modalOpen}
       onCancel={onCancel}
       maskClosable={false}
       wrapClassName="approver-decision-modal"
+      width={760}
       footer={[
-        <Button
-          key="cancel"
-          className="approver-deferral-review__decision-secondary"
-          onClick={onCancel}
-          disabled={confirmLoading}
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="confirm"
-          className={`approver-deferral-review__decision-primary ${confirmClassName || ""}`.trim()}
-          loading={confirmLoading}
-          onClick={onConfirm}
-          disabled={confirmDisabled}
-        >
-          {confirmText}
-        </Button>,
+        <div key="actions" className="approver-deferral-review__decision-actions">
+          <Button
+            className="approver-deferral-review__decision-secondary"
+            onClick={onCancel}
+            disabled={confirmLoading}
+          >
+            Cancel
+          </Button>,
+          <Button
+            className={`approver-deferral-review__decision-primary ${confirmClassName || ""}`.trim()}
+            loading={confirmLoading}
+            onClick={onConfirm}
+            disabled={confirmDisabled}
+          >
+            {confirmText}
+          </Button>
+        </div>,
       ]}
     >
       <div className="approver-deferral-review__decision-card">
         <div className="approver-deferral-review__decision-summary">
-          <div style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+          <div className="approver-deferral-review__decision-summary-title">
             {safeDeferral.deferralNumber || "Deferral request"}
           </div>
-          <div style={{ marginTop: 4, fontSize: 12, color: "var(--color-text-medium)" }}>
+          <div className="approver-deferral-review__decision-summary-subtitle">
             {safeDeferral.customerName || "Customer"}
           </div>
-          <div style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-medium)" }}>
+          <div className="approver-deferral-review__decision-summary-copy">
             {summaryCopy}
           </div>
         </div>
 
-        <label className="approver-deferral-review__decision-label">
-          {inputLabel}
-          {inputRequired ? " (Required)" : ""}
-        </label>
-        <Input.TextArea
-          rows={4}
-          value={inputValue}
-          onChange={(event) => onInputChange(event.target.value)}
-          placeholder={inputPlaceholder}
-        />
+        <div className="approver-deferral-review__decision-field">
+          <label className="approver-deferral-review__decision-label">
+            {inputLabel}
+            {inputRequired ? " (Required)" : ""}
+          </label>
+          <Input.TextArea
+            rows={4}
+            value={inputValue}
+            onChange={(event) => onInputChange(event.target.value)}
+            placeholder={inputPlaceholder}
+          />
+        </div>
       </div>
     </Modal>
   );
@@ -1205,6 +1449,8 @@ const DeferralDetailsModal = ({
 
       {renderDecisionModal({
         title: `Reject Deferral Request: ${safeDeferral.deferralNumber}`,
+        subtitle: "Document your rejection before closing this approval path.",
+        titleIcon: null,
         open: rejectModalVisible,
         onCancel: () => {
           setRejectModalVisible(false);
@@ -1225,6 +1471,8 @@ const DeferralDetailsModal = ({
 
       {renderDecisionModal({
         title: `Return for Rework: ${safeDeferral.deferralNumber}`,
+        subtitle: "Send the request back with clear corrective instructions.",
+        titleIcon: <RedoOutlined />,
         open: returnReworkModalVisible,
         onCancel: () => {
           setReturnReworkModalVisible(false);
@@ -1245,6 +1493,8 @@ const DeferralDetailsModal = ({
 
       {renderDecisionModal({
         title: `Approve Deferral: ${safeDeferral.deferralNumber}`,
+        subtitle: "Confirm the request and advance it to the next workflow stage.",
+        titleIcon: <CheckOutlined />,
         open: approveModalVisible,
         onCancel: () => {
           setApproveModalVisible(false);

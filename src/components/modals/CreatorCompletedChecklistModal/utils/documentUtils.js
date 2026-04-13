@@ -75,7 +75,7 @@ export const prepareDocuments = (checklist) => {
       action: doc.action || doc.status || "pending",
       comment: doc.comment || "",
       fileUrl: doc.fileUrl || null,
-      expiryDate: doc.expiryDate || null,
+      expiryDate: doc.expiryDate || doc.ExpiryDate || null,
       checkerStatus: doc.checkerStatus || null,
       finalCheckerStatus: finalCheckerStatus,
       deferralNo: doc.deferralNo || null,

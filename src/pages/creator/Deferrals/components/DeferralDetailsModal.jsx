@@ -238,6 +238,8 @@ const DeferralDetailsModal = (props) => {
 
     if (deferral.comments && Array.isArray(deferral.comments)) {
       deferral.comments.forEach((c) => {
+        if (c.isSystemComment || c.isSystem) return;
+        if (!String(c.text || "").trim()) return;
         const commentAuthorName =
           c.author?.name || c.authorName || c.userName || "User";
         const commentAuthorRole = c.author?.role || c.authorRole || "User";
@@ -246,20 +248,7 @@ const DeferralDetailsModal = (props) => {
           userRole: commentAuthorRole,
           date: c.createdAt,
           comment: c.text || "",
-        });
-      });
-    }
-
-    if (deferral.history && Array.isArray(deferral.history)) {
-      deferral.history.forEach((h) => {
-        if (h.action === "moved") return;
-        const userName = h.userName || h.user?.name || h.user || "System";
-        const userRole = h.userRole || h.user?.role || "System";
-        events.push({
-          user: userName,
-          userRole: userRole,
-          date: h.date || h.createdAt || h.timestamp,
-          comment: h.comment || h.notes || "",
+          isSystemComment: Boolean(c.isSystemComment || c.isSystem),
         });
       });
     }

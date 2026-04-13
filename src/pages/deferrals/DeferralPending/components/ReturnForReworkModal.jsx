@@ -4,21 +4,17 @@ import {
   Form,
   Input,
   Button,
-  Row,
-  Col,
   Select,
-  message,
   Spin,
 } from "antd";
 import {
   DeleteOutlined,
-  UploadOutlined,
   EditOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
 import deferralApi from "../../../../service/deferralApi";
+import { showErrorToast, showSuccessToast } from "../../../../utils/authToast";
 import {
-  PRIMARY_BLUE,
   WARNING_ORANGE,
   SUCCESS_GREEN,
 } from "../utils/constants";
@@ -82,6 +78,312 @@ const sanitizeApproverFlow = (approvers) =>
         .filter(Boolean)
     : [];
 
+const MODAL_STYLES = `
+  .rm-resubmit-modal .ant-modal-content {
+    border-radius: 0 !important;
+    overflow: hidden;
+    padding: 0 !important;
+    background: var(--color-white) !important;
+    border: none !important;
+    box-shadow: 0 32px 72px rgba(18, 36, 36, 0.24) !important;
+  }
+  .rm-resubmit-modal .ant-modal-header {
+    margin-bottom: 0 !important;
+    padding: 22px 26px 18px !important;
+    background: linear-gradient(180deg, #34504c 0%, #2b4541 100%) !important;
+    border-bottom: none !important;
+  }
+  .rm-resubmit-modal .ant-modal-title {
+    color: var(--color-white) !important;
+  }
+  .rm-resubmit-modal .ant-modal-close {
+    top: 20px !important;
+    inset-inline-end: 20px !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .rm-resubmit-modal .ant-modal-close:hover {
+    color: var(--color-white) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+  .rm-resubmit-modal .ant-modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 28px 26px 24px !important;
+    background: #f7f6f2;
+  }
+  .rm-resubmit-modal-hero {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding-right: 36px;
+  }
+  .rm-resubmit-modal-hero-copy h2 {
+    margin: 0;
+    color: var(--color-white);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .rm-resubmit-modal-shell {
+    margin-bottom: 26px;
+  }
+  .rm-resubmit-modal-heading {
+    margin-bottom: 20px;
+  }
+  .rm-resubmit-modal-heading h3 {
+    margin: 0;
+    color: var(--color-text-dark);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .rm-resubmit-modal-heading p {
+    margin: 10px 0 0;
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .rm-resubmit-modal-section + .rm-resubmit-modal-section {
+    margin-top: 24px;
+  }
+  .rm-resubmit-modal-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .rm-resubmit-modal-section-head h4 {
+    margin: 0;
+    color: var(--color-text-dark);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .rm-resubmit-modal-doc-list,
+  .rm-resubmit-modal-flow-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .rm-resubmit-modal-doc-item,
+  .rm-resubmit-modal-flow-card {
+    display: flex;
+    gap: 16px;
+    padding: 18px 18px 16px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 14px;
+    border: 1px solid rgba(214, 189, 152, 0.18);
+    align-items: flex-start;
+    box-shadow: 0 10px 28px rgba(26, 54, 54, 0.06);
+  }
+  .rm-resubmit-modal-flow-card--locked {
+    background: #f2f4f7;
+    border-color: rgba(208, 213, 221, 0.9);
+  }
+  .rm-resubmit-modal-step-index {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%);
+    color: var(--color-white);
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 8px 18px rgba(26, 54, 54, 0.16);
+  }
+  .rm-resubmit-modal-step-index--approved {
+    background: linear-gradient(180deg, ${SUCCESS_GREEN} 0%, #3d9c1b 100%);
+  }
+  .rm-resubmit-modal-doc-body,
+  .rm-resubmit-modal-flow-fields,
+  .rm-resubmit-modal-flow-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rm-resubmit-modal-doc-name,
+  .rm-resubmit-modal-flow-role {
+    color: var(--color-text-dark);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .rm-resubmit-modal-flow-name,
+  .rm-resubmit-modal-flow-state {
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .rm-resubmit-modal-flow-state {
+    color: #98a2b3;
+  }
+  .rm-resubmit-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rm-resubmit-modal-label {
+    color: var(--color-text-medium);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .rm-resubmit-modal .ant-input,
+  .rm-resubmit-modal .ant-select-selector,
+  .rm-resubmit-modal .ant-input-textarea textarea {
+    border: 1px solid #eaecf0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    background: var(--color-white) !important;
+    color: var(--color-text-dark) !important;
+  }
+  .rm-resubmit-modal .ant-input,
+  .rm-resubmit-modal .ant-select-selector {
+    min-height: 46px !important;
+    padding-inline: 14px !important;
+  }
+  .rm-resubmit-modal .ant-select-selection-item {
+    line-height: 44px !important;
+    color: var(--color-text-dark) !important;
+  }
+  .rm-resubmit-modal .ant-input::placeholder,
+  .rm-resubmit-modal .ant-select-selection-placeholder,
+  .rm-resubmit-modal .ant-input-textarea textarea::placeholder {
+    color: #98a2b3 !important;
+  }
+  .rm-resubmit-modal .ant-input:hover,
+  .rm-resubmit-modal .ant-input:focus,
+  .rm-resubmit-modal .ant-input-textarea textarea:hover,
+  .rm-resubmit-modal .ant-input-textarea textarea:focus,
+  .rm-resubmit-modal .ant-select-selector:hover,
+  .rm-resubmit-modal .ant-select-focused .ant-select-selector {
+    border-color: var(--color-primary-dark) !important;
+    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
+  }
+  .rm-resubmit-modal-remove.ant-btn,
+  .rm-resubmit-modal-delete.ant-btn {
+    color: #b42318 !important;
+    border-radius: 10px !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+  }
+  .rm-resubmit-modal-remove.ant-btn:hover,
+  .rm-resubmit-modal-remove.ant-btn:focus,
+  .rm-resubmit-modal-delete.ant-btn:hover,
+  .rm-resubmit-modal-delete.ant-btn:focus {
+    background: rgba(180, 35, 24, 0.06) !important;
+    border-color: rgba(180, 35, 24, 0.12) !important;
+  }
+  .rm-resubmit-modal-edit.ant-btn,
+  .rm-resubmit-modal-insert-btn.ant-btn {
+    border-radius: 10px !important;
+    box-shadow: none !important;
+  }
+  .rm-resubmit-modal-edit.ant-btn {
+    border: none !important;
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    color: var(--color-white) !important;
+    font-weight: 600 !important;
+  }
+  .rm-resubmit-modal-insert {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+  }
+  .rm-resubmit-modal-insert-btn.ant-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px !important;
+    border: 1px dashed rgba(52, 80, 76, 0.3) !important;
+    background: transparent !important;
+    color: var(--color-primary-medium) !important;
+  }
+  .rm-resubmit-modal-empty {
+    padding: 18px 20px;
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px dashed rgba(208, 213, 221, 0.9);
+    border-radius: 12px;
+    text-align: center;
+    color: #98a2b3;
+    font-size: 13px;
+  }
+  .rm-resubmit-modal-note {
+    margin-top: 24px;
+    padding: 15px 16px;
+    background: #fffaf0;
+    border: 1px solid rgba(214, 189, 152, 0.42);
+    border-left: 4px solid ${WARNING_ORANGE};
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--color-text-medium);
+    line-height: 1.6;
+  }
+  .rm-resubmit-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 0;
+  }
+  .rm-resubmit-modal-cancel.ant-btn {
+    min-width: 92px;
+    height: 44px;
+    border-radius: 10px !important;
+    border: 1px solid #d0d5dd !important;
+    background: var(--color-white) !important;
+    color: var(--color-text-medium) !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+  }
+  .rm-resubmit-modal-confirm.ant-btn {
+    min-width: 176px;
+    height: 44px;
+    border-radius: 10px !important;
+    border: none !important;
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    color: var(--color-white) !important;
+    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    font-weight: 700 !important;
+  }
+  @media (max-width: 640px) {
+    .rm-resubmit-modal .ant-modal {
+      max-width: calc(100vw - 24px) !important;
+      margin: 12px auto !important;
+    }
+    .rm-resubmit-modal .ant-modal-header {
+      padding: 18px 18px 16px !important;
+    }
+    .rm-resubmit-modal .ant-modal-body {
+      padding: 20px 18px !important;
+    }
+    .rm-resubmit-modal-doc-item,
+    .rm-resubmit-modal-flow-card {
+      flex-direction: column;
+    }
+    .rm-resubmit-modal-delete.ant-btn,
+    .rm-resubmit-modal-remove.ant-btn {
+      align-self: flex-end;
+    }
+    .rm-resubmit-modal-actions {
+      flex-direction: column-reverse;
+    }
+    .rm-resubmit-modal-cancel.ant-btn,
+    .rm-resubmit-modal-confirm.ant-btn,
+    .rm-resubmit-modal-edit.ant-btn {
+      width: 100%;
+    }
+  }
+`;
+
 const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -119,7 +421,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       setApproversFromDb(users || []);
     } catch (error) {
       console.error("Error loading approvers:", error);
-      message.error("Failed to load approvers from database");
+      showErrorToast("Failed to load approvers from database");
       setApproversFromDb([]);
     } finally {
       setLoadingApprovers(false);
@@ -149,12 +451,12 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
 
   const handleRemoveApprover = (idx) => {
     if (editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") {
-      message.error("Approved approvers cannot be removed");
+      showErrorToast("Approved approvers cannot be removed");
       return;
     }
 
     if (editedApprovers.length <= 1) {
-      message.error("At least one approver is required");
+      showErrorToast("At least one approver is required");
       return;
     }
     setEditedApprovers((prev) => prev.filter((_, i) => i !== idx));
@@ -195,7 +497,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     );
 
     if (!allValid) {
-      message.error("Please select a valid approver and role for every step");
+      showErrorToast("Please select a valid approver and role for every step");
       return;
     }
 
@@ -213,7 +515,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       const token = localStorage.getItem("token");
 
       if (!deferral || !deferral._id) {
-        message.error("No deferral selected");
+        showErrorToast("No deferral selected");
         return;
       }
 
@@ -226,7 +528,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
 
       const updatedDeferral = result?.deferral || result;
 
-      message.success("Approvers updated successfully");
+      showSuccessToast("Approvers updated successfully");
       setEditingApprovers(false);
 
       if (updatedDeferral && (updatedDeferral._id || updatedDeferral.id)) {
@@ -247,7 +549,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       }
     } catch (error) {
       console.error("Error updating approvers:", error);
-      message.error(error.message || "Failed to update approvers");
+      showErrorToast(error.message || "Failed to update approvers");
     } finally {
       setConfirmingApprovers(false);
     }
@@ -279,7 +581,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       const updatedDeferral = response?.deferral || response;
 
       if (response?.success || response?.status === 200 || updatedDeferral?._id || updatedDeferral?.id) {
-        message.success("Deferral resubmitted successfully to reviewer");
+        showSuccessToast("Deferral resubmitted successfully to reviewer");
         onUpdate?.(updatedDeferral || updateData);
         onClose?.();
       } else {
@@ -287,7 +589,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       }
     } catch (error) {
       console.error("Failed to resubmit deferral:", error);
-      message.error(error.message || "Failed to resubmit deferral");
+      showErrorToast(error.message || "Failed to resubmit deferral");
     } finally {
       setLoading(false);
     }
@@ -298,64 +600,57 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     setSelectedDocuments(newDocs);
   };
 
+  const modalTitle = (
+    <div className="rm-resubmit-modal-hero">
+      <div className="rm-resubmit-modal-hero-copy">
+        <h2>Resubmit Deferral for Review</h2>
+      </div>
+    </div>
+  );
+
   return (
-    <Modal
-      title="Resubmit Deferral for Review"
-      open={open}
-      onCancel={onClose}
-      width={800}
-      footer={[
-        <Button key="cancel" onClick={onClose}>
-          Cancel
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          loading={loading}
-          onClick={() => form.submit()}
-          style={{
-            backgroundColor: PRIMARY_BLUE,
-            borderColor: PRIMARY_BLUE,
-          }}
-        >
-          Resubmit for Review
-        </Button>,
-      ]}
-    >
+    <>
+      <style>{MODAL_STYLES}</style>
+      <Modal
+        className="rm-resubmit-modal"
+        title={modalTitle}
+        open={open}
+        onCancel={onClose}
+        width={760}
+        footer={null}
+        zIndex={1400}
+      >
       <Spin spinning={loading}>
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          style={{ maxHeight: "600px", overflowY: "auto", paddingRight: "12px" }}
+          className="rm-resubmit-modal-shell"
         >
-          {/* Documents Requested for Deferrals */}
-          <div style={{ marginBottom: "24px" }}>
-            <h3 style={{ color: PRIMARY_BLUE, marginBottom: "12px" }}>
-              Documents Requested for Deferrals
-            </h3>
+          <div className="rm-resubmit-modal-heading">
+            <h3>Resubmission Review</h3>
+            <p>
+              Review the requested documents, confirm the approval flow, and add any
+              updates before routing this deferral back for review.
+            </p>
+          </div>
+
+          <div className="rm-resubmit-modal-section">
+            <div className="rm-resubmit-modal-section-head">
+              <h4>Documents Requested for Deferrals</h4>
+            </div>
             {selectedDocuments.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div className="rm-resubmit-modal-doc-list">
                 {selectedDocuments.map((doc, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "8px 12px",
-                      backgroundColor: "#f5f5f5",
-                      borderRadius: "4px",
-                      border: "1px solid #d9d9d9",
-                    }}
-                  >
-                    <span style={{ fontSize: "14px" }}>
-                      {doc.name || `Document ${idx + 1}`}
-                    </span>
+                  <div key={idx} className="rm-resubmit-modal-doc-item">
+                    <div className="rm-resubmit-modal-doc-body">
+                      <div className="rm-resubmit-modal-doc-name">
+                        {doc.name || `Document ${idx + 1}`}
+                      </div>
+                    </div>
                     <Button
                       type="text"
-                      danger
-                      size="small"
+                      className="rm-resubmit-modal-remove"
                       icon={<DeleteOutlined />}
                       onClick={() => handleRemoveDocument(idx)}
                     >
@@ -365,42 +660,20 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                 ))}
               </div>
             ) : (
-              <div
-                style={{
-                  padding: "16px",
-                  backgroundColor: "#fafafa",
-                  borderRadius: "4px",
-                  border: "1px dashed #d9d9d9",
-                  textAlign: "center",
-                  color: "#999",
-                }}
-              >
+              <div className="rm-resubmit-modal-empty">
                 No documents requested
               </div>
             )}
           </div>
 
-          {/* Approval Flow */}
-          <div style={{ marginBottom: "24px" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "12px",
-              }}
-            >
-              <h3 style={{ color: PRIMARY_BLUE, margin: 0 }}>Approval Flow</h3>
+          <div className="rm-resubmit-modal-section">
+            <div className="rm-resubmit-modal-section-head">
+              <h4>Approval Flow</h4>
               {!editingApprovers && (
                 <Button
-                  type="primary"
-                  size="small"
                   icon={<EditOutlined />}
                   onClick={handleEditApproversClick}
-                  style={{
-                    backgroundColor: PRIMARY_BLUE,
-                    borderColor: PRIMARY_BLUE,
-                  }}
+                  className="rm-resubmit-modal-edit"
                 >
                   Edit Approvers
                 </Button>
@@ -408,9 +681,8 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
             </div>
 
             {editingApprovers ? (
-              // Edit Mode
               <Spin spinning={loadingApprovers}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div className="rm-resubmit-modal-flow-list">
                   {editedApprovers.map((approver, idx) => {
                     const hasApproved =
                       approver.approved || approver.approvalStatus === "approved";
@@ -418,94 +690,66 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                     return (
                       <div
                         key={approver._id || idx}
-                        style={{
-                          display: "flex",
-                          gap: "12px",
-                          padding: "16px",
-                          backgroundColor: hasApproved ? "#f3f4f6" : "#f9f9f9",
-                          borderRadius: "8px",
-                          border: hasApproved ? "1px solid #d1d5db" : "1px solid #e5e7eb",
-                          alignItems: "flex-start",
-                          opacity: hasApproved ? 0.85 : 1,
-                        }}
+                        className={`rm-resubmit-modal-flow-card ${hasApproved ? "rm-resubmit-modal-flow-card--locked" : ""}`}
                       >
-                        {/* Step Number */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: "32px",
-                            height: "32px",
-                            minWidth: "32px",
-                            borderRadius: "50%",
-                            backgroundColor: PRIMARY_BLUE,
-                            color: "white",
-                            fontWeight: "700",
-                            fontSize: "14px",
-                          }}
-                        >
+                        <div className="rm-resubmit-modal-step-index">
                           {idx + 1}
                         </div>
 
-                        {/* Approver Fields */}
-                        <div
-                          style={{
-                            flex: 1,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "8px",
-                          }}
-                        >
-                          <Input
-                            placeholder="Role/Designation"
-                            value={approver.role || ""}
-                            onChange={(e) =>
-                              handleApproverChange(idx, "role", e.target.value)
-                            }
-                            disabled={hasApproved}
-                          />
-                          <Select
-                            labelInValue
-                            placeholder="Select Approver"
-                            value={
-                              approver.userId
-                                ? {
-                                    label: approver.name,
-                                    value: approver.userId,
-                                  }
-                                : undefined
-                            }
-                            onChange={(option) => {
-                              handleApproverSelection(idx, option);
-                            }}
-                            style={{ width: "100%" }}
-                            loading={loadingApprovers}
-                            disabled={hasApproved}
-                          >
-                            {approversFromDb.length > 0 ? (
-                              approversFromDb.map((user) => (
-                                <Select.Option
-                                  key={user._id || user.id}
-                                  value={user._id || user.id}
-                                  label={user.name}
-                                >
-                                  {user.name}
+                        <div className="rm-resubmit-modal-flow-fields">
+                          <div className="rm-resubmit-modal-field">
+                            <span className="rm-resubmit-modal-label">Role</span>
+                            <Input
+                              placeholder="Role/Designation"
+                              value={approver.role || ""}
+                              onChange={(e) =>
+                                handleApproverChange(idx, "role", e.target.value)
+                              }
+                              disabled={hasApproved}
+                            />
+                          </div>
+                          <div className="rm-resubmit-modal-field">
+                            <span className="rm-resubmit-modal-label">Approver</span>
+                            <Select
+                              labelInValue
+                              placeholder="Select Approver"
+                              value={
+                                approver.userId
+                                  ? {
+                                      label: approver.name,
+                                      value: approver.userId,
+                                    }
+                                  : undefined
+                              }
+                              onChange={(option) => {
+                                handleApproverSelection(idx, option);
+                              }}
+                              style={{ width: "100%" }}
+                              loading={loadingApprovers}
+                              disabled={hasApproved}
+                            >
+                              {approversFromDb.length > 0 ? (
+                                approversFromDb.map((user) => (
+                                  <Select.Option
+                                    key={user._id || user.id}
+                                    value={user._id || user.id}
+                                    label={user.name}
+                                  >
+                                    {user.name}
+                                  </Select.Option>
+                                ))
+                              ) : (
+                                <Select.Option disabled>
+                                  No approvers available
                                 </Select.Option>
-                              ))
-                            ) : (
-                              <Select.Option disabled>
-                                No approvers available
-                              </Select.Option>
-                            )}
-                          </Select>
+                              )}
+                            </Select>
+                          </div>
                         </div>
 
-                        {/* Delete Button */}
                         <Button
                           type="text"
-                          danger
-                          size="small"
+                          className="rm-resubmit-modal-delete"
                           icon={<DeleteOutlined />}
                           onClick={() => handleRemoveApprover(idx)}
                           disabled={hasApproved || editedApprovers.length === 1}
@@ -514,37 +758,28 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                     );
                   })}
 
-                  {/* Add Approver Button */}
-                  <Button
-                    type="dashed"
-                    block
-                    icon={<PlusOutlined />}
-                    onClick={() => handleAddApprover()}
-                    style={{ marginTop: "12px" }}
-                  >
-                    Add Approver
-                  </Button>
+                  <div className="rm-resubmit-modal-insert">
+                    <Button
+                      type="text"
+                      shape="circle"
+                      icon={<PlusOutlined />}
+                      className="rm-resubmit-modal-insert-btn"
+                      onClick={() => handleAddApprover()}
+                    />
+                  </div>
 
-                  {/* Confirm/Cancel Buttons */}
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "8px",
-                      justifyContent: "flex-end",
-                      marginTop: "12px",
-                    }}
-                  >
-                    <Button onClick={() => setEditingApprovers(false)}>
+                  <div className="rm-resubmit-modal-actions">
+                    <Button
+                      className="rm-resubmit-modal-cancel"
+                      onClick={() => setEditingApprovers(false)}
+                    >
                       Cancel
                     </Button>
                     <Button
                       type="primary"
+                      className="rm-resubmit-modal-confirm"
                       loading={confirmingApprovers}
                       onClick={handleConfirmApprovers}
-                      style={{
-                        backgroundColor: PRIMARY_BLUE,
-                        borderColor: PRIMARY_BLUE,
-                      }}
                     >
                       Confirm Approvers
                     </Button>
@@ -552,54 +787,31 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                 </div>
               </Spin>
             ) : (
-              // View Mode
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div className="rm-resubmit-modal-flow-list">
                 {deferral?.approverFlow && deferral.approverFlow.length > 0 ? (
                   deferral.approverFlow.map((approver, idx) => (
                     <div
                       key={approver._id || idx}
-                      style={{
-                        display: "flex",
-                        gap: "12px",
-                        padding: "12px",
-                        backgroundColor: "#f5f5f5",
-                        borderRadius: "4px",
-                        border: "1px solid #d9d9d9",
-                        alignItems: "flex-start",
-                      }}
+                      className="rm-resubmit-modal-flow-card"
                     >
-                      {/* Step Number */}
                       <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: "32px",
-                          height: "32px",
-                          minWidth: "32px",
-                          borderRadius: "50%",
-                          backgroundColor:
-                            approver.approved ||
-                            approver.approvalStatus === "approved"
-                              ? SUCCESS_GREEN
-                              : PRIMARY_BLUE,
-                          color: "white",
-                          fontWeight: "700",
-                          fontSize: "14px",
-                        }}
+                        className={`rm-resubmit-modal-step-index ${
+                          approver.approved || approver.approvalStatus === "approved"
+                            ? "rm-resubmit-modal-step-index--approved"
+                            : ""
+                        }`}
                       >
                         {idx + 1}
                       </div>
 
-                      {/* Approver Details */}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: "500" }}>
+                      <div className="rm-resubmit-modal-flow-content">
+                        <div className="rm-resubmit-modal-flow-role">
                           {approver.role || approver.designation || "-"}
                         </div>
-                        <div style={{ fontSize: "12px", color: "#666" }}>
+                        <div className="rm-resubmit-modal-flow-name">
                           {approver.name || approver.approverName || "User"}
                         </div>
-                        <div style={{ fontSize: "12px", color: "#999", marginTop: "4px" }}>
+                        <div className="rm-resubmit-modal-flow-state">
                           {approver.approved ||
                           approver.approvalStatus === "approved"
                             ? "✓ Approved"
@@ -609,30 +821,25 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                     </div>
                   ))
                 ) : (
-                  <div
-                    style={{
-                      padding: "16px",
-                      backgroundColor: "#fafafa",
-                      borderRadius: "4px",
-                      border: "1px dashed #d9d9d9",
-                      textAlign: "center",
-                      color: "#999",
-                      fontSize: "12px",
-                    }}
-                  >
+                  <div className="rm-resubmit-modal-empty">
                     No approvers defined
                   </div>
                 )}
               </div>
             )}
+
+            <div className="rm-resubmit-modal-note">
+              <strong>Note:</strong> Any approver who has already approved is locked,
+              greyed out, and cannot be removed or replaced. Keep the review flow
+              aligned to the intended approval sequence before resubmitting.
+            </div>
           </div>
 
-          {/* Deferral Description */}
-          <div style={{ marginBottom: "24px" }}>
-            <h3 style={{ color: PRIMARY_BLUE, margin: 0, marginBottom: "8px" }}>
-              Deferral Description
-            </h3>
-            <Form.Item name="deferralDescription">
+          <div className="rm-resubmit-modal-section">
+            <div className="rm-resubmit-modal-section-head">
+              <h4>Deferral Description</h4>
+            </div>
+            <Form.Item name="deferralDescription" style={{ marginBottom: 0 }}>
               <Input.TextArea
                 rows={3}
                 placeholder="Enter deferral description"
@@ -640,12 +847,11 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
             </Form.Item>
           </div>
 
-          {/* Comments for Resubmission */}
-          <div style={{ marginBottom: "12px" }}>
-            <h3 style={{ color: PRIMARY_BLUE, margin: 0, marginBottom: "8px" }}>
-              Comments for Resubmission
-            </h3>
-            <Form.Item name="comments">
+          <div className="rm-resubmit-modal-section">
+            <div className="rm-resubmit-modal-section-head">
+              <h4>Comments for Resubmission</h4>
+            </div>
+            <Form.Item name="comments" style={{ marginBottom: 0 }}>
               <Input.TextArea
                 rows={3}
                 placeholder="Enter any additional comments or instructions"
@@ -654,7 +860,21 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
           </div>
         </Form>
       </Spin>
+      <div className="rm-resubmit-modal-actions">
+        <Button className="rm-resubmit-modal-cancel" onClick={onClose} disabled={loading}>
+          Cancel
+        </Button>
+        <Button
+          type="primary"
+          className="rm-resubmit-modal-confirm"
+          loading={loading}
+          onClick={() => form.submit()}
+        >
+          Resubmit for Review
+        </Button>
+      </div>
     </Modal>
+    </>
   );
 };
 

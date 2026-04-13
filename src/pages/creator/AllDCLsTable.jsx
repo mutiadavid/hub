@@ -21,6 +21,7 @@ import RmReviewChecklistModal from "../../components/modals/RmReviewChecklistMod
 import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewChecklistModalComponents/CheckerReviewChecklistModal";
 import CompletedChecklistModal from "../../components/modals/CompletedChecklistModalComponents/CompletedChecklistModal";
 import CreatorCompletedChecklistModal from "../../components/modals/CreatorCompletedChecklistModal/CreatorCompletedChecklistModal";
+import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 
 const CHECKLIST_STATUS_META = {
   co_creator_review: {
@@ -315,6 +316,21 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
       width: 120,
       render: (date) => <span className="creator-table-muted">{date ? formatDate(date) : "—"}</span>,
     },
+    {
+      title: "TAT Consumed",
+      dataIndex: "slaExpiry",
+      width: 116,
+      render: (date, record) => (
+        <RealTimeSlaTag
+          slaExpiry={date}
+          startedAt={record?.createdAt}
+          emptyLabel="N/A"
+          minWidth={60}
+          fontSize={12}
+          displayStyle="text"
+        />
+      ),
+    },
 
     {
       title: "Status",
@@ -457,7 +473,7 @@ const customTableStyles = `
   background: transparent !important;
   color: var(--color-text-medium) !important;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 12px;
   padding: 14px 12px !important;
   border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
   border-right: none !important;
@@ -516,7 +532,7 @@ const customTableStyles = `
 }
 .creator-completed-table .ant-pagination .ant-pagination-item-active a {
   color: var(--color-text-dark) !important;
-  font-weight: 700;
+  font-weight: 500;
 }
 .creator-table-primary-cell {
   display: flex;
@@ -527,7 +543,7 @@ const customTableStyles = `
 .creator-table-primary-value {
   color: var(--color-text-dark);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
@@ -535,7 +551,7 @@ const customTableStyles = `
 }
 .creator-table-secondary-value {
   color: var(--color-text-light);
-  font-size: 8px;
+  font-size: 12px;
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
@@ -556,8 +572,8 @@ const customTableStyles = `
   min-height: 22px;
   padding: 0 10px;
   border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.02em;
   white-space: nowrap;
 }

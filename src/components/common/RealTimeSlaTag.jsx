@@ -4,6 +4,21 @@ import dayjs from "dayjs";
 
 const TICK_INTERVAL_MS = 1000;
 
+function parseServerDate(value) {
+  if (!value) {
+    return dayjs.invalid();
+  }
+
+  if (typeof value === "string") {
+    const trimmedValue = value.trim();
+    const hasExplicitTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(trimmedValue);
+    const normalizedValue = hasExplicitTimezone ? trimmedValue : `${trimmedValue}Z`;
+    return dayjs(normalizedValue);
+  }
+
+  return dayjs(value);
+}
+
 function formatDuration(diffMs) {
   const totalSeconds = Math.max(0, Math.floor(diffMs / 1000));
   const days = Math.floor(totalSeconds / 86400);
@@ -28,7 +43,7 @@ function formatDuration(diffMs) {
 
 function getSlaPresentation({ slaExpiry, startedAt, now }) {
   if (startedAt) {
-    const started = dayjs(startedAt);
+    const started = parseServerDate(startedAt);
     if (started.isValid()) {
       const elapsedMs = Math.max(0, now.diff(started));
       const elapsedText = formatDuration(elapsedMs);
@@ -40,7 +55,7 @@ function getSlaPresentation({ slaExpiry, startedAt, now }) {
       let title = `Elapsed since ${started.format("DD MMM YYYY HH:mm:ss")}`;
 
       if (slaExpiry) {
-        const expiry = dayjs(slaExpiry);
+        const expiry = parseServerDate(slaExpiry);
         if (expiry.isValid()) {
           const diffMs = expiry.diff(now);
           const absText = formatDuration(Math.abs(diffMs));
@@ -88,7 +103,7 @@ function getSlaPresentation({ slaExpiry, startedAt, now }) {
   }
 
   if (slaExpiry) {
-    const expiry = dayjs(slaExpiry);
+    const expiry = parseServerDate(slaExpiry);
     if (!expiry.isValid()) {
       return {
         text: "Invalid",

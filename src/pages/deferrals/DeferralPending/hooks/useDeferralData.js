@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { message } from "antd";
 import deferralApi from "../../../../service/deferralApi";
+import { showErrorToast } from "../../../../utils/authToast";
 
 /**
  * Custom hook for loading and managing deferral data
@@ -27,7 +27,7 @@ export const useDeferralData = (userId) => {
 
       if (!token) {
         console.error("[DEFERRAL_LOAD] ERROR: No authentication token found!");
-        message.error("Not authenticated. Please login again.");
+        showErrorToast("Not authenticated. Please login again.");
         setDeferrals([]);
         setLoading(false);
         return;
@@ -35,7 +35,7 @@ export const useDeferralData = (userId) => {
 
       if (!userId) {
         console.error("[DEFERRAL_LOAD] ERROR: No user ID found!");
-        message.error("User ID not found. Please login again.");
+        showErrorToast("User ID not found. Please login again.");
         setDeferrals([]);
         setLoading(false);
         return;
@@ -94,14 +94,14 @@ export const useDeferralData = (userId) => {
 
       if (err.message.includes("Failed to fetch") || err.message.includes("401")) {
         console.log("[DEFERRAL_LOAD] Session might have expired or token is invalid");
-        message.error("Session expired. Please login again.");
+        showErrorToast("Session expired. Please login again.");
       } else if (
         err.message.includes("networkerror") ||
         err.message.includes("fetch")
       ) {
-        message.error("Network error. Please check your connection and try again.");
+        showErrorToast("Network error. Please check your connection and try again.");
       } else {
-        message.error("Failed to load deferrals: " + (err?.message || "Unknown error"));
+        showErrorToast("Failed to load deferrals: " + (err?.message || "Unknown error"));
       }
     } finally {
       setLoading(false);

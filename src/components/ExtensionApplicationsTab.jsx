@@ -447,7 +447,7 @@ const ExtensionApplicationsTab = ({
       },
     },
     {
-      title: "SLA",
+      title: "TAT consumed",
       dataIndex: "slaExpiry",
       key: "slaExpiry",
       width: 100,

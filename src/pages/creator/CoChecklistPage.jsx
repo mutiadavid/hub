@@ -161,7 +161,7 @@ const CoChecklistPage = ({
       }
       .cochecklist-title {
         color: var(--color-text-dark);
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 700;
         line-height: 1.2;
         letter-spacing: -0.02em;
@@ -213,8 +213,8 @@ const CoChecklistPage = ({
         background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
         color: var(--color-white) !important;
         font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-        font-size: 14px !important;
-        font-weight: 500 !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
         box-shadow: none !important;
       }
       .cochecklist-create:hover,
@@ -235,8 +235,8 @@ const CoChecklistPage = ({
       }
       .cochecklist-primary-value {
         color: var(--color-text-dark);
-        font-size: 14px;
-        font-weight: 600;
+        font-size: 13px;
+        font-weight: 400;
         letter-spacing: -0.01em;
         white-space: nowrap;
         overflow: hidden;
@@ -244,7 +244,7 @@ const CoChecklistPage = ({
       }
       .cochecklist-secondary-value {
         color: var(--color-text-light);
-        font-size: 8px;
+        font-size: 12px;
         line-height: 1.3;
         white-space: nowrap;
         overflow: hidden;
@@ -257,7 +257,7 @@ const CoChecklistPage = ({
       }
       .cochecklist-created-date {
         color: var(--color-text-medium);
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
@@ -265,11 +265,63 @@ const CoChecklistPage = ({
       }
       .cochecklist-muted {
         color: var(--color-text-medium);
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 400;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+      .cochecklist-table-shell .ant-table-thead > tr > th {
+        font-size: 12px;
+        font-weight: 600;
+        font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+      }
+      .cochecklist-table-shell .ant-table-tbody > tr > td {
+        font-size: 13px;
+        font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+      }
+      .cochecklist-table-shell .creator-badge {
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+      .cochecklist-table-shell .ant-pagination {
+        align-items: center;
+        gap: 6px;
+      }
+      .cochecklist-table-shell .ant-pagination .ant-pagination-item,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-prev,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-next,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-jump-prev,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-jump-next,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-item-link {
+        font-size: 13px;
+        color: var(--color-text-dark) !important;
+      }
+      .cochecklist-table-shell .ant-pagination .ant-pagination-item a,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-prev button,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-next button,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-jump-prev button,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-jump-next button {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-text-dark) !important;
+      }
+      .cochecklist-table-shell .ant-pagination .ant-pagination-options,
+      .cochecklist-table-shell .ant-pagination .ant-pagination-total-text {
+        color: var(--color-text-dark) !important;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .cochecklist-table-shell .ant-pagination .ant-select-selector,
+      .cochecklist-table-shell .ant-pagination .ant-select-selection-item,
+      .cochecklist-table-shell .ant-pagination .ant-select-selection-placeholder {
+        font-size: 12px !important;
+        color: var(--color-text-dark) !important;
+      }
+      .cochecklist-table-shell .ant-pagination .ant-select-arrow {
+        color: var(--color-text-dark) !important;
       }
       @media (min-width: 768px) {
         .cochecklist-toolbar {
@@ -285,7 +337,7 @@ const CoChecklistPage = ({
       }
       @media (min-width: 1024px) {
         .cochecklist-title {
-          font-size: 19px;
+          font-size: 18px;
         }
       }
       @media (max-width: 767px) {

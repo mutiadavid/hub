@@ -20,7 +20,12 @@ import {
 import { useDocumentHandlers } from "../../../hooks/useDocumentHandlers";
 import { useChecklistOperations } from "../../../hooks/useChecklistOperations";
 import { getUniqueCategories } from "../../../utils/checklistUtils";
-import { saveDraft as saveDraftToStorage } from "../../../utils/draftsUtils";
+import { saveDraft as saveDraftToStorage, deleteDraft } from "../../../utils/draftsUtils";
+import {
+  buildDeferralDocumentCoverageMessage,
+  validateDeferralDocumentCoverage,
+} from "../../../utils/deferralDocumentValidation";
+import { showErrorToast, showWarningToast } from "../../../utils/authToast";
 import { loanTypeDocuments } from "../../../pages/docTypes";
 import { message } from "antd";
 import "../../../styles/creatorDesignSystem.css";
@@ -521,6 +526,19 @@ const ReviewChecklistPage = ({
       }
 
       const fullDeferral = await deferralApi.getDeferralById(matchedDeferral.id, token);
+      const documentCoverage = validateDeferralDocumentCoverage(fullDeferral, doc);
+
+      if (!documentCoverage.matches) {
+        const documentMismatchResult = {
+          status: "invalid",
+          message: buildDeferralDocumentCoverageMessage(doc),
+        };
+        setDeferralValidationByDoc((prev) => ({
+          ...prev,
+          [docIdx]: documentMismatchResult,
+        }));
+        return { valid: false, ...documentMismatchResult };
+      }
 
       if (!isDeferralFullyApproved(fullDeferral)) {
         const notApprovedResult = {
@@ -695,6 +713,7 @@ const ReviewChecklistPage = ({
     const result = await submitToRM();
     submittedRef.current = true;
     if (checklistId) {
+      deleteDraft(checklistId);
       try {
         await unlockDcl(checklistId).unwrap();
         activeLockChecklistIdRef.current = null;
@@ -718,7 +737,7 @@ const ReviewChecklistPage = ({
       );
 
       if (!validationResult.valid) {
-        message.error(
+        showWarningToast(
           validationResult.message || "Fix deferred rows before submitting.",
         );
         return false;
@@ -735,12 +754,13 @@ const ReviewChecklistPage = ({
         error?.message ||
         "Failed to submit checklist.";
       applyDeferredSubmissionErrorToRows(errorMessage);
-      message.error(errorMessage);
+      showErrorToast(errorMessage);
       return false;
     }
 
     if (checklistId) {
       submittedRef.current = true;
+      deleteDraft(checklistId);
       try {
         await unlockDcl(checklistId).unwrap();
         activeLockChecklistIdRef.current = null;
@@ -1044,7 +1064,7 @@ const ReviewChecklistPage = ({
         action: doc.action || doc.status || "pending",
         comment: doc.comment || "",
         fileUrl: doc.fileUrl || null,
-        expiryDate: doc.expiryDate || null,
+        expiryDate: doc.expiryDate || doc.ExpiryDate || null,
         deferralNumber: doc.deferralNumber || doc.deferralNo || "",
         deferralNo: doc.deferralNo || doc.deferralNumber || "",
         rmStatus: doc.rmStatus || "",

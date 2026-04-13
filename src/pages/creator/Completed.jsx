@@ -12,6 +12,7 @@ import {
   useGetChecklistsByCreatorQuery,
 } from "../../api/checklistApi";
 import { formatDate } from "../../utils/checklistUtils";
+import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 // import ReviewChecklistModal from "../../components/modals/ReviewChecklistModal";
 // import CreatorCompletedChecklistModal from "../../components/modals/CreatorCompletedChecklistModal";
 import { useSelector } from "react-redux";
@@ -192,6 +193,22 @@ const Completed = () => {
         <div className="creator-completed-muted" style={{ color: "var(--color-text-medium)", fontWeight: 500 }}>
           {date ? formatDate(date) : "—"}
         </div>
+      ),
+    },
+    {
+      title: "TAT CONSUMED",
+      dataIndex: "slaExpiry",
+      width: 116,
+      ellipsis: true,
+      render: (date, record) => (
+        <RealTimeSlaTag
+          slaExpiry={date}
+          startedAt={record?.createdAt}
+          emptyLabel="N/A"
+          minWidth={60}
+          fontSize={12}
+          displayStyle="text"
+        />
       ),
     },
     {
@@ -380,7 +397,7 @@ const Completed = () => {
     }
     .creator-completed-table .ant-pagination .ant-pagination-item-active a {
       color: var(--color-text-dark) !important;
-      font-weight: 700;
+      font-weight: 500;
     }
     .creator-completed-primary-cell {
       display: flex;
@@ -390,8 +407,8 @@ const Completed = () => {
     }
     .creator-completed-primary-value {
       color: #374151;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 400;
       letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;
@@ -407,11 +424,17 @@ const Completed = () => {
     }
     .creator-completed-muted {
       color: #374151;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 400;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .creator-completed-table .creator-badge {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.2;
     }
     .creator-completed-state {
       padding: 24px 16px;

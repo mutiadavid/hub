@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
+import { getExpiryMeta } from "../../../utils/documentUtils";
 
 const PRIMARY_BLUE = "#164679";
 const ACCENT_LIME = "#b5d334";
@@ -186,19 +187,36 @@ const CreatorQueueChecklistModal = ({ checklist, open, onClose }) => {
       render: (_, record) => {
         if (record.category !== "Compliance Documents") return "-";
 
+        const expiryMeta = getExpiryMeta(record.expiryDate);
+
         return (
-          <DatePicker
-            value={record.expiryDate ? dayjs(record.expiryDate) : null}
-            onChange={(date) => {
-              const updated = [...docs];
-              updated[record.docIdx].expiryDate = date
-                ? date.toISOString()
-                : null;
-              setDocs(updated);
-            }}
-            disabled={submitting}
-            style={{ width: 150 }}
-          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 160 }}>
+            <DatePicker
+              value={record.expiryDate ? dayjs(record.expiryDate) : null}
+              onChange={(date) => {
+                const updated = [...docs];
+                updated[record.docIdx].expiryDate = date
+                  ? date.toISOString()
+                  : null;
+                setDocs(updated);
+              }}
+              disabled={submitting}
+              style={{ width: 160, fontSize: 13 }}
+              size="middle"
+            />
+            {expiryMeta ? (
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  lineHeight: 1.35,
+                  color: expiryMeta.isExpired ? "#b42318" : "#237804",
+                }}
+              >
+                {expiryMeta.label} • {expiryMeta.detail}
+              </span>
+            ) : null}
+          </div>
         );
       },
     },

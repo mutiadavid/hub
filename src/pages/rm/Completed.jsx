@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDateTime } from "../../utils/checklistUtils";
 import { getStatusColor } from "../../utils/statusColors";
 import { useGetAllCoCreatorChecklistsQuery } from "../../api/checklistApi";
+import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 import "../../styles/creatorDesignSystem.css";
 
 const { Text } = Typography;
@@ -181,6 +182,21 @@ const Completed = ({ userId }) => {
       dataIndex: "status",
       width: 135,
       render: (status) => renderStatusTag(status),
+    },
+    {
+      title: "TAT consumed",
+      dataIndex: "slaExpiry",
+      width: 100,
+      render: (date, record) => (
+        <RealTimeSlaTag
+          slaExpiry={date}
+          startedAt={record?.createdAt}
+          emptyLabel="N/A"
+          minWidth={60}
+          fontSize={12}
+          displayStyle="text"
+        />
+      ),
     },
   ];
 
@@ -404,7 +420,7 @@ const Completed = ({ userId }) => {
     .rm-completed-primary-value {
       color: var(--color-text-dark);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 400;
       letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;

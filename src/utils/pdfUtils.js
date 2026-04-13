@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { getExpiryStatus, formatFileSize } from './documentUtils';
+import { getExpiryMeta, formatFileSize } from './documentUtils';
 import { PRIMARY_BLUE, ACCENT_LIME, SECONDARY_PURPLE } from './constants';
 
 /**
@@ -590,13 +590,12 @@ export const generatePDFHtml = ({
               <th width="12%">Status</th>
               <th width="12%">Checker Status</th>
               <th width="15%">Co Comment</th>
-              <th width="10%">Expiry Date</th>
-              <th width="10%">Validity</th>
+              <th width="20%">Expiry Status</th>
               <th width="9%">File</th>
             </tr>
           </thead>
           <tbody>
-            ${documents.map((doc, index) => {
+            ${documents.map((doc) => {
               const statusColor = getStatusColor(doc.status);
               const statusLabel = doc.status === "deferred" && doc.deferralNo
                 ? `Deferred (${doc.deferralNo})`
@@ -606,7 +605,8 @@ export const generatePDFHtml = ({
                 ? (doc.checkerStatus || doc.finalCheckerStatus || "N/A").toUpperCase()
                 : "—";
               
-              const expiryStatus = getExpiryStatus(doc.expiryDate);
+              const expiryMeta = getExpiryMeta(doc.expiryDate);
+              const isComplianceDocument = (doc.category || "").toLowerCase().trim() === "compliance documents";
               const truncatedComment = truncateText(doc.comment, 25);
               
               return `
@@ -639,20 +639,8 @@ export const generatePDFHtml = ({
                   <td title="${doc.comment || "—"}">
                     ${truncatedComment || "—"}
                   </td>
-                  <td style="font-family: monospace; font-size: 9px;">
-                    ${doc.expiryDate ? dayjs(doc.expiryDate).format("DD/MM/YY") : "—"}
-                  </td>
-                  <td>
-                    ${(() => {
-                      if (!expiryStatus) return "—";
-                      return `<span class="doc-status" style="
-                        background: ${expiryStatus === "current" ? "#d1fae5" : "#fee2e2"};
-                        color: ${expiryStatus === "current" ? "#065f46" : "#991b1b"};
-                        border-color: ${expiryStatus === "current" ? "#10b981" : "#ef4444"};
-                      ">
-                        ${expiryStatus === "current" ? "CURRENT" : "EXPIRED"}
-                      </span>`;
-                    })()}
+                  <td style="font-size: 9px; font-weight: 600; line-height: 1.35; color: ${expiryMeta?.isExpired ? "#991b1b" : "#065f46"};">
+                    ${!isComplianceDocument ? "—" : expiryMeta ? `${expiryMeta.label} • ${expiryMeta.detail}` : "No expiry set"}
                   </td>
                   <td style="text-align: center;">
                     ${doc.fileUrl ? "✅" : "❌"}

@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ncbaLogo from '../assets/NCBA Logo.png';
-import { getExpiryStatus } from '../utils/documentUtils';
+import { getExpiryMeta } from '../utils/documentUtils';
 import { PRIMARY_BLUE, ACCENT_LIME, SECONDARY_PURPLE } from '../utils/constants';
 
 const usePDFGenerator = () => {
@@ -633,7 +633,7 @@ const usePDFGenerator = () => {
                   font-size: 9.5px;
                   letter-spacing: 0.3px;
                   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-                ">Expiry Date</th>
+                ">Expiry Status</th>
               </tr>
             </thead>
             <tbody>
@@ -647,7 +647,8 @@ const usePDFGenerator = () => {
                 const rmStatus = doc.rmStatus || "PENDING";
                 const checkerStatus = doc.checkerStatus || doc.finalCheckerStatus || "APPROVED";
                 const coComment = doc.comment || doc.coComment || "—";
-                const expiryDate = doc.expiryDate ? dayjs(doc.expiryDate).format("YYYY-MM-DD") : "—";
+                const expiryMeta = getExpiryMeta(doc.expiryDate);
+                const isComplianceDocument = (category || "").toLowerCase().trim() === "compliance documents";
                 // Get status color
                 const getStatusBg = (status) => {
                   const s = (status || "").toLowerCase();
@@ -706,8 +707,8 @@ const usePDFGenerator = () => {
                     <td style="padding: 10px 8px; border-right: 1px solid ${colors.subtleBorder}; color: ${colors.gray}; font-size: 9px;">
                       ${truncateText(coComment, 30)}
                     </td>
-                    <td style="padding: 10px 8px; color: ${colors.primary};">
-                      ${expiryDate}
+                    <td style="padding: 10px 8px; color: ${colors.primary}; line-height: 1.35; font-size: 9px; font-weight: 600;">
+                      ${!isComplianceDocument ? "—" : expiryMeta ? `<div style="color: ${expiryMeta.isExpired ? "#991b1b" : "#166534"};">${expiryMeta.label} • ${expiryMeta.detail}</div>` : "No expiry set"}
                     </td>
                   </tr>
                 `;
@@ -1158,13 +1159,20 @@ const usePDFGenerator = () => {
         formatText(formatStatusForDisplay(d.rmStatus || 'COMPLETED')),
         formatText(formatStatusForDisplay(d.checkerStatus || d.finalCheckerStatus || 'PENDING')),
         formatText(d.coComment || d.comment || 'OK'),
-        d.expiryDate ? dayjs(d.expiryDate).format("YYYY-MM-DD") : '—'
+        (() => {
+          const isComplianceDocument = (d.category || '').toLowerCase().trim() === 'compliance documents';
+          if (!isComplianceDocument) return '—';
+          const expiryMeta = getExpiryMeta(d.expiryDate);
+          return expiryMeta
+            ? `${expiryMeta.label} - ${expiryMeta.detail}`
+            : 'No expiry set';
+        })()
       ]);
 
       autoTable(doc, {
         startY: yPos,
         margin: { left: margin, right: margin },
-        head: [['CATEGORY', 'DOCUMENT NAME', 'CO STATUS', 'RM STATUS', 'CHECKER STATUS', 'CO COMMENT', 'EXPIRY DATE']],
+        head: [['CATEGORY', 'DOCUMENT NAME', 'CO STATUS', 'RM STATUS', 'CHECKER STATUS', 'CO COMMENT', 'EXPIRY STATUS']],
         body: docRows,
         theme: 'grid',
         headStyles: { 

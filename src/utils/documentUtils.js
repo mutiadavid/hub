@@ -118,3 +118,32 @@ export const getExpiryStatus = (expiryDate) => {
   const expiry = dayjs(expiryDate).startOf("day");
   return expiry.isBefore(today) ? "expired" : "current";
 };
+
+export const getExpiryMeta = (expiryDate) => {
+  if (!expiryDate) return null;
+
+  const today = dayjs().startOf("day");
+  const expiry = dayjs(expiryDate).startOf("day");
+
+  if (!expiry.isValid()) return null;
+
+  const diffDays = expiry.diff(today, "day");
+  const isExpired = diffDays < 0;
+  const absoluteDays = Math.abs(diffDays);
+
+  let detail = "Due today";
+  if (isExpired) {
+    detail = `Overdue by ${absoluteDays} day${absoluteDays === 1 ? "" : "s"}`;
+  } else if (diffDays > 0) {
+    detail = `Due in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+  }
+
+  return {
+    status: isExpired ? "expired" : "current",
+    label: isExpired ? "Expired" : "Current",
+    detail,
+    diffDays,
+    absoluteDays,
+    isExpired,
+  };
+};

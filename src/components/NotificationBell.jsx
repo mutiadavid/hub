@@ -265,7 +265,7 @@ const NotificationBell = ({ onOpenChecklist }) => {
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <span style={{ color: "#fff", fontWeight: 700, fontSize: 15 }}>Notifications</span>
               <span style={{ color: "rgba(255,255,255,0.78)", fontSize: 11 }}>
-                Workflow alerts and review updates
+                System workflow updates only
               </span>
             </div>
             <Tag className={`${DRAWER_CLASS}__badge`}>{unreadCount}</Tag>
@@ -439,7 +439,7 @@ const NotificationBell = ({ onOpenChecklist }) => {
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                         <NotificationOutlined />
                         <span style={{ color: "#1f2937", fontWeight: 600 }}>
-                          Workflow alert
+                          System update
                         </span>
                       </span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -451,7 +451,7 @@ const NotificationBell = ({ onOpenChecklist }) => {
                     </div>
 
                     <Text style={{ display: "block", color: "#64748b", fontSize: 11, lineHeight: 1.35, marginBottom: 8 }}>
-                      Email-triggered workflow notifications appear here.
+                      System workflow updates appear here. Hand-typed deferral comments stay in the comment trail.
                     </Text>
 
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

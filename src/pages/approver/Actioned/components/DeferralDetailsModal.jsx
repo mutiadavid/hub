@@ -116,7 +116,15 @@ const dedupeHistoryEntries = (entries) => {
 
   return deduped
     .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
-    .map(({ __index, __score, __user, __comment, __time, ...entry }) => entry);
+    .map((entry) => {
+      const nextEntry = { ...entry };
+      delete nextEntry.__index;
+      delete nextEntry.__score;
+      delete nextEntry.__user;
+      delete nextEntry.__comment;
+      delete nextEntry.__time;
+      return nextEntry;
+    });
 };
 
 const REVIEW_STYLES = `
@@ -474,6 +482,8 @@ const DeferralDetailsModal = ({
     const events = [];
     if (safeDeferral?.comments && Array.isArray(safeDeferral.comments)) {
       safeDeferral.comments.forEach((c) => {
+        if (c.isSystemComment || c.isSystem) return;
+        if (!String(c.text || "").trim()) return;
         const commentAuthorName =
           c.author?.name || c.authorName || c.userName || "User";
         const commentAuthorRole = c.author?.role || c.authorRole || "User";
@@ -482,20 +492,7 @@ const DeferralDetailsModal = ({
           userRole: commentAuthorRole,
           date: c.createdAt,
           comment: c.text || "",
-        });
-      });
-    }
-
-    if (safeDeferral?.history && Array.isArray(safeDeferral.history)) {
-      safeDeferral.history.forEach((h) => {
-        if (h.action === "moved") return;
-        const userName = h.userName || h.user?.name || h.user || "System";
-        const userRole = h.userRole || h.user?.role || "System";
-        events.push({
-          user: userName,
-          userRole: userRole,
-          date: h.date || h.createdAt || h.timestamp,
-          comment: h.comment || h.notes || "",
+          isSystemComment: Boolean(c.isSystemComment || c.isSystem),
         });
       });
     }

@@ -638,7 +638,7 @@ const MyQueue = () => {
               open={modalOpen}
               onClose={handleCloseModal}
               onAction={handleModalAction}
-              token=""
+              token={token}
               headerTag={detailOverrides?.headerTag}
               overrideDaysSought={detailOverrides?.overrideDaysSought}
               overrideNextDueDate={detailOverrides?.overrideNextDueDate}

@@ -10,6 +10,7 @@ import {
   useLockDclMutation,
 } from "../../api/checklistApi.js";
 import { showLockToast } from "../../utils/authToast";
+import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 import "../../styles/creatorDesignSystem.css";
 
 const { TabPane } = Tabs;
@@ -353,6 +354,22 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
         return <span className="creator-lock-badge creator-lock-badge--open">Available</span>;
       },
     },
+    {
+      title: "TAT CONSUMED",
+      dataIndex: "slaExpiry",
+      width: 116,
+      ellipsis: true,
+      render: (date, record) => (
+        <RealTimeSlaTag
+          slaExpiry={date}
+          startedAt={record?.createdAt}
+          emptyLabel="N/A"
+          minWidth={60}
+          fontSize={12}
+          displayStyle="text"
+        />
+      ),
+    },
   ];
 
   const customTableStyles = `
@@ -617,7 +634,7 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
     .creator-table-primary-value {
       color: var(--color-text-dark);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 400;
       letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;
@@ -788,7 +805,7 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
                         dataSource={assignedReviewChecklists}
                         rowKey={(record) => record.id || record._id || record.dclNo}
                         tableLayout="fixed"
-                        scroll={{ x: 920 }}
+                        scroll={{ x: 1040 }}
                         pagination={{
                           pageSize: 5,
                           showSizeChanger: true,
@@ -819,7 +836,7 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
                         dataSource={allReviewChecklists}
                         rowKey={(record) => record.id || record._id || record.dclNo}
                         tableLayout="fixed"
-                        scroll={{ x: 920 }}
+                        scroll={{ x: 1040 }}
                         pagination={{
                           pageSize: 5,
                           showSizeChanger: true,

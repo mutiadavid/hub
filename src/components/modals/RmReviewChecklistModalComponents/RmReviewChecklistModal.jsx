@@ -25,10 +25,16 @@ import {
 } from "../../../api/checklistApi";
 import deferralApi from "../../../service/deferralApi";
 import { uploadFileToBackend } from "../../../utils/uploadUtils";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../../utils/authToast";
+import {
+  buildDeferralDocumentCoverageMessage,
+  validateDeferralDocumentCoverage,
+} from "../../../utils/deferralDocumentValidation";
 import {
   buildDraftCommentTrail,
   cloneDraftRecord,
   saveDraft as saveDraftToStorage,
+  deleteDraft,
 } from "../../../utils/draftsUtils";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
@@ -523,6 +529,7 @@ const RmReviewChecklistModal = ({
     const processedDocs = docsToProcess.map((doc, idx) => ({
       ...doc,
       category: doc.category || "Missing Category",
+      expiryDate: doc.expiryDate || doc.ExpiryDate || null,
       rmStatus: getInitialRmStatus(doc),
       rmTouched: doc.rmStatus != null,
       uploadData: doc.uploadData || null,
@@ -695,6 +702,22 @@ const RmReviewChecklistModal = ({
         matchingCustomerDeferral.id,
         token,
       );
+      const documentCoverage = validateDeferralDocumentCoverage(fullDeferral, doc);
+
+      if (!documentCoverage.matches) {
+        const documentMismatchResult = {
+          status: "invalid",
+          message: buildDeferralDocumentCoverageMessage(doc),
+        };
+
+        setDeferralValidationByDoc((prev) => ({
+          ...prev,
+          [docIdx]: documentMismatchResult,
+        }));
+
+        return { valid: false, ...documentMismatchResult };
+      }
+
       const workflowStatus = fullDeferral?.status || matchingCustomerDeferral.status;
 
       if (!isAwaitingApprovalStatus(workflowStatus)) {
@@ -889,26 +912,18 @@ const RmReviewChecklistModal = ({
       );
 
       if (missingDeferral) {
-        Modal.warning({
-          title: "Deferral Number Required",
-          content:
-            "Please enter a deferral number for all documents marked as Deferral Requested.",
-          okText: "OK",
-          centered: true,
-        });
+        showWarningToast(
+          "Please enter a deferral number for all documents marked as Deferral Requested.",
+        );
         return;
       }
 
       const hasNaSelection = docs.some((doc) => isNaStatus(doc.rmStatus));
 
       if (hasNaSelection && !String(rmGeneralComment || "").trim()) {
-        Modal.warning({
-          title: "General Comment Required",
-          content:
-            "Please explain the N/A selection in RM General Comment before submitting to co-creator.",
-          okText: "OK",
-          centered: true,
-        });
+        showWarningToast(
+          "Please explain the N/A selection in RM General Comment before submitting to co-creator.",
+        );
         return;
       }
 
@@ -925,14 +940,10 @@ const RmReviewChecklistModal = ({
         );
 
         if (!validationResult.valid) {
-          Modal.warning({
-            title: "Invalid Deferral Number",
-            content:
-              validationResult.message ||
-              "One or more deferral numbers are invalid.",
-            okText: "OK",
-            centered: true,
-          });
+          showErrorToast(
+            validationResult.message ||
+              "Checklist cannot be submitted to CO because one or more deferral numbers are invalid.",
+          );
           return;
         }
       }
@@ -971,6 +982,7 @@ const RmReviewChecklistModal = ({
 
       await submitRmChecklistToCoCreator(payload).unwrap();
       submittedRef.current = true;
+      deleteDraft(checklistId);
       try {
         await unlockDcl(checklistId).unwrap();
       } catch (unlockError) {
@@ -980,11 +992,11 @@ const RmReviewChecklistModal = ({
 
       handleChecklistUpdate({ ...localChecklist, status: "CoCreatorReview" });
 
-      message.success("Checklist submitted to CO-Checker!");
+      showSuccessToast("Checklist submitted to CO successfully!");
       onClose();
     } catch (err) {
       console.error(err);
-      message.error(err?.data?.error || "Failed to submit checklist");
+      showErrorToast(err?.data?.error || "Failed to submit checklist");
     }
   };
 

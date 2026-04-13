@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
-import { message } from "antd";
 import { isValidFileType } from "../utils/helpers";
+import { showErrorToast, showInfoToast, showSuccessToast } from "../../../../utils/authToast";
 
 /**
  * Custom hook to manage document selection and file uploads
@@ -18,20 +18,20 @@ export const useDocuments = () => {
 
   const handleDCLUpload = useCallback((file) => {
     if (!isValidFileType(file.name)) {
-      message.error(
+      showErrorToast(
         "File type not allowed. Please upload: .pdf, .doc, .docx, .xls, .xlsx, .png, .jpg, .jpeg"
       );
       return false;
     }
 
     setDclFile(file);
-    message.success(`${file.name} selected for DCL upload`);
+    showSuccessToast(`${file.name} selected for DCL upload`);
     return false;
   }, []);
 
   const handleAdditionalFileUpload = useCallback((file) => {
     if (!isValidFileType(file.name)) {
-      message.error(
+      showErrorToast(
         "File type not allowed. Please upload: .pdf, .doc, .docx, .xls, .xlsx, .png, .jpg, .jpeg"
       );
       return false;
@@ -39,19 +39,19 @@ export const useDocuments = () => {
 
     const newFileList = [...additionalFiles, file];
     setAdditionalFiles(newFileList);
-    message.success(`${file.name} added to additional documents`);
+    showSuccessToast(`${file.name} added to additional documents`);
     return false;
   }, [additionalFiles]);
 
   const removeDCLFile = useCallback(() => {
     setDclFile(null);
-    message.info("DCL file removed");
+    showInfoToast("DCL file removed");
   }, []);
 
   const removeAdditionalFile = useCallback((file) => {
     const newFileList = additionalFiles.filter((f) => f.uid !== file.uid);
     setAdditionalFiles(newFileList);
-    message.info(`${file.name} removed`);
+    showInfoToast(`${file.name} removed`);
   }, [additionalFiles]);
 
   // Initialize per-document days when selected documents change

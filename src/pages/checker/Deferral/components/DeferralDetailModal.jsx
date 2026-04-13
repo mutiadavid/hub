@@ -125,7 +125,15 @@ const dedupeHistoryEntries = (entries) => {
 
   return deduped
     .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
-    .map(({ __index, __score, __user, __comment, __time, ...entry }) => entry);
+    .map((entry) => {
+      const nextEntry = { ...entry };
+      delete nextEntry.__index;
+      delete nextEntry.__score;
+      delete nextEntry.__user;
+      delete nextEntry.__comment;
+      delete nextEntry.__time;
+      return nextEntry;
+    });
 };
 
 const TABS = [
@@ -800,27 +808,19 @@ const DeferralDetailModal = ({
 
     if (Array.isArray(deferral.comments)) {
       deferral.comments.forEach((comment) => {
+        if (comment.isSystemComment || comment.isSystem) {
+          return;
+        }
+        if (!String(comment.text || "").trim()) {
+          return;
+        }
         events.push({
           user:
             comment.author?.name || comment.authorName || comment.userName || "User",
           userRole: comment.author?.role || comment.authorRole || "User",
           date: comment.createdAt,
           comment: comment.text || "",
-        });
-      });
-    }
-
-    if (Array.isArray(deferral.history)) {
-      deferral.history.forEach((entry) => {
-        if (entry.action === "moved") {
-          return;
-        }
-
-        events.push({
-          user: entry.userName || entry.user?.name || entry.user || "System",
-          userRole: entry.userRole || entry.user?.role || "System",
-          date: entry.date || entry.createdAt || entry.timestamp,
-          comment: entry.comment || entry.notes || "",
+          isSystemComment: Boolean(comment.isSystemComment || comment.isSystem),
         });
       });
     }

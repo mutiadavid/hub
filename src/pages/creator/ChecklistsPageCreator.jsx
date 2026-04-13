@@ -9,6 +9,7 @@ import ChecklistFormFields from "../../components/creator/ChecklistFormFields";
 import DocumentInputSectionCoCreator from "../../components/creator/DocumentInputSection";
 import { useAutoSaveDraft } from "../../hooks/useAutoSaveDraft";
 import { saveDraft, getDrafts, deleteDraft } from "../../utils/draftsUtils";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/authToast";
 import "../../styles/creatorDesignSystem.css";
 
 const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
@@ -281,7 +282,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         : !loanType) ||
       !ibpsNo
     ) {
-      return alert("Please fill all required fields.");
+      showWarningToast("Please fill all required fields.");
+      return;
     }
 
     const payload = {
@@ -297,7 +299,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
 
     try {
       await createChecklist(payload).unwrap();
-      message.success("Checklist created successfully!");
+      showSuccessToast("Checklist created successfully!");
       // Delete draft after successful creation
       if (currentDraftId) {
         deleteDraft(currentDraftId);
@@ -306,7 +308,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
       onClose();
     } catch (err) {
       console.error(err);
-      message.error("Error creating checklist.");
+      showErrorToast("Error creating checklist.");
     }
   };
 
@@ -446,7 +448,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           border-radius: 6px !important;
           box-shadow: none !important;
           font-size: 12px !important;
-          font-weight: 600 !important;
+          font-weight: 500 !important;
         }
         .creator-create-button--primary.ant-btn,
         .creator-create-button--primary.ant-btn:hover,
@@ -537,12 +539,12 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           font-size: 10px;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          font-weight: 600;
+          font-weight: 500;
         }
         .creator-create-summary-value {
           color: var(--color-text-dark);
-          font-size: 13px;
-          font-weight: 700;
+          font-size: 12px;
+          font-weight: 500;
         }
         .creator-create-tabs {
           display: flex;
@@ -557,8 +559,9 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           border-bottom: 2px solid transparent;
           background: transparent;
           color: var(--color-text-light);
-          font-size: 9px;
+          font-size: 12px;
           font-weight: 500;
+          line-height: 1.25;
           cursor: pointer;
           white-space: nowrap;
           font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
@@ -583,6 +586,28 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           font-size: 12px;
           color: var(--color-text-medium);
           outline: none;
+        }
+        .creator-create-page .creator-label {
+          font-size: 9px;
+          font-weight: 500;
+          letter-spacing: 0.08em;
+        }
+        .creator-create-page .ant-input,
+        .creator-create-page .ant-input-affix-wrapper,
+        .creator-create-page .ant-select-selection-item,
+        .creator-create-page .ant-select-selection-placeholder,
+        .creator-create-page .ant-picker,
+        .creator-create-page .ant-picker-input > input,
+        .creator-create-page input,
+        .creator-create-page textarea {
+          font-size: 12px !important;
+        }
+        .creator-create-page .ant-select-selector,
+        .creator-create-page .ant-picker {
+          min-height: 42px !important;
+        }
+        .creator-create-page .ant-btn {
+          font-size: 12px;
         }
         .creator-create-ibps-input:focus {
           border-color: var(--color-primary-dark);

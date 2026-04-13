@@ -1,6 +1,7 @@
 // ChecklistTable.jsx
 import React from "react";
 import { Table, Tag, Button } from "antd";
+import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 
 const PRIMARY_BLUE = "#164679";
 const ACCENT_LIME = "#b5d334";
@@ -8,7 +9,7 @@ const HIGHLIGHT_GOLD = "#fcb116";
 const LIGHT_YELLOW = "#fcd716";
 const SECONDARY_PURPLE = "#7e6496";
 
-const ChecklistTable = ({ data, onView }) => {
+const ChecklistTable = ({ data, onView, showTat = false }) => {
   const columns = [
     {
       title: "DCL No",
@@ -118,6 +119,25 @@ const ChecklistTable = ({ data, onView }) => {
         );
       },
     },
+    ...(showTat
+      ? [
+          {
+            title: "TAT Consumed",
+            dataIndex: "slaExpiry",
+            width: 120,
+            render: (date, record) => (
+              <RealTimeSlaTag
+                slaExpiry={date}
+                startedAt={record?.createdAt}
+                emptyLabel="N/A"
+                minWidth={60}
+                fontSize={12}
+                displayStyle="text"
+              />
+            ),
+          },
+        ]
+      : []),
     {
       title: "Actions",
       width: 100,

@@ -19,21 +19,6 @@ const RMEditApproversModal = ({
 }) => {
   const modalTitle = (
     <div className="rm-edit-approvers-modal-hero">
-      <div className="rm-edit-approvers-modal-hero-icon">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z"
-            stroke="currentColor"
-            strokeWidth="1.6"
-          />
-          <path
-            d="M4 21C4 17.6863 7.58172 15 12 15C16.4183 15 20 17.6863 20 21"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
       <div className="rm-edit-approvers-modal-hero-copy">
         <h2>Edit Approvers</h2>
       </div>

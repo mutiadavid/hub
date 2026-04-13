@@ -926,6 +926,31 @@ export const downloadChecklistAsPDF = async ({
       return expiry.isBefore(today) ? "expired" : "current";
     };
 
+    const getExpiryMeta = (expiryDate) => {
+      if (!expiryDate) return null;
+      const today = dayjs().startOf("day");
+      const expiry = dayjs(expiryDate).startOf("day");
+
+      if (!expiry.isValid()) return null;
+
+      const diffDays = expiry.diff(today, "day");
+      const isExpired = diffDays < 0;
+      const absoluteDays = Math.abs(diffDays);
+
+      let detail = "Due today";
+      if (isExpired) {
+        detail = `Overdue by ${absoluteDays} day${absoluteDays === 1 ? "" : "s"}`;
+      } else if (diffDays > 0) {
+        detail = `Due in ${diffDays} day${diffDays === 1 ? "" : "s"}`;
+      }
+
+      return {
+        label: isExpired ? "Expired" : "Current",
+        detail,
+        isExpired,
+      };
+    };
+
     // Build the PDF content - USE safeDocumentStats instead of documentStats
     pdfContainer.innerHTML = `
     <style>
@@ -1474,7 +1499,6 @@ export const downloadChecklistAsPDF = async ({
                 <th>Status</th>
                 <th>Checker Status</th>
                 <th>Co Comment</th>
-                <th>Expiry Date</th>
                 <th>Expiry Status</th>
                 <th>Deferral No</th>
                 <th>File</th>
@@ -1503,11 +1527,8 @@ export const downloadChecklistAsPDF = async ({
                     checkerStatusLabel = "REJECTED";
                   }
 
-                  const expiryStatus = getExpiryStatus(doc.expiryDate);
-                  const expiryDate = doc.expiryDate
-                    ? dayjs(doc.expiryDate).format("DD/MM/YYYY")
-                    : "—";
-
+                  const expiryMeta = getExpiryMeta(doc.expiryDate);
+                  const isComplianceDocument = (doc.category || "").toLowerCase().trim() === "compliance documents";
                   const truncate = (text, max = 40) => {
                     if (!text || text === "—") return "—";
                     return text.length > max
@@ -1550,21 +1571,8 @@ export const downloadChecklistAsPDF = async ({
                       <td title="${doc.comment || "—"}">
                         ${docComment}
                       </td>
-                      <td style="font-family: monospace; font-weight: 500;">
-                        ${expiryDate}
-                      </td>
-                      <td>
-                        ${
-                          !expiryStatus
-                            ? "—"
-                            : `<span class="status-badge ${
-                                expiryStatus === "current"
-                                  ? "current-tag"
-                                  : "expired-tag"
-                              }">
-                                ${expiryStatus === "current" ? "CURRENT" : "EXPIRED"}
-                              </span>`
-                        }
+                      <td style="font-family: Arial, sans-serif; font-weight: 600; line-height: 1.35; color: ${expiryMeta?.isExpired ? "#991b1b" : "#166534"};">
+                        ${!isComplianceDocument ? "—" : expiryMeta ? `${expiryMeta.label} • ${expiryMeta.detail}` : "No expiry set"}
                       </td>
                       <td style="font-family: monospace; font-weight: 600;">
                         ${doc.deferralNumber || doc.deferralNo || "—"}

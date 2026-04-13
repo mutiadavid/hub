@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
 import { useGetCompletedDCLsForCheckerQuery } from "../../api/checklistApi";
+import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 import "../../styles/creatorDesignSystem.css";
 
 const getCompletedStatusMeta = (status) => {
@@ -137,6 +138,22 @@ const Completed = ({ userId }) => {
         <span className="creator-table-muted">
           {dayjs(date || record.updatedAt || record.createdAt).format("DD/MM/YYYY HH:mm")}
         </span>
+      ),
+    },
+    {
+      title: "TAT CONSUMED",
+      dataIndex: "slaExpiry",
+      width: 116,
+      ellipsis: true,
+      render: (date, record) => (
+        <RealTimeSlaTag
+          slaExpiry={date}
+          startedAt={record?.createdAt}
+          emptyLabel="N/A"
+          minWidth={60}
+          fontSize={12}
+          displayStyle="text"
+        />
       ),
     },
     {
@@ -355,7 +372,7 @@ const Completed = ({ userId }) => {
     .creator-table-primary-value {
       color: var(--color-text-dark);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 400;
       letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;

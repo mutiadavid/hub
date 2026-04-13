@@ -193,39 +193,6 @@ const RMDeferralReviewDetails = ({
                 : "-"}
             </Typography.Text>
           </Descriptions.Item>
-          <Descriptions.Item label="Next Due Date">
-            <Typography.Text strong style={{ color: "#d48806" }}>
-              {(() => {
-                const createdAt = displayDeferral?.createdAt || displayDeferral?.CreatedAt || displayDeferral?.dateCreated || displayDeferral?.DateCreated;
-                const daysSought = Number(displayDeferral?.daysSought || displayDeferral?.DaysSought || 0);
-                
-                let date = null;
-                if (createdAt && daysSought > 0) {
-                  const createdDate = dayjs(createdAt);
-                  if (createdDate.isValid()) {
-                    date = createdDate.add(daysSought, 'days');
-                  }
-                }
-
-                if (!date) {
-                  const rawDate =
-                    displayDeferral?.nextDueDate ||
-                    displayDeferral?.NextDueDate ||
-                    displayDeferral?.nextDocumentDueDate ||
-                    displayDeferral?.NextDocumentDueDate ||
-                    (requestedDocsWithDates?.length > 0
-                      ? requestedDocsWithDates
-                          .map((doc) => doc.newDueDate || doc.NextDocumentDueDate || doc.nextDocumentDueDate || doc.NextDueDate || doc.nextDueDate)
-                          .filter((d) => d && dayjs(d).isValid())
-                          .sort((a, b) => dayjs(a).diff(dayjs(b)))[0]
-                      : null);
-                  if (rawDate) date = dayjs(rawDate);
-                }
-
-                return date && date.isValid() ? date.format("DD MMM YYYY") : "N/A";
-              })()}
-            </Typography.Text>
-          </Descriptions.Item>
         </Descriptions>
       </Card>
 
