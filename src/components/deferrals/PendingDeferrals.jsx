@@ -27,12 +27,7 @@ export default function PendingDeferrals({ deferrals = [], onGeneratePDF }) {
     try {
       const stored = JSON.parse(localStorage.getItem("user") || "null");
       const token = stored?.token;
-      const actorName = stored?.user?.name || stored?.user?.email || "System";
-
-      await deferralApi.sendReminderAndLog(id, token, {
-        actorName,
-        text: `${actorName} initiated a reminder.`,
-      });
+      await deferralApi.sendReminderAndLog(id, token);
 
       // Hide button for 1 hour
       const expiry = Date.now() + 60 * 60 * 1000;
