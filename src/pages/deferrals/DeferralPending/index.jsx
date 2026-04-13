@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { message } from "antd";
 import { Button, Input } from "antd";
 import { PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useGetApproversQuery } from "../../../api/userApi";
@@ -473,6 +472,11 @@ const DeferralPending = ({ userId = "rm_current" }) => {
 
       {/* Extension Application Review */}
       <ExtensionApplicationModal
+        key={
+          extensionModal.selectedDeferralForExtension?._id ||
+          extensionModal.selectedDeferralForExtension?.id ||
+          "extension-review"
+        }
         open={extensionModal.extensionModalOpen}
         embedded={showingExtensionReview}
         selectedDeferral={extensionModal.selectedDeferralForExtension}

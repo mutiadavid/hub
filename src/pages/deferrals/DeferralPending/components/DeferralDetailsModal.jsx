@@ -57,7 +57,6 @@ import {
 import { getReturnedForReworkReason } from "../utils/helpers.jsx";
 import { resolveDisplayName } from "../../../../utils/extensionHistory";
 import ReturnForReworkModal from "./ReturnForReworkModal";
-import ExtensionApplicationModal from "./ExtensionApplicationModal";
 import CloseRequestModal from "./CloseRequestModal";
 import RMDeferralReviewHeader from "./RMDeferralReviewHeader";
 import RMDeferralReviewActionBar from "./RMDeferralReviewActionBar";
@@ -700,14 +699,6 @@ const DeferralDetailsModal = ({
   const [canShowRemindButton, setCanShowRemindButton] = useState(true);
   const [approvalFlowExpanded, setApprovalFlowExpanded] = useState(true);
   const [closeLoading, setCloseLoading] = useState(false);
-  const [closeRequestModalOpen, setCloseRequestModalOpen] = useState(false);
-  const [applyExtensionModalOpen, setApplyExtensionModalOpen] = useState(false);
-  const [extensionDays, setExtensionDays] = useState("");
-  const [extensionDaysByDoc, setExtensionDaysByDoc] = useState({});
-  const [extensionComment, setExtensionComment] = useState("");
-  const [extensionFiles, setExtensionFiles] = useState([]);
-  const [extensionSubmitting, setExtensionSubmitting] = useState(false);
-  const [extensionSubmissionSuccess, setExtensionSubmissionSuccess] = useState(false);
   const [fullDeferral, setFullDeferral] = useState(deferral);
   const [loadingFullDeferral, setLoadingFullDeferral] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState("details");
@@ -947,7 +938,7 @@ const DeferralDetailsModal = ({
           .catch(() => response?.deferral || response);
 
         showSuccessToast("Close request submitted successfully!");
-        setCloseRequestModalOpen(false);
+        setWorkspaceTab("details");
 
         try {
           window.dispatchEvent(
@@ -978,138 +969,15 @@ const DeferralDetailsModal = ({
     }
   };
 
-  const handleApplyExtension = async () => {
-    if (!deferral || !deferral._id) {
-      showErrorToast("No deferral selected");
-      return;
-    }
-
-    if (!extensionDaysByDoc || Object.keys(extensionDaysByDoc).length === 0) {
-      showErrorToast("Please specify extension days for at least one document");
-      return;
-    }
-
-    const requestedDaysByDoc = requestedDocs.reduce((accumulator, doc) => {
-      const key = String((doc && (doc.name || doc.label)) || doc || "")
-        .trim()
-        .toLowerCase();
-      const currentRequestedDays = Number(
-        doc?.daysSought ?? doc?.requestedDaysSought ?? 0,
-      );
-
-      accumulator[key] = Number.isFinite(currentRequestedDays)
-        ? currentRequestedDays
-        : 0;
-      return accumulator;
-    }, {});
-    const requestedAbsoluteDays = Object.entries(extensionDaysByDoc).reduce(
-      (absoluteDays, [key, extensionDays]) => {
-        const normalizedExtensionDays = Number(extensionDays);
-        if (!Number.isFinite(normalizedExtensionDays) || normalizedExtensionDays <= 0) {
-          return absoluteDays;
-        }
-
-        const currentRequestedDays = requestedDaysByDoc[key] || 0;
-        absoluteDays[key] = currentRequestedDays + normalizedExtensionDays;
-        return absoluteDays;
-      },
-      {},
-    );
-    const requestedAbsoluteValues = Object.values(requestedAbsoluteDays);
-
-    if (requestedAbsoluteValues.length === 0) {
-      showErrorToast("Please enter valid extension days");
-      return;
-    }
-
-    setExtensionSubmitting(true);
-    try {
-      const token = localStorage.getItem("token");
-
-      // Format additional files properly - ensure they have name and url properties
-      const formattedFiles = (extensionFiles || []).map((file) => ({
-        name: file.name || file.fileName || "document",
-        url: file.url || file.fileUrl || file.response?.url || "",
-        size: file.size || 0,
-        uploadedAt: new Date().toISOString(),
-      })).filter((file) => file.url); // Only include files with URLs
-
-      const maxDays = Math.max(...requestedAbsoluteValues);
-     
-      console.log("🚀 Extension submission details:", {
-        deferralId: deferral._id,
-        deferralStatus: deferral.status,
-        maxRequestedDays: maxDays,
-        extensionDaysByDocCount: Object.keys(extensionDaysByDoc).length,
-        filesCount: formattedFiles.length,
-      });
-
-      const payload = {
-        deferralId: deferral._id,
-        requestedDaysSought: maxDays,
-        extensionReason: extensionComment || "Extension requested",
-        extensionDaysByDoc,
-        additionalFiles: formattedFiles,
-      };
-
-      const response = await deferralApi.submitExtension(deferral._id, payload, token);
-
-      if (response && (response.success || response.status === 201 || response.id)) {
-        showSuccessToast("Extension submitted successfully!");
-        const createdExtension = response.extension || response;
-        const existingExtensions = Array.isArray((fullDeferral || deferral)?.extensions)
-          ? (fullDeferral || deferral).extensions
-          : [];
-        const updatedDeferral = {
-          ...(fullDeferral || deferral),
-          extensionStatus: createdExtension.status || createdExtension.Status || "PendingApproval",
-          extensions: [...existingExtensions, createdExtension],
-        };
-
-        setFullDeferral(updatedDeferral);
-        setExtensionDays("");
-        setExtensionDaysByDoc({});
-        setExtensionComment("");
-        setExtensionFiles([]);
-        setApplyExtensionModalOpen(false);
-        setExtensionSubmissionSuccess(false);
-
-        // Trigger refresh
-        if (onAction) {
-          onAction({
-            action: "extensionSubmitted",
-            deferralId: deferral._id,
-            extension: createdExtension,
-            updatedDeferral,
-          });
-        }
-      } else {
-        throw new Error(response?.message || "Failed to submit extension");
-      }
-    } catch (error) {
-      console.error("Error submitting extension:", error);
-      const errorMessage = error.message || "Failed to submit extension";
-     
-      // Provide more specific error messages
-      if (errorMessage.includes("approved")) {
-        showErrorToast("Extension can only be applied to approved deferrals");
-      } else if (errorMessage.includes("greater than")) {
-        showErrorToast("Requested extension days must be more than current days");
-      } else {
-        showErrorToast(errorMessage);
-      }
-    } finally {
-      setExtensionSubmitting(false);
-    }
-  };
-
   const handleApplyExtensionClick = () => {
-    setExtensionDays("");
-    setExtensionDaysByDoc({});
-    setExtensionComment("");
-    setExtensionFiles([]);
-    setExtensionSubmissionSuccess(false);
-    setApplyExtensionModalOpen(true);
+    if (onAction) {
+      onAction({
+        action: "apply_extension",
+        deferral: fullDeferral || deferral,
+      });
+    }
+
+    onClose();
   };
 
   const downloadDeferralAsPDF = async () => {
@@ -1878,11 +1746,11 @@ const DeferralDetailsModal = ({
               onWithdraw={() => setWithdrawModalVisible(true)}
               onResubmit={handleResubmitDeferral}
               resubmitLoading={resubmitLoading}
-              extensionSubmissionSuccess={extensionSubmissionSuccess}
+              extensionSubmissionSuccess={false}
               hasOpenExtensionRequest={hasOpenExtensionRequest}
               onApplyExtension={handleApplyExtensionClick}
               closeLoading={closeLoading}
-              onOpenCloseRequest={() => setCloseRequestModalOpen(true)}
+              onOpenCloseRequest={() => setWorkspaceTab("close-request")}
               normalizedStatus={normalizedStatus}
               onDownloadPDF={downloadDeferralAsPDF}
               downloadLoading={downloadLoading}
@@ -1905,6 +1773,15 @@ const DeferralDetailsModal = ({
                 >
                   Documents
                 </button>
+                {!readOnly && activeTab === "approved" && (
+                  <button
+                    type="button"
+                    className={`deferral-review-tab ${workspaceTab === "close-request" ? "deferral-review-tab--active" : ""}`}
+                    onClick={() => setWorkspaceTab("close-request")}
+                  >
+                    Close Request
+                  </button>
+                )}
               </div>
 
               <div className="deferral-review-workspace">
@@ -1956,6 +1833,17 @@ const DeferralDetailsModal = ({
                       generalUploadedDocs={generalUploadedDocs}
                     />
                   )}
+
+                  {workspaceTab === "close-request" && (
+                    <CloseRequestModal
+                      key={`${displayDeferral?._id || displayDeferral?.id || "deferral"}-close-request`}
+                      embedded
+                      documents={requestedDocsWithDates}
+                      loading={closeLoading}
+                      onClose={() => setWorkspaceTab("details")}
+                      onSubmit={handleSubmitCloseRequest}
+                    />
+                  )}
                 </div>
 
                 <RMDeferralReviewSidebar history={history} />
@@ -1997,43 +1885,6 @@ const DeferralDetailsModal = ({
         onClose={() => setResubmitModalVisible(false)}
         deferral={displayDeferral}
         onUpdate={handleReworkUpdate}
-      />
-
-      {/* Extension Application Modal */}
-      <ExtensionApplicationModal
-        open={applyExtensionModalOpen}
-        selectedDeferral={deferral}
-        extensionDays={extensionDays}
-        extensionDaysByDoc={extensionDaysByDoc}
-        extensionComment={extensionComment}
-        extensionFiles={extensionFiles}
-        extensionSubmitting={extensionSubmitting}
-        extensionSubmissionSuccess={extensionSubmissionSuccess}
-        onDaysChange={setExtensionDays}
-        onDaysByDocChange={setExtensionDaysByDoc}
-        onCommentChange={setExtensionComment}
-        onFilesChange={setExtensionFiles}
-        onClose={() => setApplyExtensionModalOpen(false)}
-        onSubmit={handleApplyExtension}
-        onSuccessViewExtensions={() => {
-          setApplyExtensionModalOpen(false);
-          setExtensionSubmissionSuccess(false);
-          if (onAction) {
-            onAction({
-              action: "viewExtensionApplications",
-              tab: "extensions",
-            });
-          }
-          onClose();
-        }}
-      />
-
-      <CloseRequestModal
-        open={closeRequestModalOpen}
-        documents={requestedDocsWithDates}
-        loading={closeLoading}
-        onClose={() => setCloseRequestModalOpen(false)}
-        onSubmit={handleSubmitCloseRequest}
       />
     </>
   );
