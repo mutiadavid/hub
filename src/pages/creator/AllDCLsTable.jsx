@@ -1,5 +1,6 @@
 import { Table, Tag, Spin, Empty } from "antd";
 import { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import {
   FileTextOutlined,
   CustomerServiceOutlined,
@@ -162,6 +163,81 @@ const LIGHT_YELLOW = "#FFF7CC";
 const HIGHLIGHT_GOLD = "#E6C200";
 const SUCCESS_GREEN = "#52c41a";
 
+const BUSINESS_START_HOUR = 8;
+const BUSINESS_END_HOUR = 17;
+
+const parseServerDate = (value) => {
+  if (!value) {
+    return dayjs.invalid();
+  }
+
+  if (typeof value === "string") {
+    const trimmedValue = value.trim();
+    const hasExplicitTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(trimmedValue);
+    const normalizedValue = hasExplicitTimezone ? trimmedValue : `${trimmedValue}Z`;
+    return dayjs(normalizedValue);
+  }
+
+  return dayjs(value);
+};
+
+const isWeekend = (moment) => {
+  const day = moment.day();
+  return day === 0 || day === 6;
+};
+
+const calculateBusinessMilliseconds = (started, ended) => {
+  if (!started?.isValid?.() || !ended?.isValid?.() || !ended.isAfter(started)) {
+    return 0;
+  }
+
+  let cursor = started.clone();
+  let totalMs = 0;
+
+  while (cursor.isBefore(ended)) {
+    if (isWeekend(cursor)) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_START_HOUR);
+      continue;
+    }
+
+    if (cursor.hour() < BUSINESS_START_HOUR) {
+      cursor = cursor.hour(BUSINESS_START_HOUR).minute(0).second(0).millisecond(0);
+    } else if (cursor.hour() >= BUSINESS_END_HOUR) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_START_HOUR);
+      continue;
+    }
+
+    const endOfBusinessDay = cursor
+      .clone()
+      .hour(BUSINESS_END_HOUR)
+      .minute(0)
+      .second(0)
+      .millisecond(0);
+    const intervalEnd = ended.isBefore(endOfBusinessDay) ? ended : endOfBusinessDay;
+
+    if (intervalEnd.isAfter(cursor)) {
+      totalMs += intervalEnd.diff(cursor);
+      cursor = intervalEnd;
+    }
+
+    if (cursor.isBefore(ended)) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_START_HOUR);
+    }
+  }
+
+  return totalMs;
+};
+
+const getTatSortValue = (record) => {
+  const startedAt = parseServerDate(record?.createdAt);
+
+  if (!startedAt.isValid()) {
+    return 0;
+  }
+
+  return calculateBusinessMilliseconds(startedAt, dayjs());
+};
+
 export default function AllDCLsTable({ filters, onDataLoaded }) {
   const [selectedChecklist, setSelectedChecklist] = useState(null);
 
@@ -320,6 +396,8 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
       title: "TAT Consumed",
       dataIndex: "slaExpiry",
       width: 116,
+      sorter: (a, b) => getTatSortValue(a) - getTatSortValue(b),
+      defaultSortOrder: "descend",
       render: (date, record) => (
         <RealTimeSlaTag
           slaExpiry={date}
@@ -328,6 +406,7 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
           minWidth={60}
           fontSize={12}
           displayStyle="text"
+          businessHoursOnly
         />
       ),
     },

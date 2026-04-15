@@ -157,6 +157,7 @@ export const renderQueueSla = (date, record, pendingStatuses = ["pending_approva
       emptyLabel="N/A"
       minWidth={60}
       displayStyle="text"
+      businessHoursOnly
     />
   );
 };

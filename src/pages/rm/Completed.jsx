@@ -80,9 +80,6 @@ const Completed = ({ userId }) => {
       render: (text) => (
         <div className="rm-completed-primary-cell">
           <span className="rm-completed-primary-value">{text || "-"}</span>
-          <span className="rm-completed-secondary-value">
-            Completed checklist
-          </span>
         </div>
       ),
     },

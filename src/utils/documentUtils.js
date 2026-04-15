@@ -147,3 +147,28 @@ export const getExpiryMeta = (expiryDate) => {
     isExpired,
   };
 };
+
+export const isComplianceDocument = (doc) =>
+  String(doc?.category || "")
+    .trim()
+    .toLowerCase() === "compliance documents";
+
+export const getComplianceDocumentsMissingResolvedExpiry = (docs = []) =>
+  docs.filter((doc) => isComplianceDocument(doc) && !getExpiryMeta(doc?.expiryDate));
+
+const normalizeDocumentAction = (doc) =>
+  String(doc?.action || doc?.status || "")
+    .trim()
+    .toLowerCase();
+
+const normalizeReasonText = (value) => String(value || "").trim().toLowerCase();
+
+export const getNaReasonMissingDocs = (docs = []) =>
+  docs.filter((doc) => {
+    if (normalizeDocumentAction(doc) !== "waived") {
+      return false;
+    }
+
+    const reason = normalizeReasonText(doc?.comment);
+    return !reason || reason === "n/a" || reason === "na";
+  });

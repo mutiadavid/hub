@@ -231,7 +231,6 @@ const MyQueue = ({
       render: (text) => (
         <div className="rm-queue-primary-cell">
           <span className="rm-queue-primary-value">{text || "-"}</span>
-          <span className="rm-queue-secondary-value">Document checklist</span>
         </div>
       ),
     },
@@ -364,6 +363,7 @@ const MyQueue = ({
           minWidth={60}
           fontSize={12}
           displayStyle="text"
+          businessHoursOnly
         />
       ),
     },

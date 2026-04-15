@@ -13,6 +13,7 @@ import MFAVerification from "../components/MFAVerification";
 import SSOLogin from "../components/SSOLogin";
 import AuthSplitLayout from "../components/auth/AuthSplitLayout";
 import { showAuthSuccessToast } from "../utils/authToast";
+import { consumeAuthStatusMessage } from "../api/baseQueryWithSession";
 
 const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -22,6 +23,7 @@ const LoginPage = () => {
   const [mfaMethod, setMFAMethod] = useState(null);
   const [mfaSessionToken, setMFASessionTokenLocal] = useState("");
   const [devTestCode, setDevTestCode] = useState("");
+  const [persistedStatusMessage] = useState(() => consumeAuthStatusMessage());
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [verifyEmailMFA, { isLoading: isVerifyingEmailMFA }] =
     useVerifyEmailMFAMutation();
@@ -30,7 +32,7 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const statusMessage = location.state?.status || "";
+  const statusMessage = location.state?.status || persistedStatusMessage || "";
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, message } from "antd";
 import { CloseOutlined, FileTextOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import DocumentAccordion from "../../components/creator/DocumentAccordion";
 import { useGetUsersQuery } from "../../api/userApi";
 import { loanTypes, loanTypeDocuments } from "../docTypes";
@@ -8,11 +9,12 @@ import { useCreateCoCreatorChecklistMutation } from "../../api/checklistApi";
 import ChecklistFormFields from "../../components/creator/ChecklistFormFields";
 import DocumentInputSectionCoCreator from "../../components/creator/DocumentInputSection";
 import { useAutoSaveDraft } from "../../hooks/useAutoSaveDraft";
-import { saveDraft, getDrafts, deleteDraft } from "../../utils/draftsUtils";
+import { saveDraft, getDraftRoute, getDrafts, deleteDraft } from "../../utils/draftsUtils";
 import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/authToast";
 import "../../styles/creatorDesignSystem.css";
 
 const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
+  const navigate = useNavigate();
   const [loanType, setLoanType] = useState("");
   const [assignedToRM, setAssignedToRM] = useState("");
   const [customerId, setCustomerId] = useState("");
@@ -164,6 +166,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
       if (saved) {
         setCurrentDraftId(saved.id);
         message.success("Draft saved successfully!");
+        navigate(getDraftRoute("cocreator"));
       } else {
         message.error("Failed to save draft");
       }

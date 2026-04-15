@@ -175,6 +175,17 @@ export const getDraftTypeLabel = (type) => {
   return labels[type] || 'Draft';
 };
 
+export const getDraftRoute = (type) => {
+  const routes = {
+    cocreator: '/cocreator/drafts',
+    checker: '/cochecker/drafts',
+    rm: '/rm/drafts',
+    admin: '/admin/drafts',
+  };
+
+  return routes[type] || '/';
+};
+
 /**
  * Format date for display
  * @param {string} dateString - ISO date string

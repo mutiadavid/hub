@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Table, Button, Input, Select, Tabs, Spin, Empty } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 import ChecklistsPage from "./ChecklistsPage.jsx";
 import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewChecklistModalComponents/CheckerReviewChecklistModal";
 import {
@@ -52,6 +53,81 @@ const matchesActiveTab = (status, activeTab) => {
   }
 
   return normalizedStatus === activeTab;
+};
+
+const BUSINESS_START_HOUR = 8;
+const BUSINESS_END_HOUR = 17;
+
+const parseServerDate = (value) => {
+  if (!value) {
+    return dayjs.invalid();
+  }
+
+  if (typeof value === "string") {
+    const trimmedValue = value.trim();
+    const hasExplicitTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(trimmedValue);
+    const normalizedValue = hasExplicitTimezone ? trimmedValue : `${trimmedValue}Z`;
+    return dayjs(normalizedValue);
+  }
+
+  return dayjs(value);
+};
+
+const isWeekend = (moment) => {
+  const day = moment.day();
+  return day === 0 || day === 6;
+};
+
+const calculateBusinessMilliseconds = (started, ended) => {
+  if (!started?.isValid?.() || !ended?.isValid?.() || !ended.isAfter(started)) {
+    return 0;
+  }
+
+  let cursor = started.clone();
+  let totalMs = 0;
+
+  while (cursor.isBefore(ended)) {
+    if (isWeekend(cursor)) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_START_HOUR);
+      continue;
+    }
+
+    if (cursor.hour() < BUSINESS_START_HOUR) {
+      cursor = cursor.hour(BUSINESS_START_HOUR).minute(0).second(0).millisecond(0);
+    } else if (cursor.hour() >= BUSINESS_END_HOUR) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_START_HOUR);
+      continue;
+    }
+
+    const endOfBusinessDay = cursor
+      .clone()
+      .hour(BUSINESS_END_HOUR)
+      .minute(0)
+      .second(0)
+      .millisecond(0);
+    const intervalEnd = ended.isBefore(endOfBusinessDay) ? ended : endOfBusinessDay;
+
+    if (intervalEnd.isAfter(cursor)) {
+      totalMs += intervalEnd.diff(cursor);
+      cursor = intervalEnd;
+    }
+
+    if (cursor.isBefore(ended)) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_START_HOUR);
+    }
+  }
+
+  return totalMs;
+};
+
+const getTatSortValue = (record) => {
+  const startedAt = parseServerDate(record?.createdAt);
+
+  if (!startedAt.isValid()) {
+    return 0;
+  }
+
+  return calculateBusinessMilliseconds(startedAt, dayjs());
 };
 
 const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null }) => {
@@ -269,7 +345,6 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
       render: (text) => (
         <div className="creator-table-primary-cell">
           <span className="creator-table-primary-value">{text || "-"}</span>
-          <span className="creator-table-secondary-value">Document checklist</span>
         </div>
       ),
     },
@@ -359,6 +434,8 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
       dataIndex: "slaExpiry",
       width: 116,
       ellipsis: true,
+      sorter: (a, b) => getTatSortValue(a) - getTatSortValue(b),
+      defaultSortOrder: "descend",
       render: (date, record) => (
         <RealTimeSlaTag
           slaExpiry={date}
@@ -367,6 +444,7 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
           minWidth={60}
           fontSize={12}
           displayStyle="text"
+          businessHoursOnly
         />
       ),
     },

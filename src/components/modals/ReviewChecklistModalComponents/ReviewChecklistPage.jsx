@@ -20,11 +20,11 @@ import {
 import { useDocumentHandlers } from "../../../hooks/useDocumentHandlers";
 import { useChecklistOperations } from "../../../hooks/useChecklistOperations";
 import { getUniqueCategories } from "../../../utils/checklistUtils";
-import { saveDraft as saveDraftToStorage, deleteDraft } from "../../../utils/draftsUtils";
 import {
-  buildDeferralDocumentCoverageMessage,
-  validateDeferralDocumentCoverage,
-} from "../../../utils/deferralDocumentValidation";
+  saveDraft as saveDraftToStorage,
+  deleteDraft,
+  getDraftRoute,
+} from "../../../utils/draftsUtils";
 import { showErrorToast, showWarningToast } from "../../../utils/authToast";
 import { loanTypeDocuments } from "../../../pages/docTypes";
 import { message } from "antd";
@@ -526,19 +526,6 @@ const ReviewChecklistPage = ({
       }
 
       const fullDeferral = await deferralApi.getDeferralById(matchedDeferral.id, token);
-      const documentCoverage = validateDeferralDocumentCoverage(fullDeferral, doc);
-
-      if (!documentCoverage.matches) {
-        const documentMismatchResult = {
-          status: "invalid",
-          message: buildDeferralDocumentCoverageMessage(doc),
-        };
-        setDeferralValidationByDoc((prev) => ({
-          ...prev,
-          [docIdx]: documentMismatchResult,
-        }));
-        return { valid: false, ...documentMismatchResult };
-      }
 
       if (!isDeferralFullyApproved(fullDeferral)) {
         const notApprovedResult = {
@@ -705,8 +692,16 @@ const ReviewChecklistPage = ({
   );
 
   const handleExplicitDraftSave = async () => {
-    keepLockOnCloseRef.current = true;
-    return persistDraft(true);
+    const saved = persistDraft(true);
+
+    if (!saved) {
+      return false;
+    }
+
+    keepLockOnCloseRef.current = false;
+    handleClose?.();
+    navigate(getDraftRoute("cocreator"));
+    return true;
   };
 
   const submitToRMWithUnlock = async () => {

@@ -1,5 +1,6 @@
 export const DEFERRAL_TABS = ["deferrals", "deferralCharts"];
 export const DCL_TABS = ["allDCLs", "dclCharts"];
+export const TAT_TABS = ["tatConsumed", "tatConsumedCharts"];
 
 export const NCBA_REPORT_THEME = {
   brand: "#6A4A3A",

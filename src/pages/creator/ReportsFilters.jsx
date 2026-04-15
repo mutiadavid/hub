@@ -13,6 +13,19 @@ export default function ReportsFilters({
 }) {
   const isDclTab = activeTab === "allDCLs" || activeTab === "dclCharts";
   const isDeferralTab = activeTab === "deferrals" || activeTab === "deferralCharts";
+  const isTatTab = activeTab === "tatConsumed" || activeTab === "tatConsumedCharts";
+  const statusOptions = [
+    "Pending",
+    "CoCreatorReview",
+    "RMReview",
+    "CoCheckerReview",
+    "Approved",
+    "Rejected",
+    "Active",
+    "Completed",
+    "Revived",
+    "Deferred",
+  ];
 
   return (
     <Card
@@ -73,8 +86,77 @@ export default function ReportsFilters({
         }
       `}</style>
       <Row gutter={[12, 12]} align="middle" wrap>
+        {isTatTab && (
+          <Col xs={24}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 12,
+                alignItems: "center",
+              }}
+            >
+              <div style={{ flex: "1 1 260px", minWidth: 240 }}>
+                <Input
+                  prefix={<SearchOutlined />}
+                  placeholder="Search by item ID, customer, DCL..."
+                  value={filters.searchText}
+                  onChange={(e) =>
+                    setFilters({ ...filters, searchText: e.target.value })
+                  }
+                  allowClear
+                  size="middle"
+                />
+              </div>
+              <div style={{ flex: "1 1 260px", minWidth: 240 }}>
+                <RangePicker
+                  style={{ width: "100%" }}
+                  placeholder={["Start Date", "End Date"]}
+                  value={filters.dateRange}
+                  onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
+                  size="middle"
+                />
+              </div>
+              <div style={{ flex: "0 0 220px" }}>
+                <Select
+                  style={{ width: "100%" }}
+                  placeholder="Filter by status"
+                  value={filters.status}
+                  onChange={(value) => setFilters({ ...filters, status: value })}
+                  size="middle"
+                >
+                  <Option value="">All Statuses</Option>
+                  {statusOptions.map((status) => (
+                    <Option key={status} value={status}>
+                      {status}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+              <div style={{ flex: "0 0 180px" }}>
+                <Select
+                  style={{ width: "100%" }}
+                  placeholder="Workflow type"
+                  value={filters.itemType}
+                  onChange={(value) => setFilters({ ...filters, itemType: value })}
+                  size="middle"
+                >
+                  <Option value="">All Types</Option>
+                  <Option value="Deferral">Deferrals</Option>
+                  <Option value="DCL">DCL</Option>
+                </Select>
+              </div>
+              <div>
+                <Button onClick={clearFilters} size="middle">
+                  Clear
+                </Button>
+              </div>
+            </div>
+          </Col>
+        )}
+
         {/* Left Section - Deferral Filter */}
-        {isDeferralTab && (
+        {isDeferralTab && !isTatTab && (
           <Col xs={24} sm={14} md={10} lg={9}>
             <RangePicker
               style={{ width: "100%" }}
@@ -87,7 +169,7 @@ export default function ReportsFilters({
         )}
 
         {/* Right Section - DCL Filter */}
-        {isDclTab && (
+        {isDclTab && !isTatTab && (
           <Col xs={24}>
             <div
               style={{
@@ -120,16 +202,11 @@ export default function ReportsFilters({
                   size="middle"
                 >
                   <Option value="">All Statuses</Option>
-                  <Option value="Pending">Pending</Option>
-                  <Option value="CoCreatorReview">Co-Creator Review</Option>
-                  <Option value="RMReview">RM Review</Option>
-                  <Option value="CoCheckerReview">Co-Checker Review</Option>
-                  <Option value="Approved">Approved</Option>
-                  <Option value="Rejected">Rejected</Option>
-                  <Option value="Active">Active</Option>
-                  <Option value="Completed">Completed</Option>
-                  <Option value="Revived">Revived</Option>
-                  <Option value="Deferred">Deferred</Option>
+                  {statusOptions.map((status) => (
+                    <Option key={status} value={status}>
+                      {status}
+                    </Option>
+                  ))}
                 </Select>
               </div>
               <div>

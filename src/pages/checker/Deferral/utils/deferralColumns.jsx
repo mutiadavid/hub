@@ -12,7 +12,9 @@ export const getDeferralTableColumns = () => [
     dataIndex: "deferralNumber",
     width: 150,
     render: (text) => (
-      <div style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>{text}</div>
+      <div className="creator-table-primary-cell">
+        <span className="creator-table-primary-value">{text || "-"}</span>
+      </div>
     ),
   },
   {
@@ -22,7 +24,7 @@ export const getDeferralTableColumns = () => [
     render: (text, record) => {
       const value = record.dclNo || record.dclNumber;
       return value ? (
-        <div style={{ fontWeight: 600, color: "var(--color-text-medium)" }}>{value}</div>
+        <span className="creator-table-muted">{value}</span>
       ) : (
         <Tag color="warning" style={{ fontWeight: 700 }}>
           Missing DCL
@@ -35,19 +37,20 @@ export const getDeferralTableColumns = () => [
     dataIndex: "customerName",
     width: 220,
     render: (text) => (
-      <div style={{ fontWeight: 600, color: "var(--color-text-dark)" }}>{text}</div>
+      <span className="creator-table-primary-value">{text || "-"}</span>
     ),
   },
   {
     title: "Loan Type",
     dataIndex: "loanType",
     width: 120,
-    render: (t) => <div style={{ color: "var(--color-text-light)" }}>{t || "—"}</div>,
+    render: (t) => <span className="creator-table-muted">{t || "-"}</span>,
   },
   {
-    title: "Status",
+    title: <span className="deferral-table__header-center">Status</span>,
     dataIndex: "status",
     width: 120,
+    align: "center",
     render: (status, record) => {
       const hasCreatorApproved = record.creatorApprovalStatus === "approved";
       const hasCheckerApproved = record.checkerApprovalStatus === "approved";
@@ -74,92 +77,63 @@ export const getDeferralTableColumns = () => [
 
       if (isFullyApproved) {
         return (
-          <Tag
-            icon={<CheckCircleOutlined />}
-            color="success"
-            style={{
-              fontWeight: 700,
-              backgroundColor: `${SUCCESS_GREEN}15`,
-              borderColor: SUCCESS_GREEN,
-              color: SUCCESS_GREEN,
-              borderRadius: 999,
-            }}
-          >
-            Approved
-          </Tag>
+          <span className="deferral-table__cell-center">
+            <span className="creator-badge creator-badge--approved">Approved</span>
+          </span>
         );
       }
 
       if (isPartiallyApproved) {
         return (
-          <Tag
-            color="processing"
-            style={{
-              fontWeight: 700,
-              borderRadius: 999,
-              background: "rgba(214, 189, 152, 0.12)",
-              color: "var(--color-primary-dark)",
-              borderColor: "rgba(214, 189, 152, 0.35)",
-            }}
-          >
-            Pending
-          </Tag>
+          <span className="deferral-table__cell-center">
+            <span className="creator-badge creator-badge--qs-review">Pending</span>
+          </span>
         );
       }
 
       if (isRejected) {
         return (
-          <Tag
-            icon={<CloseCircleOutlined />}
-            color="error"
-            style={{
-              fontWeight: 700,
-              backgroundColor: `${ERROR_RED}15`,
-              borderColor: ERROR_RED,
-              color: ERROR_RED,
-              borderRadius: 999,
-            }}
-          >
-            Rejected
-          </Tag>
+          <span className="deferral-table__cell-center">
+            <span className="creator-badge creator-badge--rework">Rejected</span>
+          </span>
         );
       }
 
       return (
-        <Tag
-          color="processing"
-          style={{
-            fontWeight: 700,
-            borderRadius: 999,
-            background: "rgba(214, 189, 152, 0.12)",
-            color: "var(--color-primary-dark)",
-            borderColor: "rgba(214, 189, 152, 0.35)",
-          }}
-        >
-          Pending
-        </Tag>
+        <span className="deferral-table__cell-center">
+          <span className="creator-badge creator-badge--qs-review">Pending</span>
+        </span>
       );
     },
   },
   {
-    title: "Days Sought",
+    title: <span className="deferral-table__header-center">Days Sought</span>,
     dataIndex: "daysSought",
     width: 110,
-    render: (d) => <div style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>{d || 0} days</div>,
+    align: "center",
+    render: (d) => (
+      <span className="deferral-table__cell-center">
+        <span className="creator-table-primary-value">{d || 0} days</span>
+      </span>
+    ),
   },
   {
-    title: "SLA",
+    title: <span className="deferral-table__header-center">SLA</span>,
     dataIndex: "slaExpiry",
     width: 160,
+    align: "center",
     render: (s, record) => (
-      <RealTimeSlaTag
-        slaExpiry={s}
-        startedAt={record?.createdAt}
-        emptyLabel="Not set"
-        minWidth={0}
-        displayStyle="text"
-        fontSize={12}
-      />
+      <span className="deferral-table__cell-center">
+        <RealTimeSlaTag
+          slaExpiry={s}
+          startedAt={record?.createdAt}
+          emptyLabel="Not set"
+          minWidth={0}
+          displayStyle="text"
+          fontSize={12}
+          businessHoursOnly
+        />
+      </span>
     ),
   },
 ];

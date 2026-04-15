@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Button, message } from "antd";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   useUpdateCheckerStatusMutation,
   useGetChecklistCommentsQuery,
@@ -29,6 +30,7 @@ import {
   cloneDraftRecord,
   saveDraft as saveDraftToStorage,
   deleteDraft,
+  getDraftRoute,
 } from "../../../utils/draftsUtils";
 import { showErrorToast, showSuccessToast, showWarningToast } from "../../../utils/authToast";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
@@ -69,6 +71,7 @@ const CheckerReviewChecklistModal = ({
   readOnly = false,
   onChecklistUpdate = null,
 }) => {
+  const navigate = useNavigate();
   const effectiveReadOnly = isReadOnly || readOnly;
   const auth = useSelector((state) => state.auth);
   const token = auth?.token || localStorage.getItem("token");
@@ -689,6 +692,9 @@ const CheckerReviewChecklistModal = ({
         key: "saveDraft",
         duration: 3,
       });
+      keepLockOnCloseRef.current = false;
+      onClose?.();
+      navigate(getDraftRoute("checker"));
     } catch (error) {
       console.error("Save draft error:", error);
       message.error({

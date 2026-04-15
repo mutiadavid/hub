@@ -1,16 +1,10 @@
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { createBaseQueryWithSession } from "./baseQueryWithSession";
 
 export const auditApi = createApi({
   reducerPath: "auditApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL + "/api",
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token || localStorage.getItem("token");
-      if (token) headers.set("authorization", `Bearer ${token}`);
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQueryWithSession({ baseUrl: import.meta.env.VITE_API_URL + "/api" }),
   tagTypes: ["AuditLogs", "OnlineUsers"],
   endpoints: (builder) => ({
     /* ================= GET AUDIT LOGS ================= */

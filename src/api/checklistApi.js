@@ -1,6 +1,7 @@
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "../config/runtimeConfig";
+import { createBaseQueryWithSession } from "./baseQueryWithSession";
 
 const getAuthUserDetails = (state) => {
   const authState = state?.auth || {};
@@ -103,14 +104,7 @@ const patchLockStateAcrossCaches = ({ dispatch, checklistId, lockState, currentU
 
 export const checklistApi = createApi({
   reducerPath: "checklistApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token;
-      if (token) headers.set("authorization", `Bearer ${token}`);
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQueryWithSession({ baseUrl: API_BASE_URL }),
   tagTypes: [
     "Checklist",
     "Document",

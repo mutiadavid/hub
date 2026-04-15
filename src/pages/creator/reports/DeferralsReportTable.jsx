@@ -75,7 +75,7 @@ export default function DeferralsReportTable({ rows }) {
     .deferrals-report-shell {
       background: var(--color-white);
       border-radius: 8px;
-      padding: 0 16px 16px;
+      padding: 0 12px 16px;
     }
     .reports-review-surface {
       width: 100%;
@@ -116,12 +116,16 @@ export default function DeferralsReportTable({ rows }) {
       background: transparent !important;
       color: var(--color-text-medium) !important;
       font-weight: 600;
-      font-size: 11px;
+      font-size: 12px;
       padding: 14px 12px !important;
       border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
       border-right: none !important;
       line-height: 1.2;
       text-transform: uppercase;
+      text-align: left;
+    }
+    .deferrals-report-table .ant-table-thead > tr > th.ant-table-cell-align-center {
+      text-align: center !important;
     }
     .deferrals-report-table .ant-table-tbody > tr > td {
       background: transparent !important;
@@ -132,6 +136,7 @@ export default function DeferralsReportTable({ rows }) {
       font-size: 12px;
       color: var(--color-text-medium);
       line-height: 1.25;
+      text-align: left;
     }
     .deferrals-report-table .ant-table-thead > tr > th::before,
     .deferrals-report-table .ant-table-cell::before,
@@ -155,6 +160,10 @@ export default function DeferralsReportTable({ rows }) {
     .deferrals-report-table .ant-table-tbody > tr > td:last-child,
     .deferrals-report-table .ant-table-thead > tr > th:last-child {
       padding-right: 0 !important;
+    }
+    .deferrals-report-table .ant-table-thead > tr > th.ant-table-cell,
+    .deferrals-report-table .ant-table-tbody > tr > td.ant-table-cell {
+      vertical-align: middle;
     }
     .deferrals-report-table .ant-pagination {
       margin-top: 18px !important;
@@ -183,7 +192,7 @@ export default function DeferralsReportTable({ rows }) {
     .deferrals-report-primary {
       color: var(--color-text-dark);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 400;
       letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;
@@ -197,16 +206,37 @@ export default function DeferralsReportTable({ rows }) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .deferrals-report-center {
+      display: inline-flex;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .deferrals-report-header-center {
+      display: inline-flex;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .deferrals-report-overdue {
+      display: inline-flex;
+      min-width: 36px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
     .deferrals-report-status {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 22px;
-      padding: 0 10px;
+      min-height: 24px;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.2;
       white-space: nowrap;
     }
     .deferrals-report-status--approved {
@@ -356,58 +386,67 @@ export default function DeferralsReportTable({ rows }) {
       ),
     },
     {
-      title: "Status",
+      title: <span className="deferrals-report-header-center">Status</span>,
       dataIndex: "status",
       key: "status",
       width: 130,
+      align: "center",
       ellipsis: true,
       render: (value) => {
         const statusMeta = getReportStatusMeta(value);
 
         return (
-          <span className={`deferrals-report-status deferrals-report-status--${statusMeta.variant}`}>
-            {statusMeta.label}
+          <span className="deferrals-report-center">
+            <span className={`deferrals-report-status deferrals-report-status--${statusMeta.variant}`}>
+              {statusMeta.label}
+            </span>
           </span>
         );
       },
     },
     {
-      title: "Created",
+      title: <span className="deferrals-report-header-center">Created</span>,
       key: "createdAt",
       width: 118,
+      align: "center",
       ellipsis: true,
       render: (_, row) =>
         row?.createdAt ? (
-          <span className="deferrals-report-muted">
+          <span className="deferrals-report-center deferrals-report-muted">
             {dayjs(row.createdAt).format("DD MMM YYYY")}
           </span>
         ) : (
-          <span className="deferrals-report-muted">-</span>
+          <span className="deferrals-report-center deferrals-report-muted">-</span>
         ),
     },
     {
-      title: "Due Date",
+      title: <span className="deferrals-report-header-center">Due Date</span>,
       key: "dueDate",
       width: 118,
+      align: "center",
       ellipsis: true,
       render: (_, row) => {
         const dueDate = getDueDate(row);
         return (
-          <span className="deferrals-report-muted">
+          <span className="deferrals-report-center deferrals-report-muted">
             {dueDate?.isValid() ? dueDate.format("DD MMM YYYY") : "-"}
           </span>
         );
       },
     },
     {
-      title: "Overdue Days",
+      title: <span className="deferrals-report-header-center">Overdue Days</span>,
       key: "overdueDays",
-      align: "right",
-      width: 92,
+      align: "center",
+      width: 110,
       render: (_, row) => {
         const overdueDays = getOverdueDays(row);
         return (
-          <span className="deferrals-report-primary">{overdueDays > 0 ? overdueDays : 0}</span>
+          <span className="deferrals-report-center">
+            <span className="deferrals-report-primary deferrals-report-overdue">
+              {overdueDays > 0 ? overdueDays : 0}
+            </span>
+          </span>
         );
       },
     },

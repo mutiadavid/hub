@@ -8,6 +8,11 @@ import {
 } from "@ant-design/icons";
 import PDFGenerator from "./PDFGenerator";
 import dayjs from "dayjs";
+import {
+  getComplianceDocumentsMissingResolvedExpiry,
+  getExpiryMeta,
+  getNaReasonMissingDocs,
+} from "../../../utils/documentUtils";
 import "../../../styles/creatorDesignSystem.css";
 
 const ActionButtons = ({
@@ -35,16 +40,31 @@ const ActionButtons = ({
   // Check if any compliance document has expired
   const hasExpiredDocuments = React.useMemo(() => {
     return docs.some((doc) => {
-      if (!doc.expiryDate) return false;
-      return dayjs(doc.expiryDate).isBefore(dayjs());
+      const expiryMeta = getExpiryMeta(doc.expiryDate);
+      return expiryMeta?.status === "expired";
     });
   }, [docs]);
+
+  // Check if any compliance document is missing expiry date
+  const complianceDocsMissingExpiry = React.useMemo(
+    () => getComplianceDocumentsMissingResolvedExpiry(docs),
+    [docs],
+  );
+
+  const hasComplianceDocsMissingExpiry = complianceDocsMissingExpiry.length > 0;
+  const naReasonMissingDocs = React.useMemo(() => getNaReasonMissingDocs(docs), [docs]);
+  const hasNaReasonMissingDocs = naReasonMissingDocs.length > 0;
+  const requiresComplianceExpiryForRmSubmission = ["cocreatorreview", "co_creator_review"].includes(
+    checklist?.status?.toLowerCase(),
+  );
 
   // Submit to CoChecker: All documents must have final status (tbo, sighted, deferred, submitted, etc.)
   const canSubmitToCoChecker =
     checklist?.status?.toLowerCase() === "cocreatorreview" &&
     docs.length > 0 &&
     !hasExpiredDocuments && // Block submission if any document is expired
+    !hasComplianceDocsMissingExpiry && // Block submission if compliance docs don't have expiry set
+    !hasNaReasonMissingDocs &&
     docs.every((doc) => {
       const docStatus = (doc.action || doc.status || "").toLowerCase();
       return [
@@ -65,10 +85,18 @@ const ActionButtons = ({
       checklist?.status?.toLowerCase(),
     ) &&
     docs.length > 0 &&
+    (!requiresComplianceExpiryForRmSubmission || !hasComplianceDocsMissingExpiry) &&
     docs.some((doc) => (doc.status || "").toLowerCase() === "pendingrm");
 
   // Fixed: Wrapper functions that handle close after submission
   const handleSubmitToRM = async () => {
+    if (requiresComplianceExpiryForRmSubmission && hasComplianceDocsMissingExpiry) {
+      message.error(
+        `Cannot submit to RM: ${complianceDocsMissingExpiry.length} compliance document(s) missing a valid expiry date. Set the expiry date so the document shows Current or Expired before submission.`,
+      );
+      return false;
+    }
+
     if (onSubmitToRM) {
       const result = await onSubmitToRM();
       // If submission was successful, close the modal
@@ -88,6 +116,21 @@ const ActionButtons = ({
       );
       message.error(
         `Cannot submit to checker: ${expiredDocs.length} expired document(s) found. Please update expired documents before submission.`,
+      );
+      return false;
+    }
+
+    // Check for compliance documents missing expiry date
+    if (hasComplianceDocsMissingExpiry) {
+      message.error(
+        `Cannot submit to Co-Checker: ${complianceDocsMissingExpiry.length} compliance document(s) missing a valid expiry date. Set the expiry date so the document shows Current or Expired before submission.`,
+      );
+      return false;
+    }
+
+    if (hasNaReasonMissingDocs) {
+      message.error(
+        `Cannot submit to Co-Checker: ${naReasonMissingDocs.length} N/A document(s) are missing a valid reason. Enter a reason in the Creator Comment column for each waived document before submission.`,
       );
       return false;
     }

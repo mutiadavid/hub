@@ -8,6 +8,10 @@ import {
 import { API_BASE_URL } from "../utils/constants";
 import { saveDraft as saveDraftToStorage } from "../utils/draftsUtils";
 import { showErrorToast, showSuccessToast } from "../utils/authToast";
+import {
+  getComplianceDocumentsMissingResolvedExpiry,
+  getNaReasonMissingDocs,
+} from "../utils/documentUtils";
 
 const getResolvedCheckerStatus = (doc) =>
   doc?.checkerStatus ||
@@ -39,6 +43,16 @@ export const useChecklistOperations = (
       const checklistId = checklist?.id || checklist?._id;
       if (!checklistId) {
         throw new Error("Checklist ID missing");
+      }
+
+      const requiresComplianceExpiryForRmSubmission = ["cocreatorreview", "co_creator_review"].includes(
+        String(checklist?.status || "").toLowerCase(),
+      );
+      const complianceDocsMissingExpiry = getComplianceDocumentsMissingResolvedExpiry(docs);
+      if (requiresComplianceExpiryForRmSubmission && complianceDocsMissingExpiry.length > 0) {
+        throw new Error(
+          `Cannot submit to RM: ${complianceDocsMissingExpiry.length} compliance document(s) missing a valid expiry date. Set the expiry date so the document shows Current or Expired before submission.`,
+        );
       }
 
       // Build document structure matching backend DocumentCategoryDto
@@ -124,6 +138,20 @@ export const useChecklistOperations = (
     }
 
     try {
+      const complianceDocsMissingExpiry = getComplianceDocumentsMissingResolvedExpiry(docs);
+      if (complianceDocsMissingExpiry.length > 0) {
+        throw new Error(
+          `Cannot submit to Co-Checker: ${complianceDocsMissingExpiry.length} compliance document(s) missing a valid expiry date. Set the expiry date so the document shows Current or Expired before submission.`,
+        );
+      }
+
+      const naReasonMissingDocs = getNaReasonMissingDocs(docs);
+      if (naReasonMissingDocs.length > 0) {
+        throw new Error(
+          `Cannot submit to Co-Checker: ${naReasonMissingDocs.length} N/A document(s) are missing a valid reason. Enter a reason in the Creator Comment column for each waived document before submission.`,
+        );
+      }
+
       message.loading({
         content: "Submitting checklist to Co-Checker...",
         key: "checkerSubmit",

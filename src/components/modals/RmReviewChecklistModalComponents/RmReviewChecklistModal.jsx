@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Modal, Button, message, Upload, Tag, Space } from "antd";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import {
   UploadOutlined,
@@ -27,14 +28,11 @@ import deferralApi from "../../../service/deferralApi";
 import { uploadFileToBackend } from "../../../utils/uploadUtils";
 import { showErrorToast, showSuccessToast, showWarningToast } from "../../../utils/authToast";
 import {
-  buildDeferralDocumentCoverageMessage,
-  validateDeferralDocumentCoverage,
-} from "../../../utils/deferralDocumentValidation";
-import {
   buildDraftCommentTrail,
   cloneDraftRecord,
   saveDraft as saveDraftToStorage,
   deleteDraft,
+  getDraftRoute,
 } from "../../../utils/draftsUtils";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
@@ -160,6 +158,7 @@ const RmReviewChecklistModal = ({
   readOnly = false,
   onChecklistUpdate = null,
 }) => {
+  const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const token = auth?.token || localStorage.getItem("token");
 
@@ -304,6 +303,12 @@ const RmReviewChecklistModal = ({
     }
     persistDraft(false);
     onClose?.();
+  };
+
+  const handleDraftSaved = () => {
+    keepLockOnCloseRef.current = false;
+    onClose?.();
+    navigate(getDraftRoute("rm"));
   };
 
   const markChecklistEdited = useCallback(() => {
@@ -702,21 +707,6 @@ const RmReviewChecklistModal = ({
         matchingCustomerDeferral.id,
         token,
       );
-      const documentCoverage = validateDeferralDocumentCoverage(fullDeferral, doc);
-
-      if (!documentCoverage.matches) {
-        const documentMismatchResult = {
-          status: "invalid",
-          message: buildDeferralDocumentCoverageMessage(doc),
-        };
-
-        setDeferralValidationByDoc((prev) => ({
-          ...prev,
-          [docIdx]: documentMismatchResult,
-        }));
-
-        return { valid: false, ...documentMismatchResult };
-      }
 
       const workflowStatus = fullDeferral?.status || matchingCustomerDeferral.status;
 
@@ -891,11 +881,91 @@ const RmReviewChecklistModal = ({
         ),
       );
 
-      message.success(`"${file.name}" uploaded successfully!`);
+      showSuccessToast(`"${file.name}" uploaded successfully.`);
     } catch (error) {
       console.error("Upload error:", error);
     } finally {
       setUploadingDocs((prev) => ({ ...prev, [docIdx]: false }));
+    }
+
+    return false;
+  };
+
+  const handleUploadSupportingDoc = async (file) => {
+    if (readOnly || !isActionAllowed) {
+      return false;
+    }
+
+    try {
+      markChecklistEdited();
+      setUploadingDocs((prev) => ({ ...prev, supporting: true }));
+
+      if (!resolvedChecklistId) {
+        throw new Error("Checklist ID missing");
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("checklistId", resolvedChecklistId);
+      formData.append("documentName", file.name);
+      formData.append("category", "Supporting Documents");
+
+      const response = await fetch(`${API_ORIGIN}/api/uploads`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${response.status} ${errorText}`);
+      }
+
+      const result = await response.json();
+      const uploadedDoc = result.data;
+
+      const newSupportingDoc = {
+        id: uploadedDoc.id || uploadedDoc._id,
+        _id: uploadedDoc._id || uploadedDoc.id,
+        name: uploadedDoc.name || uploadedDoc.fileName || file.name,
+        fileName: uploadedDoc.fileName || file.name,
+        category: "Supporting Documents",
+        status: "submitted",
+        action: "submitted",
+        creatorStatus: "submitted",
+        checkerStatus: null,
+        comment: "",
+        fileUrl: uploadedDoc.fileUrl,
+        fileSize: uploadedDoc.fileSize,
+        fileType: uploadedDoc.fileType,
+        uploadedBy: uploadedDoc.uploadedBy,
+        uploadedByRole: uploadedDoc.uploadedByRole || auth?.user?.role || "rm",
+        uploadedAt: uploadedDoc.createdAt || new Date().toISOString(),
+        isSupporting: true,
+        uploadData: {
+          fileName: uploadedDoc.fileName || file.name,
+          fileUrl: uploadedDoc.fileUrl,
+          createdAt: uploadedDoc.createdAt || new Date().toISOString(),
+          fileSize: uploadedDoc.fileSize,
+          fileType: uploadedDoc.fileType,
+          uploadedBy: uploadedDoc.uploadedBy || auth?.user?.name || "Relationship Manager",
+        },
+      };
+
+      setSupportingDocs((prevDocs) => [...prevDocs, newSupportingDoc]);
+      showSuccessToast(`"${file.name}" uploaded successfully.`);
+    } catch (error) {
+      console.error("Error uploading supporting document:", error);
+      showErrorToast(error.message || "Failed to upload supporting document");
+      throw error;
+    } finally {
+      setUploadingDocs((prev) => {
+        const next = { ...prev };
+        delete next.supporting;
+        return next;
+      });
     }
 
     return false;
@@ -1302,6 +1372,7 @@ const RmReviewChecklistModal = ({
         open={showDocumentSidebar}
         onClose={() => setShowDocumentSidebar(false)}
         getFullUrl={getFullUrl}
+        onUploadSupportingDoc={handleUploadSupportingDoc}
         readOnly={readOnly}
       />
 
@@ -1356,6 +1427,26 @@ const RmReviewChecklistModal = ({
                   variant="primary"
                   className="rm-review-pdf"
                 />
+                {!readOnly && (
+                  <Upload
+                    showUploadList={false}
+                    beforeUpload={(file) => {
+                      handleUploadSupportingDoc(file);
+                      return false;
+                    }}
+                    disabled={!isActionAllowed || Boolean(uploadingDocs.supporting)}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+                  >
+                    <Button
+                      className="rm-review-save-draft"
+                      icon={<UploadOutlined />}
+                      loading={Boolean(uploadingDocs.supporting)}
+                      disabled={!isActionAllowed}
+                    >
+                      Upload Supporting Doc
+                    </Button>
+                  </Upload>
+                )}
                 <SaveDraftButton
                   key="save"
                   checklist={{
@@ -1369,6 +1460,7 @@ const RmReviewChecklistModal = ({
                   currentUserName={currentUserName}
                   className="rm-review-save-draft"
                   icon={<SaveOutlined />}
+                  onSaved={handleDraftSaved}
                 />
               </Space>
 

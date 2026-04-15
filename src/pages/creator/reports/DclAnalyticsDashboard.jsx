@@ -9,6 +9,7 @@ import {
   Tooltip as RechartsTooltip,
   BarChart,
   Bar,
+  LabelList,
   CartesianGrid,
   XAxis,
   YAxis,
@@ -18,6 +19,19 @@ import { buildDclAnalytics } from "./reportUtils";
 import { DCL_BAR_COLORS, DCL_STATUS_COLORS, NCBA_REPORT_THEME, REPORT_COLOR_PALETTES } from "./reportTheme";
 
 const { Text } = Typography;
+
+const TOOLTIP_STYLE = {
+  backgroundColor: "rgba(255, 255, 255, 0.98)",
+  border: `1px solid ${NCBA_REPORT_THEME.line}`,
+  borderRadius: 12,
+  boxShadow: "0 10px 30px rgba(36, 26, 23, 0.08)",
+  padding: "10px 12px",
+};
+
+const getShareLabel = (value, total) => {
+  if (!total) return "0%";
+  return `${((value / total) * 100).toFixed(1)}%`;
+};
 
 export default function DclAnalyticsDashboard({ rows }) {
   const computed = useMemo(
@@ -90,14 +104,24 @@ export default function DclAnalyticsDashboard({ rows }) {
                     outerRadius={90}
                     innerRadius={48}
                     paddingAngle={2}
-                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                    label={({ value, percent }) => (percent >= 0.08 ? `${value} (${(percent * 100).toFixed(0)}%)` : "")}
                   >
                     {computed.statusRows.map((entry, index) => (
                       <Cell key={`${entry.name}-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Legend verticalAlign="bottom" height={36} />
-                  <RechartsTooltip />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={48}
+                    formatter={(value, entry) => `${value} (${entry?.payload?.value || 0})`}
+                  />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} DCLs (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.name || "Status",
+                    ]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -119,7 +143,13 @@ export default function DclAnalyticsDashboard({ rows }) {
                     tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }}
                   />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
-                  <RechartsTooltip />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} DCLs (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.name || "Loan Type",
+                    ]}
+                  />
                   <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={34}>
                     {computed.loanTypeRows.map((entry, index) => (
                       <Cell
@@ -127,6 +157,7 @@ export default function DclAnalyticsDashboard({ rows }) {
                         fill={DCL_BAR_COLORS[index % DCL_BAR_COLORS.length]}
                       />
                     ))}
+                    <LabelList dataKey="value" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -142,7 +173,13 @@ export default function DclAnalyticsDashboard({ rows }) {
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={NCBA_REPORT_THEME.line} />
               <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
               <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
-              <RechartsTooltip />
+              <RechartsTooltip
+                contentStyle={TOOLTIP_STYLE}
+                formatter={(value, _name, item) => [
+                  `${formatNumber(value)} DCLs (${getShareLabel(Number(value), computed.total)})`,
+                  item?.payload?.name || "Relationship Manager",
+                ]}
+              />
               <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={22}>
                 {computed.rmRows.map((entry, index) => (
                   <Cell
@@ -155,6 +192,7 @@ export default function DclAnalyticsDashboard({ rows }) {
                     ][index % 4]}
                   />
                 ))}
+                <LabelList dataKey="value" position="right" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>

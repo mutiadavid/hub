@@ -31,7 +31,7 @@ export const customModalStyles = `
 
 export const customTableStyles = `
   .deferrals-table .ant-table-wrapper {
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
     box-shadow: none;
     border: none;
@@ -49,22 +49,41 @@ export const customTableStyles = `
   .deferrals-table .ant-table-tbody > tr > td {
     border-bottom: 1px solid rgba(241, 245, 249, 0.95) !important;
     border-right: none !important;
-    padding: 12px 14px !important;
+    padding: 16px 12px !important;
     font-size: 12px;
-    color: #333;
+    color: var(--color-text-medium);
+    line-height: 1.25;
   }
   .deferrals-table .ant-table-tbody > tr.ant-table-row:hover > td {
-    background-color: rgba(214, 189, 152, 0.08) !important;
+    background-color: rgba(214, 189, 152, 0.06) !important;
     cursor: pointer;
   }
+  .deferrals-table .ant-table-thead > tr > th.ant-table-cell-align-center,
+  .deferrals-table .ant-table-tbody > tr > td.ant-table-cell-align-center {
+    text-align: center !important;
+  }
   .deferrals-table .ant-pagination {
-    padding: 16px 14px !important;
+    padding: 18px 14px 16px !important;
+    margin: 0 !important;
+    text-align: center;
+  }
+  .deferrals-table .ant-pagination .ant-pagination-item,
+  .deferrals-table .ant-pagination .ant-pagination-prev,
+  .deferrals-table .ant-pagination .ant-pagination-next {
+    border-radius: 999px !important;
+    border-color: transparent !important;
+    background: transparent !important;
+    min-width: 34px;
   }
   .deferrals-table .ant-pagination-item-active {
-    border-color: var(--color-primary-dark) !important;
-    background: var(--color-primary-dark) !important;
+    border-color: rgba(214, 189, 152, 0.18) !important;
+    background: rgba(214, 189, 152, 0.18) !important;
   }
   .deferrals-table .ant-pagination-item-active a {
-    color: #fff !important;
+    color: var(--color-text-dark) !important;
+    font-weight: 500;
+  }
+  .deferrals-table .ant-pagination .ant-select-selector {
+    border-radius: 999px !important;
   }
 `;

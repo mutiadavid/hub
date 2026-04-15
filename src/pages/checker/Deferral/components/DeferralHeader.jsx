@@ -1,5 +1,5 @@
 import React from "react";
-import { Badge, Button } from "antd";
+import { Button } from "antd";
 import { ReloadOutlined, DownloadOutlined } from "@ant-design/icons";
 
 const DeferralHeader = ({
@@ -13,9 +13,10 @@ const DeferralHeader = ({
     <div className="deferrals-header">
       <div className="deferrals-header__main">
         <div className="deferrals-header__copy">
-          <h2 className="deferrals-header__title">
-            Deferral Requests <Badge count={deferrals.length} />
-          </h2>
+          <div className="deferrals-header__titleRow">
+            <h2 className="deferrals-header__title">Deferral Requests</h2>
+            <span className="deferrals-header__count">{deferrals.length}</span>
+          </div>
           <p className="deferrals-header__meta">
             Deferrals currently assigned across checker workflows
           </p>

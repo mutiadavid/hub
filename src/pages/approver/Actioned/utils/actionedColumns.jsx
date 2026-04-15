@@ -157,6 +157,7 @@ export const getActionedColumns = () => [
           emptyLabel="N/A"
           minWidth={60}
           displayStyle="text"
+          businessHoursOnly
         />
       );
     },

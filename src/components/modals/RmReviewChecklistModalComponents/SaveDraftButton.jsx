@@ -16,6 +16,7 @@ const SaveDraftButton = ({
   currentUserName = "Current User",
   className = "",
   icon,
+  onSaved,
 }) => {
   const [isSavingDraft, setIsSavingDraft] = React.useState(false);
 
@@ -57,13 +58,21 @@ const SaveDraftButton = ({
       };
 
       // Save to localStorage instead of API
-      saveDraftToStorage("rm", draftData, checklistId);
+      const savedDraft = saveDraftToStorage("rm", draftData, checklistId);
+
+      if (!savedDraft) {
+        throw new Error("Failed to save draft");
+      }
 
       message.success({
         content: "Draft saved successfully!",
         key: "saveDraft",
         duration: 3,
       });
+
+      if (typeof onSaved === "function") {
+        onSaved(savedDraft);
+      }
     } catch (error) {
       console.error("Save draft error:", error);
       message.error({

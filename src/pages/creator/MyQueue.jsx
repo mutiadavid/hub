@@ -418,6 +418,7 @@ const Myqueue = ({ draftToRestore = null, setDraftToRestore = null }) => {
           minWidth={60}
           fontSize={12}
           displayStyle="text"
+          businessHoursOnly
         />
       ),
     },

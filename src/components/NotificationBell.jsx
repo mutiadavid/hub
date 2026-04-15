@@ -212,27 +212,27 @@ const NotificationBell = ({ onOpenChecklist }) => {
         .${DRAWER_CLASS}__action.ant-btn:hover,
         .${DRAWER_CLASS}__action.ant-btn:focus,
         .${DRAWER_CLASS}__action.ant-btn:active {
-          min-height: 24px !important;
-          height: 24px !important;
+          min-height: 22px !important;
+          height: 22px !important;
           border-radius: 5px !important;
-          padding: 0 8px !important;
-          font-size: 9px !important;
-          font-weight: 600 !important;
+          padding: 0 7px !important;
+          font-size: 10px !important;
+          font-weight: 700 !important;
           box-shadow: none !important;
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
         }
         .${DRAWER_CLASS}__action.ant-btn .anticon {
-          font-size: 11px !important;
+          font-size: 10px !important;
         }
         .${DRAWER_CLASS}__action--primary.ant-btn,
         .${DRAWER_CLASS}__action--primary.ant-btn:hover,
         .${DRAWER_CLASS}__action--primary.ant-btn:focus,
         .${DRAWER_CLASS}__action--primary.ant-btn:active {
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
-          border: none !important;
-          color: #fff !important;
+          background: #fff !important;
+          border: 1px solid rgba(203, 213, 225, 0.9) !important;
+          color: #1f2937 !important;
         }
         .${DRAWER_CLASS}__action--secondary.ant-btn,
         .${DRAWER_CLASS}__action--secondary.ant-btn:hover,
@@ -372,7 +372,7 @@ const NotificationBell = ({ onOpenChecklist }) => {
                         alignItems: "flex-start",
                         justifyContent: "space-between",
                         gap: 10,
-                        marginBottom: 6,
+                        marginBottom: 8,
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 10, minWidth: 0, flex: 1 }}>
@@ -395,14 +395,53 @@ const NotificationBell = ({ onOpenChecklist }) => {
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <div
                             style={{
-                              color: "#1f2937",
-                              fontSize: 12,
-                              fontWeight: 700,
-                              lineHeight: 1.25,
-                              wordBreak: "break-word",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 3,
+                              minWidth: 0,
                             }}
                           >
-                            {item.message || "Notification"}
+                            <div
+                              style={{
+                                color: "#1f2937",
+                                fontSize: 12,
+                                fontWeight: 700,
+                                lineHeight: 1.25,
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {item.message || "Notification"}
+                            </div>
+
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: 8,
+                                flexWrap: "wrap",
+                                color: "#64748b",
+                                fontSize: 10,
+                                lineHeight: 1.2,
+                              }}
+                            >
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                <CalendarOutlined />
+                                <span style={{ color: "#475569", fontWeight: 600 }}>
+                                  {timestamp}
+                                </span>
+                              </span>
+
+                              <Button
+                                size="small"
+                                className={`${DRAWER_CLASS}__action ${DRAWER_CLASS}__action--primary`}
+                                icon={<CheckOutlined />}
+                                onClick={() => handleMarkAsRead(item.id)}
+                                loading={isMarkingRead}
+                              >
+                                Mark as read
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -425,46 +464,7 @@ const NotificationBell = ({ onOpenChecklist }) => {
                       </Tag>
                     </div>
 
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        flexWrap: "wrap",
-                        marginBottom: 8,
-                        color: "#64748b",
-                        fontSize: 10,
-                      }}
-                    >
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <NotificationOutlined />
-                        <span style={{ color: "#1f2937", fontWeight: 600 }}>
-                          System update
-                        </span>
-                      </span>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <CalendarOutlined />
-                        <span style={{ color: "#1f2937", fontWeight: 600 }}>
-                          {timestamp}
-                        </span>
-                      </span>
-                    </div>
-
-                    <Text style={{ display: "block", color: "#64748b", fontSize: 11, lineHeight: 1.35, marginBottom: 8 }}>
-                      System workflow updates appear here. Hand-typed deferral comments stay in the comment trail.
-                    </Text>
-
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Button
-                        size="small"
-                        className={`${DRAWER_CLASS}__action ${DRAWER_CLASS}__action--primary`}
-                        icon={<CheckOutlined />}
-                        onClick={() => handleMarkAsRead(item.id)}
-                        loading={isMarkingRead}
-                      >
-                        Mark as read
-                      </Button>
-
                       {item.checklistId && onOpenChecklist && (
                         <Button
                           size="small"

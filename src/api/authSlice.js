@@ -38,6 +38,7 @@ const authSlice = createSlice({
           token: payload.token,
         }),
       );
+      localStorage.setItem("token", payload.token || "");
     },
     setMFASessionToken: (state, { payload }) => {
       state.mfaSessionToken = payload;
@@ -49,6 +50,7 @@ const authSlice = createSlice({
       state.mfaSessionToken = null;
       state.isMFARequired = false;
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
     },
   },
 });

@@ -4,20 +4,11 @@ import {
   Table,
   Spin,
   Empty,
-  Tag,
   Typography,
   Row,
   Col,
 } from "antd";
-import { FileTextOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import {
-  PRIMARY_BLUE,
-  SECONDARY_PURPLE,
-  SUCCESS_GREEN,
-  ERROR_RED,
-  WARNING_ORANGE,
-} from "../utils/constants";
 import RealTimeSlaTag from "../../../../components/common/RealTimeSlaTag";
 
 const { Text } = Typography;
@@ -28,6 +19,51 @@ const renderTabLabel = (label, count) => (
     <span className="creator-tab-count">{count}</span>
   </span>
 );
+
+const getStatusPresentation = (status, record) => {
+  const withdrawnBy =
+    record?.closedByName ||
+    record?.ClosedByName ||
+    record?.closedBy ||
+    record?.closedByUser;
+
+  if (withdrawnBy) {
+    return { label: "Withdrawn", tone: "rework" };
+  }
+
+  const normalizedStatus = String(status || "").trim().toLowerCase();
+
+  if (["deferral_requested", "pending_approval", "pending"].includes(normalizedStatus)) {
+    return { label: "Pending", tone: "pending" };
+  }
+
+  if (["in_review", "in review"].includes(normalizedStatus)) {
+    return { label: "In Review", tone: "qs-review" };
+  }
+
+  if (["partially_approved", "partially approved"].includes(normalizedStatus)) {
+    return { label: "Partially Approved", tone: "qs-review" };
+  }
+
+  if (["deferral_approved", "approved"].includes(normalizedStatus)) {
+    return { label: "Approved", tone: "approved" };
+  }
+
+  if (["deferral_rejected", "rejected"].includes(normalizedStatus)) {
+    return { label: "Rejected", tone: "rework" };
+  }
+
+  if (["close_requested", "close_requested_creator_approved"].includes(normalizedStatus)) {
+    return { label: "Close Requested", tone: "qs-review" };
+  }
+
+  return {
+    label: String(status || "Pending")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (character) => character.toUpperCase()),
+    tone: "draft",
+  };
+};
 
 /**
  * DeferralTable Component
@@ -54,11 +90,7 @@ const DeferralTable = ({
       width: 140,
       render: (text) => (
         <div className="creator-table-primary-cell">
-          <span className="creator-table-primary-value" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <FileTextOutlined style={{ color: SECONDARY_PURPLE }} />
-            {text}
-          </span>
-          <span className="creator-table-secondary-value">Deferral request</span>
+          <span className="creator-table-primary-value">{text || "-"}</span>
         </div>
       ),
     },
@@ -69,15 +101,7 @@ const DeferralTable = ({
       width: 120,
       render: (text, record) => {
         const value = record.dclNo || record.dclNumber;
-        return value ? (
-          <span className="creator-table-muted" style={{ color: SECONDARY_PURPLE, fontWeight: 600 }}>
-            {value}
-          </span>
-        ) : (
-          <Tag color="warning" style={{ fontWeight: 700 }}>
-            Missing DCL
-          </Tag>
-        );
+        return <span className="creator-table-muted">{value || "-"}</span>;
       },
     },
     {
@@ -95,65 +119,42 @@ const DeferralTable = ({
       render: (text) => <span className="creator-table-muted">{text || "Not Specified"}</span>,
     },
     {
-      title: "Status",
       dataIndex: "status",
       key: "status",
       width: 120,
+      align: "center",
+      title: <span className="deferral-table__header-center">Status</span>,
       render: (status, record) => {
-        const withdrawnBy =
-          record?.closedByName ||
-          record?.ClosedByName ||
-          record?.closedBy ||
-          record?.closedByUser;
-        
-        if (withdrawnBy)
-          return (
-            <span className="creator-badge creator-badge--rework">
-              Withdrawn
-            </span>
-          );
+        const statusPresentation = getStatusPresentation(status, record);
 
-        const s = (status || "").toLowerCase();
-        if (s === "deferral_requested" || s === "pending_approval")
-          return (
-            <span className="creator-badge creator-badge--pending">
-              Pending
-            </span>
-          );
-        if (s === "deferral_approved" || s === "approved")
-          return (
-            <span className="creator-badge creator-badge--approved">
-              Approved
-            </span>
-          );
-        if (s === "deferral_rejected" || s === "rejected")
-          return (
-            <span className="creator-badge creator-badge--rework">
-              Rejected
-            </span>
-          );
         return (
-          <span className="creator-badge creator-badge--draft">
-            {status}
+          <span className="deferral-table__cell-center">
+            <span className={`creator-badge creator-badge--${statusPresentation.tone}`}>
+              {statusPresentation.label}
+            </span>
           </span>
         );
       },
     },
     {
-      title: "TAT consumed",
       dataIndex: "slaExpiry",
       key: "slaExpiry",
       width: 100,
       fixed: "right",
+      align: "center",
+      title: <span className="deferral-table__header-center">TAT Consumed</span>,
       render: (date, record) => {
         return (
-          <RealTimeSlaTag
-            slaExpiry={date}
-            startedAt={record?.createdAt}
-            emptyLabel="N/A"
-            minWidth={60}
-            displayStyle="text"
-          />
+          <span className="deferral-table__cell-center">
+            <RealTimeSlaTag
+              slaExpiry={date}
+              startedAt={record?.createdAt}
+              emptyLabel="N/A"
+              minWidth={60}
+              displayStyle="text"
+              businessHoursOnly
+            />
+          </span>
         );
       },
     },
@@ -241,15 +242,23 @@ const DeferralTable = ({
           box-shadow: none !important;
           background: transparent !important;
         }
+        .myqueue-table .ant-table {
+          table-layout: fixed;
+          width: 100%;
+        }
         .myqueue-table .ant-table-thead > tr > th {
           background: transparent !important;
           color: var(--color-text-medium) !important;
           font-weight: 600;
-          font-size: 11px;
+          font-size: 12px;
           padding: 14px 12px !important;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
           border-right: none !important;
           text-transform: uppercase;
+          line-height: 1.2;
+        }
+        .myqueue-table .ant-table-thead > tr > th.ant-table-cell-align-center {
+          text-align: center !important;
         }
         .myqueue-table .ant-table-tbody > tr > td {
           background: transparent !important;
@@ -258,6 +267,18 @@ const DeferralTable = ({
           padding: 16px 12px !important;
           font-size: 12px;
           color: var(--color-text-medium);
+          line-height: 1.25;
+        }
+        .myqueue-table .ant-table-thead > tr > th::before,
+        .myqueue-table .ant-table-cell::before,
+        .myqueue-table .ant-table-cell::after,
+        .myqueue-table .ant-table-wrapper::before,
+        .myqueue-table .ant-table-wrapper::after,
+        .myqueue-table .ant-table-container::before,
+        .myqueue-table .ant-table-container::after,
+        .myqueue-table .ant-table-thead > tr::after,
+        .myqueue-table .ant-table-tbody > tr::after {
+          display: none !important;
         }
         .myqueue-table .ant-table-tbody > tr:hover > td {
           background-color: rgba(214, 189, 152, 0.06) !important;
@@ -300,7 +321,7 @@ const DeferralTable = ({
         .creator-table-primary-value {
           color: var(--color-text-dark);
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 400;
           letter-spacing: -0.01em;
           white-space: nowrap;
           overflow: hidden;
@@ -308,8 +329,8 @@ const DeferralTable = ({
         }
         .creator-table-secondary-value {
           color: var(--color-text-light);
-          font-size: 8px;
-          line-height: 1.3;
+          font-size: 12px;
+          line-height: 1.35;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -321,6 +342,29 @@ const DeferralTable = ({
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+        }
+        .deferral-table__header-center {
+          display: inline-flex;
+          width: 100%;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        }
+        .deferral-table__cell-center {
+          display: inline-flex;
+          width: 100%;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        }
+        .myqueue-table .creator-badge {
+          min-height: 24px;
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 500;
+          line-height: 1.2;
+          white-space: nowrap;
         }
         .creator-queue-footer {
           display: flex;

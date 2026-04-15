@@ -15,6 +15,7 @@ import {
   FileTextOutlined,
   FilePdfOutlined,
   BarChartOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -26,14 +27,19 @@ import useReportsFilters from "../../hooks/useReportsFilters";
 import DclAnalyticsDashboard from "./reports/DclAnalyticsDashboard";
 import DeferralsDashboard from "./reports/DeferralsDashboard";
 import DeferralsReportTable from "./reports/DeferralsReportTable";
+import DeferralTATTable from "./reports/DeferralTATTable";
+import TATConsumedDashboard from "./reports/TATConsumedDashboard";
+import TATConsumedTablesView from "./reports/TATConsumedTablesView";
 import {
   DCL_TABS,
   DEFERRAL_TABS,
+  TAT_TABS,
 } from "./reports/reportTheme";
-import { getDocumentEntries, safeLower } from "./reports/reportUtils";
+import { buildTATTableRows, getDocumentEntries, safeLower } from "./reports/reportUtils";
 import "../../styles/creatorDesignSystem.css";
 
 const { Text } = Typography;
+const LIVE_REPORT_TICK_MS = 1000;
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState("deferrals");
@@ -41,18 +47,34 @@ export default function Reports() {
   const [allDeferrals, setAllDeferrals] = useState([]);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportingFormat, setExportingFormat] = useState("");
+  const [reportNow, setReportNow] = useState(() => dayjs());
   const token = useSelector((state) => state?.auth?.token);
   const reportContentRef = React.useRef(null);
 
   const { filters, setFilters, clearFilters } = useReportsFilters();
+  const isTatTab = TAT_TABS.includes(activeTab);
+
+  useEffect(() => {
+    setReportNow(dayjs());
+
+    if (!isTatTab) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setReportNow(dayjs());
+    }, LIVE_REPORT_TICK_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [isTatTab]);
 
   const { data: allDcls = [] } = useGetAllCoCreatorChecklistsQuery(undefined, {
-    skip: !DCL_TABS.includes(activeTab),
+    skip: !DCL_TABS.includes(activeTab) && !TAT_TABS.includes(activeTab),
     refetchOnMountOrArgChange: true,
   });
 
   useEffect(() => {
-    if (!DEFERRAL_TABS.includes(activeTab)) {
+    if (!DEFERRAL_TABS.includes(activeTab) && !TAT_TABS.includes(activeTab)) {
       return;
     }
 
@@ -91,6 +113,10 @@ export default function Reports() {
   }, [activeTab, token]);
 
   const filteredDeferrals = useMemo(() => {
+    if (isTatTab && filters.itemType === "DCL") {
+      return [];
+    }
+
     let rows = [...allDeferrals];
 
     if (filters.searchText) {
@@ -123,33 +149,93 @@ export default function Reports() {
       });
     }
 
+    if (isTatTab && filters.status) {
+      rows = rows.filter(
+        (deferral) => String(deferral?.status || "").toLowerCase() === String(filters.status).toLowerCase(),
+      );
+    }
+
     return rows;
-  }, [allDeferrals, filters]);
+  }, [allDeferrals, filters, isTatTab]);
 
   const filteredAllDcls = useMemo(() => {
+    if (isTatTab && filters.itemType === "Deferral") {
+      return [];
+    }
+
     return (allDcls || []).filter((row) => {
       const searchMatch = !filters.searchText
         ? true
         : row.dclNo?.toLowerCase().includes(filters.searchText.toLowerCase()) ||
           row.customerName?.toLowerCase().includes(filters.searchText.toLowerCase());
 
+      const dateMatch = !isTatTab || !filters.dateRange || !filters.dateRange[0] || !filters.dateRange[1]
+        ? true
+        : (() => {
+            const createdAt = row.createdAt ? dayjs(row.createdAt) : null;
+            return (
+              createdAt &&
+              createdAt.isValid() &&
+              createdAt.isBetween(
+                filters.dateRange[0].startOf("day"),
+                filters.dateRange[1].endOf("day"),
+                null,
+                "[]",
+              )
+            );
+          })();
+
       const statusMatch = !filters.status
         ? true
         : String(row.status).toLowerCase() === String(filters.status).toLowerCase();
 
-      return searchMatch && statusMatch;
+      return searchMatch && statusMatch && dateMatch;
     });
-  }, [allDcls, filters]);
+  }, [allDcls, filters, isTatTab]);
+
+  const tatExportRows = useMemo(
+    () => {
+      const nowAt = reportNow;
+      const deferralTatRows = DeferralTATTable.buildRows(filteredDeferrals, nowAt);
+      const dclTatRows = buildTATTableRows([], filteredAllDcls, nowAt).filter(
+        (row) => row.workflowType === "DCL",
+      );
+
+      return [...deferralTatRows, ...dclTatRows]
+        .sort((left, right) => (right.totalTatMinutes || 0) - (left.totalTatMinutes || 0))
+        .map((row) => ({
+        itemId: row.itemId,
+        workflowType: row.workflowType,
+        customerName: row.customerName,
+        status: row.status,
+        createdAt: row.createdAt,
+        rmTat: row.rmTat.label,
+        approversTat: row.approversTat?.label || "",
+        coCreatorTat: row.coCreatorTat.label,
+        coCheckerTat: row.coCheckerTat.label,
+        totalTat: row.totalTatLabel,
+        totalTatDays: row.totalTatDays,
+        rmCompletedAt: row.rmCompletedAt,
+        firstApproverAt: row.firstApproverAt,
+        lastApproverAt: row.lastApproverAt,
+        coCreatorCompletedAt: row.coCreatorCompletedAt,
+        coCheckerCompletedAt: row.coCheckerCompletedAt || row.creatorCompletedAt,
+      }));
+    },
+    [filteredAllDcls, filteredDeferrals, reportNow],
+  );
 
   const currentExportRows = useMemo(
-    () => (DCL_TABS.includes(activeTab) ? filteredAllDcls : filteredDeferrals),
-    [activeTab, filteredAllDcls, filteredDeferrals],
+    () => (isTatTab ? tatExportRows : DCL_TABS.includes(activeTab) ? filteredAllDcls : filteredDeferrals),
+    [activeTab, filteredAllDcls, filteredDeferrals, isTatTab, tatExportRows],
   );
 
   const currentExportLabel = useMemo(() => {
     if (activeTab === "allDCLs") return "all_dcls";
     if (activeTab === "dclCharts") return "dcl_charts";
     if (activeTab === "deferralCharts") return "deferral_charts";
+    if (activeTab === "tatConsumed") return "tat_consumed";
+    if (activeTab === "tatConsumedCharts") return "tat_consumed_charts";
     return "deferrals";
   }, [activeTab]);
 
@@ -304,6 +390,24 @@ export default function Reports() {
         return <AllDCLsTable filters={filters} />;
       case "dclCharts":
         return <DclAnalyticsDashboard rows={filteredAllDcls} />;
+      case "tatConsumed":
+        if (loading) {
+          return (
+            <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+              <Spin />
+            </div>
+          );
+        }
+        return <TATConsumedTablesView deferralRows={filteredDeferrals} dclRows={filteredAllDcls} />;
+      case "tatConsumedCharts":
+        if (loading) {
+          return (
+            <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+              <Spin />
+            </div>
+          );
+        }
+        return <TATConsumedDashboard deferralRows={filteredDeferrals} dclRows={filteredAllDcls} />;
       default:
         return null;
     }
@@ -433,8 +537,54 @@ export default function Reports() {
       color: var(--color-text-light);
     }
     .reports-export-modal .ant-modal-content {
-      border-radius: 18px;
+      border-radius: 12px;
       overflow: hidden;
+      border: 1px solid rgba(214, 189, 152, 0.2);
+      box-shadow: 0 20px 45px rgba(17, 24, 39, 0.16);
+      padding: 0 !important;
+      background: var(--color-white) !important;
+    }
+    .reports-export-modal .ant-modal-header {
+      margin: 0 !important;
+      padding: 18px 20px 12px !important;
+      border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+      background: var(--color-white) !important;
+    }
+    .reports-export-modal .ant-modal-title {
+      color: var(--color-text-dark) !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      line-height: 1.2;
+    }
+    .reports-export-modal .ant-modal-close {
+      top: 14px !important;
+      inset-inline-end: 14px !important;
+      color: var(--color-text-medium) !important;
+    }
+    .reports-export-modal .ant-modal-close:hover {
+      color: var(--color-text-dark) !important;
+      background: rgba(214, 189, 152, 0.12) !important;
+    }
+    .reports-export-modal .ant-modal-body {
+      padding: 20px !important;
+      background: var(--color-bg) !important;
+    }
+    .reports-export-modal__title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-right: 28px;
+    }
+    .reports-export-modal__title-text {
+      color: var(--color-text-dark);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .reports-export-modal__title-copy {
+      color: var(--color-text-light);
+      font-size: 12px;
+      line-height: 1.45;
     }
     .reports-export-options {
       display: flex;
@@ -442,24 +592,36 @@ export default function Reports() {
       gap: 10px;
     }
     .reports-export-option {
-      height: 42px;
-      border-radius: 12px;
-      border-color: #edf2e7;
-      background: #f8faf5;
-      color: #394150;
-      font-weight: 600;
-      box-shadow: none;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 10px !important;
+      min-height: 44px !important;
+      height: 44px;
+      padding: 0 14px !important;
+      border-radius: 8px !important;
+      border: 1px solid rgba(214, 189, 152, 0.22) !important;
+      background: var(--color-white) !important;
+      color: var(--color-text-dark) !important;
+      font-weight: 600 !important;
+      box-shadow: none !important;
     }
     .reports-export-option:hover,
     .reports-export-option:focus {
-      border-color: #e6eedc !important;
-      background: #f1f5ea !important;
-      color: #202733 !important;
+      border-color: rgba(26, 54, 54, 0.22) !important;
+      background: #faf7f3 !important;
+      color: var(--color-text-dark) !important;
+      box-shadow: none !important;
+    }
+    .reports-export-option .anticon {
+      color: var(--color-primary-dark);
+      font-size: 15px;
     }
     .reports-export-note {
       font-size: 12px;
-      color: #8a939d !important;
-      margin-top: 2px;
+      color: var(--color-text-light) !important;
+      margin-top: 4px;
+      padding-left: 2px;
     }
     .creator-reports-content .ant-card,
     .creator-reports-content .ant-card-body {
@@ -549,6 +711,22 @@ export default function Reports() {
                     </>
                   ),
                 },
+                {
+                  key: "tatConsumed",
+                  label: (
+                    <>
+                      <ClockCircleOutlined /> TAT Consumed
+                    </>
+                  ),
+                },
+                {
+                  key: "tatConsumedCharts",
+                  label: (
+                    <>
+                      <BarChartOutlined /> TAT Charts
+                    </>
+                  ),
+                },
               ]}
             />
 
@@ -578,14 +756,21 @@ export default function Reports() {
       </div>
 
       <div className="creator-reports-generated">
-        Generated on {dayjs().format("DD/MM/YYYY HH:mm:ss")}
+        Generated on {reportNow.format("DD/MM/YYYY HH:mm:ss")}
       </div>
 
       <Modal
         open={exportModalOpen}
         onCancel={() => setExportModalOpen(false)}
         footer={null}
-        title="Download Report"
+        title={(
+          <div className="reports-export-modal__title">
+            <span className="reports-export-modal__title-text">Download Report</span>
+            <span className="reports-export-modal__title-copy">
+              Export the current tab using the active report filters.
+            </span>
+          </div>
+        )}
         width={420}
         centered
         className="reports-export-modal"

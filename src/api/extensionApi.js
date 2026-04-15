@@ -1,16 +1,10 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "../config/runtimeConfig";
+import { createBaseQueryWithSession } from "./baseQueryWithSession";
 
 export const extensionApi = createApi({
     reducerPath: "extensionApi",
-    baseQuery: fetchBaseQuery({
-        baseUrl: API_BASE_URL,
-        prepareHeaders: (headers, { getState }) => {
-            const token = getState().auth.token;
-            if (token) headers.set("authorization", `Bearer ${token}`);
-            return headers;
-        },
-    }),
+    baseQuery: createBaseQueryWithSession({ baseUrl: API_BASE_URL }),
     tagTypes: ["Extension"],
 
     endpoints: (builder) => ({

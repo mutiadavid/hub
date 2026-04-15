@@ -5,11 +5,12 @@ export default function useReportsFilters(initialFilters = {}) {
     searchText: "",
     dateRange: null,
     status: "",
+    itemType: "",
     ...initialFilters,
   });
 
   const clearFilters = () =>
-    setFilters({ searchText: "", dateRange: null, status: "" });
+    setFilters({ searchText: "", dateRange: null, status: "", itemType: "" });
 
   return { filters, setFilters, clearFilters };
 }

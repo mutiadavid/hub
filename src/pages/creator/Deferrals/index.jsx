@@ -1526,6 +1526,7 @@ const Deferrals = ({ userId }) => {
             emptyLabel="Not set"
             minWidth={76}
             displayStyle="text"
+            businessHoursOnly
           />
         ),
       },

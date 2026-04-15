@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { normalizeBackendDate } from "../../../utils/checklistUtils";
 
 const RISK_PRIORITY_ORDER = [
   "Primary Allowable",
@@ -428,5 +429,890 @@ export function buildDeferralsAnalytics(rows) {
     riskClassificationChartData: riskClassificationRows,
     rmChartData: rmCountRows.slice(0, 6),
     deferredItemChartData: deferredItemRows.slice(0, 6),
+  };
+}
+
+// TAT (Turnaround Time) Utilities
+// Business hours: 8am-5pm (9 hours per day), Monday-Friday only
+
+// Track which checklists have been debug logged to avoid mutating frozen objects
+const LOGGED_CHECKLISTS = new Set();
+
+// EXACT LOG MESSAGES FROM CONTROLLERS - DO NOT CHANGE THESE PATTERNS
+// See CoCreatorController.cs, RMController.cs, CheckerController.cs for source
+
+// Stage 1: CO Creator Initial ends when submitted to RM
+// CoCreatorController.cs line 2033: "Submitted to RM for review"
+const CHECKLIST_CO_CREATOR_INITIAL_SUBMIT_PATTERNS = [
+  /submitted to rm for review/i,
+  /submitted to rm/i,
+];
+
+// Stage 2: RM Review ends when returned to CO Creator
+// RMController.cs line 368: "Checklist submitted back to Co-Creator by RM"
+const CHECKLIST_RM_EXIT_PATTERNS = [
+  /checklist submitted back to co-?creator by rm/i,
+  /submitted back to co-?creator/i,
+  /returned to co-?creator/i,
+];
+
+// Stage 3: CO Creator Revision ends when submitted to Checker
+// CoCreatorController.cs line 2162: "Submitted to Co-Checker for final approval"
+const CHECKLIST_CO_CREATOR_EXIT_PATTERNS = [
+  /submitted to co-?checker for final approval/i,
+  /submitted to co-?checker/i,
+  /sent for approval/i,
+];
+
+// Stage 4: CO Checker Final - completion when approved
+// CheckerController.cs line 954: "DCL approved by checker"
+const CHECKLIST_CO_CHECKER_EXIT_PATTERNS = [
+  /dcl approved by checker/i,
+  /dcl approved/i,
+  /approved/i,
+  /fully approved/i,
+  /completed/i,
+];
+
+const CHECKLIST_FINAL_STATUSES = new Set([
+  "approved",
+  "completed",
+  "rejected",
+  "deferred",
+  "revived",
+]);
+
+const DEFERRAL_FINAL_STATUSES = new Set([
+  "approved",
+  "rejected",
+  "returned_for_rework",
+  "closed",
+  "deferral_closed",
+  "close_requested",
+  "close_requested_creator_approved",
+]);
+
+const toMoment = (value) => {
+  if (!value) return null;
+  const normalized = normalizeBackendDate(value);
+  if (!normalized) return null;
+  return dayjs(normalized);
+};
+
+const momentMax = (...values) => {
+  const valid = values.filter(Boolean);
+  if (!valid.length) return null;
+  return valid.reduce((highest, current) => (current.isAfter(highest) ? current : highest));
+};
+
+const momentMin = (...values) => {
+  const valid = values.filter(Boolean);
+  if (!valid.length) return null;
+  return valid.reduce((lowest, current) => (current.isBefore(lowest) ? current : lowest));
+};
+
+const normalizeStageBoundary = (value, minimum) => {
+  if (!value) return null;
+  if (!minimum) return value;
+  return value.isBefore(minimum) ? minimum : value;
+};
+
+const resolveStageBoundary = (explicitBoundary, fallbackCandidates = [], minimum = null) =>
+  normalizeStageBoundary(explicitBoundary || momentMin(...fallbackCandidates), minimum);
+
+// Business hours TAT calculation: 8am-5pm (9 hours/day), Monday-Friday only
+const calculateBusinessHoursTAT = (start, end) => {
+  if (!start || !end) return null;
+
+  const BUSINESS_HOUR_START = 8; // 8am
+  const BUSINESS_HOUR_END = 17; // 5pm
+  const BUSINESS_HOURS_PER_DAY = BUSINESS_HOUR_END - BUSINESS_HOUR_START; // 9 hours
+
+  let current = start.clone();
+  let totalMinutes = 0;
+
+  while (current.isBefore(end)) {
+    // Skip weekends (Saturday=6, Sunday=0)
+    if (current.day() === 0 || current.day() === 6) {
+      current = current.add(1, "day").startOf("day").hour(BUSINESS_HOUR_START);
+      continue;
+    }
+
+    // Get current time's hour
+    const currentHour = current.hour();
+
+    // If before business hours, jump to business start
+    if (currentHour < BUSINESS_HOUR_START) {
+      current = current.hour(BUSINESS_HOUR_START).minute(0).second(0);
+    }
+    // If after business hours, jump to next day's business start
+    else if (currentHour >= BUSINESS_HOUR_END) {
+      current = current.add(1, "day").startOf("day").hour(BUSINESS_HOUR_START);
+      continue;
+    }
+
+    // Calculate time until end of business hours or until end timestamp
+    const endOfBusinessToday = current.clone().hour(BUSINESS_HOUR_END).minute(0).second(0);
+    const timeToUse = end.isBefore(endOfBusinessToday) ? end : endOfBusinessToday;
+
+    if (current.isBefore(timeToUse)) {
+      totalMinutes += timeToUse.diff(current, "minute");
+      current = timeToUse;
+    }
+
+    // If we haven't reached end, move to next business day
+    if (current.isBefore(end)) {
+      current = current.add(1, "day").startOf("day").hour(BUSINESS_HOUR_START);
+    } else {
+      break;
+    }
+  }
+
+  return totalMinutes > 0 ? totalMinutes : 0;
+};
+
+const minutesBetween = (start, end) => {
+  if (!start || !end) return null;
+  // Use business hours calculation instead of 24-hour
+  const businessMinutes = calculateBusinessHoursTAT(start, end);
+  return businessMinutes >= 0 ? businessMinutes : null;
+};
+
+const elapsedMinutesBetween = (start, end) => {
+  if (!start || !end) return null;
+  const elapsedMinutes = end.diff(start, "minute", true);
+  return elapsedMinutes >= 0 ? elapsedMinutes : null;
+};
+
+const toDayValue = (minutes) => {
+  // Convert business hours to business days (9 hours per day)
+  const businessHoursPerDay = 9;
+  const minutesPerBusinessDay = businessHoursPerDay * 60;
+  return Number(((minutes || 0) / minutesPerBusinessDay).toFixed(2));
+};
+
+export const formatTatDuration = (minutes, fallback = "-") => {
+  if (minutes == null) return fallback;
+  if (minutes < 0) return fallback;
+
+  // Business hours: 9 hours per day
+  const BUSINESS_HOURS_PER_DAY = 9;
+  const businessDays = Math.floor(minutes / (BUSINESS_HOURS_PER_DAY * 60));
+  const remainingMinutes = minutes % (BUSINESS_HOURS_PER_DAY * 60);
+  const hours = Math.floor(remainingMinutes / 60);
+  const mins = Math.round(remainingMinutes % 60);
+
+  // Show exact time - break down by days, hours, minutes, and seconds
+  const parts = [];
+  if (businessDays > 0) parts.push(`${businessDays}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (mins > 0) parts.push(`${mins}m`);
+
+  if (parts.length === 0) {
+    // Show exact seconds/fractions for times under 1 minute
+    const seconds = Math.round((minutes % 1) * 60);
+    return seconds > 0 ? `${seconds}s` : `0m`;
+  }
+  
+  return parts.join(" ");
+};
+
+const createStageMetric = ({ startAt, completedAt, nowAt = dayjs(), liveWhenInProgress = true }) => {
+  const hasStarted = Boolean(startAt);
+  const hasCompleted = Boolean(completedAt);
+  const effectiveEnd = hasCompleted ? completedAt : hasStarted ? nowAt : null;
+  const minutes = !hasStarted
+    ? 0
+    : hasCompleted || !liveWhenInProgress
+      ? minutesBetween(startAt, effectiveEnd) ?? 0
+      : elapsedMinutesBetween(startAt, effectiveEnd) ?? 0;
+  const state = !hasStarted ? "not_started" : hasCompleted ? "completed" : "in_progress";
+
+  return {
+    startAt: startAt || null,
+    endAt: hasCompleted ? completedAt : null,
+    minutes,
+    days: toDayValue(minutes),
+    state,
+    label: `${formatTatDuration(minutes, "0m")}${state === "in_progress" ? " (in progress)" : ""}`,
+  };
+};
+
+const combineStageMetrics = (stages = []) => {
+  const validStages = stages.filter(Boolean);
+  const minutes = validStages.reduce((sum, stage) => sum + (stage?.minutes || 0), 0);
+  const hasStarted = validStages.some((stage) => stage?.state && stage.state !== "not_started");
+  const hasInProgress = validStages.some((stage) => stage?.state === "in_progress");
+  const state = hasInProgress ? "in_progress" : hasStarted ? "completed" : "not_started";
+
+  return {
+    minutes,
+    days: toDayValue(minutes),
+    state,
+    label: `${formatTatDuration(minutes, "0m")}${state === "in_progress" ? " (in progress)" : ""}`,
+  };
+};
+
+const resolveFirstMoment = (...values) => {
+  for (const value of values) {
+    const parsed = toMoment(value);
+    if (parsed) return parsed;
+  }
+  return null;
+};
+
+const getChecklistLogs = (checklist) => {
+  const logs = Array.isArray(checklist?.logs)
+    ? checklist.logs
+    : Array.isArray(checklist?.Logs)
+      ? checklist.Logs
+      : [];
+
+  return logs
+    .map((entry) => ({
+      message: entry?.message || entry?.Message || "",
+      timestamp: toMoment(entry?.timestamp || entry?.Timestamp || entry?.createdAt || entry?.CreatedAt),
+    }))
+    .filter((entry) => entry.timestamp)
+    .sort((left, right) => left.timestamp.valueOf() - right.timestamp.valueOf());
+};
+
+const findFirstLogTimestamp = (logs, patterns) => {
+  const match = logs.find((entry) => patterns.some((pattern) => pattern.test(entry.message || "")));
+  return match?.timestamp || null;
+};
+
+const getChecklistCurrentStage = (checklist) => {
+  const status = safeLower(checklist?.status);
+  // Match against exact enum values in various formats: PascalCase, camelCase, lowercase, snake_case
+  if (["approved", "rejected", "completed"].includes(status)) return "done";
+  if (["cocheckerreview", "cochecker_review", "co_checker_review"].includes(status)) return "coChecker";
+  if (["cocreatorreview", "cocreator_review", "co_creator_review", "active"].includes(status)) return "coCreator";
+  if (["rmreview", "rm_review"].includes(status)) return "rm";
+  return "rm"; // Default to rm for Pending and other states
+};
+
+const getChecklistTerminalTimestamp = (checklist, logs) => {
+  const completedAt = toMoment(checklist?.completedAt);
+  const updatedAt = toMoment(checklist?.updatedAt);
+  const lastLogAt = logs.length ? logs[logs.length - 1].timestamp : null;
+  const status = safeLower(checklist?.status);
+  return CHECKLIST_FINAL_STATUSES.has(status)
+    ? momentMax(completedAt, updatedAt, lastLogAt)
+    : momentMax(updatedAt, lastLogAt);
+};
+
+const buildChecklistTatBreakdown = (checklist, nowAt = dayjs()) => {
+  // Extract createdAt with proper normalization - try multiple common fields
+  const createdAt = toMoment(
+    checklist?.createdAt ||
+    checklist?.CreatedAt ||
+    checklist?.created_at ||
+    checklist?.timestamp
+  );
+  const updatedAt = toMoment(checklist?.updatedAt || checklist?.UpdatedAt);
+  const logs = getChecklistLogs(checklist);
+  const terminalAt = getChecklistTerminalTimestamp(checklist, logs) || nowAt;
+  const currentStageKey = getChecklistCurrentStage(checklist);
+  const checklistStatus = safeLower(checklist?.status);
+
+  // ENHANCED DEBUG LOGGING - Show ALL logs and pattern matching results
+  const checklistId = checklist?.dclNo || checklist?.id;
+  if (checklistId && !LOGGED_CHECKLISTS.has(checklistId)) {
+    LOGGED_CHECKLISTS.add(checklistId);
+    console.log(`\n========== [TAT DEBUG] Checklist ${checklistId} ==========`);
+    console.log(`Status: ${checklistStatus} | Created: ${createdAt?.format('YYYY-MM-DD HH:mm:ss')} | Updated: ${updatedAt?.format('YYYY-MM-DD HH:mm:ss')}`);
+    console.log(`Total Logs: ${logs.length}`);
+    
+    if (logs.length > 0) {
+      console.log(`\n📋 Log Messages:`);
+      logs.forEach((log, idx) => {
+        console.log(`  [${idx}] ${log.timestamp?.format('HH:mm:ss')}: "${log.message}"`);
+      });
+    } else {
+      console.warn(`❌ NO LOGS FOUND - Using status fallbacks only`);
+    }
+    
+    // Test pattern matches
+    const coCreatorInitialSubmitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_INITIAL_SUBMIT_PATTERNS);
+    const rmExitLog = findFirstLogTimestamp(logs, CHECKLIST_RM_EXIT_PATTERNS);
+    const coCreatorExitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_EXIT_PATTERNS);
+    const coCheckerExitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CHECKER_EXIT_PATTERNS);
+    
+    console.log(`\n🔍 Pattern Matches:`);
+    console.log(`  Stage 1 Submit: ${coCreatorInitialSubmitLog ? '✅ ' + coCreatorInitialSubmitLog.format('HH:mm:ss') : '❌'}`);
+    console.log(`  RM Exit: ${rmExitLog ? '✅ ' + rmExitLog.format('HH:mm:ss') : '❌'}`);
+    console.log(`  Creator Exit: ${coCreatorExitLog ? '✅ ' + coCreatorExitLog.format('HH:mm:ss') : '❌'}`);
+    console.log(`  Checker Exit: ${coCheckerExitLog ? '✅ ' + coCheckerExitLog.format('HH:mm:ss') : '❌'}`);
+    console.log(`==========================================\n`);
+  }
+
+  // DCL workflow source of truth: createdAt -> sentToRMAt -> rmCompletedAt -> coCreatorCompletedAt -> coCheckerCompletedAt
+  const coCreatorInitialSubmitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_INITIAL_SUBMIT_PATTERNS);
+  const rmExitLog = findFirstLogTimestamp(logs, CHECKLIST_RM_EXIT_PATTERNS);
+  const coCreatorExitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_EXIT_PATTERNS);
+  const coCheckerExitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CHECKER_EXIT_PATTERNS);
+
+  const explicitCoCreatorInitialCompletedAt =
+    resolveFirstMoment(
+      checklist?.sentToRMAt,
+      checklist?.SentToRMAt,
+      checklist?.submittedToRMAt,
+      checklist?.SubmittedToRMAt,
+    ) || coCreatorInitialSubmitLog;
+
+  const explicitRmReviewCompletedAt =
+    resolveFirstMoment(
+      checklist?.rmCompletedAt,
+      checklist?.RmCompletedAt,
+      checklist?.returnedByRMAt,
+      checklist?.ReturnedByRMAt,
+    ) || rmExitLog;
+
+  const explicitCoCreatorRevisionCompletedAt =
+    resolveFirstMoment(
+      checklist?.coCreatorCompletedAt,
+      checklist?.CoCreatorCompletedAt,
+      checklist?.sentToCheckerAt,
+      checklist?.SentToCheckerAt,
+      checklist?.submittedToCoCheckerAt,
+      checklist?.SubmittedToCoCheckerAt,
+    ) || coCreatorExitLog;
+
+  const explicitCoCheckerCompletedAt =
+    resolveFirstMoment(
+      checklist?.coCheckerCompletedAt,
+      checklist?.CoCheckerCompletedAt,
+      checklist?.completedAt,
+      checklist?.CompletedAt,
+    ) ||
+    coCheckerExitLog;
+
+  let coCheckerCompletedAt = CHECKLIST_FINAL_STATUSES.has(checklistStatus)
+    ? resolveStageBoundary(explicitCoCheckerCompletedAt, [terminalAt])
+    : normalizeStageBoundary(explicitCoCheckerCompletedAt, null);
+
+  let coCreatorRevisionCompletedAt = resolveStageBoundary(
+    explicitCoCreatorRevisionCompletedAt,
+    [coCheckerCompletedAt],
+  );
+
+  let rmReviewCompletedAt = resolveStageBoundary(
+    explicitRmReviewCompletedAt,
+    [coCreatorRevisionCompletedAt, coCheckerCompletedAt],
+  );
+
+  let coCreatorInitialCompletedAt = resolveStageBoundary(
+    explicitCoCreatorInitialCompletedAt,
+    [rmReviewCompletedAt, coCreatorRevisionCompletedAt, coCheckerCompletedAt],
+    createdAt,
+  );
+
+  if (!coCreatorInitialCompletedAt && currentStageKey !== "coCreator" && createdAt) {
+    coCreatorInitialCompletedAt = createdAt;
+  }
+
+  rmReviewCompletedAt = normalizeStageBoundary(rmReviewCompletedAt, coCreatorInitialCompletedAt);
+  coCreatorRevisionCompletedAt = normalizeStageBoundary(coCreatorRevisionCompletedAt, rmReviewCompletedAt);
+  coCheckerCompletedAt = normalizeStageBoundary(coCheckerCompletedAt, coCreatorRevisionCompletedAt);
+
+  if (currentStageKey === "rm" && !coCreatorInitialCompletedAt && createdAt) {
+    coCreatorInitialCompletedAt = createdAt;
+  }
+
+  if (currentStageKey === "coChecker" && !coCreatorRevisionCompletedAt) {
+    coCreatorRevisionCompletedAt = rmReviewCompletedAt || coCreatorInitialCompletedAt || createdAt;
+  }
+
+  // Log stage completion times
+  if (checklistId && LOGGED_CHECKLISTS.has(checklistId)) {
+    console.log(`\n⏱️ STAGE COMPLETION TIMES (Business Hours Only - 8am-5pm):`);
+    console.log(`  Stage 1 (CO Creator Initial): ${coCreatorInitialCompletedAt ? coCreatorInitialCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
+    console.log(`  Stage 2 (RM Review): ${rmReviewCompletedAt ? rmReviewCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
+    console.log(`  Stage 3 (CO Creator Revision): ${coCreatorRevisionCompletedAt ? coCreatorRevisionCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
+    console.log(`  Stage 4 (CO Checker): ${coCheckerCompletedAt ? coCheckerCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
+    console.log(`\n`);
+  }
+
+  const coCreatorInitialTat = createStageMetric({
+    startAt: createdAt,
+    completedAt: coCreatorInitialCompletedAt,
+    nowAt,
+  });
+
+  const rmReviewTat = createStageMetric({
+    startAt: coCreatorInitialCompletedAt,
+    completedAt: rmReviewCompletedAt,
+    nowAt,
+  });
+
+  const coCreatorRevisionTat = createStageMetric({
+    startAt: rmReviewCompletedAt,
+    completedAt: coCreatorRevisionCompletedAt,
+    nowAt,
+  });
+
+  const coCheckerTat = createStageMetric({
+    startAt: coCreatorRevisionCompletedAt,
+    completedAt: coCheckerCompletedAt,
+    nowAt,
+  });
+
+  const totalTat = combineStageMetrics([
+    coCreatorInitialTat,
+    rmReviewTat,
+    coCreatorRevisionTat,
+    coCheckerTat,
+  ]);
+  const totalTatMinutes = totalTat.minutes;
+
+  return {
+    workflowType: "DCL",
+    createdAt,
+    coCreatorInitialCompletedAt,
+    rmReviewCompletedAt,
+    coCreatorRevisionCompletedAt,
+    coCheckerCompletedAt,
+    terminalAt,
+    currentStageKey,
+    coCreatorInitialTat,
+    rmReviewTat,
+    coCreatorRevisionTat,
+    coCheckerTat,
+    totalTatMinutes,
+    totalTatDays: toDayValue(totalTatMinutes),
+    totalTatLabel: totalTat.label,
+  };
+};
+
+const getOrderedDeferralApprovers = (deferral) => {
+  const approvalFlow = Array.isArray(deferral?.approverFlow)
+    ? deferral.approverFlow
+    : Array.isArray(deferral?.approvers)
+      ? deferral.approvers
+      : [];
+
+  return [...approvalFlow].sort((left, right) => {
+    const leftOrder = Number(
+      left?.approvalOrder ?? left?.order ?? left?.orderIndex ?? left?.sequence ?? left?.flowIndex ?? 0,
+    );
+    const rightOrder = Number(
+      right?.approvalOrder ?? right?.order ?? right?.orderIndex ?? right?.sequence ?? right?.flowIndex ?? 0,
+    );
+    return leftOrder - rightOrder;
+  });
+};
+
+const getApproverAssignedAt = (approver) =>
+  resolveFirstMoment(
+    approver?.assignedAt,
+    approver?.AssignedAt,
+    approver?.assignmentAt,
+    approver?.AssignmentAt,
+    approver?.createdAt,
+    approver?.CreatedAt,
+  );
+
+const getApproverDecisionAt = (approver) =>
+  resolveFirstMoment(
+    approver?.approvedAt,
+    approver?.ApprovedAt,
+    approver?.approvedDate,
+    approver?.ApprovedDate,
+    approver?.approvalDate,
+    approver?.ApprovalDate,
+    approver?.rejectedAt,
+    approver?.RejectedAt,
+    approver?.returnedAt,
+    approver?.ReturnedAt,
+    approver?.updatedAt,
+    approver?.UpdatedAt,
+  );
+
+const getDeferralCurrentStage = (deferral, rmCompletedAt, firstApproverAt, lastApproverAt, creatorCompletedAt, checkerCompletedAt) => {
+  const status = safeLower(deferral?.status);
+  if (checkerCompletedAt || DEFERRAL_FINAL_STATUSES.has(status)) return "done";
+  if (creatorCompletedAt || safeLower(deferral?.creatorApprovalStatus) === "approved") return "creator";
+  if (lastApproverAt || safeLower(deferral?.allApproversApproved) === "true") return "coCreator";
+  if (firstApproverAt) return "approvers";
+  return "rm";
+};
+
+const getDeferralTerminalTimestamp = (deferral, approverDates) => {
+  const creatorApprovalAt = toMoment(deferral?.creatorApprovalDate || deferral?.creatorApprovedAt);
+  const checkerApprovalAt = toMoment(deferral?.checkerApprovalDate || deferral?.checkerApprovedAt);
+  const updatedAt = toMoment(deferral?.updatedAt);
+  const lastApproverAt = approverDates.length ? approverDates[approverDates.length - 1] : null;
+  // Use the latest known action time; if all are null, use updatedAt; don't default to now()
+  return momentMax(checkerApprovalAt, creatorApprovalAt, lastApproverAt, updatedAt) || updatedAt || null;
+};
+
+const buildDeferralTatBreakdown = (deferral, nowAt = dayjs()) => {
+  // Extract createdAt with proper normalization - try multiple common fields
+  const createdAt = toMoment(
+    deferral?.createdAt ||
+    deferral?.CreatedAt ||
+    deferral?.created_at ||
+    deferral?.timestamp
+  );
+  const orderedApprovers = getOrderedDeferralApprovers(deferral);
+  const explicitFirstApproverAssignedAt = resolveFirstMoment(
+    deferral?.firstApproverAssignedAt,
+    deferral?.FirstApproverAssignedAt,
+    deferral?.sentToApproversAt,
+    deferral?.SentToApproversAt,
+  );
+  const creatorApprovalAt = resolveFirstMoment(
+    deferral?.coCreatorAcceptedAt,
+    deferral?.CoCreatorAcceptedAt,
+    deferral?.creatorApprovalDate,
+    deferral?.creatorApprovedAt,
+    deferral?.CreatorApprovalDate,
+  );
+  const checkerApprovalAt = resolveFirstMoment(
+    deferral?.coCheckerAcceptedAt,
+    deferral?.CoCheckerAcceptedAt,
+    deferral?.checkerApprovalDate,
+    deferral?.checkerApprovedAt,
+    deferral?.CheckerApprovalDate,
+    deferral?.closedAt,
+    deferral?.ClosedAt,
+  );
+  const approverTimeline = [];
+
+  orderedApprovers.forEach((approver, index) => {
+    const previousDecisionAt = index > 0 ? approverTimeline[index - 1]?.decisionAt : null;
+    const assignedAt =
+      getApproverAssignedAt(approver) ||
+      previousDecisionAt ||
+      (index === 0 ? explicitFirstApproverAssignedAt || createdAt : null);
+
+    approverTimeline.push({
+      approver,
+      assignedAt,
+      explicitDecisionAt: getApproverDecisionAt(approver),
+      decisionAt: null,
+      metric: null,
+    });
+  });
+
+  for (let index = approverTimeline.length - 1; index >= 0; index -= 1) {
+    const entry = approverTimeline[index];
+    const nextAssignedAt = approverTimeline[index + 1]?.assignedAt || null;
+    entry.decisionAt = resolveStageBoundary(
+      entry.explicitDecisionAt,
+      [nextAssignedAt, creatorApprovalAt, checkerApprovalAt],
+      entry.assignedAt,
+    );
+  }
+
+  approverTimeline.forEach((entry) => {
+    entry.metric = createStageMetric({
+      startAt: entry.assignedAt,
+      completedAt: entry.decisionAt,
+      nowAt,
+    });
+  });
+
+  const approverDates = approverTimeline.map((entry) => entry.decisionAt).filter(Boolean);
+  const firstApproverAt = approverTimeline[0]?.assignedAt || explicitFirstApproverAssignedAt || null;
+  const lastApproverAt = approverTimeline.length
+    ? approverTimeline[approverTimeline.length - 1]?.decisionAt || null
+    : null;
+  const sentToCoCreatorAt =
+    resolveFirstMoment(
+      deferral?.sentToCoCreatorAt,
+      deferral?.SentToCoCreatorAt,
+      deferral?.submittedToCoCreatorAt,
+      deferral?.SubmittedToCoCreatorAt,
+      deferral?.creatorAssignedAt,
+      deferral?.CreatorAssignedAt,
+    ) ||
+    (orderedApprovers.length ? lastApproverAt : createdAt);
+  const terminalAt = getDeferralTerminalTimestamp(deferral, approverDates) || nowAt;
+
+  const rmCompletedAt = firstApproverAt || sentToCoCreatorAt || creatorApprovalAt || checkerApprovalAt;
+  const approvingCompletedAt = lastApproverAt;
+  const coCreatorCompletedAt = creatorApprovalAt;
+  const creatorCompletedAt = checkerApprovalAt;
+  const currentStageKey = getDeferralCurrentStage(deferral, rmCompletedAt, firstApproverAt, lastApproverAt, coCreatorCompletedAt, creatorCompletedAt);
+
+  const normalizedSentToCoCreatorAt = sentToCoCreatorAt || approvingCompletedAt || rmCompletedAt || createdAt;
+  const normalizedCoCreatorCompletedAt = coCreatorCompletedAt || (currentStageKey === "creator" ? normalizedSentToCoCreatorAt : null);
+
+  // Log stage completion times
+  const deferralId = deferral?.deferralNumber || deferral?.id || deferral?._id;
+  if (deferralId) {
+    console.log(`\n⏱️ DEFERRAL STAGE COMPLETION TIMES (Business Hours Only - 8am-5pm):`);
+    console.log(`  Deferral ID: ${deferralId}`);
+    console.log(`  Stage 1 (RM): ${rmCompletedAt ? rmCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
+    console.log(`  Stage 2 (Approvers - ${approverDates.length} approvers): ${approvingCompletedAt ? approvingCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
+    console.log(`  Stage 3 (CO Creator): ${coCreatorCompletedAt ? coCreatorCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
+    console.log(`  Stage 4 (Creator/Requester): ${creatorCompletedAt ? creatorCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
+    console.log(`\n`);
+  }
+
+  const rmTat = createStageMetric({
+    startAt: createdAt,
+    completedAt: rmCompletedAt,
+    nowAt,
+  });
+
+  const approversTat = combineStageMetrics(approverTimeline.map((entry) => entry.metric));
+
+  const coCreatorTat = createStageMetric({
+    startAt: normalizedSentToCoCreatorAt,
+    completedAt: normalizedCoCreatorCompletedAt,
+    nowAt,
+  });
+
+  const creatorTat = createStageMetric({
+    startAt: normalizedCoCreatorCompletedAt,
+    completedAt: creatorCompletedAt,
+    nowAt,
+  });
+
+  const totalTat = combineStageMetrics([
+    rmTat,
+    approversTat,
+    coCreatorTat,
+    creatorTat,
+  ]);
+  const totalTatMinutes = totalTat.minutes;
+
+  return {
+    workflowType: "Deferral",
+    createdAt,
+    rmCompletedAt,
+    firstApproverAt,
+    lastApproverAt,
+    approvingCompletedAt,
+    coCreatorCompletedAt,
+    creatorCompletedAt,
+    terminalAt,
+    approverCount: approverDates.length,
+    currentStageKey,
+    rmTat,
+    approversTat,
+    approverTatEntries: approverTimeline,
+    coCreatorTat,
+    creatorTat,
+    totalTatMinutes,
+    totalTatDays: toDayValue(totalTatMinutes),
+    totalTatLabel: totalTat.label,
+  };
+};
+
+export const calculateTATConsumed = (item, workflowType = "DCL", nowAt = dayjs()) =>
+  buildTatBreakdown(item, workflowType, nowAt).totalTatDays;
+
+export const classifyTATBucket = (tatDays) => {
+  if (tatDays <= 7) return "Excellent (≤7 days)";
+  if (tatDays <= 14) return "Good (8-14 days)";
+  if (tatDays <= 21) return "Average (15-21 days)";
+  if (tatDays <= 30) return "Slow (22-30 days)";
+  return "Very Slow (>30 days)";
+};
+
+export const buildTatBreakdown = (item, workflowType, nowAt = dayjs()) =>
+  workflowType === "DCL" ? buildChecklistTatBreakdown(item, nowAt) : buildDeferralTatBreakdown(item, nowAt);
+
+export const buildTATTableRows = (deferralRows = [], dclRows = [], nowAt = dayjs()) => {
+  const mappedDeferrals = (deferralRows || []).map((item, index) => {
+    const breakdown = buildDeferralTatBreakdown(item, nowAt);
+    
+    return {
+      key: `deferral-${item?._id || item?.id || index}`,
+      itemId: item?.deferralNumber || item?.id || item?._id || `DEF-${index + 1}`,
+      workflowType: "Deferral",
+      status: item?.status || "pending",
+      createdAt: breakdown.createdAt?.toISOString() || item?.createdAt || null,
+      customerName: item?.customerName || "Unknown Customer",
+      rmTat: breakdown.rmTat,
+      approversTat: breakdown.approversTat,
+      coCreatorTat: breakdown.coCreatorTat,
+      creatorTat: breakdown.creatorTat,
+      // Analytics backward compatibility
+      coCheckerTat: breakdown.creatorTat,
+      totalTatMinutes: breakdown.totalTatMinutes,
+      totalTatDays: breakdown.totalTatDays,
+      totalTatLabel: breakdown.totalTatLabel,
+      rmCompletedAt: breakdown.rmCompletedAt?.toISOString() || null,
+      firstApproverAt: breakdown.firstApproverAt?.toISOString() || null,
+      lastApproverAt: breakdown.lastApproverAt?.toISOString() || null,
+      approverCount: breakdown.approverCount || 0,
+      coCreatorCompletedAt: breakdown.coCreatorCompletedAt?.toISOString() || null,
+      creatorCompletedAt: breakdown.creatorCompletedAt?.toISOString() || null,
+      finalApprovedAt: breakdown.creatorCompletedAt?.toISOString() || null,
+    };
+  });
+
+  const mappedDcls = (dclRows || []).map((item, index) => {
+    const breakdown = buildChecklistTatBreakdown(item, nowAt);
+    const aggregateRmTat = breakdown.rmReviewTat;
+    const aggregateCoCreatorTat = combineStageMetrics([
+      breakdown.coCreatorInitialTat,
+      breakdown.coCreatorRevisionTat,
+    ]);
+    
+    return {
+      key: `dcl-${item?._id || item?.id || index}`,
+      itemId: item?.dclNo || item?.dclNumber || item?.id || item?._id || `DCL-${index + 1}`,
+      workflowType: "DCL",
+      status: item?.status || "pending",
+      createdAt: breakdown.createdAt?.toISOString() || item?.createdAt || null,
+      customerName: item?.customerName || "Unknown Customer",
+      coCreatorInitialTat: breakdown.coCreatorInitialTat,
+      rmReviewTat: breakdown.rmReviewTat,
+      coCreatorRevisionTat: breakdown.coCreatorRevisionTat,
+      coCheckerTat: breakdown.coCheckerTat,
+      // Analytics aggregates for backward compatibility
+      rmTat: aggregateRmTat,
+      coCreatorTat: aggregateCoCreatorTat,
+      totalTatMinutes: breakdown.totalTatMinutes,
+      totalTatDays: breakdown.totalTatDays,
+      totalTatLabel: breakdown.totalTatLabel,
+      coCreatorInitialCompletedAt: breakdown.coCreatorInitialCompletedAt?.toISOString() || null,
+      rmReviewCompletedAt: breakdown.rmReviewCompletedAt?.toISOString() || null,
+      coCreatorRevisionCompletedAt: breakdown.coCreatorRevisionCompletedAt?.toISOString() || null,
+      coCheckerCompletedAt: breakdown.coCheckerCompletedAt?.toISOString() || null,
+      finalApprovedAt: breakdown.coCheckerCompletedAt?.toISOString() || null,
+    };
+  });
+
+  return [...mappedDeferrals, ...mappedDcls].sort((left, right) => right.totalTatMinutes - left.totalTatMinutes);
+};
+
+export function buildTATAnalytics(deferralRows, dclRows, nowAt = dayjs()) {
+  const rows = buildTATTableRows(deferralRows, dclRows, nowAt);
+
+  if (!rows.length) {
+    return {
+      totalItems: 0,
+      totalTATConsumed: 0,
+      averageTAT: 0,
+      averageRmTat: 0,
+      averageCoCreatorTat: 0,
+      averageCoCheckerTat: 0,
+      deferralMetrics: { count: 0, totalTAT: 0, averageTAT: 0, averageRmTat: 0, averageCoCreatorTat: 0, averageCoCheckerTat: 0 },
+      dclMetrics: { count: 0, totalTAT: 0, averageTAT: 0, averageRmTat: 0, averageCoCreatorTat: 0, averageCoCheckerTat: 0 },
+      tatBucketData: [],
+      stageComparisonData: [],
+      tatTrendData: [],
+      typeComparisonData: [],
+      totalComparisonData: [],
+    };
+  }
+
+  const tatBucketMap = new Map([
+    ["Excellent (≤7 days)", 0],
+    ["Good (8-14 days)", 0],
+    ["Average (15-21 days)", 0],
+    ["Slow (22-30 days)", 0],
+    ["Very Slow (>30 days)", 0],
+  ]);
+
+  const typeMetrics = {
+    Deferral: { count: 0, totalTatMinutes: 0, rmMinutes: 0, coCreatorMinutes: 0, coCheckerMinutes: 0 },
+    DCL: { count: 0, totalTatMinutes: 0, rmMinutes: 0, coCreatorMinutes: 0, coCheckerMinutes: 0 },
+  };
+
+  let totalTatMinutes = 0;
+  let rmMinutes = 0;
+  let coCreatorMinutes = 0;
+  let coCheckerMinutes = 0;
+  const trendMap = new Map();
+
+  rows.forEach((row) => {
+    tatBucketMap.set(classifyTATBucket(row.totalTatDays), (tatBucketMap.get(classifyTATBucket(row.totalTatDays)) || 0) + 1);
+    totalTatMinutes += row.totalTatMinutes || 0;
+    rmMinutes += row.rmTat.minutes || 0;
+    coCreatorMinutes += row.coCreatorTat.minutes || 0;
+    coCheckerMinutes += row.coCheckerTat.minutes || 0;
+
+    const bucket = typeMetrics[row.workflowType];
+    bucket.count += 1;
+    bucket.totalTatMinutes += row.totalTatMinutes || 0;
+    bucket.rmMinutes += row.rmTat.minutes || 0;
+    bucket.coCreatorMinutes += row.coCreatorTat.minutes || 0;
+    bucket.coCheckerMinutes += row.coCheckerTat.minutes || 0;
+
+    const createdAt = row.createdAt ? dayjs(row.createdAt) : null;
+    if (createdAt && createdAt.isValid()) {
+      const key = createdAt.startOf("month").format("YYYY-MM");
+      if (!trendMap.has(key)) {
+        trendMap.set(key, {
+          key,
+          month: createdAt.format("MMM-YY"),
+          DCL: { count: 0, totalTatMinutes: 0 },
+          Deferral: { count: 0, totalTatMinutes: 0 },
+        });
+      }
+      const monthBucket = trendMap.get(key);
+      monthBucket[row.workflowType].count += 1;
+      monthBucket[row.workflowType].totalTatMinutes += row.totalTatMinutes || 0;
+    }
+  });
+
+  const avgFor = (minutes, count) => (count ? toDayValue(Math.round(minutes / count)) : 0);
+
+  const tatBucketData = Array.from(tatBucketMap.entries())
+    .filter(([, count]) => count > 0)
+    .map(([name, value]) => ({ name, value }));
+
+  const stageComparisonData = [
+    { stage: "RM", DCL: avgFor(typeMetrics.DCL.rmMinutes, typeMetrics.DCL.count), Deferral: avgFor(typeMetrics.Deferral.rmMinutes, typeMetrics.Deferral.count) },
+    { stage: "CO Creator", DCL: avgFor(typeMetrics.DCL.coCreatorMinutes, typeMetrics.DCL.count), Deferral: avgFor(typeMetrics.Deferral.coCreatorMinutes, typeMetrics.Deferral.count) },
+    { stage: "CO Checker", DCL: avgFor(typeMetrics.DCL.coCheckerMinutes, typeMetrics.DCL.count), Deferral: avgFor(typeMetrics.Deferral.coCheckerMinutes, typeMetrics.Deferral.count) },
+    { stage: "Total", DCL: avgFor(typeMetrics.DCL.totalTatMinutes, typeMetrics.DCL.count), Deferral: avgFor(typeMetrics.Deferral.totalTatMinutes, typeMetrics.Deferral.count) },
+  ];
+
+  const totalComparisonData = [
+    { name: "DCL", count: typeMetrics.DCL.count, avgTotalTat: avgFor(typeMetrics.DCL.totalTatMinutes, typeMetrics.DCL.count) },
+    { name: "Deferral", count: typeMetrics.Deferral.count, avgTotalTat: avgFor(typeMetrics.Deferral.totalTatMinutes, typeMetrics.Deferral.count) },
+  ];
+
+  const tatTrendData = Array.from(trendMap.values())
+    .sort((left, right) => left.key.localeCompare(right.key))
+    .map((entry) => ({
+      month: entry.month,
+      dclAvgTat: avgFor(entry.DCL.totalTatMinutes, entry.DCL.count),
+      deferralAvgTat: avgFor(entry.Deferral.totalTatMinutes, entry.Deferral.count),
+      totalCount: entry.DCL.count + entry.Deferral.count,
+    }));
+
+  const typeComparisonData = [
+    { name: "DCL", value: typeMetrics.DCL.count, totalTAT: avgFor(typeMetrics.DCL.totalTatMinutes, 1) },
+    { name: "Deferral", value: typeMetrics.Deferral.count, totalTAT: avgFor(typeMetrics.Deferral.totalTatMinutes, 1) },
+  ];
+
+  return {
+    totalItems: rows.length,
+    totalTATConsumed: toDayValue(totalTatMinutes),
+    averageTAT: avgFor(totalTatMinutes, rows.length),
+    averageRmTat: avgFor(rmMinutes, rows.length),
+    averageCoCreatorTat: avgFor(coCreatorMinutes, rows.length),
+    averageCoCheckerTat: avgFor(coCheckerMinutes, rows.length),
+    deferralMetrics: {
+      count: typeMetrics.Deferral.count,
+      totalTAT: toDayValue(typeMetrics.Deferral.totalTatMinutes),
+      averageTAT: avgFor(typeMetrics.Deferral.totalTatMinutes, typeMetrics.Deferral.count),
+      averageRmTat: avgFor(typeMetrics.Deferral.rmMinutes, typeMetrics.Deferral.count),
+      averageCoCreatorTat: avgFor(typeMetrics.Deferral.coCreatorMinutes, typeMetrics.Deferral.count),
+      averageCoCheckerTat: avgFor(typeMetrics.Deferral.coCheckerMinutes, typeMetrics.Deferral.count),
+    },
+    dclMetrics: {
+      count: typeMetrics.DCL.count,
+      totalTAT: toDayValue(typeMetrics.DCL.totalTatMinutes),
+      averageTAT: avgFor(typeMetrics.DCL.totalTatMinutes, typeMetrics.DCL.count),
+      averageRmTat: avgFor(typeMetrics.DCL.rmMinutes, typeMetrics.DCL.count),
+      averageCoCreatorTat: avgFor(typeMetrics.DCL.coCreatorMinutes, typeMetrics.DCL.count),
+      averageCoCheckerTat: avgFor(typeMetrics.DCL.coCheckerMinutes, typeMetrics.DCL.count),
+    },
+    tatBucketData,
+    stageComparisonData,
+    tatTrendData,
+    typeComparisonData,
+    totalComparisonData,
   };
 }
