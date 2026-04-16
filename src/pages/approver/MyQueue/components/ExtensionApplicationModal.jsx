@@ -16,6 +16,7 @@ import {
   DownloadOutlined,
   EyeOutlined,
   ExclamationCircleOutlined,
+  RedoOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -27,7 +28,6 @@ import {
 import { getLivePartyApprovalStatuses } from "../../../../utils/deferralApprovalStatus";
 import {
   buildExtensionCommentEntries,
-  buildExtensionHistoryEntries,
   resolveDisplayName,
 } from "../../../../utils/extensionHistory";
 import { downloadFile, openFileInNewTab } from "../../../../utils/fileUtils";
@@ -761,8 +761,10 @@ const ExtensionApplicationModal = ({
   onClose,
   onApprove,
   onReject,
+  onReturnForRework,
   approveLoading = false,
   rejectLoading = false,
+  reworkLoading = false,
   showActions = true,
 }) => {
   const [activeTab, setActiveTab] = useState("details");
@@ -770,6 +772,8 @@ const ExtensionApplicationModal = ({
   const [approveComment, setApproveComment] = useState("");
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [reworkModalVisible, setReworkModalVisible] = useState(false);
+  const [reworkReason, setReworkReason] = useState("");
 
   const currentExtension = selectedExtension || null;
 
@@ -827,6 +831,17 @@ const ExtensionApplicationModal = ({
     onApprove?.(approveComment);
     setApproveComment("");
     setApproveModalVisible(false);
+  };
+
+  const handleReturnForRework = () => {
+    if (!reworkReason.trim()) {
+      message.error("Please provide rework instructions");
+      return;
+    }
+
+    onReturnForRework?.(reworkReason);
+    setReworkReason("");
+    setReworkModalVisible(false);
   };
 
   const documentColumns = [
@@ -924,9 +939,29 @@ const ExtensionApplicationModal = ({
       width: 180,
       render: (_, record) => {
         const approved = isApproverApproved(record);
+        const reviewState = String(record.approvalStatus || "pending").trim().toLowerCase();
+        const returnedForRework = reviewState === "returnedforrework" || reviewState === "returned_for_rework";
+        const rejected = reviewState === "rejected";
         return (
-          <span style={{ fontWeight: 700, color: approved ? SUCCESS_GREEN : PRIMARY_BLUE }}>
-            {approved ? "Approved" : record.current ? "Current Reviewer" : "Pending Approval"}
+          <span
+            style={{
+              fontWeight: 700,
+              color: approved
+                ? SUCCESS_GREEN
+                : returnedForRework || rejected
+                  ? ERROR_RED
+                  : PRIMARY_BLUE,
+            }}
+          >
+            {approved
+              ? "Approved"
+              : returnedForRework
+                ? "Returned for Rework"
+                : rejected
+                  ? "Rejected"
+                  : record.current
+                    ? "Current Reviewer"
+                    : "Pending Approval"}
           </span>
         );
       },
@@ -1063,12 +1098,20 @@ const ExtensionApplicationModal = ({
             <Button
               className="approver-extension-review__secondary-btn"
               onClick={onClose}
-              disabled={approveLoading || rejectLoading}
+              disabled={approveLoading || rejectLoading || reworkLoading}
             >
               Close
             </Button>
             {showActions ? (
               <>
+                <Button
+                  className="approver-extension-review__secondary-btn"
+                  icon={<RedoOutlined />}
+                  onClick={() => setReworkModalVisible(true)}
+                  loading={reworkLoading}
+                >
+                  Return for Rework
+                </Button>
                 <Button
                   className="approver-extension-review__primary-btn approver-extension-review__danger-btn"
                   icon={<CloseOutlined />}
@@ -1280,6 +1323,37 @@ const ExtensionApplicationModal = ({
         inputValue: approveComment,
         onInputChange: setApproveComment,
         inputPlaceholder: "Enter approval comments...",
+        modalClassName: "approver-extension-decision-modal--edit-style",
+        titleClassName: "approver-extension-review__decision-title--edit-style",
+        titleIconClassName: "approver-extension-review__decision-title-icon--edit-style",
+        titleCopyClassName: "approver-extension-review__decision-title-copy--edit-style",
+        cardClassName: "approver-extension-review__decision-card--edit-style",
+        summaryClassName: "approver-extension-review__decision-summary--edit-style",
+        labelClassName: "approver-extension-review__decision-label--edit-style",
+        cancelButtonClassName: "approver-extension-review__decision-secondary--edit-style",
+        confirmButtonClassName: "approver-extension-review__decision-primary--edit-style",
+      })}
+
+      {renderDecisionModal({
+        title: "Return for Rework",
+        subtitle: "Send this extension back to the RM with the exact corrections required before resubmission.",
+        titleIcon: <RedoOutlined />,
+        open: reworkModalVisible,
+        onCancel: () => {
+          setReworkModalVisible(false);
+          setReworkReason("");
+        },
+        onConfirm: handleReturnForRework,
+        confirmText: "Yes, Return for Rework",
+        confirmLoading: reworkLoading,
+        confirmDisabled: !reworkReason.trim(),
+        confirmClassName: "approver-extension-review__danger-btn",
+        summaryCopy: "Returning for rework pauses the current extension review and routes the resubmission back to you after the RM corrects it.",
+        inputLabel: "Rework instructions",
+        inputRequired: true,
+        inputValue: reworkReason,
+        onInputChange: setReworkReason,
+        inputPlaceholder: "Enter rework instructions...",
         modalClassName: "approver-extension-decision-modal--edit-style",
         titleClassName: "approver-extension-review__decision-title--edit-style",
         titleIconClassName: "approver-extension-review__decision-title-icon--edit-style",

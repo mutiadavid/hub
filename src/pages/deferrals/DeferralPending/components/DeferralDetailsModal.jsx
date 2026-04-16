@@ -885,7 +885,7 @@ const DeferralDetailsModal = ({
       const token = currentUser?.token || localStorage.getItem("token");
       const closeRequestDocuments = [];
 
-      for (const document of documents || []) {
+      for (const document of (documents || []).filter((entry) => Array.isArray(entry?.files) && entry.files.length > 0)) {
         const uploadedFiles = [];
 
         for (const file of document.files || []) {
@@ -916,6 +916,10 @@ const DeferralDetailsModal = ({
           comment: document.comment,
           files: uploadedFiles,
         });
+      }
+
+      if (closeRequestDocuments.length === 0) {
+        throw new Error("Upload at least one supporting file before submitting a close request");
       }
 
       const response = await deferralApi.closeDeferral(

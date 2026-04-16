@@ -157,17 +157,26 @@ export const useDeferralHandlers = (token, { deferrals, setDeferrals, selectedDe
     }
   }, [selectedDeferral, token, deferrals, setDeferrals, setSelectedDeferral, setModalVisible, setActiveTab, loadDeferrals]);
 
-  const handleApproveCloseRequest = useCallback(async (comment) => {
+  const handleApproveCloseRequest = useCallback(async (approvalData) => {
     if (!selectedDeferral || !selectedDeferral._id) {
       message.error("No deferral selected");
       return;
     }
 
+    const payload = typeof approvalData === "string"
+      ? { comment: approvalData }
+      : approvalData || {};
+
     setActionLoading(true);
     try {
       const response = await deferralApi.approveCloseRequestByChecker(
         selectedDeferral._id,
-        { comment: comment || "Close request approved by checker" },
+        {
+          comment: payload.comment || "Close request review submitted by checker",
+          checkerDocumentDecisions: Array.isArray(payload.checkerDocumentDecisions)
+            ? payload.checkerDocumentDecisions
+            : [],
+        },
         token,
       );
 
@@ -180,7 +189,13 @@ export const useDeferralHandlers = (token, { deferrals, setDeferrals, selectedDe
         prev.map((d) => (d._id === updatedDeferral._id ? updatedDeferral : d)),
       );
       setSelectedDeferral(updatedDeferral);
-      message.success("Close request approved. Deferral moved to completed");
+      const normalizedStatus = String(updatedDeferral.status || "").trim().toLowerCase();
+      const movedToCompleted = normalizedStatus === "closed";
+      message.success(
+        movedToCompleted
+          ? "Close request approved. Deferral moved to completed"
+          : "Checker review saved. Rejected documents returned to RM for correction",
+      );
 
       window.dispatchEvent(
         new CustomEvent("deferral:updated", {
@@ -190,7 +205,7 @@ export const useDeferralHandlers = (token, { deferrals, setDeferrals, selectedDe
 
       setModalVisible(false);
       setSelectedDeferral(null);
-      setActiveTab("completed");
+      setActiveTab(movedToCompleted ? "completed" : "approved");
       loadDeferrals();
     } catch (error) {
       console.error("Error approving close request by checker:", error);

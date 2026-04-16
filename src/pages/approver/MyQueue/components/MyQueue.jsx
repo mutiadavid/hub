@@ -448,6 +448,7 @@ const MyQueue = () => {
 
   const [extensionApproveLoading, setExtensionApproveLoading] = useState(false);
   const [extensionRejectLoading, setExtensionRejectLoading] = useState(false);
+  const [extensionReworkLoading, setExtensionReworkLoading] = useState(false);
 
   const handleOpenDeferralDetails = (deferral) => {
     setSelectedDeferral(deferral);
@@ -589,6 +590,76 @@ const MyQueue = () => {
     }
   }, [handleCloseExtensionModal, refetchDeferrals, selectedExtension, token]);
 
+  const handleReturnExtensionForRework = useCallback(async (reason) => {
+    if (!selectedExtension || (!selectedExtension._id && !selectedExtension.id)) {
+      message.error("Invalid extension selected");
+      return;
+    }
+
+    if (!reason || reason.trim() === "") {
+      message.error("Please provide rework instructions");
+      return;
+    }
+
+    setExtensionReworkLoading(true);
+    try {
+      const extId = selectedExtension._id || selectedExtension.id;
+      const res = await fetch(`${API_BASE_URL}/extensions/${extId}/return-for-rework`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ reason }),
+      });
+
+      if (!res.ok) {
+        let errorMsg = "Failed to return extension for rework";
+        try {
+          const body = await res.json();
+          errorMsg = body?.message || body?.error || errorMsg;
+        } catch {
+          errorMsg = await res.text();
+        }
+
+        if (res.status === 403) {
+          throw new Error("Forbidden: you are not authorized to return this extension for rework");
+        }
+        throw new Error(errorMsg);
+      }
+
+      const updated = await res.json();
+      const updatedExtension = updated?.extension || updated;
+      const updatedDeferral =
+        updated?.deferral ||
+        updatedExtension?.deferral ||
+        updatedExtension?.linkedDeferral ||
+        null;
+
+      message.success(updated?.message || "Extension returned for rework successfully");
+      try {
+        window.dispatchEvent(
+          new CustomEvent("extension:updated", { detail: updatedExtension }),
+        );
+        if (updatedDeferral?._id || updatedDeferral?.id) {
+          window.dispatchEvent(
+            new CustomEvent("deferral:updated", { detail: updatedDeferral }),
+          );
+        }
+      } catch (eventError) {
+        console.debug("Failed to dispatch extension:updated", eventError);
+      }
+
+      handleCloseExtensionModal();
+      refetchDeferrals();
+    } catch (error) {
+      console.error("Extension return-for-rework error:", error);
+      message.error(error.message || "Failed to return extension for rework");
+    } finally {
+      setExtensionReworkLoading(false);
+    }
+  }, [handleCloseExtensionModal, refetchDeferrals, selectedExtension, token]);
+
   const handleModalAction = (action) => {
     switch (action) {
       case "refreshQueue":
@@ -652,8 +723,10 @@ const MyQueue = () => {
               onClose={handleCloseExtensionModal}
               onApprove={handleApproveExtension}
               onReject={handleRejectExtension}
+              onReturnForRework={handleReturnExtensionForRework}
               approveLoading={extensionApproveLoading}
               rejectLoading={extensionRejectLoading}
+              reworkLoading={extensionReworkLoading}
             />
           ) : (
             <>

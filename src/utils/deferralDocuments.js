@@ -329,9 +329,16 @@ export const getCloseRequestDocumentGroups = (deferral) => {
   if (!deferral) return [];
 
   const { requestedDocs = [], uploadedDocs = [] } = getDeferralDocumentBuckets(deferral);
-  const storedDocuments = Array.isArray(deferral.closeRequestDocuments)
+  const normalizedStatus = String(deferral.status || "").trim().toLowerCase();
+  const activeStoredDocuments = Array.isArray(deferral.closeRequestDocuments)
     ? deferral.closeRequestDocuments
     : [];
+  const archivedStoredDocuments = Array.isArray(deferral.closedCloseRequestDocuments)
+    ? deferral.closedCloseRequestDocuments
+    : [];
+  const storedDocuments = normalizedStatus === "closed"
+    ? [...archivedStoredDocuments, ...activeStoredDocuments]
+    : activeStoredDocuments;
 
   const uploadsByTarget = uploadedDocs.reduce((accumulator, document) => {
     const key = normalizeDocName(document.documentTarget);

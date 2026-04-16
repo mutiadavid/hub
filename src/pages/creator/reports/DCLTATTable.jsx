@@ -191,6 +191,39 @@ const getDclCurrentStageKey = (status) => {
   return "coCreator";
 };
 
+const stripInProgressSuffix = (label) => String(label || "0m").replace(/\s*\(in progress\)$/i, "");
+
+const normalizeStageForDisplay = (stage, { allowInProgress = false, fallbackStartAt = null } = {}) => {
+  if (!stage && !allowInProgress) {
+    return stage;
+  }
+
+  if (allowInProgress) {
+    if (stage?.state === "in_progress") {
+      return stage;
+    }
+
+    if (!stage?.endAt && fallbackStartAt) {
+      return createLiveStageFallback(stage, fallbackStartAt);
+    }
+
+    return stage;
+  }
+
+  if (stage?.state !== "in_progress") {
+    return stage;
+  }
+
+  const hasStarted = Boolean(stage?.startAt);
+
+  return {
+    ...(stage || {}),
+    endAt: hasStarted ? stage?.endAt || stage?.startAt : null,
+    state: hasStarted ? "completed" : "not_started",
+    label: hasStarted ? stripInProgressSuffix(stage?.label) : "0m",
+  };
+};
+
 const createLiveStageFallback = (stage, startAt) => ({
   ...(stage || {}),
   startAt,
@@ -199,51 +232,45 @@ const createLiveStageFallback = (stage, startAt) => ({
 });
 
 const getEffectiveRmStage = (record) => {
-  if (record?.rmReviewTat?.state === "in_progress") {
-    return record.rmReviewTat;
-  }
+  const currentStage = getDclCurrentStageKey(record?.status);
 
-  if (getDclCurrentStageKey(record?.status) === "rm" && !record?.rmReviewCompletedAt) {
-    return createLiveStageFallback(
-      record?.rmReviewTat,
-      record?.coCreatorInitialCompletedAt || record?.createdAt || null,
-    );
-  }
-
-  return record?.rmReviewTat;
+  return normalizeStageForDisplay(record?.rmReviewTat, {
+    allowInProgress: currentStage === "rm" && !record?.rmReviewCompletedAt,
+    fallbackStartAt: record?.coCreatorInitialCompletedAt || record?.createdAt || null,
+  });
 };
 
 const getEffectiveCoCreatorStages = (record) => {
   const currentStage = getDclCurrentStageKey(record?.status);
-  const initialStage =
-    currentStage === "coCreator" && !record?.coCreatorInitialCompletedAt && !record?.rmReviewCompletedAt
-      ? createLiveStageFallback(record?.coCreatorInitialTat, record?.createdAt || null)
-      : record?.coCreatorInitialTat;
-  const revisionStage =
-    currentStage === "coCreator" && record?.rmReviewCompletedAt && !record?.coCreatorRevisionCompletedAt
-      ? createLiveStageFallback(record?.coCreatorRevisionTat, record?.rmReviewCompletedAt || null)
-      : record?.coCreatorRevisionTat;
+  const isInitialStageActive =
+    currentStage === "coCreator" && !record?.coCreatorInitialCompletedAt && !record?.rmReviewCompletedAt;
+  const isRevisionStageActive =
+    currentStage === "coCreator" && Boolean(record?.rmReviewCompletedAt) && !record?.coCreatorRevisionCompletedAt;
 
-  return [initialStage, revisionStage].filter(Boolean);
+  const initialStage = normalizeStageForDisplay(record?.coCreatorInitialTat, {
+    allowInProgress: isInitialStageActive,
+    fallbackStartAt: record?.createdAt || null,
+  });
+  const revisionStage = normalizeStageForDisplay(record?.coCreatorRevisionTat, {
+    allowInProgress: isRevisionStageActive,
+    fallbackStartAt: record?.rmReviewCompletedAt || null,
+  });
+
+  return [initialStage, revisionStage];
 };
 
 const getEffectiveCheckerStage = (record) => {
-  if (record?.coCheckerTat?.state === "in_progress") {
-    return record.coCheckerTat;
-  }
+  const currentStage = getDclCurrentStageKey(record?.status);
 
-  if (getDclCurrentStageKey(record?.status) === "coChecker" && !record?.coCheckerCompletedAt) {
-    return createLiveStageFallback(
-      record?.coCheckerTat,
+  return normalizeStageForDisplay(record?.coCheckerTat, {
+    allowInProgress: currentStage === "coChecker" && !record?.coCheckerCompletedAt,
+    fallbackStartAt:
       record?.coCreatorRevisionCompletedAt ||
-        record?.rmReviewCompletedAt ||
-        record?.coCreatorInitialCompletedAt ||
-        record?.createdAt ||
-        null,
-    );
-  }
-
-  return record?.coCheckerTat;
+      record?.rmReviewCompletedAt ||
+      record?.coCreatorInitialCompletedAt ||
+      record?.createdAt ||
+      null,
+  });
 };
 
 const getLiveTotalLabel = (record, now) => {
@@ -315,13 +342,14 @@ DCLNumberCell.displayName = "DCLNumberCell";
  */
 const CoCreatorTATCell = React.memo(({ record, now }) => {
   const displayStages = getEffectiveCoCreatorStages(record);
+  const [initialStage, revisionStage] = displayStages;
   const tooltipTitle = record.coCreatorRevisionCompletedAt
     ? `Resubmitted: ${formatDate(record.coCreatorRevisionCompletedAt, DATE_FORMAT.SHORT)}`
-    : record.coCreatorRevisionTat?.state === "in_progress"
+    : revisionStage?.state === "in_progress"
       ? "CO Creator revision in progress"
-      : record.coCreatorInitialTat?.state === "in_progress"
+      : initialStage?.state === "in_progress"
         ? "CO Creator initial review in progress"
-    : record.coCreatorInitialCompletedAt
+      : record.coCreatorInitialCompletedAt
       ? "Awaiting checker or creator action"
       : "Awaiting first creator submission";
 

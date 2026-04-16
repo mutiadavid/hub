@@ -21,6 +21,10 @@ const RMDeferralReviewActionBar = ({
   downloadLoading,
   onClose,
 }) => {
+  const showApprovedActionSet = !readOnly && activeTab === "approved";
+  const canApplyExtension = showApprovedActionSet;
+  const canOpenCloseRequest = showApprovedActionSet;
+
   return (
     <div className="deferral-review-actionbar">
       <div className="deferral-review-actionbar__group">
@@ -54,28 +58,26 @@ const RMDeferralReviewActionBar = ({
             Resubmit Deferral
           </Button>
         )}
-
-        {!readOnly && activeTab === "approved" && !extensionSubmissionSuccess && !hasOpenExtensionRequest && (
-          <>
-            <Button
-              className="deferral-review-actionbar__button"
-              onClick={onApplyExtension}
-            >
-              Apply Extension
-            </Button>
-            <Button
-              className="deferral-review-actionbar__button"
-              loading={closeLoading}
-              onClick={onOpenCloseRequest}
-            >
-              Close Deferral
-            </Button>
-          </>
-        )}
-
       </div>
 
       <div className="deferral-review-actionbar__group deferral-review-actionbar__group--end">
+        {canApplyExtension ? (
+          <Button
+            className="deferral-review-actionbar__button"
+            onClick={onApplyExtension}
+          >
+            Apply Extension
+          </Button>
+        ) : null}
+        {canOpenCloseRequest ? (
+          <Button
+            className="deferral-review-actionbar__button"
+            loading={closeLoading}
+            onClick={onOpenCloseRequest}
+          >
+            Close Request
+          </Button>
+        ) : null}
         <Button
           className="deferral-review-actionbar__button"
           icon={<FilePdfOutlined />}

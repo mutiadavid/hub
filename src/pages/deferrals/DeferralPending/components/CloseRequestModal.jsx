@@ -208,8 +208,8 @@ const MODAL_STYLES = `
     const [overallComment, setOverallComment] = useState("");
     const [entries, setEntries] = useState(() => createInitialEntries(documents));
 
-    const allDocumentsReady = useMemo(
-      () => entries.length > 0 && entries.every((entry) => entry.files.length > 0),
+    const hasAnyDocumentReady = useMemo(
+      () => entries.some((entry) => entry.files.length > 0),
       [entries],
     );
 
@@ -323,7 +323,7 @@ const MODAL_STYLES = `
                   Per-document Uploads & Comments ({entries.length})
                 </h3>
                 <p className="close-request-modal__section-copy">
-                  Each requested document needs at least one supporting file before the close request can be submitted.
+                  Upload one document at a time or submit several together. Only documents with supporting files will be included in this close request.
                 </p>
               </div>
             </div>
@@ -352,7 +352,7 @@ const MODAL_STYLES = `
             <Button
               type="primary"
               loading={loading}
-              disabled={!allDocumentsReady}
+              disabled={!hasAnyDocumentReady}
               onClick={() =>
                 onSubmit?.({
                   comment: overallComment,

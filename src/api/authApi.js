@@ -16,6 +16,7 @@ export const authApi = createApi({
         body: data,
       }),
     }),
+
     login: builder.mutation({
       query: (data) => ({
         url: "admin/auth/login",
@@ -23,6 +24,7 @@ export const authApi = createApi({
         body: data,
       }),
     }),
+    
     verifyEmailMFA: builder.mutation({
       query: (data) => ({
         url: "admin/auth/verify-email-mfa",

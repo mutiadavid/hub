@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -67,6 +67,14 @@ const getTimestampValue = (value) => {
   }
   return parsed.valueOf();
 };
+
+const normalizeCloseRequestDecisionKey = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .join(" ");
 
 const getRoleSpecificityScore = (roleLabel) => {
   const normalizedRole = normalizeHistoryValue(roleLabel);
@@ -1014,6 +1022,44 @@ const DeferralDetailModal = ({
 }) => {
   const [activeTab, setActiveTab] = useState("details");
   const [downloadLoading, setDownloadLoading] = useState(false);
+  const isCloseRequestAction = sourceTab === "closeRequests";
+  const closeRequestDocuments = useMemo(
+    () => {
+      if (!deferral) {
+        return [];
+      }
+
+      if (isCloseRequestAction && Array.isArray(deferral.checkerCloseRequestDocuments)) {
+        return getCloseRequestDocumentGroups({
+          ...deferral,
+          closeRequestDocuments: deferral.checkerCloseRequestDocuments,
+        });
+      }
+
+      return getCloseRequestDocumentGroups(deferral);
+    },
+    [deferral, isCloseRequestAction],
+  );
+  const [checkerDocumentDecisions, setCheckerDocumentDecisions] = useState({});
+
+  useEffect(() => {
+    const nextState = closeRequestDocuments.reduce((accumulator, document) => {
+      const key = normalizeCloseRequestDecisionKey(document.documentName || document.key);
+      if (!key) {
+        return accumulator;
+      }
+
+      const statusValue = String(document.checkerStatus || "").trim().toLowerCase();
+      accumulator[key] = {
+        status: ["approved", "rejected"].includes(statusValue) ? statusValue : "",
+        comment: document.checkerComment || "",
+        documentName: document.documentName,
+      };
+      return accumulator;
+    }, {});
+
+    setCheckerDocumentDecisions(nextState);
+  }, [deferral?._id, deferral?.id, deferral?.updatedAt, closeRequestDocuments]);
 
   if (!deferral || !visible) {
     return null;
@@ -1053,7 +1099,6 @@ const DeferralDetailModal = ({
     "closed_by_co",
     "closed_by_creator",
   ].includes(status);
-  const isCloseRequestAction = sourceTab === "closeRequests";
   const canAccept = isCloseRequestAction
     ? status === "close_requested_creator_approved"
     : allApproversApproved && creatorApproved && !checkerApproved && !isRejected && !isClosed;
@@ -1063,7 +1108,6 @@ const DeferralDetailModal = ({
   const generalUploadedDocs = uploadedDocs.filter(
     (doc) => !doc.isCloseRequestEvidence,
   );
-  const closeRequestDocuments = getCloseRequestDocumentGroups(deferral);
   const isCloseRequestContext = [
     "close_requested",
     "close_requested_creator_approved",
@@ -1085,6 +1129,30 @@ const DeferralDetailModal = ({
   });
   const uploadedDocumentCount =
     dclDocs.length + generalUploadedDocs.length + closeRequestDocuments.length;
+  const pendingCheckerDecisions = isCloseRequestAction
+    ? closeRequestDocuments.filter((document) => {
+        const key = normalizeCloseRequestDecisionKey(document.documentName || document.key);
+        const decision = checkerDocumentDecisions[key];
+        return !["approved", "rejected"].includes(String(decision?.status || "").toLowerCase());
+      }).length
+    : 0;
+
+  const updateCheckerDocumentDecision = (document, updates) => {
+    const key = normalizeCloseRequestDecisionKey(document.documentName || document.key);
+    if (!key) {
+      return;
+    }
+
+    setCheckerDocumentDecisions((current) => ({
+      ...current,
+      [key]: {
+        status: current[key]?.status || "",
+        comment: current[key]?.comment || "",
+        documentName: document.documentName,
+        ...updates,
+      },
+    }));
+  };
 
   const history = (function buildHistory() {
     const events = [];
@@ -1289,11 +1357,6 @@ const DeferralDetailModal = ({
             >
               {label}
             </div>
-            {document.creatorComment ? (
-              <div style={{ color: "var(--color-text-muted)", fontSize: 12, marginTop: 4 }}>
-                {document.creatorComment}
-              </div>
-            ) : null}
           </div>
         );
       },
@@ -1302,7 +1365,9 @@ const DeferralDetailModal = ({
       title: "Checker Review",
       key: "checkerReview",
       render: (_, document) => {
-        const reviewState = String(document.checkerStatus || "pending").toLowerCase();
+        const decisionKey = normalizeCloseRequestDecisionKey(document.documentName || document.key);
+        const liveDecision = checkerDocumentDecisions[decisionKey];
+        const reviewState = String(liveDecision?.status || document.checkerStatus || "pending").toLowerCase();
         const label =
           reviewState === "approved"
             ? "Approved"
@@ -1325,11 +1390,6 @@ const DeferralDetailModal = ({
             >
               {label}
             </div>
-            {document.checkerComment ? (
-              <div style={{ color: "var(--color-text-muted)", fontSize: 12, marginTop: 4 }}>
-                {document.checkerComment}
-              </div>
-            ) : null}
           </div>
         );
       },
@@ -1337,12 +1397,49 @@ const DeferralDetailModal = ({
     {
       title: "Status",
       key: "status",
-      width: 180,
-      render: () => (
-        <span className="deferral-review-status-pill" style={{ color: PRIMARY_BLUE }}>
-          Awaiting checker decision
-        </span>
-      ),
+      width: 220,
+      render: (_, document) => {
+        const decisionKey = normalizeCloseRequestDecisionKey(document.documentName || document.key);
+        const decision = checkerDocumentDecisions[decisionKey] || {
+          status: "",
+          comment: "",
+          documentName: document.documentName,
+        };
+
+        if (!isCloseRequestAction || !canAccept) {
+          return (
+            <span className="deferral-review-status-pill" style={{ color: PRIMARY_BLUE }}>
+              {decision.status === "approved"
+                ? "Approved"
+                : decision.status === "rejected"
+                  ? "Rejected"
+                  : "Awaiting checker decision"}
+            </span>
+          );
+        }
+
+        return (
+          <div style={{ display: "grid", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Button
+                size="small"
+                type={decision.status === "approved" ? "primary" : "default"}
+                onClick={() => updateCheckerDocumentDecision(document, { status: "approved" })}
+              >
+                Approve
+              </Button>
+              <Button
+                size="small"
+                danger={decision.status === "rejected"}
+                type={decision.status === "rejected" ? "primary" : "default"}
+                onClick={() => updateCheckerDocumentDecision(document, { status: "rejected" })}
+              >
+                Reject
+              </Button>
+            </div>
+          </div>
+        );
+      },
     },
   ];
 
@@ -1774,8 +1871,20 @@ const DeferralDetailModal = ({
             </Button>,
             <Button
               className="approver-deferral-review__decision-primary"
-              onClick={onApprovalConfirm}
+              onClick={() => onApprovalConfirm?.({
+                comment: creatorComment,
+                checkerDocumentDecisions: closeRequestDocuments.map((document) => {
+                  const key = normalizeCloseRequestDecisionKey(document.documentName || document.key);
+                  const decision = checkerDocumentDecisions[key] || {};
+                  return {
+                    documentName: document.documentName,
+                    status: decision.status || "pending",
+                    comment: decision.comment || "",
+                  };
+                }),
+              })}
               loading={Boolean(actionLoading)}
+              disabled={Boolean(actionLoading) || (isCloseRequestAction && pendingCheckerDecisions > 0)}
             >
               {isCloseRequestAction ? "Yes, Submit Review" : "Yes, Approve"}
             </Button>
@@ -1792,7 +1901,9 @@ const DeferralDetailModal = ({
             </div>
             <div className="approver-deferral-review__decision-summary-copy">
               {isCloseRequestAction
-                ? "Approving this review will advance the close request and publish your decision to the workflow trail."
+                ? pendingCheckerDecisions > 0
+                  ? `Review ${pendingCheckerDecisions} remaining close-request document${pendingCheckerDecisions === 1 ? "" : "s"} before you submit.`
+                  : "Approving this review will advance the close request and publish your decision to the workflow trail."
                 : "Approving this request will advance it in the workflow and publish your decision to the review trail."}
             </div>
           </div>

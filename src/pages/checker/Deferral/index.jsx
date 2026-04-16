@@ -792,9 +792,9 @@ const DeferralIndex = ({ userId }) => {
               setShowReworkConfirm(true);
             }}
             approvalConfirmVisible={approvalConfirmModalVisible}
-            onApprovalConfirm={() => {
+            onApprovalConfirm={(payload) => {
               if (activeTab === "closeRequests") {
-                handleApproveCloseRequest(creatorComment);
+                handleApproveCloseRequest(payload || { comment: creatorComment });
               } else {
                 handleApproveConfirm(creatorComment);
               }

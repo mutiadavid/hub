@@ -465,7 +465,6 @@ const DeferralDetailsModal = (props) => {
     {
       title: "Creator Review",
       key: "creatorReview",
-      width: 300,
       render: (_, document) => {
         const state = String(document.decision?.status || "pending").toLowerCase();
         const label =
@@ -483,20 +482,6 @@ const DeferralDetailsModal = (props) => {
             >
               {label}
             </div>
-            <Input.TextArea
-              rows={2}
-              placeholder="Optional creator review comment"
-              value={document.decision?.comment || ""}
-              disabled={sourceTab !== "closeRequests"}
-              onChange={(event) =>
-                _onDocDecision?.(
-                  document.decisionKey,
-                  document.decision?.status || "pending",
-                  event.target.value,
-                )
-              }
-              style={{ marginTop: 8 }}
-            />
           </div>
         );
       },
@@ -521,11 +506,6 @@ const DeferralDetailsModal = (props) => {
             >
               {checkerLabel}
             </div>
-            {document.checkerComment ? (
-              <div style={{ color: "var(--color-text-muted)", fontSize: 12, marginTop: 4 }}>
-                {document.checkerComment}
-              </div>
-            ) : null}
           </div>
         );
       },
