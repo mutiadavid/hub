@@ -53,7 +53,10 @@ const CommentTrail = ({ history, isLoading }) => {
       : "no-time";
     const groupKey = `${timestampKey}|${name}|${roleLabel || "unknown"}`;
 
-    const isSystem = isSystemMessage(text, name, roleLabel);
+    const isSystem =
+      typeof item.isSystemComment === "boolean"
+        ? item.isSystemComment
+        : isSystemMessage(text, name, roleLabel);
 
     if (!groupMap.has(groupKey)) {
       groupMap.set(groupKey, {

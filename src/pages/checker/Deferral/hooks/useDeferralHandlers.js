@@ -6,7 +6,7 @@ import downloadDeferralPdf from "../../../../utils/deferralPdfGenerator";
 
 /**
  * Custom hook for Deferral action handlers
- * Encapsulates all business logic for approve, reject, rework, etc.
+ * Encapsulates all business logic for approve, rework, commenting, and downloads.
  */
 export const useDeferralHandlers = (token, { deferrals, setDeferrals, selectedDeferral, setSelectedDeferral, setActiveTab, setModalVisible, loadDeferrals }) => {
   const [actionLoading, setActionLoading] = useState(false);
@@ -63,82 +63,6 @@ export const useDeferralHandlers = (token, { deferrals, setDeferrals, selectedDe
       setActionLoading(false);
     }
   }, [selectedDeferral, token, deferrals, setDeferrals, setSelectedDeferral, setModalVisible, loadDeferrals]);
-
-  const handleRejectDeferral = useCallback(async (comment) => {
-    if (!comment.trim()) {
-      message.error("Please enter your comments before rejecting");
-      return;
-    }
-
-    setActionLoading(true);
-    try {
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const userId = currentUser._id || currentUser.user?._id;
-      const userName = currentUser.name || currentUser.user?.name || currentUser.email;
-
-      const isChecker =
-        selectedDeferral.checker &&
-        (selectedDeferral.checker._id === userId || selectedDeferral.checker === userId);
-
-      const response = isChecker
-        ? await deferralApi.rejectByChecker(
-            selectedDeferral._id,
-            { comment, rejectedBy: userId, rejectedByName: userName, status: "rejected" },
-            token,
-          )
-        : await deferralApi.rejectDeferral(
-            selectedDeferral._id,
-            { comment, rejectedBy: userId, rejectedByName: userName, status: "rejected" },
-            token,
-          );
-
-      if (response && response.success) {
-        message.success("Deferral rejected successfully!");
-
-        try {
-          await deferralApi.sendEmailNotification(
-            selectedDeferral._id,
-            "rejected_to_rm",
-            {
-              comment,
-              userName,
-              rejectedBy: isChecker ? "Checker" : "Approver",
-            },
-          );
-        } catch (emailErr) {
-          console.warn("Failed to send email notification:", emailErr);
-        }
-
-        const updatedDeferrals = deferrals.map((d) =>
-          d._id === selectedDeferral._id ? { ...d, ...response.deferral } : d,
-        );
-        setDeferrals(updatedDeferrals);
-
-        setModalVisible(false);
-        setSelectedDeferral(null);
-        setActiveTab("completed");
-
-        loadDeferrals();
-
-        try {
-          window.dispatchEvent(
-            new CustomEvent("deferral:updated", {
-              detail: response.deferral,
-            }),
-          );
-        } catch {
-          // Silently ignore event dispatch errors
-        }
-      } else {
-        throw new Error(response?.message || "Failed to reject deferral");
-      }
-    } catch (error) {
-      console.error("Error rejecting deferral:", error);
-      message.error(error.message || "Failed to reject deferral");
-    } finally {
-      setActionLoading(false);
-    }
-  }, [selectedDeferral, token, deferrals, setDeferrals, setSelectedDeferral, setModalVisible, setActiveTab, loadDeferrals]);
 
   const handleReturnForRework = useCallback(async (comment) => {
     if (!comment.trim()) {
@@ -372,7 +296,6 @@ export const useDeferralHandlers = (token, { deferrals, setDeferrals, selectedDe
     actionLoading,
     postingComment,
     handleApproveConfirm,
-    handleRejectDeferral,
     handleReturnForRework,
     handleApproveCloseRequest,
     handlePostComment,

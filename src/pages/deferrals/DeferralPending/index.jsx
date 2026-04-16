@@ -137,6 +137,26 @@ const DeferralPending = ({ userId = "rm_current" }) => {
       return;
     }
 
+    if (payload.action === "resubmitDeferralCompleted") {
+      const updatedDeferral = payload.updatedDeferral;
+
+      if (updatedDeferral && (updatedDeferral._id || updatedDeferral.id)) {
+        setDeferrals((prev) => prev.map((item) => {
+          const itemId = item._id || item.id;
+          const updatedId = updatedDeferral._id || updatedDeferral.id;
+          return itemId === updatedId ? { ...item, ...updatedDeferral } : item;
+        }));
+      }
+
+      setActiveTab("pending");
+      setModalOpen(false);
+      setSelectedDeferral(null);
+      setDetailOverrides(null);
+      extensionModal.resetExtensionState();
+      loadDeferrals();
+      return;
+    }
+
     // Handle extension application
     if (payload.action === "apply_extension" && payload.deferral) {
       const def = payload.deferral;
@@ -503,6 +523,14 @@ const DeferralPending = ({ userId = "rm_current" }) => {
           );
           if (!hasDays) {
             showErrorToast("Please enter valid extension days");
+            return;
+          }
+
+          const exceedsMaximumExtensionDays = Object.values(extensionModal.extensionDaysByDoc).some(
+            (days) => Number.isFinite(Number(days)) && Number(days) > 90,
+          );
+          if (exceedsMaximumExtensionDays) {
+            showErrorToast("Maximum 90 extension days allowed per document");
             return;
           }
 

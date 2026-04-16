@@ -56,6 +56,22 @@ export const useFormSubmission = () => {
         return;
       }
 
+      const missingManualDays = (selectedDocuments || []).some((doc, idx) => {
+        if (!doc?.isManual) {
+          return false;
+        }
+
+        const docKey = (doc && (doc._id || doc.name)) || String(idx);
+        return (Number(perDocumentDays?.[docKey]) || 0) <= 0;
+      });
+
+      if (missingManualDays) {
+        showErrorToast(
+          "Every manually added document must have days sought greater than zero before submission"
+        );
+        return;
+      }
+
       setIsSubmitting(true);
 
       try {

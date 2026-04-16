@@ -20,6 +20,7 @@ import {
   SaveOutlined,
   CloseOutlined,
   InfoCircleOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 
 const { Text } = Typography;
@@ -38,10 +39,17 @@ function DocumentPicker({
   perDocumentDays = {},
 }) {
   const [search, setSearch] = useState("");
+  const [manualDocumentName, setManualDocumentName] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingValue, setEditingValue] = useState("");
 
   const MAX_DOCUMENTS = 5;
+
+  const normalizeDocName = (value) =>
+    String(value || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase();
 
   const allDocuments = [
     // Primary Documents
@@ -301,9 +309,43 @@ function DocumentPicker({
       return;
     }
 
-    if (!selectedDocuments.some((selected) => selected.name === doc.name)) {
+    if (
+      !selectedDocuments.some(
+        (selected) =>
+          normalizeDocName(selected.name) === normalizeDocName(doc.name),
+      )
+    ) {
       setSelectedDocuments([...selectedDocuments, doc]);
     }
+    setSearch("");
+  };
+
+  const handleManualAdd = () => {
+    const trimmedName = manualDocumentName.trim().replace(/\s+/g, " ");
+    if (!trimmedName || selectedDocuments.length >= MAX_DOCUMENTS) {
+      return;
+    }
+
+    const alreadySelected = selectedDocuments.some(
+      (selected) =>
+        normalizeDocName(selected.name) === normalizeDocName(trimmedName),
+    );
+
+    if (alreadySelected) {
+      setManualDocumentName("");
+      return;
+    }
+
+    setSelectedDocuments([
+      ...selectedDocuments,
+      {
+        name: trimmedName,
+        type: "Primary",
+        category: "Allowable",
+        isManual: true,
+      },
+    ]);
+    setManualDocumentName("");
     setSearch("");
   };
 
@@ -339,6 +381,14 @@ function DocumentPicker({
   const filteredDocs = allDocuments.filter((doc) =>
     doc.name.toLowerCase().includes(search.toLowerCase()),
   );
+  const manualDocumentAlreadySelected = selectedDocuments.some(
+    (selected) =>
+      normalizeDocName(selected.name) === normalizeDocName(manualDocumentName),
+  );
+  const canAddManualDocument =
+    manualDocumentName.trim().length > 0 &&
+    selectedDocuments.length < MAX_DOCUMENTS &&
+    !manualDocumentAlreadySelected;
 
   const getCategoryColor = (category) => {
     return category === "Allowable" ? SUCCESS_GREEN : ERROR_RED;
@@ -559,7 +609,7 @@ function DocumentPicker({
         size="small"
       >
         <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={24} sm={12} md={6}>
             <Input
               placeholder="Search documents..."
               prefix={<SearchOutlined />}
@@ -569,6 +619,31 @@ function DocumentPicker({
               size="middle"
               style={{ fontSize: 13 }}
             />
+          </Col>
+
+          <Col xs={24} sm={12} md={10}>
+            <Input
+              placeholder="Add a document manually"
+              value={manualDocumentName}
+              onChange={(e) => setManualDocumentName(e.target.value)}
+              onPressEnter={handleManualAdd}
+              disabled={selectedDocuments.length >= MAX_DOCUMENTS}
+              size="middle"
+              style={{ fontSize: 13 }}
+            />
+          </Col>
+
+          <Col xs={24} sm={12} md={4}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleManualAdd}
+              disabled={!canAddManualDocument}
+              style={{ width: "100%" }}
+              size="middle"
+            >
+              Add Document
+            </Button>
           </Col>
 
           {selectedDocuments.length > 0 && (
@@ -584,6 +659,24 @@ function DocumentPicker({
             </Col>
           )}
         </Row>
+
+        <div style={{ marginTop: 12 }}>
+          {selectedDocuments.length >= MAX_DOCUMENTS ? (
+            <Alert
+              type="warning"
+              showIcon
+              message={`You have already selected the maximum of ${MAX_DOCUMENTS} documents. Remove one before adding another manually.`}
+            />
+          ) : manualDocumentAlreadySelected && manualDocumentName.trim() ? (
+            <Alert
+              type="info"
+              showIcon
+              message="This document is already in the selected list."
+            />
+          ) : (
+            null
+          )}
+        </div>
       </Card>
 
       {/* Search Results */}
@@ -635,7 +728,8 @@ function DocumentPicker({
           >
             {filteredDocs.map((doc, i) => {
               const isSelected = selectedDocuments.some(
-                (selected) => selected.name === doc.name,
+                (selected) =>
+                  normalizeDocName(selected.name) === normalizeDocName(doc.name),
               );
               const isMaxReached = selectedDocuments.length >= MAX_DOCUMENTS;
               const canSelect = !isSelected && !isMaxReached;

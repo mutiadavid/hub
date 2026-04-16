@@ -475,7 +475,7 @@ const ExtensionApplicationModal = ({
       render: (value, record) => (
         <InputNumber
           min={0}
-          max={365}
+          max={90}
           value={value}
           onChange={(nextValue) =>
             onDaysByDocChange({
@@ -484,7 +484,7 @@ const ExtensionApplicationModal = ({
             })
           }
           style={{ width: "100%" }}
-          placeholder="Days"
+          placeholder="Days (max 90)"
         />
       ),
     },
@@ -724,7 +724,7 @@ const ExtensionApplicationModal = ({
                             <div style={{ maxWidth: 280 }}>
                               <InputNumber
                                 min={1}
-                                max={365}
+                                max={90}
                                 value={extensionDays || undefined}
                                 onChange={onDaysChange}
                                 placeholder="Apply default days to all documents"
@@ -734,7 +734,7 @@ const ExtensionApplicationModal = ({
                           </Descriptions.Item>
                         </Descriptions>
                         <Typography.Text type="secondary">
-                          Set a default number of days, then fine-tune any document row under the documents tab.
+                          Set a default number of days up to 90, then fine-tune any document row under the documents tab.
                         </Typography.Text>
                       </div>
                     </section>

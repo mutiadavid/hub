@@ -52,14 +52,14 @@ export default function DeferralDetails({
         .deferral-form-details.ant-card {
           margin-bottom: 20px;
           border-radius: 10px !important;
-          border: 1px solid rgba(214, 189, 152, 0.2) !important;
-          box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06) !important;
+          border: 1px solid rgba(22, 70, 121, 0.24) !important;
+          box-shadow: 0 4px 14px rgba(26, 54, 54, 0.08) !important;
           overflow: hidden;
         }
         .deferral-form-details .ant-card-head,
         .deferral-form-details .ant-card-small > .ant-card-head {
           background: var(--color-bg) !important;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+          border-bottom: 1px solid rgba(22, 70, 121, 0.24) !important;
         }
         .deferral-form-details .ant-card-head-title {
           padding: 14px 0 !important;
@@ -77,8 +77,49 @@ export default function DeferralDetails({
         .deferral-form-details .ant-picker {
           border: 1px solid rgba(214, 189, 152, 0.2) !important;
           border-radius: 8px !important;
+          background: var(--color-white) !important;
           box-shadow: none !important;
           min-height: 42px;
+        }
+        .deferral-form-details .deferral-form-loan-amount-select.ant-select .ant-select-selector {
+          min-height: 42px !important;
+          padding: 6px 12px !important;
+          display: flex !important;
+          align-items: center !important;
+          border: 1px solid rgba(22, 70, 121, 0.42) !important;
+          background: rgba(22, 70, 121, 0.06) !important;
+          color: var(--color-text-dark) !important;
+        }
+        .deferral-form-details .deferral-form-loan-amount-select:hover .ant-select-selector,
+        .deferral-form-details .deferral-form-loan-amount-select.ant-select-focused .ant-select-selector {
+          border-color: rgba(22, 70, 121, 0.72) !important;
+          background: rgba(22, 70, 121, 0.1) !important;
+        }
+        .deferral-form-details .deferral-form-loan-amount-select .ant-select-selection-item,
+        .deferral-form-details .deferral-form-loan-amount-select .ant-select-selection-placeholder {
+          color: var(--color-text-dark) !important;
+          line-height: 28px !important;
+        }
+        .deferral-form-details .deferral-form-loan-amount-select .ant-select-selection-placeholder {
+          color: var(--color-text-medium) !important;
+        }
+        .deferral-form-details .deferral-form-loan-amount-select .ant-select-arrow {
+          color: var(--color-text-medium) !important;
+        }
+        .deferral-form-details .ant-picker.ant-picker-disabled {
+          background: rgba(245, 247, 244, 0.96) !important;
+          border-color: rgba(26, 54, 54, 0.22) !important;
+          opacity: 1 !important;
+        }
+        .deferral-form-details .ant-picker.ant-picker-disabled .ant-picker-input > input,
+        .deferral-form-details .ant-picker.ant-picker-disabled .ant-picker-input > input[disabled] {
+          color: rgba(26, 54, 54, 0.78) !important;
+          -webkit-text-fill-color: rgba(26, 54, 54, 0.78) !important;
+          cursor: not-allowed !important;
+        }
+        .deferral-form-details .ant-picker.ant-picker-disabled .ant-picker-suffix,
+        .deferral-form-details .ant-picker.ant-picker-disabled .ant-picker-clear {
+          color: rgba(26, 54, 54, 0.58) !important;
         }
         .deferral-form-details .ant-select-selector:hover,
         .deferral-form-details .ant-input:hover,
@@ -103,28 +144,74 @@ export default function DeferralDetails({
           box-shadow: none !important;
         }
         .deferral-form-details .deferral-form-inline-card.ant-card {
-          border: 1px solid rgba(214, 189, 152, 0.16) !important;
-          box-shadow: none !important;
+          border: 1px solid rgba(22, 70, 121, 0.2) !important;
+          box-shadow: 0 3px 10px rgba(26, 54, 54, 0.05) !important;
           border-radius: 10px !important;
           background: rgba(255, 255, 255, 0.92) !important;
         }
         .deferral-form-details .deferral-form-section-heading {
-          color: var(--color-text-dark);
-          font-size: 15px;
+          color: #164679;
+          font-size: 18px;
           font-weight: 700;
+          font-family: inherit;
+          letter-spacing: -0.02em;
           margin: 0;
+          line-height: 1.3;
+        }
+        .deferral-form-details .deferral-form-divider-block {
+          padding-top: 18px;
+          border-top: 1px solid rgba(22, 70, 121, 0.16);
         }
         .deferral-form-details .deferral-form-subsection {
           display: flex;
           align-items: center;
           margin-bottom: 14px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid rgba(22, 70, 121, 0.16);
         }
         .deferral-form-details .deferral-form-subsection-title {
-          color: var(--color-text-dark) !important;
-          font-size: 15px !important;
+          color: #164679 !important;
+          font-size: 18px !important;
           font-weight: 700 !important;
+          font-family: inherit !important;
           margin: 0 !important;
           letter-spacing: -0.02em;
+          line-height: 1.3;
+        }
+        .deferral-form-details .deferral-form-inline-title {
+          color: #164679 !important;
+          font-size: 18px !important;
+          font-weight: 700 !important;
+          font-family: inherit !important;
+          display: block !important;
+          margin-bottom: 12px !important;
+          letter-spacing: -0.02em;
+          line-height: 1.3;
+        }
+        .deferral-form-details .deferral-form-subtitle {
+          color: #1f1f1f !important;
+          font-size: 15px !important;
+          font-weight: 600 !important;
+          font-family: inherit !important;
+          display: block !important;
+          margin-bottom: 10px !important;
+          line-height: 1.35;
+        }
+        .deferral-form-details .deferral-form-table-header {
+          padding: 10px 12px !important;
+          border-top: 1px solid rgba(22, 70, 121, 0.14);
+          border-bottom: 1px solid rgba(22, 70, 121, 0.2) !important;
+          background: rgba(22, 70, 121, 0.035);
+          border-radius: 8px;
+          margin-bottom: 12px !important;
+        }
+        .deferral-form-details .deferral-form-days-row {
+          padding: 10px 0 !important;
+          border-bottom: 1px solid rgba(22, 70, 121, 0.1);
+        }
+        .deferral-form-details .deferral-form-days-row:last-child {
+          border-bottom: none;
+          padding-bottom: 0 !important;
         }
         .deferral-form-details .deferral-form-disabled-input.ant-input-affix-wrapper,
         .deferral-form-details .deferral-form-disabled-input.ant-input {
@@ -139,8 +226,9 @@ export default function DeferralDetails({
     >
       <Row gutter={[16, 16]}>
         <Col span={12}>
-          <Typography.Text strong>Loan Amount</Typography.Text>
+          <div className="deferral-form-subtitle">Loan Amount</div>
           <Select
+            className="deferral-form-loan-amount-select"
             value={loanAmount}
             onChange={setLoanAmount}
             style={{ width: "100%" }}
@@ -153,7 +241,7 @@ export default function DeferralDetails({
         </Col>
 
         {/* Per-document days sought */}
-        <Col span={24}>
+        <Col span={24} className="deferral-form-divider-block">
           <Card size="small" className="deferral-form-inline-card" style={{ marginBottom: 16 }}>
             <div
               style={{
@@ -164,20 +252,17 @@ export default function DeferralDetails({
               }}
             >
               <div>
-                <Typography.Text strong style={{ display: "block" }}>
+                <div className="deferral-form-subtitle" style={{ marginBottom: 0 }}>
                   Days Sought (per document)
-                </Typography.Text>
+                </div>
               </div>
             </div>
 
             {/* Column labels */}
             <Row
+              className="deferral-form-table-header"
               gutter={12}
-              style={{
-                padding: "8px 0",
-                borderBottom: "1px solid #f0f0f0",
-                marginBottom: 12,
-              }}
+              style={{ marginBottom: 12 }}
             >
               <Col xs={12} sm={12} md={10}>
                 <Typography.Text strong>Document</Typography.Text>
@@ -204,10 +289,11 @@ export default function DeferralDetails({
                     : "";
                   return (
                     <Row
+                      className="deferral-form-days-row"
                       key={docKey}
                       align="middle"
                       gutter={12}
-                      style={{ padding: "8px 0", borderRadius: 4 }}
+                      style={{ borderRadius: 4 }}
                     >
                       <Col xs={24} sm={12} md={10}>
                         <div
@@ -225,14 +311,15 @@ export default function DeferralDetails({
                       <Col xs={12} sm={6} md={4}>
                         <InputNumber
                           min={0}
+                          max={90}
                           value={days}
                           onChange={(v) =>
                             handlePerDocumentDaysChange(docKey, v)
                           }
                           style={{ width: "100%" }}
                           size="middle"
-                          placeholder="Days"
-                          aria-label={`Days sought for ${doc.name}`}
+                          placeholder="Days (max 90)"
+                          aria-label={`Days sought for ${doc.name} (maximum 90 days)`}
                         />
                       </Col>
 
@@ -258,7 +345,7 @@ export default function DeferralDetails({
         </Col>
 
         {/* Document Picker Component */}
-        <Col span={24}>
+        <Col span={24} className="deferral-form-divider-block">
           <div style={{ marginBottom: 16 }}>
             <div className="deferral-form-subsection">
               <Typography.Title level={4} className="deferral-form-subsection-title">
@@ -273,8 +360,8 @@ export default function DeferralDetails({
           />
         </Col>
 
-        <Col span={24}>
-          <Typography.Text strong>Deferral Description</Typography.Text>
+        <Col span={24} className="deferral-form-divider-block">
+          <div className="deferral-form-inline-title">Deferral Description</div>
           <TextArea
             value={deferralDescription}
             onChange={(e) => setDeferralDescription(e.target.value)}
@@ -285,7 +372,7 @@ export default function DeferralDetails({
         </Col>
 
         {/* Facility Table Component */}
-        <Col span={24}>
+        <Col span={24} className="deferral-form-divider-block">
           <div style={{ marginBottom: 16 }}>
             <div className="deferral-form-subsection">
               <Typography.Title level={4} className="deferral-form-subsection-title">
@@ -299,8 +386,8 @@ export default function DeferralDetails({
           />
         </Col>
 
-        <Col span={24}>
-          <Typography.Text strong>DCL Number</Typography.Text>
+        <Col span={24} className="deferral-form-divider-block">
+          <div className="deferral-form-subtitle">DCL Number</div>
           <Input
             className={isSearchedByDcl ? "deferral-form-disabled-input" : undefined}
             value={dclNumber}
@@ -318,7 +405,7 @@ export default function DeferralDetails({
           />
         </Col>
 
-        <Col span={24}>
+        <Col span={24} className="deferral-form-divider-block">
           {/* DCL Upload */}
           <Card size="small" className="deferral-form-inline-card" style={{ marginBottom: 16 }}>
             <div className="deferral-form-subsection">
@@ -364,7 +451,7 @@ export default function DeferralDetails({
           </Card>
         </Col>
 
-        <Col span={24}>
+        <Col span={24} className="deferral-form-divider-block">
           {/* Additional Documents */}
           <Card size="small" className="deferral-form-inline-card">
             <div className="deferral-form-subsection">

@@ -11,7 +11,6 @@ const ExtensionTab = ({
   selectedExtension,
   onModalClose,
   onApprove,
-  onReject,
 }) => {
   return (
     <>
@@ -21,7 +20,6 @@ const ExtensionTab = ({
           open={extensionModalOpen}
           embedded
           onApprove={onApprove}
-          onReject={onReject}
           onClose={onModalClose}
         />
       )}

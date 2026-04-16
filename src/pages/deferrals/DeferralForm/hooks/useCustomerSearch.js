@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { message } from "antd";
-import { API_ORIGIN } from "../../../../config/runtimeConfig";
+import { API_BASE_URL, API_ORIGIN } from "../../../../config/runtimeConfig";
 
 /**
  * Custom hook for customer and DCL search functionality
@@ -26,7 +26,7 @@ export const useCustomerSearch = () => {
     try {
       const stored = JSON.parse(localStorage.getItem("user") || "null");
       const token = stored?.token;
-      const url = `${import.meta.env.VITE_API_URL}/api/users/customers?q=${encodeURIComponent(q)}${searchLoanType ? `&loanType=${encodeURIComponent(searchLoanType)}` : ""}`;
+      const url = `${API_BASE_URL}/users/customers?q=${encodeURIComponent(q)}${searchLoanType ? `&loanType=${encodeURIComponent(searchLoanType)}` : ""}`;
       const res = await fetch(url, {
         headers: {
           ...(token ? { authorization: `Bearer ${token}` } : {}),

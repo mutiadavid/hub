@@ -3,6 +3,7 @@ import { Row, Col, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useGetApproversQuery } from "../../../api/userApi";
 import deferralApi from "../../../service/deferralApi";
+import { API_BASE_URL } from "../../../config/runtimeConfig";
 import { generateChecklistPDFBlob } from "../../../utils/reportGenerator";
 
 // Hooks
@@ -83,7 +84,7 @@ export default function DeferralForm() {
       let data = null;
 
       if (searchState.selectedCustomerId) {
-        const url = `${import.meta.env.VITE_API_URL}/api/users/customers/${searchState.selectedCustomerId}`;
+        const url = `${API_BASE_URL}/users/customers/${searchState.selectedCustomerId}`;
         const res = await fetch(url, {
           headers: {
             ...(token ? { authorization: `Bearer ${token}` } : {}),
@@ -99,7 +100,7 @@ export default function DeferralForm() {
         if (!res.ok) throw new Error("Failed to fetch customer details");
         data = await res.json();
       } else {
-        const url = `${import.meta.env.VITE_API_URL}/api/customers/search`;
+        const url = `${API_BASE_URL}/customers/search`;
         const res = await fetch(url, {
           method: "POST",
           headers: {
@@ -173,7 +174,7 @@ export default function DeferralForm() {
       const stored = JSON.parse(localStorage.getItem("user") || "null");
       const token = stored?.token;
 
-      const url = `${import.meta.env.VITE_API_URL}/api/cocreatorChecklist/${checklistId}`;
+      const url = `${API_BASE_URL}/cocreatorChecklist/${checklistId}`;
       const res = await fetch(url, {
         headers: {
           ...(token ? { authorization: `Bearer ${token}` } : {}),

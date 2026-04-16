@@ -92,16 +92,62 @@ const calculateBusinessMinutes = (start, end) => {
 
 const toDayValue = (minutes) => Number(((minutes || 0) / BUSINESS_MINUTES_PER_DAY).toFixed(2));
 
-const formatLiveDuration = (startAt, endAt) => {
+const isWeekend = (value) => {
+  const day = value.day();
+  return day === 0 || day === 6;
+};
+
+const calculateBusinessSeconds = (startAt, endAt) => {
   const start = startAt ? dayjs(startAt) : null;
   const end = endAt ? dayjs(endAt) : null;
 
-  if (!start?.isValid() || !end?.isValid() || end.isBefore(start)) {
-    return "0s";
+  if (!start?.isValid() || !end?.isValid() || !end.isAfter(start)) {
+    return 0;
   }
 
-  let totalSeconds = Math.ceil(end.diff(start, "second", true));
-  totalSeconds = Number.isFinite(totalSeconds) ? Math.max(1, totalSeconds) : 1;
+  let cursor = start.clone();
+  let totalSeconds = 0;
+
+  while (cursor.isBefore(end)) {
+    if (isWeekend(cursor)) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_HOUR_START);
+      continue;
+    }
+
+    if (cursor.hour() < BUSINESS_HOUR_START) {
+      cursor = cursor.hour(BUSINESS_HOUR_START).minute(0).second(0).millisecond(0);
+    } else if (cursor.hour() >= BUSINESS_HOUR_END) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_HOUR_START);
+      continue;
+    }
+
+    const endOfBusinessDay = cursor
+      .clone()
+      .hour(BUSINESS_HOUR_END)
+      .minute(0)
+      .second(0)
+      .millisecond(0);
+    const intervalEnd = end.isBefore(endOfBusinessDay) ? end : endOfBusinessDay;
+
+    if (intervalEnd.isAfter(cursor)) {
+      totalSeconds += Math.max(0, Math.ceil(intervalEnd.diff(cursor, "second", true)));
+      cursor = intervalEnd;
+    }
+
+    if (cursor.isBefore(end)) {
+      cursor = cursor.add(1, "day").startOf("day").hour(BUSINESS_HOUR_START);
+    }
+  }
+
+  return totalSeconds;
+};
+
+const formatLiveDuration = (startAt, endAt) => {
+  const totalSeconds = calculateBusinessSeconds(startAt, endAt);
+
+  if (totalSeconds <= 0) {
+    return "0s";
+  }
 
   const days = Math.floor(totalSeconds / LIVE_SECONDS_PER_BUSINESS_DAY);
   const dayRemainder = totalSeconds % LIVE_SECONDS_PER_BUSINESS_DAY;
@@ -125,11 +171,10 @@ const getStageDisplaySeconds = (stage, nowAt) => {
   }
 
   if (stage.state === "in_progress" && stage.startAt) {
-    const start = dayjs(stage.startAt);
-    const end = dayjs(nowAt);
+    const totalSeconds = calculateBusinessSeconds(stage.startAt, nowAt);
 
-    if (start.isValid() && end.isValid() && end.isAfter(start)) {
-      return Math.max(1, Math.ceil(end.diff(start, "second", true)));
+    if (totalSeconds > 0) {
+      return totalSeconds;
     }
   }
 

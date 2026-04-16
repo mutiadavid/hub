@@ -4,6 +4,7 @@ import {
   Form,
   Input,
   Button,
+  InputNumber,
   Select,
   Spin,
 } from "antd";
@@ -25,11 +26,17 @@ const toNullableIsoDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 };
 
+const MIN_DOCUMENT_DAYS = 10;
+const MAX_DOCUMENT_DAYS = 90;
+
 const toNullablePositiveInteger = (value) => {
   if (value === null || typeof value === "undefined" || value === "") return null;
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 };
+
+const normalizeDocumentDays = (document) =>
+  toNullablePositiveInteger(document?.daysSought ?? document?.requestedDaysSought);
 
 const sanitizeSelectedDocuments = (documents) =>
   Array.isArray(documents)
@@ -209,6 +216,45 @@ const MODAL_STYLES = `
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+  .rm-resubmit-modal-doc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+  }
+  .rm-resubmit-modal-doc-days {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
+  }
+  .rm-resubmit-modal-days-input.ant-input-number {
+    width: 100%;
+    border-radius: 10px !important;
+    border: 1px solid #eaecf0 !important;
+    box-shadow: none !important;
+    background: var(--color-white) !important;
+  }
+  .rm-resubmit-modal-days-input.ant-input-number:hover,
+  .rm-resubmit-modal-days-input.ant-input-number-focused {
+    border-color: var(--color-primary-dark) !important;
+    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
+  }
+  .rm-resubmit-modal-days-input .ant-input-number-input {
+    height: 44px;
+    color: var(--color-text-dark) !important;
+  }
+  .rm-resubmit-modal-doc-hint,
+  .rm-resubmit-modal-doc-error {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .rm-resubmit-modal-doc-hint {
+    color: #667085;
+  }
+  .rm-resubmit-modal-doc-error {
+    color: #b42318;
   }
   .rm-resubmit-modal-doc-name,
   .rm-resubmit-modal-flow-role {
@@ -394,6 +440,21 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
   const [loadingApprovers, setLoadingApprovers] = useState(false);
   const [confirmingApprovers, setConfirmingApprovers] = useState(false);
 
+  const getDocumentDaysValidationMessage = (document) => {
+    const documentName = String(document?.name || document?.label || "Document").trim() || "Document";
+    const daysSought = normalizeDocumentDays(document);
+
+    if (!Number.isInteger(daysSought)) {
+      return `${documentName}: days requested is required`;
+    }
+
+    if (daysSought < MIN_DOCUMENT_DAYS || daysSought > MAX_DOCUMENT_DAYS) {
+      return `${documentName}: days requested must be between ${MIN_DOCUMENT_DAYS} and ${MAX_DOCUMENT_DAYS}`;
+    }
+
+    return null;
+  };
+
   useEffect(() => {
     if (open && deferral) {
       // Initialize form with deferral data
@@ -404,10 +465,30 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
 
       // Initialize selected documents
       if (deferral?.selectedDocuments) {
-        setSelectedDocuments(deferral.selectedDocuments);
+        setSelectedDocuments(
+          deferral.selectedDocuments.map((document) => ({
+            ...document,
+            daysSought: normalizeDocumentDays(document),
+          })),
+        );
+      } else {
+        setSelectedDocuments([]);
       }
     }
   }, [open, deferral, form]);
+
+  const handleDocumentDaysChange = (index, value) => {
+    setSelectedDocuments((prev) =>
+      prev.map((document, currentIndex) =>
+        currentIndex === index
+          ? {
+              ...document,
+              daysSought: value === null || typeof value === "undefined" ? null : Number(value),
+            }
+          : document,
+      ),
+    );
+  };
 
   const handleEditApproversClick = async () => {
     setEditedApprovers(deferral.approverFlow ? [...deferral.approverFlow] : []);
@@ -559,6 +640,15 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     try {
       setLoading(true);
 
+      const invalidDocumentMessage = selectedDocuments
+        .map(getDocumentDaysValidationMessage)
+        .find(Boolean);
+
+      if (invalidDocumentMessage) {
+        showErrorToast(invalidDocumentMessage);
+        return;
+      }
+
       const sanitizedSelectedDocuments = sanitizeSelectedDocuments(selectedDocuments);
       const sanitizedApproverFlow = sanitizeApproverFlow(
         editedApprovers.length > 0 ? editedApprovers : deferral.approverFlow,
@@ -646,6 +736,25 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                     <div className="rm-resubmit-modal-doc-body">
                       <div className="rm-resubmit-modal-doc-name">
                         {doc.name || `Document ${idx + 1}`}
+                      </div>
+                      <div className="rm-resubmit-modal-doc-meta">
+                        <div className="rm-resubmit-modal-doc-days">
+                          <span className="rm-resubmit-modal-label">Days Requested</span>
+                          <InputNumber
+                            min={MIN_DOCUMENT_DAYS}
+                            max={MAX_DOCUMENT_DAYS}
+                            precision={0}
+                            className="rm-resubmit-modal-days-input"
+                            value={normalizeDocumentDays(doc)}
+                            onChange={(value) => handleDocumentDaysChange(idx, value)}
+                            placeholder="Enter days"
+                          />
+                          {getDocumentDaysValidationMessage(doc) ? (
+                            <span className="rm-resubmit-modal-doc-error">
+                              {getDocumentDaysValidationMessage(doc)}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                     <Button

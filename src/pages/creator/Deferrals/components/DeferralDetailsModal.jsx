@@ -313,11 +313,11 @@ const DeferralDetailsModal = (props) => {
           <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
             {doc.name || "Uploaded Document"}
           </div>
-          <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
-            {doc.uploadDate
-              ? `Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`
-              : "Upload date not set"}
-          </div>
+          {doc.uploadDate ? (
+            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+              {`Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`}
+            </div>
+          ) : null}
         </div>
       ),
     },
@@ -403,11 +403,11 @@ const DeferralDetailsModal = (props) => {
           <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
             {upload.name || "Evidence Document"}
           </div>
-          <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
-            {upload.uploadDate
-              ? `Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`
-              : "Upload date not set"}
-          </div>
+          {upload.uploadDate ? (
+            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+              {`Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`}
+            </div>
+          ) : null}
         </div>
       ),
     },
@@ -533,7 +533,7 @@ const DeferralDetailsModal = (props) => {
     {
       title: "Actions",
       key: "actions",
-      width: 260,
+      width: 180,
       render: (_, document) => (
         <div className="deferral-review-actionset">
           <Button
@@ -547,14 +547,6 @@ const DeferralDetailsModal = (props) => {
             }
           >
             Approve
-          </Button>
-          <Button
-            type={document.decision?.status === "rejected" ? "primary" : "default"}
-            danger={document.decision?.status === "rejected"}
-            onClick={() => _onDocDecision?.(document.decisionKey, "rejected", document.decision?.comment || "")}
-            disabled={sourceTab !== "closeRequests"}
-          >
-            Reject
           </Button>
           <Button
             onClick={() => _onResetDocDecision?.(document.decisionKey)}

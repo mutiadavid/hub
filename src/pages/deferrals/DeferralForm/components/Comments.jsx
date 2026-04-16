@@ -9,13 +9,11 @@ import {
   Typography,
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { PRIMARY_BLUE } from "../utils/constants";
 import { validateComment } from "../utils/validation";
 import { showSuccessToast } from "../../../../utils/authToast";
 import "../../../../styles/creatorDesignSystem.css";
 
 const { TextArea } = Input;
-const { Title } = Typography;
 
 export default function Comments({
   comments,
@@ -53,10 +51,13 @@ export default function Comments({
           padding: 16px !important;
         }
         .deferral-form-comments-title {
-          color: var(--color-text-dark);
-          font-size: 15px;
+          color: #164679;
+          font-size: 18px;
           font-weight: 700;
+          font-family: inherit;
+          letter-spacing: -0.02em;
           margin: 0 0 12px;
+          line-height: 1.3;
         }
         .deferral-form-comments .ant-input {
           border-radius: 8px !important;
@@ -134,9 +135,9 @@ export default function Comments({
         }
       `}</style>
     <Card size="small" className="deferral-form-comments">
-      <Title level={4} className="deferral-form-comments-title" style={{ color: PRIMARY_BLUE }}>
+      <div className="deferral-form-comments-title">
         Comments
-      </Title>
+      </div>
 
       <TextArea
         value={comments}

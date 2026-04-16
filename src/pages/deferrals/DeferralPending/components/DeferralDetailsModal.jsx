@@ -855,11 +855,12 @@ const DeferralDetailsModal = ({
           console.debug("Failed to dispatch deferral:updated", eventError);
         }
       }
-     
-      // Trigger refresh of parent data to sync across all DeferralDetailsModal instances
+
+      setWorkspaceTab("details");
+
       if (onAction) {
         onAction({
-          action: "refreshDeferrals",
+          action: "resubmitDeferralCompleted",
           deferralId: deferral._id,
           updatedDeferral: updatedData,
         });
@@ -1466,11 +1467,11 @@ const DeferralDetailsModal = ({
           <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
             {doc.name || "Uploaded Document"}
           </div>
-          <div style={{ color: "#64748b", fontSize: 12 }}>
-            {doc.uploadDate
-              ? `Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`
-              : "Upload date not set"}
-          </div>
+          {doc.uploadDate ? (
+            <div style={{ color: "#64748b", fontSize: 12 }}>
+              {`Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`}
+            </div>
+          ) : null}
         </div>
       ),
     },
@@ -1588,11 +1589,11 @@ const DeferralDetailsModal = ({
           <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
             {upload.name || "Evidence Document"}
           </div>
-          <div style={{ color: "#64748b", fontSize: 12 }}>
-            {upload.uploadDate
-              ? `Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`
-              : "Upload date not set"}
-          </div>
+          {upload.uploadDate ? (
+            <div style={{ color: "#64748b", fontSize: 12 }}>
+              {`Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`}
+            </div>
+          ) : null}
         </div>
       ),
     },
@@ -1891,12 +1892,3 @@ const DeferralDetailsModal = ({
 };
 
 export default DeferralDetailsModal;
-
-
-
-
-
-
-
-
-

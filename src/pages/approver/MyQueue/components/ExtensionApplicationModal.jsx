@@ -26,6 +26,7 @@ import {
 } from "../../../../utils/deferralDocuments";
 import { getLivePartyApprovalStatuses } from "../../../../utils/deferralApprovalStatus";
 import {
+  buildExtensionCommentEntries,
   buildExtensionHistoryEntries,
   resolveDisplayName,
 } from "../../../../utils/extensionHistory";
@@ -225,6 +226,10 @@ const REVIEW_STYLES = `
     border-radius: 8px !important;
   }
 
+  .approver-extension-review__decision-primary.ant-btn span {
+    color: var(--color-white) !important;
+  }
+
   .approver-extension-review__primary-btn.ant-btn:hover,
   .approver-extension-review__primary-btn.ant-btn:focus,
   .approver-extension-review__primary-btn.ant-btn:active,
@@ -236,6 +241,12 @@ const REVIEW_STYLES = `
     color: var(--color-white) !important;
     border-color: transparent !important;
     box-shadow: none !important;
+  }
+
+  .approver-extension-review__decision-primary.ant-btn:hover span,
+  .approver-extension-review__decision-primary.ant-btn:focus span,
+  .approver-extension-review__decision-primary.ant-btn:active span {
+    color: var(--color-white) !important;
   }
 
   .approver-extension-review__danger-btn.ant-btn:hover,
@@ -398,6 +409,57 @@ const REVIEW_STYLES = `
     background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(247, 243, 236, 0.72) 100%) !important;
   }
 
+  .approver-extension-decision-modal--edit-style .ant-modal-content {
+    border-radius: 0 !important;
+    overflow: hidden;
+    padding: 0 !important;
+    background: var(--color-white) !important;
+    border: none !important;
+    box-shadow: 0 32px 72px rgba(18, 36, 36, 0.24) !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .ant-modal-header {
+    margin-bottom: 0 !important;
+    padding: 22px 26px 18px !important;
+    background: linear-gradient(180deg, #34504c 0%, #2b4541 100%) !important;
+    border-bottom: none !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .ant-modal-title {
+    color: var(--color-white) !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .ant-modal-close {
+    top: 20px !important;
+    inset-inline-end: 20px !important;
+    width: 32px !important;
+    height: 32px !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .ant-modal-close:hover {
+    color: var(--color-white) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .ant-modal-close-x,
+  .approver-extension-decision-modal--edit-style .ant-modal-close-icon {
+    color: inherit !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .ant-modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 28px 26px 24px !important;
+    background: #f7f6f2 !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .ant-modal-footer {
+    margin: 0 !important;
+    padding: 0 26px 24px !important;
+    background: #f7f6f2 !important;
+  }
+
   .approver-extension-review__decision-card {
     padding: 14px;
     border: 1px solid rgba(214, 189, 152, 0.22);
@@ -461,6 +523,158 @@ const REVIEW_STYLES = `
     line-height: 1.3;
   }
 
+  .approver-extension-review__decision-title--edit-style {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding-right: 36px;
+    color: var(--color-white);
+  }
+
+  .approver-extension-review__decision-title-icon--edit-style {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.92);
+    flex-shrink: 0;
+  }
+
+  .approver-extension-review__decision-title-icon--edit-style svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .approver-extension-review__decision-title-copy--edit-style strong {
+    margin: 0;
+    color: var(--color-white);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .approver-extension-review__decision-card--edit-style {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .approver-extension-review__decision-summary--edit-style {
+    margin-bottom: 24px;
+    padding: 18px 18px 16px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 14px;
+    border: 1px solid rgba(214, 189, 152, 0.18);
+    box-shadow: 0 10px 28px rgba(26, 54, 54, 0.06);
+  }
+
+  .approver-extension-review__decision-label--edit-style {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--color-text-medium);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input,
+  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input-textarea textarea {
+    border: 1px solid #eaecf0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    min-height: 120px !important;
+    background: var(--color-white) !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+    color: var(--color-text-dark) !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input::placeholder,
+  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input-textarea textarea::placeholder {
+    color: #98a2b3 !important;
+  }
+
+  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input:hover,
+  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input:focus,
+  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input-textarea textarea:hover,
+  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input-textarea textarea:focus {
+    border-color: var(--color-primary-dark) !important;
+    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
+  }
+
+  .approver-extension-review__decision-secondary--edit-style.ant-btn {
+    min-width: 92px;
+    height: 44px;
+    border-radius: 10px !important;
+    border: 1px solid #d0d5dd !important;
+    background: var(--color-white) !important;
+    color: var(--color-text-medium) !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+  }
+
+  .approver-extension-review__decision-primary--edit-style.ant-btn {
+    min-width: 156px;
+    height: 44px;
+    border-radius: 10px !important;
+    border: none !important;
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    color: var(--color-white) !important;
+    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    font-weight: 700 !important;
+  }
+
+  .approver-extension-review__decision-primary--edit-style.ant-btn span {
+    color: var(--color-white) !important;
+  }
+
+  .approver-extension-review__decision-secondary--edit-style.ant-btn:hover,
+  .approver-extension-review__decision-secondary--edit-style.ant-btn:focus,
+  .approver-extension-review__decision-secondary--edit-style.ant-btn:active {
+    border-color: #d0d5dd !important;
+    background: var(--color-white) !important;
+    color: var(--color-text-medium) !important;
+    box-shadow: none !important;
+  }
+
+  .approver-extension-review__decision-primary--edit-style.ant-btn:hover,
+  .approver-extension-review__decision-primary--edit-style.ant-btn:focus,
+  .approver-extension-review__decision-primary--edit-style.ant-btn:active {
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    color: var(--color-white) !important;
+    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+  }
+
+  .approver-extension-review__decision-primary--edit-style.ant-btn:hover span,
+  .approver-extension-review__decision-primary--edit-style.ant-btn:focus span,
+  .approver-extension-review__decision-primary--edit-style.ant-btn:active span {
+    color: var(--color-white) !important;
+  }
+
+  .approver-extension-review__decision-secondary--edit-style.ant-btn:disabled,
+  .approver-extension-review__decision-secondary--edit-style.ant-btn[disabled],
+  .approver-extension-review__decision-primary--edit-style.ant-btn:disabled,
+  .approver-extension-review__decision-primary--edit-style.ant-btn[disabled] {
+    background: #D1D5DB !important;
+    border-color: #D1D5DB !important;
+    color: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .approver-extension-review__decision-secondary--edit-style.ant-btn:disabled span,
+  .approver-extension-review__decision-secondary--edit-style.ant-btn[disabled] span,
+  .approver-extension-review__decision-primary--edit-style.ant-btn:disabled span,
+  .approver-extension-review__decision-primary--edit-style.ant-btn[disabled] span {
+    color: #fff !important;
+  }
+
   @media (max-width: 1023px) {
     .approver-extension-review__details-layout {
       grid-template-columns: 1fr;
@@ -516,7 +730,23 @@ const buildAdditionalDocuments = (uploadedDocs, extensionFiles) => {
   });
 };
 
-const getExtensionLabel = (extension) => extension?.extensionNumber || "";
+const getExtensionLabel = (extension) => {
+  const explicitNumber = extension?.extensionNumber || extension?.ExtensionNumber;
+  if (explicitNumber) {
+    return explicitNumber;
+  }
+
+  const deferralNumber = extension?.deferralNumber || extension?.DeferralNumber || "";
+  if (!deferralNumber) {
+    return "";
+  }
+
+  if (/^DEF-/i.test(deferralNumber)) {
+    return deferralNumber.replace(/^DEF-/i, "EXT-");
+  }
+
+  return /^EXT-/i.test(deferralNumber) ? deferralNumber : `EXT-${deferralNumber}`;
+};
 
 const renderStatusLabel = (status) =>
   String(status || "pending")
@@ -570,7 +800,7 @@ const ExtensionApplicationModal = ({
     uploadedDocs,
     currentExtension.additionalFiles,
   );
-  const extensionHistory = buildExtensionHistoryEntries(currentExtension);
+  const extensionComments = buildExtensionCommentEntries(currentExtension);
 
   const approvalFlowWithCurrent = approvalFlow.map((approver, index) => {
     const approved = isApproverApproved(approver);
@@ -642,13 +872,6 @@ const ExtensionApplicationModal = ({
           {value || record.originalName || "Document"}
         </span>
       ),
-    },
-    {
-      title: "Uploaded At",
-      dataIndex: "uploadDate",
-      key: "uploadDate",
-      width: 140,
-      render: (value) => (value ? dayjs(value).format("DD MMM YYYY") : "-"),
     },
     {
       title: "Actions",
@@ -729,12 +952,21 @@ const ExtensionApplicationModal = ({
     inputValue,
     onInputChange,
     inputPlaceholder,
+    modalClassName,
+    titleClassName,
+    titleIconClassName,
+    titleCopyClassName,
+    cardClassName,
+    summaryClassName,
+    labelClassName,
+    cancelButtonClassName,
+    confirmButtonClassName,
   }) => (
     <Modal
       title={(
-        <div className="approver-extension-review__decision-title">
-          <span className="approver-extension-review__decision-title-icon">{titleIcon}</span>
-          <span className="approver-extension-review__decision-title-copy">
+        <div className={`approver-extension-review__decision-title ${titleClassName || ""}`.trim()}>
+          <span className={`approver-extension-review__decision-title-icon ${titleIconClassName || ""}`.trim()}>{titleIcon}</span>
+          <span className={`approver-extension-review__decision-title-copy ${titleCopyClassName || ""}`.trim()}>
             <strong>{title}</strong>
             {/* Moved subtitle to summary body */}
           </span>
@@ -743,11 +975,11 @@ const ExtensionApplicationModal = ({
       open={modalOpen}
       onCancel={onCancel}
       maskClosable={false}
-      wrapClassName="approver-extension-decision-modal"
+      wrapClassName={`approver-extension-decision-modal ${modalClassName || ""}`.trim()}
       footer={[
         <Button
           key="cancel"
-          className="approver-extension-review__decision-secondary"
+          className={`approver-extension-review__decision-secondary ${cancelButtonClassName || ""}`.trim()}
           onClick={onCancel}
           disabled={confirmLoading}
         >
@@ -755,7 +987,7 @@ const ExtensionApplicationModal = ({
         </Button>,
         <Button
           key="confirm"
-          className={`approver-extension-review__decision-primary ${confirmClassName || ""}`.trim()}
+          className={`approver-extension-review__decision-primary ${confirmClassName || ""} ${confirmButtonClassName || ""}`.trim()}
           loading={confirmLoading}
           onClick={onConfirm}
           disabled={confirmDisabled}
@@ -764,8 +996,8 @@ const ExtensionApplicationModal = ({
         </Button>,
       ]}
     >
-      <div className="approver-extension-review__decision-card">
-        <div className="approver-extension-review__decision-summary">
+      <div className={`approver-extension-review__decision-card ${cardClassName || ""}`.trim()}>
+        <div className={`approver-extension-review__decision-summary ${summaryClassName || ""}`.trim()}>
           <div style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
             {extensionLabel || "Extension request"}
           </div>
@@ -780,7 +1012,7 @@ const ExtensionApplicationModal = ({
           </div>
         </div>
 
-        <label className="approver-extension-review__decision-label">
+        <label className={`approver-extension-review__decision-label ${labelClassName || ""}`.trim()}>
           {inputLabel}
           {inputRequired ? " (Required)" : ""}
         </label>
@@ -807,7 +1039,7 @@ const ExtensionApplicationModal = ({
               </span>
               <div>
                 <h2 className="approver-extension-review__title">
-                  Extension Request: {extensionLabel || (currentExtension._id || currentExtension.id || "").slice(-6)}
+                  Extension Request: {extensionLabel || "-"}
                 </h2>
                 <div className="approver-extension-review__subtitle">{detailsSubtitle}</div>
               </div>
@@ -935,8 +1167,8 @@ const ExtensionApplicationModal = ({
               </div>
 
               <aside className="approver-extension-review__comments">
-                <div className="creator-caption">Comment Trail</div>
-                <CommentTrail history={extensionHistory} isLoading={false} />
+                <div className="creator-caption">Comments</div>
+                <CommentTrail history={extensionComments} isLoading={false} />
               </aside>
             </div>
           ) : (
@@ -1048,6 +1280,15 @@ const ExtensionApplicationModal = ({
         inputValue: approveComment,
         onInputChange: setApproveComment,
         inputPlaceholder: "Enter approval comments...",
+        modalClassName: "approver-extension-decision-modal--edit-style",
+        titleClassName: "approver-extension-review__decision-title--edit-style",
+        titleIconClassName: "approver-extension-review__decision-title-icon--edit-style",
+        titleCopyClassName: "approver-extension-review__decision-title-copy--edit-style",
+        cardClassName: "approver-extension-review__decision-card--edit-style",
+        summaryClassName: "approver-extension-review__decision-summary--edit-style",
+        labelClassName: "approver-extension-review__decision-label--edit-style",
+        cancelButtonClassName: "approver-extension-review__decision-secondary--edit-style",
+        confirmButtonClassName: "approver-extension-review__decision-primary--edit-style",
       })}
 
       {renderDecisionModal({
@@ -1070,6 +1311,15 @@ const ExtensionApplicationModal = ({
         inputValue: rejectReason,
         onInputChange: setRejectReason,
         inputPlaceholder: "Enter rejection reason...",
+        modalClassName: "approver-extension-decision-modal--edit-style",
+        titleClassName: "approver-extension-review__decision-title--edit-style",
+        titleIconClassName: "approver-extension-review__decision-title-icon--edit-style",
+        titleCopyClassName: "approver-extension-review__decision-title-copy--edit-style",
+        cardClassName: "approver-extension-review__decision-card--edit-style",
+        summaryClassName: "approver-extension-review__decision-summary--edit-style",
+        labelClassName: "approver-extension-review__decision-label--edit-style",
+        cancelButtonClassName: "approver-extension-review__decision-secondary--edit-style",
+        confirmButtonClassName: "approver-extension-review__decision-primary--edit-style",
       })}
     </>
   );

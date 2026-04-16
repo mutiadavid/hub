@@ -20,9 +20,7 @@ import ExtensionWorkflowProgress from "../../../../components/common/ExtensionWo
 import { getDeferralDocumentBuckets } from "../../../../utils/deferralDocuments";
 
 const TABS = [
-  { key: "details", label: "Deferral Details" },
   { key: "request", label: "Extension Request" },
-  { key: "documents", label: "Requested Documents" },
 ];
 
 const MODAL_STYLES = `
@@ -514,14 +512,6 @@ const ExtensionApplicationModal = ({
       color: SUCCESS_GREEN,
     },
     {
-      label: "Loan Amount",
-      value: selectedDeferral.loanAmount
-        ? selectedDeferral.loanAmount > 75000000
-          ? "Above 75 million"
-          : "Below 75 million"
-        : "-",
-    },
-    {
       label: "Created At",
       value: selectedDeferral.createdAt
         ? dayjs(selectedDeferral.createdAt).format("DD MMM YYYY")
@@ -532,21 +522,6 @@ const ExtensionApplicationModal = ({
       value: selectedDeferral.customerName || "-",
     },
   ];
-
-  const applyDaysToAllDocuments = (value) => {
-    onDaysChange?.(value);
-
-    const normalizedValue = typeof value === "number" ? value : 0;
-    const nextDaysByDoc = requestedDocs.reduce((accumulator, doc) => {
-      const key = String((doc && (doc.name || doc.label)) || doc || "")
-        .trim()
-        .toLowerCase();
-      accumulator[key] = normalizedValue;
-      return accumulator;
-    }, {});
-
-    onDaysByDocChange?.(nextDaysByDoc);
-  };
 
   const wrapperProps = embedded
     ? {
@@ -595,7 +570,7 @@ const ExtensionApplicationModal = ({
         return (
           <InputNumber
             min={0}
-            max={365}
+            max={90}
             value={extensionDaysForDoc}
             onChange={(val) =>
               onDaysByDocChange({
@@ -604,7 +579,7 @@ const ExtensionApplicationModal = ({
               })
             }
             style={{ width: "100%" }}
-            placeholder="Days"
+            placeholder="Days (max 90)"
           />
         );
       },
@@ -711,24 +686,9 @@ const ExtensionApplicationModal = ({
         {(activeTab === "request" || activeTab === "details") &&
           renderCard(
             "Extension Request Setup",
-            "Set a shared default, adjust per document where needed, and attach any supporting context.",
+            "Add the overall extension comment, attach supporting context, and set the requested days per document below.",
             <div className="extension-review-formgrid">
-              <div className="extension-review-field">
-                <div className="extension-review-fieldlabel">Default Extension Days</div>
-                <InputNumber
-                  min={1}
-                  max={365}
-                  value={extensionDays || undefined}
-                  onChange={applyDaysToAllDocuments}
-                  placeholder="Enter number of days and apply to all"
-                  style={{ width: "100%" }}
-                />
-                <div className="extension-review-fieldhint">
-                  This value immediately seeds every requested document. You can still fine-tune individual rows in the document table.
-                </div>
-              </div>
-
-              <div className="extension-review-field">
+              <div className="extension-review-field" style={{ gridColumn: "1 / -1" }}>
                 <div className="extension-review-fieldlabel">Extension Comment</div>
                 <Input.TextArea
                   rows={5}
@@ -798,7 +758,7 @@ const ExtensionApplicationModal = ({
         </div>
 
         <div className="extension-review-topbar-actions">
-          <Button className="extension-review-viewdocs" onClick={() => setActiveTab("documents")}>
+          <Button className="extension-review-viewdocs" onClick={() => setActiveTab("request")}>
             <UnorderedListOutlined />
             View Requested Documents
             <span className="extension-review-viewdocs-count">{requestedDocs.length}</span>

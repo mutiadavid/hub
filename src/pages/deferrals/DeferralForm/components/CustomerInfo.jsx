@@ -2,14 +2,11 @@ import React from "react";
 import {
   Card,
   Descriptions,
-  Tag,
   Typography,
 } from "antd";
-import { getStatusStyle, formatStatusText } from "../../../../utils/statusColors";
+import { getStatusColor, formatStatusText } from "../../../../utils/statusColors";
 import { PRIMARY_BLUE, PRIMARY_PURPLE, SECONDARY_BLUE } from "../utils/constants";
 import "../../../../styles/creatorDesignSystem.css";
-
-const { Title } = Typography;
 
 export default function CustomerInfo({
   customerName,
@@ -19,6 +16,10 @@ export default function CustomerInfo({
   loanType,
   formatLoanType,
 }) {
+  const dclStatusColor = selectedChecklistStatus
+    ? getStatusColor(selectedChecklistStatus).textColor
+    : "#595959";
+
   return (
     <>
       <style>{`
@@ -56,10 +57,13 @@ export default function CustomerInfo({
           background: var(--color-white) !important;
         }
         .deferral-form-section-title {
-          color: var(--color-text-dark);
-          font-size: 15px;
+          color: #164679;
+          font-size: 18px;
           font-weight: 700;
+          font-family: inherit;
+          letter-spacing: -0.02em;
           margin: 0;
+          line-height: 1.3;
         }
       `}</style>
     <Card
@@ -104,15 +108,11 @@ export default function CustomerInfo({
         </Descriptions.Item>
         <Descriptions.Item label="DCL Status">
           <div style={{ display: "flex", alignItems: "center" }}>
-            {selectedChecklistStatus ? (
-              <Tag style={getStatusStyle(selectedChecklistStatus)}>
-                {formatStatusText(selectedChecklistStatus)}
-              </Tag>
-            ) : (
-              <Typography.Text strong style={{ color: "#d9d9d9" }}>
-                Pending
-              </Typography.Text>
-            )}
+            <Typography.Text strong style={{ color: dclStatusColor }}>
+              {selectedChecklistStatus
+                ? formatStatusText(selectedChecklistStatus)
+                : "Pending"}
+            </Typography.Text>
           </div>
         </Descriptions.Item>
         <Descriptions.Item label="Loan Type">

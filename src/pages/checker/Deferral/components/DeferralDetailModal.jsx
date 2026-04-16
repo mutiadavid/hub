@@ -15,6 +15,7 @@ import {
   DownloadOutlined,
   ExclamationCircleOutlined,
   EyeOutlined,
+  RedoOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import getFacilityColumns from "../../../../utils/facilityColumns";
@@ -669,6 +670,238 @@ const DETAIL_STYLES = `
     box-shadow: none !important;
   }
 
+  .approver-decision-modal .ant-modal-content {
+    overflow: hidden;
+    border-radius: 24px !important;
+    border: 1px solid rgba(64, 83, 76, 0.12) !important;
+    box-shadow: 0 28px 60px rgba(20, 34, 34, 0.2) !important;
+  }
+
+  .approver-decision-modal .ant-modal-header {
+    margin: 0 !important;
+    padding: 28px 26px 22px !important;
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    border-bottom: none !important;
+  }
+
+  .approver-decision-modal .ant-modal-title,
+  .approver-decision-modal .ant-modal-close,
+  .approver-decision-modal .ant-modal-close-x,
+  .approver-decision-modal .ant-modal-close-icon {
+    color: var(--color-white) !important;
+  }
+
+  .approver-decision-modal .ant-modal-close {
+    inset-inline-end: 24px !important;
+    top: 22px !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 999px !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .approver-decision-modal .ant-modal-close-x {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .approver-decision-modal .ant-modal-close:hover {
+    color: var(--color-white) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .approver-decision-modal .ant-modal-body {
+    padding: 28px 26px 24px !important;
+    background: #f7f6f2 !important;
+  }
+
+  .approver-decision-modal .ant-modal-footer {
+    margin: 0 !important;
+    padding: 0 26px 24px !important;
+    background: #f7f6f2 !important;
+  }
+
+  .approver-deferral-review__decision-title {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding-right: 36px;
+  }
+
+  .approver-deferral-review__decision-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.92);
+    flex-shrink: 0;
+  }
+
+  .approver-deferral-review__decision-title-icon .anticon {
+    font-size: 22px;
+  }
+
+  .approver-deferral-review__decision-title-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .approver-deferral-review__decision-title-copy strong {
+    color: var(--color-white);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .approver-deferral-review__decision-title-copy span {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .approver-deferral-review__decision-card {
+    padding: 20px;
+    border: 1px solid rgba(214, 189, 152, 0.18);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 10px 28px rgba(26, 54, 54, 0.06);
+  }
+
+  .approver-deferral-review__decision-summary {
+    margin-bottom: 20px;
+    padding: 18px;
+    border-radius: 14px;
+    background: #f4efe7;
+  }
+
+  .approver-deferral-review__decision-summary-title {
+    color: var(--color-text-dark);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .approver-deferral-review__decision-summary-subtitle {
+    margin-top: 8px;
+    color: var(--color-text-medium);
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .approver-deferral-review__decision-summary-copy {
+    margin-top: 16px;
+    color: var(--color-text-medium);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .approver-deferral-review__decision-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .approver-deferral-review__decision-label {
+    display: block;
+    color: var(--color-text-medium);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .approver-deferral-review__decision-card .ant-input {
+    border: 1px solid #eaecf0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    min-height: 132px !important;
+    background: var(--color-white) !important;
+    color: var(--color-text-dark) !important;
+    font-size: 15px !important;
+    padding: 14px !important;
+    resize: vertical !important;
+  }
+
+  .approver-deferral-review__decision-card .ant-input::placeholder {
+    color: #98a2b3 !important;
+  }
+
+  .approver-deferral-review__decision-card .ant-input:hover,
+  .approver-deferral-review__decision-card .ant-input:focus {
+    border-color: var(--color-primary-dark) !important;
+    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
+  }
+
+  .approver-deferral-review__decision-secondary.ant-btn {
+    min-width: 92px;
+    height: 44px;
+    border-radius: 10px !important;
+    border: 1px solid #d0d5dd !important;
+    background: var(--color-white) !important;
+    color: var(--color-text-medium) !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+  }
+
+  .approver-deferral-review__decision-secondary.ant-btn:hover,
+  .approver-deferral-review__decision-secondary.ant-btn:focus,
+  .approver-deferral-review__decision-secondary.ant-btn:active {
+    border-color: #d0d5dd !important;
+    background: #f8fafc !important;
+    color: var(--color-text-dark) !important;
+    box-shadow: none !important;
+  }
+
+  .approver-deferral-review__decision-primary.ant-btn {
+    min-width: 156px;
+    height: 44px;
+    border-radius: 10px !important;
+    border: none !important;
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    color: var(--color-white) !important;
+    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    font-weight: 700 !important;
+  }
+
+  .approver-deferral-review__decision-primary.ant-btn:hover,
+  .approver-deferral-review__decision-primary.ant-btn:focus,
+  .approver-deferral-review__decision-primary.ant-btn:active {
+    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    color: var(--color-white) !important;
+    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+  }
+
+  .approver-deferral-review__warning-btn.ant-btn,
+  .approver-deferral-review__warning-btn.ant-btn:hover,
+  .approver-deferral-review__warning-btn.ant-btn:focus,
+  .approver-deferral-review__warning-btn.ant-btn:active,
+  .approver-deferral-review__warning-btn.ant-btn:disabled,
+  .approver-deferral-review__warning-btn.ant-btn[disabled],
+  .approver-deferral-review__warning-btn.ant-btn > span,
+  .approver-deferral-review__warning-btn.ant-btn > span > span,
+  .approver-deferral-review__warning-btn.ant-btn:disabled > span,
+  .approver-deferral-review__warning-btn.ant-btn[disabled] > span,
+  .approver-deferral-review__warning-btn.ant-btn:disabled > span > span,
+  .approver-deferral-review__warning-btn.ant-btn[disabled] > span > span {
+    color: var(--color-white) !important;
+  }
+
+  .approver-deferral-review__decision-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
   @media (max-width: 1023px) {
     .deferral-review-workspace {
       grid-template-columns: 1fr;
@@ -688,6 +921,56 @@ const DETAIL_STYLES = `
     .deferral-review-topbar__docs.ant-btn,
     .deferral-review-topbar__back.ant-btn,
     .deferral-review-actionbar .ant-btn {
+      width: 100%;
+    }
+
+    .approver-decision-modal .ant-modal {
+      max-width: calc(100vw - 24px) !important;
+      margin: 12px auto !important;
+    }
+
+    .approver-decision-modal .ant-modal-header {
+      padding: 18px 18px 16px !important;
+    }
+
+    .approver-decision-modal .ant-modal-body,
+    .approver-decision-modal .ant-modal-footer {
+      padding-left: 18px !important;
+      padding-right: 18px !important;
+    }
+
+    .approver-deferral-review__decision-title {
+      gap: 12px;
+    }
+
+    .approver-deferral-review__decision-title-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+    }
+
+    .approver-deferral-review__decision-title-copy strong {
+      font-size: 18px;
+    }
+
+    .approver-deferral-review__decision-summary-title {
+      font-size: 22px;
+    }
+
+    .approver-deferral-review__decision-summary-subtitle {
+      font-size: 16px;
+    }
+
+    .approver-deferral-review__decision-summary-copy {
+      font-size: 14px;
+    }
+
+    .approver-deferral-review__decision-actions {
+      flex-direction: column-reverse;
+    }
+
+    .approver-deferral-review__decision-secondary.ant-btn,
+    .approver-deferral-review__decision-primary.ant-btn {
       width: 100%;
     }
   }
@@ -885,11 +1168,11 @@ const DeferralDetailModal = ({
           <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
             {doc.name || "Uploaded Document"}
           </div>
-          <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
-            {doc.uploadDate
-              ? `Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`
-              : "Upload date not set"}
-          </div>
+          {doc.uploadDate ? (
+            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+              {`Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`}
+            </div>
+          ) : null}
         </div>
       ),
     },
@@ -929,11 +1212,11 @@ const DeferralDetailModal = ({
           <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
             {upload.name || "Evidence Document"}
           </div>
-          <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
-            {upload.uploadDate
-              ? `Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`
-              : "Upload date not set"}
-          </div>
+          {upload.uploadDate ? (
+            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+              {`Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`}
+            </div>
+          ) : null}
         </div>
       ),
     },
@@ -1118,7 +1401,7 @@ const DeferralDetailModal = ({
       <style>{DETAIL_STYLES}</style>
 
       <div className="deferral-review-panel">
-        <div className="deferral-review-container creator-theme">
+        <div className="deferral-review-container">
           <DeferralReviewHeader
             deferral={deferral}
             onClose={onClose}
@@ -1466,131 +1749,130 @@ const DeferralDetailModal = ({
       </div>
 
       <Modal
+        title={(
+          <div className="approver-deferral-review__decision-title">
+            <span className="approver-deferral-review__decision-title-icon"><CheckCircleOutlined /></span>
+            <span className="approver-deferral-review__decision-title-copy">
+              <strong>{`${isCloseRequestAction ? "Submit Close Request Review" : "Confirm Acceptance"}: ${deferral.deferralNumber || "Deferral request"}`}</strong>
+              <span>{isCloseRequestAction ? "Confirm the review and advance the close request to the next workflow stage." : "Confirm the request and advance it to the next workflow stage."}</span>
+            </span>
+          </div>
+        )}
         open={approvalConfirmVisible}
         onCancel={onApprovalCancel}
-        footer={null}
-        centered
-        width={550}
-        className="admin-page__modal deferral-review-confirm deferral-review-confirm--acceptance"
-        closeIcon={
-          <span style={{ color: "var(--color-primary-dark)", fontSize: 24, lineHeight: 1 }}>
-            ×
-          </span>
-        }
-        title={
-          <div className="deferral-review-confirm__title">
-            <div className="deferral-review-confirm__icon"><CheckCircleOutlined /></div>
-            <span>{isCloseRequestAction ? "Submit Close Request Review" : "Confirm Acceptance"}</span>
-          </div>
-        }
-        styles={{
-          header: {
-            margin: 0,
-            background: "transparent",
-            borderBottom: "none",
-            padding: "18px 20px",
-          },
-          body: { padding: 16 },
-          content: { padding: 0, borderRadius: 16 },
-        }}
+        maskClosable={false}
+        wrapClassName="approver-decision-modal"
+        width={760}
+        footer={[
+          <div key="actions" className="approver-deferral-review__decision-actions">
+            <Button
+              className="approver-deferral-review__decision-secondary"
+              onClick={onApprovalCancel}
+              disabled={Boolean(actionLoading)}
+            >
+              Cancel
+            </Button>,
+            <Button
+              className="approver-deferral-review__decision-primary"
+              onClick={onApprovalConfirm}
+              loading={Boolean(actionLoading)}
+            >
+              {isCloseRequestAction ? "Yes, Submit Review" : "Yes, Approve"}
+            </Button>
+          </div>,
+        ]}
       >
-        <div className="admin-page__modal-body">
-          <div className="deferral-review-confirm__body-card">
-            <div className="deferral-review-confirm__summary">
-              <div className="deferral-review-confirm__summary-title">
-                {deferral.deferralNumber || (isCloseRequestAction ? "Close request review" : "Deferral acceptance")}
-              </div>
-              <div className="deferral-review-confirm__summary-copy">
-                {isCloseRequestAction
-                  ? "Submit the checker review for this close request using the same review shell as the creator workspace."
-                  : "Accept this deferral using the same controlled review flow and modal styling as the creator workspace."}
-              </div>
+        <div className="approver-deferral-review__decision-card">
+          <div className="approver-deferral-review__decision-summary">
+            <div className="approver-deferral-review__decision-summary-title">
+              {deferral.deferralNumber || (isCloseRequestAction ? "Close request review" : "Deferral request")}
             </div>
+            <div className="approver-deferral-review__decision-summary-subtitle">
+              {deferral.customerName || "Customer"}
+            </div>
+            <div className="approver-deferral-review__decision-summary-copy">
+              {isCloseRequestAction
+                ? "Approving this review will advance the close request and publish your decision to the workflow trail."
+                : "Approving this request will advance it in the workflow and publish your decision to the review trail."}
+            </div>
+          </div>
 
-            <label className="deferral-review-confirm__label" htmlFor="checker-approval-comment">
-              Comment
+          <div className="approver-deferral-review__decision-field">
+            <label className="approver-deferral-review__decision-label" htmlFor="checker-approval-comment">
+              Approval comments
             </label>
             <TextArea
               id="checker-approval-comment"
-              className="deferral-review-confirm__textarea"
               rows={4}
-              placeholder="Optional comment..."
+              placeholder="Enter any additional comments..."
               value={creatorComment}
               onChange={(event) => onCreatorCommentChange?.(event.target.value)}
-              maxLength={500}
-              showCount
             />
           </div>
-        </div>
-
-        <div className="admin-page__modal-footer">
-          <Button onClick={onApprovalCancel}>Cancel</Button>
-          <Button
-            className="deferral-review-confirm__confirm"
-            onClick={onApprovalConfirm}
-            loading={Boolean(actionLoading)}
-          >
-            {isCloseRequestAction ? "Submit Review" : "Accept"}
-          </Button>
         </div>
       </Modal>
 
       <Modal
+        title={(
+          <div className="approver-deferral-review__decision-title">
+            <span className="approver-deferral-review__decision-title-icon"><RedoOutlined /></span>
+            <span className="approver-deferral-review__decision-title-copy">
+              <strong>{`Return for Rework: ${deferral.deferralNumber || "Deferral request"}`}</strong>
+              <span>Send the request back with clear corrective instructions.</span>
+            </span>
+          </div>
+        )}
         open={reworkConfirmVisible}
         onCancel={onReworkCancel}
-        footer={null}
-        centered
-        width={550}
-        className="admin-page__modal deferral-review-confirm"
-        closeIcon={<span style={{ fontSize: 24, lineHeight: 1 }}>×</span>}
-        title={
-          <div className="deferral-review-confirm__title">
-            <div className="deferral-review-confirm__icon"><ExclamationCircleOutlined /></div>
-            <span>Return for Rework</span>
-          </div>
-        }
-        styles={{
-          header: { margin: 0 },
-          body: { padding: 16 },
-          content: { padding: 0, borderRadius: 16 },
-        }}
+        maskClosable={false}
+        wrapClassName="approver-decision-modal"
+        width={760}
+        footer={[
+          <div key="actions" className="approver-deferral-review__decision-actions">
+            <Button
+              className="approver-deferral-review__decision-secondary"
+              onClick={onReworkCancel}
+              disabled={Boolean(actionLoading)}
+            >
+              Cancel
+            </Button>,
+            <Button
+              className="approver-deferral-review__decision-primary approver-deferral-review__warning-btn"
+              style={{ color: "#fff" }}
+              onClick={onReworkConfirm}
+              loading={Boolean(actionLoading)}
+              disabled={!String(reworkComment || "").trim()}
+            >
+              Yes, Return for Rework
+            </Button>
+          </div>,
+        ]}
       >
-        <div className="admin-page__modal-body">
-          <div className="deferral-review-confirm__body-card">
-            <div className="deferral-review-confirm__summary">
-              <div className="deferral-review-confirm__summary-title">
-                {deferral.deferralNumber || "Rework instructions"}
-              </div>
-              <div className="deferral-review-confirm__summary-copy">
-                Provide clear guidance for the creator before sending this deferral back for rework.
-              </div>
+        <div className="approver-deferral-review__decision-card">
+          <div className="approver-deferral-review__decision-summary">
+            <div className="approver-deferral-review__decision-summary-title">
+              {deferral.deferralNumber || "Deferral request"}
             </div>
+            <div className="approver-deferral-review__decision-summary-subtitle">
+              {deferral.customerName || "Customer"}
+            </div>
+            <div className="approver-deferral-review__decision-summary-copy">
+              Returning this request will send it back with your instructions so the originating team can correct it.
+            </div>
+          </div>
 
-            <label className="deferral-review-confirm__label" htmlFor="checker-rework-comment">
-              Rework Instructions
+          <div className="approver-deferral-review__decision-field">
+            <label className="approver-deferral-review__decision-label" htmlFor="checker-rework-comment">
+              Rework instructions (Required)
             </label>
             <TextArea
               id="checker-rework-comment"
-              className="deferral-review-confirm__textarea"
-              rows={5}
-              placeholder="Rework instructions..."
+              rows={4}
+              placeholder="Enter rework instructions..."
               value={reworkComment}
               onChange={(event) => onReworkCommentChange?.(event.target.value)}
-              maxLength={500}
-              showCount
             />
           </div>
-        </div>
-
-        <div className="admin-page__modal-footer">
-          <Button onClick={onReworkCancel}>Cancel</Button>
-          <Button
-            className="deferral-review-confirm__confirm"
-            onClick={onReworkConfirm}
-            loading={Boolean(actionLoading)}
-          >
-            Return
-          </Button>
         </div>
       </Modal>
     </>

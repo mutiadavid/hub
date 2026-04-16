@@ -315,13 +315,6 @@ const ExtensionApplicationsTab = ({
         ),
       },
       {
-        title: "Uploaded At",
-        dataIndex: "uploadDate",
-        key: "uploadDate",
-        width: 140,
-        render: (value) => (value ? dayjs(value).format("DD MMM YYYY") : "-"),
-      },
-      {
         title: "Actions",
         key: "actions",
         width: 160,
@@ -513,7 +506,10 @@ const ExtensionApplicationsTab = ({
                 <div className="actioned-extension-review__section-body">
                   <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
                     <Descriptions.Item label="Extension Number">
-                      {detailRecord.extensionNumber || detailRecord.ExtensionNumber || "-"}
+                      {detailRecord.extensionNumber
+                        || detailRecord.ExtensionNumber
+                        || (detailRecord.deferralNumber || linkedDeferral.deferralNumber || linkedDeferral.DeferralNumber || "").replace(/^DEF-/i, "EXT-")
+                        || "-"}
                     </Descriptions.Item>
                     <Descriptions.Item label="Deferral Number">
                       {detailRecord.deferralNumber || linkedDeferral.deferralNumber || linkedDeferral.DeferralNumber || "-"}

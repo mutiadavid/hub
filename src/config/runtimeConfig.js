@@ -18,9 +18,33 @@ const normalizeOrigin = (value, fallback) => {
   return `http://${raw}`.replace(/\/+$/, "");
 };
 
+const resolveLocalDevOrigin = (origin) => {
+  if (!import.meta.env.DEV || !origin) {
+    return origin;
+  }
+
+  try {
+    const url = new URL(origin);
+    const isLocalhost = ["localhost", "127.0.0.1"].includes(url.hostname);
+
+    if (!isLocalhost || url.protocol !== "https:") {
+      return origin;
+    }
+
+    const portMap = {
+      "7082": "5082",
+    };
+
+    const resolvedPort = portMap[url.port] || url.port;
+    return `http://${url.hostname}${resolvedPort ? `:${resolvedPort}` : ""}`;
+  } catch {
+    return origin;
+  }
+};
+
 export const API_ORIGIN = normalizeOrigin(
-  import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_API_URL,
-  "http://localhost:5000",
+  resolveLocalDevOrigin(import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_API_URL),
+  "http://localhost:5082",
 );
 
 export const API_BASE_URL = `${API_ORIGIN}/api`;

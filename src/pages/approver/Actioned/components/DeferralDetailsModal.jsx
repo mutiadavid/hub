@@ -539,13 +539,6 @@ const DeferralDetailsModal = ({
         render: (value) => <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>{value || "Document"}</span>,
       },
       {
-        title: "Uploaded At",
-        dataIndex: "uploadDate",
-        key: "uploadDate",
-        width: 140,
-        render: (value) => (value ? dayjs(value).format("DD MMM YYYY") : "-"),
-      },
-      {
         title: "Actions",
         key: "actions",
         width: 160,

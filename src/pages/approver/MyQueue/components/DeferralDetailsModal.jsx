@@ -505,7 +505,14 @@ const REVIEW_STYLES = `
   .approver-deferral-review__warning-btn.ant-btn:hover,
   .approver-deferral-review__warning-btn.ant-btn:focus,
   .approver-deferral-review__warning-btn.ant-btn:active,
-  .approver-deferral-review__warning-btn.ant-btn > span {
+  .approver-deferral-review__warning-btn.ant-btn:disabled,
+  .approver-deferral-review__warning-btn.ant-btn[disabled],
+  .approver-deferral-review__warning-btn.ant-btn > span,
+  .approver-deferral-review__warning-btn.ant-btn > span > span,
+  .approver-deferral-review__warning-btn.ant-btn:disabled > span,
+  .approver-deferral-review__warning-btn.ant-btn[disabled] > span,
+  .approver-deferral-review__warning-btn.ant-btn:disabled > span > span,
+  .approver-deferral-review__warning-btn.ant-btn[disabled] > span > span {
     color: var(--color-white) !important;
   }
 
@@ -1031,13 +1038,6 @@ const DeferralDetailsModal = ({
       ),
     },
     {
-      title: "Uploaded At",
-      dataIndex: "uploadDate",
-      key: "uploadDate",
-      width: 140,
-      render: (value) => (value ? dayjs(value).format("DD MMM YYYY") : "-"),
-    },
-    {
       title: "Actions",
       key: "actions",
       width: 180,
@@ -1164,6 +1164,11 @@ const DeferralDetailsModal = ({
           </Button>,
           <Button
             className={`approver-deferral-review__decision-primary ${confirmClassName || ""}`.trim()}
+            style={
+              confirmClassName?.includes("approver-deferral-review__warning-btn")
+                ? { color: "#fff" }
+                : undefined
+            }
             loading={confirmLoading}
             onClick={onConfirm}
             disabled={confirmDisabled}

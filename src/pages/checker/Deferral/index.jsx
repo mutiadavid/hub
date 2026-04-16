@@ -118,7 +118,6 @@ const DeferralIndex = ({ userId }) => {
     fetchDeferrals: apiFetchDeferrals,
     loadPendingExtensions: apiLoadExtensions,
     approveExtension,
-    rejectExtension,
   } = useDeferralAPI(token);
 
   // State
@@ -383,13 +382,6 @@ const DeferralIndex = ({ userId }) => {
     return deferrals.filter(statuses[tab] || (() => true)).length;
   };
 
-  const renderTabLabel = (label, count) => (
-    <span className="creator-tab-label">
-      <span>{label}</span>
-      <span className="creator-tab-count">{count}</span>
-    </span>
-  );
-
   const columns = getDeferralTableColumns();
   const showDeferralReview = modalVisible && !!selectedDeferral;
   const showExtensionReview = extensionModalOpen && !!selectedExtension;
@@ -419,46 +411,27 @@ const DeferralIndex = ({ userId }) => {
           box-shadow: 0 10px 24px rgba(26, 54, 54, 0.06);
         }
         .deferrals-header {
-          padding: 16px 18px;
-          border-left: 3px solid rgba(214, 189, 152, 0.7);
+          padding: 14px;
+          border-left: 4px solid var(--color-accent);
         }
         .deferrals-header__main {
           display: flex;
           justify-content: space-between;
-          align-items: flex-end;
+          align-items: center;
           gap: 16px;
           flex-wrap: wrap;
         }
-        .deferrals-header__titleRow {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
         .deferrals-header__title {
           margin: 0;
-          color: var(--color-text-dark);
-          font-size: 15px;
+          color: var(--color-primary-dark);
+          font-size: 16px;
           font-weight: 700;
-        }
-        .deferrals-header__count {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 28px;
-          height: 28px;
-          padding: 0 8px;
-          border-radius: 999px;
-          background: #ff6b57;
-          color: #fff;
-          font-size: 12px;
-          font-weight: 700;
-          line-height: 1;
         }
         .deferrals-header__meta,
         .checker-deferrals-workspace__meta {
-          margin: 4px 0 0;
+          margin: 6px 0 0;
           color: var(--color-text-light);
-          font-size: 12px;
+          font-size: 13px;
         }
         .deferrals-header__actions {
           display: flex;
@@ -466,11 +439,10 @@ const DeferralIndex = ({ userId }) => {
           flex-wrap: wrap;
         }
         .deferrals-header__button.ant-btn {
-          min-height: 36px;
+          min-height: 38px;
           border-radius: 8px;
           font-weight: 600;
           box-shadow: none;
-          padding: 0 16px;
         }
         .deferrals-header__button--primary.ant-btn {
           border: 1px solid rgba(214, 189, 152, 0.28) !important;
@@ -486,8 +458,8 @@ const DeferralIndex = ({ userId }) => {
           box-shadow: none !important;
         }
         .deferrals-filters {
-          padding: 16px;
-          border-radius: 8px;
+          padding: 14px;
+          border-radius: 12px;
           border: 1px solid rgba(214, 189, 152, 0.2);
           box-shadow: 0 10px 24px rgba(26, 54, 54, 0.06);
           background: var(--color-white);
@@ -513,15 +485,8 @@ const DeferralIndex = ({ userId }) => {
         .deferrals-filters__field .ant-select-selector,
         .deferrals-filters__field .ant-picker,
         .deferrals-filters__actions .ant-btn {
-          min-height: 42px;
-          border-radius: 12px !important;
-        }
-        .deferrals-filters__field .ant-input,
-        .deferrals-filters__field .ant-select-selection-item,
-        .deferrals-filters__field .ant-select-selection-placeholder,
-        .deferrals-filters__field .ant-picker-input > input,
-        .deferrals-filters__actions .ant-btn {
-          font-size: 12px !important;
+          min-height: 40px;
+          border-radius: 10px !important;
         }
         .deferrals-filters__field .ant-input-affix-wrapper,
         .deferrals-filters__field .ant-select-selector,
@@ -555,60 +520,13 @@ const DeferralIndex = ({ userId }) => {
           overflow: hidden;
         }
         .checker-deferrals-table-card .ant-tabs-nav {
-          padding: 0 16px;
+          padding: 0 18px;
           margin-bottom: 0;
-          background: var(--color-white);
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2);
+          background: linear-gradient(180deg, rgba(245, 240, 231, 0.58) 0%, #fff 100%);
         }
         .checker-deferrals-table-card .ant-tabs-tab {
-          padding: 14px 8px 12px;
-          font-weight: 500;
-          color: var(--color-text-light);
-          margin-right: 24px;
-        }
-        .checker-deferrals-table-card .ant-tabs-tab-btn {
-          font-size: 12px;
-          font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-        }
-        .checker-deferrals-table-card .ant-tabs-tab-active .ant-tabs-tab-btn {
-          color: var(--color-primary-dark) !important;
+          padding: 14px 8px;
           font-weight: 600;
-        }
-        .checker-deferrals-table-card .ant-tabs-ink-bar {
-          background: var(--color-primary-dark) !important;
-          height: 2px !important;
-        }
-        .creator-tab-label {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .creator-tab-count {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 18px;
-          height: 18px;
-          padding: 0 5px;
-          border-radius: 999px;
-          background: rgba(214, 189, 152, 0.18);
-          color: var(--color-text-dark);
-          font-size: 10px;
-          font-weight: 700;
-        }
-        .deferral-table__header-center,
-        .deferral-table__cell-center {
-          display: inline-flex;
-          width: 100%;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-        }
-        .checker-deferrals-shell .ant-table-pagination.ant-pagination {
-          justify-content: center;
-        }
-        .checker-deferrals-shell .ant-empty {
-          padding: 12px 0;
         }
         .checker-deferrals-workspace {
           display: flex;
@@ -925,14 +843,6 @@ const DeferralIndex = ({ userId }) => {
                 setSelectedExtension(null);
               }
             }}
-            onReject={async (_extensionId, reason) => {
-              const success = await rejectExtension(selectedExtension.id, reason);
-              if (success) {
-                loadPendingExtensions();
-                setExtensionModalOpen(false);
-                setSelectedExtension(null);
-              }
-            }}
             approverRole="checker"
           />
         </div>
@@ -957,10 +867,10 @@ const DeferralIndex = ({ userId }) => {
           <div className="checker-deferrals-table-card">
             <div className="deferral-tabs">
               <Tabs activeKey={activeTab} onChange={setActiveTab}>
-                <Tabs.TabPane tab={renderTabLabel("My Queue", getTabCount("pending"))} key="pending" />
-                <Tabs.TabPane tab={renderTabLabel("Approved", getTabCount("approved"))} key="approved" />
-                <Tabs.TabPane tab={renderTabLabel("Close Requests", getTabCount("closeRequests"))} key="closeRequests" />
-                <Tabs.TabPane tab={renderTabLabel("Extensions", pendingExtensions.length)} key="extensions" />
+                <Tabs.TabPane tab={`My Queue (${getTabCount("pending")})`} key="pending" />
+                <Tabs.TabPane tab={`Approved (${getTabCount("approved")})`} key="approved" />
+                <Tabs.TabPane tab={`Close Requests (${getTabCount("closeRequests")})`} key="closeRequests" />
+                <Tabs.TabPane tab={`Extensions (${pendingExtensions.length})`} key="extensions" />
               </Tabs>
             </div>
 
@@ -981,49 +891,42 @@ const DeferralIndex = ({ userId }) => {
                         title: "Deferral No",
                         dataIndex: "deferralNumber",
                         key: "deferralNumber",
-                        render: (value) => <span className="creator-table-primary-value">{value || "-"}</span>,
                       },
                       {
                         title: "Customer",
                         dataIndex: "customerName",
                         key: "customerName",
-                        render: (value) => <span className="creator-table-primary-value">{value || "-"}</span>,
                       },
                       {
+                        title: "Days Requested",
                         dataIndex: "requestedDaysSought",
                         key: "requestedDaysSought",
-                        align: "center",
-                        title: <span className="deferral-table__header-center">Days Requested</span>,
-                        render: (d) => <span className="deferral-table__cell-center"><span className="creator-table-primary-value">{d || 0} days</span></span>,
+                        render: (d) => <strong>{d} days</strong>,
                       },
                       {
+                        title: "Action",
                         key: "action",
-                        align: "center",
-                        title: <span className="deferral-table__header-center">Action</span>,
                         render: (_, record) => (
-                          <span className="deferral-table__cell-center">
-                            <Button
-                              type="primary"
-                              size="small"
-                              className="deferral-action-btn"
-                              loading={
-                                extensionDetailsLoading &&
-                                String(selectedExtension?._id || selectedExtension?.id || "") ===
-                                  String(record?._id || record?.id || "")
-                              }
-                              onClick={() => {
-                                handleOpenExtensionReview(record);
-                              }}
-                            >
-                              Review
-                            </Button>
-                          </span>
+                          <Button
+                            type="primary"
+                            size="small"
+                            className="deferral-action-btn"
+                            loading={
+                              extensionDetailsLoading &&
+                              String(selectedExtension?._id || selectedExtension?.id || "") ===
+                                String(record?._id || record?.id || "")
+                            }
+                            onClick={() => {
+                              handleOpenExtensionReview(record);
+                            }}
+                          >
+                            Review
+                          </Button>
                         ),
                       },
                     ]}
                     dataSource={pendingExtensions}
                     rowKey={(r) => r.id}
-                    className="deferrals-table"
                     pagination={{ pageSize: 10, showSizeChanger: true }}
                   />
                 </div>
@@ -1042,7 +945,6 @@ const DeferralIndex = ({ userId }) => {
                   columns={columns}
                   dataSource={filteredDeferrals}
                   rowKey={(r) => r._id}
-                  className="deferrals-table"
                   pagination={{ pageSize: 10, showSizeChanger: true }}
                   scroll={{ x: 1300 }}
                   onRow={(record) => ({
