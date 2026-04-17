@@ -3,6 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import { message } from "antd";
 import { getCurrentUser } from "../utils/deferralHelpers";
 import deferralApi from "../../../../service/deferralApi";
+import {
+  hasAnyCloseRequestDocumentState,
+  hasPendingCreatorCloseRequestDocuments,
+} from "../../../../utils/deferralDocuments";
 
 const QUEUE_TERMINAL_STATUSES = new Set([
   "approved",
@@ -173,10 +177,6 @@ export const useDeferralFiltering = (deferrals, filters, activeTab) => {
 
   const applyFilters = () => {
     const approvedStatuses = ["approved", "deferral_approved"];
-    const closeRequestStatuses = [
-      "close_requested",
-      "close_requested_creator_approved",
-    ];
 
     let base = deferrals.filter((d) => {
       const s = (d.status || "").toString().toLowerCase();
@@ -187,7 +187,8 @@ export const useDeferralFiltering = (deferrals, filters, activeTab) => {
         return approvedStatuses.includes(s);
       }
       if (activeTab === "closeRequests") {
-        return closeRequestStatuses.includes(s);
+        return hasPendingCreatorCloseRequestDocuments(d) ||
+          (s === "close_requested" && !hasAnyCloseRequestDocumentState(d));
       }
       return true;
     });

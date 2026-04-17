@@ -59,6 +59,55 @@ const normalizeDocName = (name) =>
     .toLowerCase()
     .replace(/\s+/g, " ");
 
+const normalizeCloseReviewState = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]/g, "");
+
+const getCloseRequestStateList = (deferral, keys) => {
+  for (const key of keys) {
+    if (Array.isArray(deferral?.[key])) {
+      return deferral[key];
+    }
+  }
+
+  return [];
+};
+
+export const getActiveCloseRequestDocumentStates = (deferral) =>
+  getCloseRequestStateList(deferral, ["closeRequestDocuments", "CloseRequestDocuments"]);
+
+export const getCheckerCloseRequestDocumentStates = (deferral) =>
+  getCloseRequestStateList(deferral, ["checkerCloseRequestDocuments", "CheckerCloseRequestDocuments"]);
+
+export const getClosedCloseRequestDocumentStates = (deferral) =>
+  getCloseRequestStateList(deferral, ["closedCloseRequestDocuments", "ClosedCloseRequestDocuments"]);
+
+export const hasAnyCloseRequestDocumentState = (deferral) =>
+  getActiveCloseRequestDocumentStates(deferral).length > 0 ||
+  getCheckerCloseRequestDocumentStates(deferral).length > 0 ||
+  getClosedCloseRequestDocumentStates(deferral).length > 0;
+
+export const hasPendingCreatorCloseRequestDocuments = (deferral) =>
+  getActiveCloseRequestDocumentStates(deferral).some(
+    (document) => normalizeCloseReviewState(document?.creatorStatus) !== "rejected",
+  );
+
+export const hasCheckerCloseRequestDocuments = (deferral) =>
+  getCheckerCloseRequestDocumentStates(deferral).length > 0;
+
+export const hasReturnedCloseRequestDocumentsForRm = (deferral) =>
+  getActiveCloseRequestDocumentStates(deferral).some((document) => {
+    const creatorStatus = normalizeCloseReviewState(document?.creatorStatus);
+    const checkerStatus = normalizeCloseReviewState(document?.checkerStatus);
+
+    return creatorStatus === "rejected" || checkerStatus === "rejected";
+  });
+
+export const hasClosedCloseRequestDocuments = (deferral) =>
+  getClosedCloseRequestDocumentStates(deferral).length > 0;
+
 const hasDclPrefix = (name) => /^\s*dcl(?:[\s_-]|$)/i.test(String(name || "").trim());
 
 const includesDclNumber = (name, dclNo) => {
@@ -368,7 +417,6 @@ export const getCloseRequestDocumentGroups = (deferral) => {
 
   const names = Array.from(
     new Set([
-      ...Object.keys(requestedByName),
       ...Object.keys(storedByName),
       ...Object.keys(uploadsByTarget),
     ]),

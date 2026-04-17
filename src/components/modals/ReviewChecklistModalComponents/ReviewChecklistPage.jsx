@@ -1051,6 +1051,9 @@ const ReviewChecklistPage = ({
       flatDocs.map((doc, idx) => ({
         ...doc,
         docIdx: idx,
+        fileName: doc.fileName || doc.uploadData?.fileName || null,
+        fileType: doc.fileType || doc.uploadData?.fileType || null,
+        fileSize: doc.fileSize || doc.uploadData?.fileSize || null,
         status: doc.status || doc.action || "pending",
         creatorStatus: doc.creatorStatus,
         checkerStatus: getResolvedCheckerStatus(doc),

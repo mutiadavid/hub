@@ -33,6 +33,10 @@ import { getDeferralTableColumns } from "./utils/deferralColumns.jsx";
 import { DeferralDetailModal, DeferralHeader, DeferralFilters } from "./components";
 import { useDeferralAPI } from "./hooks/useDeferralAPI";
 import { useDeferralHandlers } from "./hooks/useDeferralHandlers";
+import {
+  hasAnyCloseRequestDocumentState,
+  hasCheckerCloseRequestDocuments,
+} from "../../../utils/deferralDocuments";
 import "../../../styles/creatorDesignSystem.css";
 
 dayjs.extend(relativeTime);
@@ -267,7 +271,6 @@ const DeferralIndex = ({ userId }) => {
 
   const applyFilters = useCallback(() => {
     const approvedStatuses = ["approved", "deferral_approved"];
-    const closeRequestStatuses = ["close_requested_creator_approved"];
     const completedStatuses = [
       "closed",
       "deferral_closed",
@@ -290,7 +293,8 @@ const DeferralIndex = ({ userId }) => {
 
       if (activeTab === "approved") return approvedStatuses.includes(s);
       if (activeTab === "closeRequests")
-        return closeRequestStatuses.includes(s);
+        return hasCheckerCloseRequestDocuments(d) ||
+          (s === "close_requested_creator_approved" && !hasAnyCloseRequestDocumentState(d));
       if (activeTab === "completed")
         return (
           completedStatuses.includes(s) ||
@@ -361,7 +365,8 @@ const DeferralIndex = ({ userId }) => {
       },
       closeRequests: (d) => {
         const s = (d.status || "").toLowerCase();
-        return ["close_requested_creator_approved"].includes(s);
+        return hasCheckerCloseRequestDocuments(d) ||
+          (s === "close_requested_creator_approved" && !hasAnyCloseRequestDocumentState(d));
       },
       completed: (d) => {
         const s = (d.status || "").toLowerCase();

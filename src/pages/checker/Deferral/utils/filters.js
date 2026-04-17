@@ -1,5 +1,9 @@
 import dayjs from "dayjs";
 import { DEFERRAL_STATUS_GROUPS } from "./constants";
+import {
+  hasAnyCloseRequestDocumentState,
+  hasCheckerCloseRequestDocuments,
+} from "../../../../utils/deferralDocuments";
 
 // Filter deferrals by active tab
 export const filterDeferralsByTab = (deferrals, activeTab) => {
@@ -47,7 +51,8 @@ export const filterDeferralsByTab = (deferrals, activeTab) => {
 
     if (activeTab === "closeRequests") {
       // CLOSE REQUESTS tab: creator-approved close requests awaiting checker
-      return closeWorkflowStatuses.includes(s);
+      return hasCheckerCloseRequestDocuments(d) ||
+        (closeWorkflowStatuses.includes(s) && !hasAnyCloseRequestDocumentState(d));
     }
 
     return true;

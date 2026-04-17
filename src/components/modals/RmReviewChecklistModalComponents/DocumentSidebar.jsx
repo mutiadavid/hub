@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Drawer, Tag, Button, Upload } from "antd";
+import { Drawer, Tag, Button } from "antd";
 import {
   CalendarOutlined,
   DownloadOutlined,
@@ -7,7 +7,6 @@ import {
   FileOutlined,
   PaperClipOutlined,
   TeamOutlined,
-  UploadOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { formatDateTime, getFullUrl as resolveFullUrl } from "../../../utils/checklistUtils";
@@ -21,8 +20,6 @@ const DocumentSidebar = ({
   open,
   onClose,
   getFullUrl,
-  onUploadSupportingDoc,
-  readOnly = false,
 }) => {
   const buildFullUrl = getFullUrl || resolveFullUrl;
 
@@ -356,34 +353,6 @@ const DocumentSidebar = ({
         zIndex={1100}
         mask={false}
       >
-        {!readOnly && onUploadSupportingDoc && (
-          <div style={{ marginBottom: 10 }}>
-            <Upload
-              showUploadList={false}
-              beforeUpload={(file) => {
-                onUploadSupportingDoc(file);
-                return false;
-              }}
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
-            >
-              <Button
-                type="primary"
-                icon={<UploadOutlined />}
-                size="small"
-                block
-                style={{
-                  background: "linear-gradient(135deg, #1A3636 0%, #40534C 100%)",
-                  borderColor: "transparent",
-                  fontSize: "10px",
-                  height: "26px",
-                }}
-              >
-                Upload
-              </Button>
-            </Upload>
-          </div>
-        )}
-
         <div
           style={{
             maxHeight: "calc(100vh - 112px)",

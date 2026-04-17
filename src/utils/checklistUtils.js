@@ -266,9 +266,17 @@ export const THEME = {
  * @returns {string} Full URL
  */
 export const getFullUrl = (url) => {
-    if (!url) return "";
-    if (url.startsWith("http") || url.startsWith("blob:")) return url;
-    return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+    const normalizedUrl = String(url || "").trim();
+    if (!normalizedUrl) return "";
+    if (
+        normalizedUrl.startsWith("http") ||
+        normalizedUrl.startsWith("blob:") ||
+        normalizedUrl.startsWith("data:")
+    ) {
+        return normalizedUrl;
+    }
+
+    return `${API_ORIGIN}${normalizedUrl.startsWith("/") ? "" : "/"}${normalizedUrl}`;
 };
 
 /**

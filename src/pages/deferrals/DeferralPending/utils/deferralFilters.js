@@ -1,5 +1,11 @@
 import { DEFERRAL_STATUS_GROUPS } from "./constants";
 import { getDocumentSearchText } from "./helpers";
+import {
+  hasAnyCloseRequestDocumentState,
+  hasCheckerCloseRequestDocuments,
+  hasPendingCreatorCloseRequestDocuments,
+  hasReturnedCloseRequestDocumentsForRm,
+} from "../../../../utils/deferralDocuments";
 
 /**
  * Filter deferrals by search text
@@ -64,8 +70,10 @@ export const filterPendingDeferrals = (deferrals) => {
 export const filterApprovedDeferrals = (deferrals) => {
   return deferrals.filter((d) => {
     const s = (d.status || "").toLowerCase();
-    return DEFERRAL_STATUS_GROUPS.APPROVED_STATUSES.some(
-      (status) => status.toLowerCase() === s
+    return (
+      DEFERRAL_STATUS_GROUPS.APPROVED_STATUSES.some(
+        (status) => status.toLowerCase() === s
+      ) || hasReturnedCloseRequestDocumentsForRm(d)
     );
   });
 };
@@ -92,12 +100,16 @@ export const filterRejectedDeferrals = (deferrals) => {
 export const filterCloseRequestDeferrals = (deferrals) => {
   return deferrals.filter((d) => {
     const s = (d.status || "").toLowerCase();
-    return [
-      "close_requested",
-      "closerequested",
-      "close_requested_creator_approved",
-      "closerequestedcreatorapproved",
-    ].includes(s);
+    return (
+      hasPendingCreatorCloseRequestDocuments(d) ||
+      hasCheckerCloseRequestDocuments(d) ||
+      ([
+        "close_requested",
+        "closerequested",
+        "close_requested_creator_approved",
+        "closerequestedcreatorapproved",
+      ].includes(s) && !hasAnyCloseRequestDocumentState(d))
+    );
   });
 };
 

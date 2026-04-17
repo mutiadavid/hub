@@ -88,7 +88,11 @@ import deferralApi from "../../../service/deferralApi.js";
 import { openFileInNewTab, downloadFile } from "../../../utils/fileUtils";
 import getFacilityColumns from "../../../utils/facilityColumns";
 import { formatDeferralDocumentType } from "../../../utils/deferralDocumentType";
-import { getDeferralDocumentBuckets } from "../../../utils/deferralDocuments";
+import {
+  getDeferralDocumentBuckets,
+  hasAnyCloseRequestDocumentState,
+  hasPendingCreatorCloseRequestDocuments,
+} from "../../../utils/deferralDocuments";
 import { getLoanDisplay } from "../../../utils/loanUtils";
 import UniformTag from "../../../components/common/UniformTag";
 import RealTimeSlaTag from "../../../components/common/RealTimeSlaTag";
@@ -1447,7 +1451,8 @@ const Deferrals = ({ userId }) => {
 
   const closeRequestsCount = deferrals.filter((d) => {
     const s = (d.status || "").toString().toLowerCase();
-    return ["close_requested"].includes(s);
+    return hasPendingCreatorCloseRequestDocuments(d) ||
+      (s === "close_requested" && !hasAnyCloseRequestDocumentState(d));
   }).length;
 
   // Column definitions for deferral table
@@ -1701,345 +1706,233 @@ const Deferrals = ({ userId }) => {
 
       {/* Confirmation Modals */}
       <Modal
-        title={
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              color: "#1f2937",
-              fontWeight: 700,
-              fontSize: 16,
-            }}
-          >
-            <span
-              className="deferrals-confirm-modal__icon-badge"
-            >
-              <CheckCircleOutlined style={{ fontSize: 16 }} />
-            </span>
-            {activeTab === "closeRequests"
-              ? "Submit Close Request Review"
-              : "Confirm Acceptance"}
-          </div>
-        }
         open={approvalConfirmModalVisible}
-        onOk={
-          activeTab === "closeRequests"
-            ? handleApproveCloseRequestByCreator
-            : handleConfirmApproval
-        }
         onCancel={() => setApprovalConfirmModalVisible(false)}
-        okText={activeTab === "closeRequests" ? "Submit Review" : "Accept"}
-        cancelText="Cancel"
-        loading={actionLoading}
-        width={700}
+        footer={null}
+        width={550}
         centered
-        okButtonProps={{
-          className:
-            "deferrals-confirm-modal__button deferrals-confirm-modal__button--primary",
-        }}
-        cancelButtonProps={{
-          className:
-            "deferrals-confirm-modal__button deferrals-confirm-modal__button--secondary",
-        }}
+        className="admin-page__modal deferral-review-confirm deferral-review-confirm--acceptance"
         closeIcon={
-          <span
-            style={{
-              color: "#475569",
-              fontSize: 24,
-              fontWeight: "bold",
-              lineHeight: 1,
-            }}
-          >
+          <span style={{ color: "var(--color-primary-dark)", fontSize: 24, lineHeight: 1 }}>
             ×
           </span>
         }
+        title={
+          <div className="deferral-review-confirm__title">
+            <div className="deferral-review-confirm__icon"><CheckCircleOutlined /></div>
+            <span>
+              {activeTab === "closeRequests"
+                ? "Submit Close Request Review"
+                : "Confirm Acceptance"}
+            </span>
+          </div>
+        }
         styles={{
           header: {
-            background: "#ffffff",
-            color: "#1f2937",
-            padding: "20px 24px",
-            margin: "-1px -1px 0 -1px",
-            borderRadius: "8px 8px 0 0",
-            borderBottom: "1px solid rgba(214, 189, 152, 0.2)",
+            margin: 0,
+            background: "transparent",
+            borderBottom: "none",
+            padding: "18px 20px",
           },
-          title: {
-            color: "#1f2937",
-            fontSize: 16,
-            fontWeight: 700,
-          },
-          body: {
-            padding: "24px",
-          },
-        }}
-        mask={true}
-        maskStyle={{
-          backgroundColor: "rgba(0, 0, 0, 0.45)",
+          body: { padding: 16 },
+          content: { padding: 0, borderRadius: 16 },
         }}
       >
-        <p style={{ marginBottom: 20, fontSize: 15 }}>
-          {activeTab === "closeRequests"
-            ? "Are you sure you want to submit your close-request document review?"
-            : "Accepting this deferral will move it forward in the workflow and record your comment in the audit trail."}
-        </p>
-        <div
-          style={{
-            marginBottom: 0,
-            border: "1px solid rgba(214, 189, 152, 0.22)",
-            borderRadius: 12,
-            background: "#ffffff",
-            padding: 14,
-          }}
-        >
-          <div
-            style={{
-              marginBottom: 12,
-              padding: 12,
-              borderRadius: 10,
-              background: "rgba(214, 189, 152, 0.12)",
-            }}
-          >
-            <div style={{ color: "#1f2937", fontSize: 14, fontWeight: 700 }}>
+        <div className="admin-page__modal-body">
+          <div className="deferral-review-confirm__body-card">
+            <div className="deferral-review-confirm__summary">
+              <div className="deferral-review-confirm__summary-title">
               {activeTab === "closeRequests"
                 ? selectedDeferral?.deferralNumber || "Close request review"
                 : selectedDeferral?.deferralNumber || "Deferral acceptance"}
-            </div>
-            <div style={{ marginTop: 4, color: "#475569", fontSize: 12, lineHeight: 1.6 }}>
+              </div>
+              <div className="deferral-review-confirm__summary-copy">
               {activeTab === "closeRequests"
                 ? "Review and submit the close-request decision for this deferral."
                 : "Use the same controlled review flow and color palette as the other system confirmation modals."}
+              </div>
+              <div className="deferral-review-confirm__summary-copy">
+                {activeTab === "closeRequests"
+                  ? "Submit the creator review for these close request documents?"
+                  : "Accepting this deferral will move it forward in the workflow and record your comment in the audit trail."}
+              </div>
             </div>
-          </div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 6,
-              fontWeight: 700,
-              color: "#64748b",
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-            }}
-          >
+            <label className="deferral-review-confirm__label">
             {activeTab === "closeRequests"
               ? "Review Comment (Optional)"
               : "Acceptance Comment (Optional)"}
-          </label>
-          <TextArea
-            rows={3}
-            placeholder={
-              activeTab === "closeRequests"
-                ? "Add any comments for this close-request review..."
-                : "Add any comments for acceptance..."
-            }
-            value={creatorComment}
-            onChange={(e) => setCreatorComment(e.target.value)}
-            style={{ borderRadius: 10 }}
-          />
+            </label>
+            <TextArea
+              rows={3}
+              placeholder={
+                activeTab === "closeRequests"
+                  ? "Add any comments for this close-request review..."
+                  : "Add any comments for acceptance..."
+              }
+              value={creatorComment}
+              onChange={(e) => setCreatorComment(e.target.value)}
+              className="deferral-review-confirm__textarea"
+            />
+          </div>
+
+          <div className="admin-page__modal-footer">
+            <Button
+              onClick={() => setApprovalConfirmModalVisible(false)}
+              className="admin-page__action-button admin-page__action-button--secondary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={
+                activeTab === "closeRequests"
+                  ? handleApproveCloseRequestByCreator
+                  : handleConfirmApproval
+              }
+              loading={actionLoading}
+              className="admin-page__action-button deferral-review-confirm__confirm"
+            >
+              {activeTab === "closeRequests" ? "Submit Review" : "Accept"}
+            </Button>
+          </div>
         </div>
       </Modal>
 
       <Modal
-        title={
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              color: "white",
-              fontWeight: 700,
-              fontSize: 16,
-            }}
-          >
-            <CloseCircleOutlined style={{ fontSize: 20 }} />
-            Confirm Rejection
-          </div>
-        }
         open={showRejectConfirm}
-        onOk={doReject}
         onCancel={() => setShowRejectConfirm(false)}
-        okText="Reject"
-        cancelText="Cancel"
-        okButtonProps={{
-          className:
-            "deferrals-confirm-modal__button deferrals-confirm-modal__button--danger",
-        }}
-        cancelButtonProps={{
-          className:
-            "deferrals-confirm-modal__button deferrals-confirm-modal__button--secondary",
-        }}
+        footer={null}
         loading={rejecting}
-        width={700}
+        width={550}
         centered
+        className="admin-page__modal deferral-review-confirm deferral-review-confirm--reject"
         closeIcon={
-          <span
-            style={{
-              color: "white",
-              fontSize: 24,
-              fontWeight: "bold",
-              lineHeight: 1,
-            }}
-          >
+          <span style={{ color: "var(--color-text-dark)", fontSize: 24, lineHeight: 1 }}>
             ×
           </span>
         }
+        title={
+          <div className="deferral-review-confirm__title">
+            <div className="deferral-review-confirm__icon"><CloseCircleOutlined /></div>
+            <span>Confirm Rejection</span>
+          </div>
+        }
         styles={{
           header: {
-            backgroundColor: "#c41d14",
-            color: "white",
-            padding: "20px 24px",
-            margin: "-1px -1px 0 -1px",
-            borderRadius: "8px 8px 0 0",
-            borderBottom: "none",
+            margin: 0,
+            background: "var(--color-white)",
+            borderBottom: "1px solid rgba(214, 189, 152, 0.2)",
+            padding: "18px 20px",
           },
-          title: {
-            color: "white",
-            fontSize: 16,
-            fontWeight: 700,
-          },
-          body: {
-            padding: "24px",
-          },
-        }}
-        mask={true}
-        maskStyle={{
-          backgroundColor: "rgba(0, 0, 0, 0.45)",
+          body: { padding: 16 },
+          content: { padding: 0, borderRadius: 16 },
         }}
       >
-        <label
-          style={{
-            display: "block",
-            marginBottom: 12,
-            fontWeight: 600,
-            color: "#333",
-            fontSize: 14,
-          }}
-        >
-          Rejection Reason
-        </label>
-        <TextArea
-          rows={4}
-          placeholder="Provide reason for rejection..."
-          value={rejectComment}
-          onChange={(e) => setRejectComment(e.target.value)}
-          style={{ borderRadius: 6 }}
-        />
+        <div className="admin-page__modal-body">
+          <div className="deferral-review-confirm__body-card">
+            <div className="deferral-review-confirm__summary">
+              <div className="deferral-review-confirm__summary-title">
+                {selectedDeferral?.deferralNumber || "Deferral rejection"}
+              </div>
+              <div className="deferral-review-confirm__summary-copy">
+                Rejecting this deferral will stop the current review path and capture your reason in the workflow history.
+              </div>
+            </div>
+            <label className="deferral-review-confirm__label">
+              Rejection Reason
+            </label>
+            <TextArea
+              rows={4}
+              placeholder="Provide reason for rejection..."
+              value={rejectComment}
+              onChange={(e) => setRejectComment(e.target.value)}
+              className="deferral-review-confirm__textarea"
+            />
+          </div>
+
+          <div className="admin-page__modal-footer">
+            <Button
+              onClick={() => setShowRejectConfirm(false)}
+              className="admin-page__action-button admin-page__action-button--secondary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={doReject}
+              loading={rejecting}
+              className="admin-page__action-button deferral-review-confirm__confirm deferral-review-confirm__confirm--danger"
+            >
+              Reject
+            </Button>
+          </div>
+        </div>
       </Modal>
 
       <Modal
-        title={
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              color: "#1f2937",
-              fontWeight: 700,
-              fontSize: 16,
-            }}
-          >
-            <span
-              className="deferrals-confirm-modal__icon-badge"
-            >
-              <ExclamationCircleOutlined style={{ fontSize: 16 }} />
-            </span>
-            Return for Rework
-          </div>
-        }
         open={showReworkConfirm}
-        onOk={doReturnForRework}
         onCancel={() => setShowReworkConfirm(false)}
-        okText="Return"
-        cancelText="Cancel"
-        okButtonProps={{
-          className:
-            "deferrals-confirm-modal__button deferrals-confirm-modal__button--primary",
-        }}
-        cancelButtonProps={{
-          className:
-            "deferrals-confirm-modal__button deferrals-confirm-modal__button--secondary",
-        }}
+        footer={null}
         loading={returnReworkLoading}
-        width={700}
+        width={550}
         centered
-        closeIcon={
-          <span
-            style={{
-              color: "#475569",
-              fontSize: 24,
-              fontWeight: "bold",
-              lineHeight: 1,
-            }}
-          >
-            ×
-          </span>
+        className="admin-page__modal deferral-review-confirm deferral-review-confirm--rework"
+        closeIcon={<span style={{ color: "var(--color-text-dark)", fontSize: 24, lineHeight: 1 }}>×</span>}
+        title={
+          <div className="deferral-review-confirm__title">
+            <div className="deferral-review-confirm__icon"><ExclamationCircleOutlined /></div>
+            <span>Return for Rework</span>
+          </div>
         }
         styles={{
           header: {
-            background: "#ffffff",
-            color: "#1f2937",
-            padding: "20px 24px",
-            margin: "-1px -1px 0 -1px",
-            borderRadius: "8px 8px 0 0",
+            margin: 0,
+            background: "var(--color-white)",
             borderBottom: "1px solid rgba(214, 189, 152, 0.2)",
+            padding: "18px 20px",
           },
-          title: {
-            color: "#1f2937",
-            fontSize: 16,
-            fontWeight: 700,
-          },
-          body: {
-            padding: "24px",
-          },
-        }}
-        mask={true}
-        maskStyle={{
-          backgroundColor: "rgba(0, 0, 0, 0.45)",
+          body: { padding: 16 },
+          content: { padding: 0, borderRadius: 16 },
         }}
       >
-        <div
-          style={{
-            border: "1px solid rgba(214, 189, 152, 0.22)",
-            borderRadius: 12,
-            background: "#ffffff",
-            padding: 14,
-          }}
-        >
-          <div
-            style={{
-              marginBottom: 12,
-              padding: 12,
-              borderRadius: 10,
-              background: "rgba(214, 189, 152, 0.12)",
-            }}
-          >
-            <div style={{ color: "#1f2937", fontSize: 14, fontWeight: 700 }}>
+        <div className="admin-page__modal-body">
+          <div className="deferral-review-confirm__body-card">
+            <div className="deferral-review-confirm__summary">
+              <div className="deferral-review-confirm__summary-title">
               {selectedDeferral?.deferralNumber || "Return for rework"}
-            </div>
-            <div style={{ marginTop: 4, color: "#475569", fontSize: 12, lineHeight: 1.6 }}>
+              </div>
+              <div className="deferral-review-confirm__summary-copy">
+                Send the deferral back with clear next-step instructions for the request owner.
+              </div>
+              <div className="deferral-review-confirm__summary-copy">
               Returning this deferral will send it back for correction and preserve your instructions in the workflow history.
+              </div>
             </div>
+            <label className="deferral-review-confirm__label">
+              Rework Instructions
+            </label>
+            <TextArea
+              rows={4}
+              placeholder="Provide detailed rework instructions..."
+              value={reworkComment}
+              onChange={(e) => setReworkComment(e.target.value)}
+              className="deferral-review-confirm__textarea"
+            />
           </div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 6,
-              fontWeight: 700,
-              color: "#64748b",
-              fontSize: 11,
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-            }}
-          >
-            Rework Instructions
-          </label>
-          <TextArea
-            rows={4}
-            placeholder="Provide detailed rework instructions..."
-            value={reworkComment}
-            onChange={(e) => setReworkComment(e.target.value)}
-            style={{ borderRadius: 10 }}
-          />
+
+          <div className="admin-page__modal-footer">
+            <Button
+              onClick={() => setShowReworkConfirm(false)}
+              className="admin-page__action-button admin-page__action-button--secondary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={doReturnForRework}
+              loading={returnReworkLoading}
+              className="admin-page__action-button admin-page__action-button--primary"
+            >
+              Return
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

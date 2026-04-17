@@ -1372,8 +1372,6 @@ const RmReviewChecklistModal = ({
         open={showDocumentSidebar}
         onClose={() => setShowDocumentSidebar(false)}
         getFullUrl={getFullUrl}
-        onUploadSupportingDoc={handleUploadSupportingDoc}
-        readOnly={readOnly}
       />
 
       <div className="creator-theme" style={{ minHeight: "100%", background: "var(--color-bg)" }}>

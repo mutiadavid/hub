@@ -854,8 +854,6 @@ const CheckerReviewChecklistModal = ({
         supportingDocs={supportingDocs}
         open={showDocumentSidebar}
         onClose={() => setShowDocumentSidebar(false)}
-        onUploadSupportingDoc={handleUploadSupportingDoc}
-        readOnly={effectiveReadOnly}
       />
 
       <style>{`

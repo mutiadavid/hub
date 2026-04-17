@@ -513,7 +513,7 @@ const DeferralDetailsModal = (props) => {
     {
       title: "Actions",
       key: "actions",
-      width: 180,
+      width: 300,
       render: (_, document) => (
         <div className="deferral-review-actionset">
           <Button
@@ -526,7 +526,15 @@ const DeferralDetailsModal = (props) => {
                 : undefined
             }
           >
-            Approve
+            Accept
+          </Button>
+          <Button
+            danger={document.decision?.status === "rejected"}
+            type={document.decision?.status === "rejected" ? "primary" : "default"}
+            onClick={() => _onDocDecision?.(document.decisionKey, "rejected", document.decision?.comment || "")}
+            disabled={sourceTab !== "closeRequests"}
+          >
+            Reject
           </Button>
           <Button
             onClick={() => _onResetDocDecision?.(document.decisionKey)}
@@ -701,8 +709,8 @@ const DeferralDetailsModal = (props) => {
         footer={null}
         centered
         width={550}
-        className="admin-page__modal deferral-review-confirm"
-        closeIcon={<span style={{ color: "var(--color-white)", fontSize: 24, lineHeight: 1 }}>×</span>}
+        className="admin-page__modal deferral-review-confirm deferral-review-confirm--rework"
+        closeIcon={<span style={{ color: "var(--color-text-dark)", fontSize: 24, lineHeight: 1 }}>×</span>}
         title={
           <div className="deferral-review-confirm__title">
             <div className="deferral-review-confirm__icon"><ExclamationCircleOutlined /></div>
@@ -710,7 +718,12 @@ const DeferralDetailsModal = (props) => {
           </div>
         }
         styles={{
-          header: { margin: 0 },
+          header: {
+            margin: 0,
+            background: "var(--color-white)",
+            borderBottom: "1px solid rgba(214, 189, 152, 0.2)",
+            padding: "18px 20px",
+          },
           body: { padding: 16 },
           content: { padding: 0, borderRadius: 16 },
         }}

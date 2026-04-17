@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { DCL_STATUS_COLORS, NCBA_REPORT_THEME } from "./reportTheme";
 import { getDueDate, getOverdueDays, safeLower } from "./reportUtils";
 import deferralApi from "../../../service/deferralApi";
+import { hasClosedCloseRequestDocuments } from "../../../utils/deferralDocuments";
 import ActionedDeferralDetailsModal from "../../approver/Actioned/components/DeferralDetailsModal";
 import ApproverDeferralDetailsModal from "../../approver/MyQueue/components/DeferralDetailsModal";
 import RmDeferralDetailsModal from "../../deferrals/DeferralPending/components/DeferralDetailsModal";
@@ -29,8 +30,12 @@ const TERMINAL_STATUSES = new Set([
 
 const getNormalizedStatus = (status) => safeLower(status).replace(/\s+/g, "_");
 
-const getRmReportsStage = (status) => {
-  const normalizedStatus = getNormalizedStatus(status);
+const getRmReportsStage = (deferral) => {
+  if (hasClosedCloseRequestDocuments(deferral)) {
+    return "actioned";
+  }
+
+  const normalizedStatus = getNormalizedStatus(deferral?.status);
 
   if (APPROVER_STAGE_STATUSES.has(normalizedStatus)) {
     return "approver";
@@ -43,8 +48,12 @@ const getRmReportsStage = (status) => {
   return "rm";
 };
 
-const getReportStatusMeta = (status) => {
-  const normalizedStatus = safeLower(status);
+const getReportStatusMeta = (deferral) => {
+  if (hasClosedCloseRequestDocuments(deferral)) {
+    return { label: "Closed", variant: "approved" };
+  }
+
+  const normalizedStatus = safeLower(deferral?.status);
 
   if (normalizedStatus.includes("approved")) {
     return { label: "Approved", variant: "approved" };
@@ -299,8 +308,7 @@ export default function DeferralsReportTable({ rows }) {
       return null;
     }
 
-    const normalizedStatus = getNormalizedStatus(selectedDeferral.status);
-    const stage = getRmReportsStage(normalizedStatus);
+    const stage = getRmReportsStage(selectedDeferral);
 
     if (stage === "actioned") {
       return (
@@ -392,8 +400,8 @@ export default function DeferralsReportTable({ rows }) {
       width: 130,
       align: "center",
       ellipsis: true,
-      render: (value) => {
-        const statusMeta = getReportStatusMeta(value);
+      render: (_, row) => {
+        const statusMeta = getReportStatusMeta(row);
 
         return (
           <span className="deferrals-report-center">

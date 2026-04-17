@@ -91,7 +91,7 @@ const MainLayout = () => {
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
 
   return (
-    <div className="creator-layout-shell creator-theme">
+      <div className="creator-layout-shell creator-theme teams-layout-preview">
       {isMobile && !sidebarCollapsed && (
         <div className="creator-layout-overlay" onClick={() => setSidebarCollapsed(true)} />
       )}

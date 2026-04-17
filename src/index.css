@@ -1,5 +1,89 @@
 @import "tailwindcss";
 
+:root {
+  --teams-preview-bg: var(--color-bg, #F5F7F4);
+  --teams-preview-top: var(--color-bg, #F5F7F4);
+  --teams-preview-surface: linear-gradient(180deg, #ffffff 0%, #fcfcfb 76%, #f3f2f1 100%);
+  --teams-preview-surface-soft: linear-gradient(180deg, #ffffff 0%, #fbfbfa 100%);
+  --teams-preview-brand: linear-gradient(180deg, #ffffff 0%, #faf9f8 100%);
+  --teams-preview-line: rgba(214, 189, 152, 0.2);
+  --teams-preview-hover: rgba(214, 189, 152, 0.1);
+  --teams-preview-active: var(--color-accent, #D6BD98);
+  --teams-preview-overlay: rgba(0, 0, 0, 0.3);
+}
+
+@layer utilities {
+  .bg-teams-preview-bg {
+    background-color: var(--teams-preview-bg);
+  }
+
+  .bg-teams-preview-shell {
+    background: var(--teams-preview-bg);
+  }
+
+  .bg-teams-preview-surface {
+    background: var(--teams-preview-surface);
+  }
+
+  .bg-teams-preview-surface-soft {
+    background: var(--teams-preview-surface-soft);
+  }
+
+  .bg-teams-preview-brand {
+    background: var(--teams-preview-brand);
+  }
+
+  .border-teams-preview-line {
+    border-color: var(--teams-preview-line);
+  }
+}
+
+@layer components {
+  .teams-layout-preview {
+    background: var(--teams-preview-bg);
+  }
+
+  .teams-layout-preview .creator-layout-main,
+  .teams-layout-preview .creator-layout-content {
+    background: var(--teams-preview-surface);
+  }
+
+  .teams-layout-preview .creator-layout-content {
+    padding: 20px 24px 24px;
+  }
+
+  .teams-layout-preview .creator-header {
+    background: var(--teams-preview-surface-soft);
+    border-bottom: 1px solid var(--teams-preview-line);
+    box-shadow: none;
+  }
+
+  .teams-layout-preview .creator-sidebar {
+    background: var(--teams-preview-surface);
+    border-right: 1px solid var(--teams-preview-line);
+    box-shadow: none;
+  }
+
+  .teams-layout-preview .creator-sidebar__brand {
+    border-bottom: 1px solid var(--teams-preview-line);
+    background: var(--teams-preview-brand);
+  }
+
+  .teams-layout-preview .creator-sidebar__item:hover {
+    background: var(--teams-preview-hover);
+  }
+
+  .teams-layout-preview .creator-sidebar__item--active {
+    background: var(--teams-preview-active);
+    box-shadow: inset 0 0 0 1px var(--teams-preview-active);
+  }
+
+  .teams-layout-preview .creator-layout-overlay {
+    background: var(--teams-preview-overlay);
+    backdrop-filter: blur(4px);
+  }
+}
+
 html, body {
   margin: 0;
   padding: 0;
