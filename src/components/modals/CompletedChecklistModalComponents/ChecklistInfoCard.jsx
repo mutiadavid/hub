@@ -1,6 +1,7 @@
 import React from "react";
 import { Tag } from "antd";
 import { formatDateTime, getChecklistTimingMetrics } from "../../../utils/checklistUtils";
+import { getChecklistBaseInfoRows } from "../shared/checklistInfoRows";
 import "../../../styles/creatorDesignSystem.css";
 
 const getStatusVariant = (status) => {
@@ -20,27 +21,13 @@ const ChecklistInfoCard = ({ checklist }) => {
   const gray700 = "#374151";
 
   const rows = [
-    { label: "DCL No", value: checklist?.dclNo || "-" },
-    { label: "IBPS No", value: checklist?.ibpsNo || "Not provided" },
-    { label: "Date Created", value: timing.createdAtLabel },
-    { label: "Queued Before Forward", value: timing.queueDurationLabel },
-    { label: "Workflow Turnaround", value: timing.lifecycleDurationLabel },
-    { label: "Loan Type", value: checklist?.loanType || "-" },
-    {
-      label: "Created By",
-      value: checklist?.createdBy?.name || checklist?.createdBy || "N/A",
-    },
-    {
-      label: "RM",
-      value: checklist?.assignedToRM?.name || checklist?.assignedToRM || "N/A",
-    },
-    {
-      label: "Co-Checker",
-      value:
-        checklist?.assignedToCoChecker?.name ||
-        checklist?.assignedToCoChecker ||
-        "Pending",
-    },
+    ...getChecklistBaseInfoRows({
+      checklist,
+      timing,
+      createdByFallback: "N/A",
+      rmFallback: "N/A",
+      coCheckerFallback: "Pending",
+    }),
     {
       label: "Completed At",
       value: checklist?.completedAt

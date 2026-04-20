@@ -424,6 +424,12 @@ const ReviewChecklistPage = ({
     customerName: normalizeLookupValue(
       checklist?.customerName || localChecklist?.customerName,
     ),
+    dclNumber: normalizeLookupValue(
+      checklist?.dclNo ||
+        checklist?.dclNumber ||
+        localChecklist?.dclNo ||
+        localChecklist?.dclNumber,
+    ),
   });
 
   const clearDeferralValidation = (docIdx) => {
@@ -443,7 +449,7 @@ const ReviewChecklistPage = ({
       ...prev,
       [docIdx]: {
         status: "idle",
-        message: "This deferral will be checked before submission to Co-Checker.",
+        message: "This deferral number will be checked before submission to Co-Checker.",
       },
     }));
   };
@@ -475,7 +481,7 @@ const ReviewChecklistPage = ({
       ...prev,
       [docIdx]: {
         status: "validating",
-        message: "Checking deferral approval status...",
+        message: "Checking deferral number...",
       },
     }));
 
@@ -488,7 +494,7 @@ const ReviewChecklistPage = ({
       if (!exactMatches.length) {
         const invalidResult = {
           status: "invalid",
-          message: `Deferral number ${deferralNumber} was not found.`,
+          message: `Deferral number ${deferralNumber} is invalid.`,
         };
         setDeferralValidationByDoc((prev) => ({
           ...prev,
@@ -501,6 +507,7 @@ const ReviewChecklistPage = ({
       const matchedDeferral = exactMatches.find((item) => {
         const resultCustomerNumber = normalizeLookupValue(item?.customerNumber);
         const resultCustomerName = normalizeLookupValue(item?.customerName);
+        const resultDclNumber = normalizeLookupValue(item?.dclNumber || item?.dclNo);
 
         if (customerContext.customerNumber && resultCustomerNumber) {
           return customerContext.customerNumber === resultCustomerNumber;
@@ -508,6 +515,10 @@ const ReviewChecklistPage = ({
 
         if (customerContext.customerName && resultCustomerName) {
           return customerContext.customerName === resultCustomerName;
+        }
+
+        if (customerContext.dclNumber && resultDclNumber) {
+          return customerContext.dclNumber === resultDclNumber;
         }
 
         return true;
@@ -541,10 +552,11 @@ const ReviewChecklistPage = ({
 
       const validResult = {
         status: "valid",
-        message: "Fully approved deferral verified.",
+        message: "Deferral number verified and fully approved.",
         approvedAtText: fullDeferral?.checkerApprovalDate
           ? dayjs(fullDeferral.checkerApprovalDate).format("DD MMM YYYY")
           : "",
+        deferral: fullDeferral,
       };
       setDeferralValidationByDoc((prev) => ({
         ...prev,
@@ -1102,6 +1114,31 @@ const ReviewChecklistPage = ({
     return mainDocumentCount + supportingDocumentCount;
   }, [docs, supportingDocs]);
 
+  const hasBlockingDeferredValidation = useMemo(() => {
+    const deferredDocs = docs.filter((doc) =>
+      isDeferredAction(doc.action || doc.status),
+    );
+
+    if (!deferredDocs.length) {
+      return false;
+    }
+
+    return deferredDocs.some((doc) => {
+      const deferralNumber = String(doc.deferralNo || doc.deferralNumber || "").trim();
+      const validationState = deferralValidationByDoc?.[doc.docIdx];
+
+      if (!deferralNumber) {
+        return true;
+      }
+
+      if (!validationState) {
+        return true;
+      }
+
+      return validationState.status !== "valid";
+    });
+  }, [deferralValidationByDoc, docs]);
+
   if (!checklist && (isLoading || isFetching)) {
     return (
       <div className="creator-theme" style={{ minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -1355,6 +1392,7 @@ const ReviewChecklistPage = ({
             comments={displayComments}
             isLockedBySomeoneElse={isLockedBySomeoneElse}
             lockedByUserName={lockedByUserName}
+            hasBlockingDeferredValidation={hasBlockingDeferredValidation}
           />
         </div>
 

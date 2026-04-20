@@ -20,16 +20,12 @@ const authSlice = createSlice({
   initialState: {
     user: normalizeUser(storedAuth?.user) || null,
     token: storedAuth?.token || null,
-    mfaSessionToken: null,
-    isMFARequired: false,
   },
   reducers: {
     setCredentials: (state, { payload }) => {
       const normalizedUser = normalizeUser(payload.user);
       state.user = normalizedUser;
       state.token = payload.token;
-      state.mfaSessionToken = null; // Clear MFA token after successful login
-      state.isMFARequired = false;
 
       localStorage.setItem(
         "user",
@@ -40,20 +36,14 @@ const authSlice = createSlice({
       );
       localStorage.setItem("token", payload.token || "");
     },
-    setMFASessionToken: (state, { payload }) => {
-      state.mfaSessionToken = payload;
-      state.isMFARequired = !!payload; // Set to true if token exists
-    },
     logout: (state) => {
       state.user = null;
       state.token = null;
-      state.mfaSessionToken = null;
-      state.isMFARequired = false;
       localStorage.removeItem("user");
       localStorage.removeItem("token");
     },
   },
 });
 
-export const { setCredentials, setMFASessionToken, logout } = authSlice.actions;
+export const { setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;

@@ -36,6 +36,7 @@ const ActionButtons = ({
   comments,
   isLockedBySomeoneElse = false,
   lockedByUserName = "",
+  hasBlockingDeferredValidation = false,
 }) => {
   // Check if any compliance document has expired
   const hasExpiredDocuments = React.useMemo(() => {
@@ -65,6 +66,7 @@ const ActionButtons = ({
     !hasExpiredDocuments && // Block submission if any document is expired
     !hasComplianceDocsMissingExpiry && // Block submission if compliance docs don't have expiry set
     !hasNaReasonMissingDocs &&
+    !hasBlockingDeferredValidation &&
     docs.every((doc) => {
       const docStatus = (doc.action || doc.status || "").toLowerCase();
       return [
@@ -131,6 +133,13 @@ const ActionButtons = ({
     if (hasNaReasonMissingDocs) {
       message.error(
         `Cannot submit to Co-Checker: ${naReasonMissingDocs.length} N/A document(s) are missing a valid reason. Enter a reason in the Creator Comment column for each waived document before submission.`,
+      );
+      return false;
+    }
+
+    if (hasBlockingDeferredValidation) {
+      message.error(
+        "Cannot submit to Co-Checker: one or more deferred documents have an invalid or unapproved deferral number.",
       );
       return false;
     }

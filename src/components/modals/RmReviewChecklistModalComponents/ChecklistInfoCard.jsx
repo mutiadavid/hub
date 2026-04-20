@@ -1,6 +1,7 @@
 import React from "react";
 import { Tag } from "antd";
 import { getChecklistTimingMetrics } from "../../../utils/checklistUtils";
+import { getChecklistBaseInfoRows } from "../shared/checklistInfoRows";
 import "../../../styles/creatorDesignSystem.css";
 
 const getStatusVariant = (status) => {
@@ -18,21 +19,13 @@ const ChecklistInfoCard = ({ checklist }) => {
   const gray700 = "#374151";
 
   const rows = [
-    { label: "DCL No", value: checklist.dclNo || "-" },
-    { label: "IBPS No", value: checklist.ibpsNo || "Not provided" },
-    { label: "Date Created", value: timing.createdAtLabel },
-    { label: "Queued Before Forward", value: timing.queueDurationLabel },
-    { label: "Workflow Turnaround", value: timing.lifecycleDurationLabel },
-    { label: "Loan Type", value: checklist.loanType || "-" },
-    {
-      label: "Created By",
-      value: checklist.createdBy?.name || checklist.createdBy || "-",
-    },
-    { label: "RM", value: checklist.assignedToRM?.name || "Not assigned" },
-    {
-      label: "Co-Checker",
-      value: checklist.assignedToCoChecker?.name || "Pending Assignment",
-    },
+    ...getChecklistBaseInfoRows({
+      checklist,
+      timing,
+      createdByFallback: "-",
+      rmFallback: "Not assigned",
+      coCheckerFallback: "Pending Assignment",
+    }),
     { label: "Customer Number", value: checklist.customerNumber || "-" },
   ];
 

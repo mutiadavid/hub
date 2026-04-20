@@ -12,6 +12,7 @@ import {
   getComplianceDocumentsMissingResolvedExpiry,
   getNaReasonMissingDocs,
 } from "../utils/documentUtils";
+import deferralApi from "../service/deferralApi";
 
 const getResolvedCheckerStatus = (doc) =>
   doc?.checkerStatus ||
@@ -19,6 +20,16 @@ const getResolvedCheckerStatus = (doc) =>
   doc?.coCheckerStatus ||
   doc?.co_checker_status ||
   null;
+
+const normalizeLookupValue = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase();
+
+const isDeferredAction = (value) =>
+  ["deferred", "deferralrequested", "defferalrequested"].includes(
+    normalizeLookupValue(value).replace(/[^a-z]/g, ""),
+  );
 
 export const useChecklistOperations = (
   checklist,
@@ -38,6 +49,69 @@ export const useChecklistOperations = (
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [uploadingSupportingDoc, setUploadingSupportingDoc] = useState(false);
 
+  const validateDeferredDocumentForRmSubmission = async (doc) => {
+    if (!isDeferredAction(doc?.action || doc?.status)) {
+      return { valid: true, skipped: true };
+    }
+
+    const deferralNumber = String(doc?.deferralNo || doc?.deferralNumber || "").trim();
+    if (!deferralNumber) {
+      return {
+        valid: false,
+        message: "Enter a deferral number for all deferred documents before submitting to RM.",
+      };
+    }
+
+    const results = await deferralApi.searchDeferrals({ deferralNumber }, token);
+    const exactMatches = (Array.isArray(results) ? results : []).filter(
+      (item) =>
+        normalizeLookupValue(item?.deferralNumber) ===
+        normalizeLookupValue(deferralNumber),
+    );
+
+    if (!exactMatches.length) {
+      return {
+        valid: false,
+        message: `Deferral number ${deferralNumber} is invalid.`,
+      };
+    }
+
+    const customerContext = {
+      customerNumber: normalizeLookupValue(checklist?.customerNumber),
+      customerName: normalizeLookupValue(checklist?.customerName),
+      dclNumber: normalizeLookupValue(checklist?.dclNo || checklist?.dclNumber),
+    };
+
+    const matchingCustomerDeferral = exactMatches.find((item) => {
+      const resultCustomerNumber = normalizeLookupValue(item?.customerNumber);
+      const resultCustomerName = normalizeLookupValue(item?.customerName);
+      const resultDclNumber = normalizeLookupValue(item?.dclNumber || item?.dclNo);
+
+      if (customerContext.customerNumber && resultCustomerNumber) {
+        return resultCustomerNumber === customerContext.customerNumber;
+      }
+
+      if (customerContext.customerName && resultCustomerName) {
+        return resultCustomerName === customerContext.customerName;
+      }
+
+      if (customerContext.dclNumber && resultDclNumber) {
+        return resultDclNumber === customerContext.dclNumber;
+      }
+
+      return true;
+    });
+
+    if (!matchingCustomerDeferral) {
+      return {
+        valid: false,
+        message: "This deferral number does not belong to the selected customer.",
+      };
+    }
+
+    return { valid: true, deferral: matchingCustomerDeferral };
+  };
+
   const submitToRM = async () => {
     try {
       const checklistId = checklist?.id || checklist?._id;
@@ -53,6 +127,20 @@ export const useChecklistOperations = (
         throw new Error(
           `Cannot submit to RM: ${complianceDocsMissingExpiry.length} compliance document(s) missing a valid expiry date. Set the expiry date so the document shows Current or Expired before submission.`,
         );
+      }
+
+      const deferredDocs = docs.filter((doc) =>
+        isDeferredAction(doc?.action || doc?.status),
+      );
+
+      for (const doc of deferredDocs) {
+        const validationResult = await validateDeferredDocumentForRmSubmission(doc);
+        if (!validationResult.valid) {
+          throw new Error(
+            validationResult.message ||
+              "Checklist cannot be submitted to RM because one or more deferral numbers are invalid.",
+          );
+        }
       }
 
       // Build document structure matching backend DocumentCategoryDto
