@@ -123,9 +123,8 @@ const EmailMFAVerification = ({
 
   return (
     <AuthSplitLayout
-      title="Verify your email"
-      subtitle={`Enter the one-time code sent to ${formatEmail(userEmail)}`}
-      heroBody="Email verification keeps document reviews, deferral submissions, and role-based actions secure before users enter the workspace."
+      title="Complete Active Directory sign-in"
+      subtitle={`Enter the one-time verification code sent to ${formatEmail(userEmail)}`}
     >
       <form
         onSubmit={(e) => {
@@ -145,12 +144,12 @@ const EmailMFAVerification = ({
 
         <div className="auth-card auth-card--info">
           <p className="auth-card__eyebrow">Delivery</p>
-          <p className="auth-card__title">Code sent to {formatEmail(userEmail)}</p>
-          <p className="auth-card__body">Use the latest 6-digit code from your inbox. Each code can only be used once.</p>
+          <p className="auth-card__title">Verification code sent to {formatEmail(userEmail)}</p>
+          <p className="auth-card__body">This email step completes your Active Directory sign-in for DCL. Use the latest 6-digit code from your inbox. Each code can only be used once.</p>
         </div>
 
         <div className="auth-field">
-          <label className="auth-field__label">Enter 6-Digit Code</label>
+          <label className="auth-field__label">Enter 6-Digit Verification Code</label>
           <input
             type="text"
             maxLength="6"
@@ -187,7 +186,7 @@ const EmailMFAVerification = ({
         </div>
 
         <button type="submit" disabled={isLoading || code.length !== 6} className="auth-button">
-          {isLoading ? "Verifying..." : "Verify Code"}
+          {isLoading ? "Verifying sign-in..." : "Verify and Continue"}
         </button>
 
         <button type="button" onClick={onBack} disabled={isLoading} className="auth-button auth-button--secondary">

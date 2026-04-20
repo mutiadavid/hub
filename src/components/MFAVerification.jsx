@@ -47,9 +47,8 @@ const MFAVerification = ({ mfaSessionToken, onVerify, onBack, isLoading }) => {
 
   return (
     <AuthSplitLayout
-      title="Verify your identity"
-      subtitle={`Complete a second step to continue. Session expires in ${formatTime(timeRemaining)}.`}
-      heroBody="Multi-factor verification protects sensitive checklist reviews, lender exceptions, and approval decisions before users enter the platform."
+      title="Complete Active Directory verification"
+      subtitle={`Complete the secondary verification step to continue. Session expires in ${formatTime(timeRemaining)}.`}
     >
       <form
         onSubmit={(e) => {
@@ -121,7 +120,7 @@ const MFAVerification = ({ mfaSessionToken, onVerify, onBack, isLoading }) => {
 
         <div className="auth-card auth-card--info">
           <p className="auth-card__eyebrow">Security Note</p>
-          <p className="auth-card__body">Your verification code is short-lived and protects high-trust actions in the document checklist workflow.</p>
+          <p className="auth-card__body">Your verification code is short-lived and protects Active Directory access to sensitive checklist and approval actions.</p>
         </div>
 
         <button

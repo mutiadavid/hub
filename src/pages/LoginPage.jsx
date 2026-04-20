@@ -10,10 +10,47 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import EmailMFAVerification from "../components/EmailMFAVerification";
 import MFAVerification from "../components/MFAVerification";
-import SSOLogin from "../components/SSOLogin";
 import AuthSplitLayout from "../components/auth/AuthSplitLayout";
 import { showAuthSuccessToast } from "../utils/authToast";
 import { consumeAuthStatusMessage } from "../api/baseQueryWithSession";
+
+const getErrorMessage = (err) => {
+  if (!err) {
+    return "Login failed";
+  }
+
+  const validationErrors = err.data?.errors;
+  if (validationErrors && typeof validationErrors === "object") {
+    const firstValidationMessage = Object.values(validationErrors)
+      .flat()
+      .find((message) => typeof message === "string" && message.trim());
+
+    if (firstValidationMessage) {
+      return firstValidationMessage;
+    }
+  }
+
+  if (typeof err.data === "string" && err.data.trim()) {
+    return err.data;
+  }
+
+  if (err.data?.message) {
+    return err.data.message;
+  }
+
+  if (err.error) {
+    return err.error;
+  }
+
+  return "Login failed";
+};
+
+const toLoggableError = (err) => ({
+  status: err?.status ?? null,
+  data: err?.data ?? null,
+  error: err?.error ?? null,
+  originalStatus: err?.originalStatus ?? null,
+});
 
 const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -38,26 +75,13 @@ const LoginPage = () => {
     e.preventDefault();
     setLoginError("");
     try {
-      console.log("Login credentials:", form);
       const res = await login(form).unwrap();
       const sessionToken = res?.mfaSessionToken || res?.mFASessionToken;
       const mfaMethod = res?.mfaMethod || res?.mFAMethod;
       const isMFARequired = res?.isMFARequired;
       const testCode = res?.devTestCode;
 
-      console.log("✅ RESOLVED SESSION TOKEN:", sessionToken);
-      console.log("✅ RESOLVED MFA METHOD:", mfaMethod);
-      console.log("✅ IS MFA REQUIRED:", isMFARequired);
-      console.log("🧪 TEST CODE (DEV ONLY):", testCode);
-
       if (isMFARequired && sessionToken) {
-        console.log("✅ [LOGIN SUCCESS - MFA REQUIRED]");
-        console.log("📧 User Email:", form.email);
-        console.log("🔑 MFA Session Token:", sessionToken);
-        console.log("📤 MFA Method:", mfaMethod);
-        console.log("🧪 Test Code:", testCode);
-        console.log("⏳ Switching to MFA verification step...");
-
         setMFASessionTokenLocal(sessionToken);
         setMFAMethod(mfaMethod || "EMAIL");
         setDevTestCode(testCode || "");
@@ -66,14 +90,13 @@ const LoginPage = () => {
         return;
       }
 
-      console.log("⚠️ [NO MFA REQUIRED] Logging in without MFA");
-      console.log("User Role:", res?.user?.role);
       dispatch(setCredentials(res));
       redirectUserByRole(res?.user?.role, "Login successful.");
     } catch (err) {
-      console.error("❌ [LOGIN ERROR]", err);
-      console.error("Error Details:", err?.data);
-      setLoginError(err?.data?.message || "Login failed");
+      const normalizedError = toLoggableError(err);
+      console.error("❌ [LOGIN ERROR]", normalizedError);
+      console.error("Error Details:", getErrorMessage(err));
+      setLoginError(getErrorMessage(err));
     }
   };
 
@@ -114,11 +137,6 @@ const LoginPage = () => {
     } catch (err) {
       alert(err?.data?.message || "MFA verification failed");
     }
-  };
-
-  const handleSSOSuccess = (ssoResponse) => {
-    dispatch(setCredentials(ssoResponse));
-    redirectUserByRole(ssoResponse?.user?.role, "Login successful.");
   };
 
   const redirectUserByRole = (role, successMessage) => {
@@ -185,20 +203,27 @@ const LoginPage = () => {
 
   return (
     <AuthSplitLayout
-      title="Sign in"
+      title="Sign in with Active Directory"
+      subtitle="Use your bank directory email and Active Directory password to access the DCL workspace."
       status={statusMessage || null}
-      social={<SSOLogin onSuccess={handleSSOSuccess} />}
-      dividerText="or continue with email"
     >
       <form onSubmit={handleLoginSubmit} className="auth-form">
+        <div className="auth-card auth-card--info">
+          <p className="auth-card__eyebrow">Identity Provider</p>
+          <p className="auth-card__title">Active Directory</p>
+          <p className="auth-card__body">
+            Enter the same corporate credentials you use for your Active Directory account. A one-time email verification step will follow.
+          </p>
+        </div>
+
         <div className="auth-field">
-          <label className="auth-field__label">Email Address</label>
+          <label className="auth-field__label">Active Directory Email</label>
           <div className="auth-input-wrap">
             <FiMail className="auth-input__icon" />
             <input
               type="email"
               value={form.email}
-              placeholder="name@bank.com"
+              placeholder="name@ncba.co.ke"
               className="auth-input"
               onChange={(e) => {
                 setForm({ ...form, email: e.target.value });
@@ -209,13 +234,13 @@ const LoginPage = () => {
           </div>
         </div>
         <div className="auth-field">
-          <label className="auth-field__label">Password</label>
+          <label className="auth-field__label">Active Directory Password</label>
           <div className="auth-input-wrap">
             <FiLock className="auth-input__icon" />
             <input
               type={showPassword ? "text" : "password"}
               value={form.password}
-              placeholder="Enter your password"
+              placeholder="Enter your Active Directory password"
               className="auth-input auth-input--with-action"
               onChange={(e) => {
                 setForm({ ...form, password: e.target.value });
@@ -240,16 +265,8 @@ const LoginPage = () => {
           </div>
         ) : null}
 
-        <div className="auth-meta-row">
-          <label className="auth-check">
-            <input type="checkbox" />
-            <span>Remember me</span>
-          </label>
-          <button type="button">Forgot Password?</button>
-        </div>
-
         <button type="submit" disabled={isLoginLoading} className="auth-button">
-          {isLoginLoading ? "Signing in..." : "Sign In"}
+          {isLoginLoading ? "Signing in with Active Directory..." : "Continue with Active Directory"}
         </button>
       </form>
     </AuthSplitLayout>

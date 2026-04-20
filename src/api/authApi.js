@@ -1,8 +1,9 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { createBaseQueryWithSession } from "./baseQueryWithSession";
 
+const configuredApiUrl = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
 const baseQuery = createBaseQueryWithSession({
-  baseUrl: import.meta.env.VITE_API_URL + "/api",
+  baseUrl: configuredApiUrl ? `${configuredApiUrl}/api` : "/api",
 });
 
 export const authApi = createApi({
@@ -21,7 +22,10 @@ export const authApi = createApi({
       query: (data) => ({
         url: "admin/auth/login",
         method: "POST",
-        body: data,
+        body: {
+          Username: data?.username || data?.email || "",
+          Password: data?.password || "",
+        },
       }),
     }),
     
