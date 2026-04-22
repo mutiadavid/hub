@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import deferralApi from "../../../../service/deferralApi";
@@ -7,9 +7,10 @@ import {
   normalizeDocumentType,
   getDocumentCategory,
 } from "../utils/helpers";
-import { validateDeferralSubmission, validateDclSearch } from "../utils/validation";
+import { validateDeferralSubmission } from "../utils/validation";
 import { GUID_REGEX } from "../utils/constants";
 import { showErrorToast, showSuccessToast, showWarningToast } from "../../../../utils/authToast";
+import { deleteDraft } from "../../../../utils/draftsUtils";
 
 /**
  * Custom hook to handle form submission logic
@@ -37,6 +38,7 @@ export const useFormSubmission = () => {
         currentUser,
         postedComments,
         additionalFiles,
+        draftId = null,
       },
       setIsSubmitting
     ) => {
@@ -165,7 +167,6 @@ export const useFormSubmission = () => {
           return;
         }
 
-        const finalDeferralNumber = newDeferral.deferralNumber;
         const createdDeferralId = newDeferral?.id || newDeferral?._id;
 
         if (!createdDeferralId) {
@@ -216,6 +217,16 @@ export const useFormSubmission = () => {
           console.error("One or more document uploads failed", e);
         }
 
+        // Delete draft if one exists (successful submission)
+        if (draftId) {
+          try {
+            deleteDraft(draftId);
+          } catch (e) {
+            console.error("Failed to delete draft after submission:", e);
+            // Don't throw, submission was successful
+          }
+        }
+
         // Navigate and show success message
         navigate("/rm/deferrals/pending");
 
@@ -239,7 +250,7 @@ export const useFormSubmission = () => {
           window.dispatchEvent(
             new CustomEvent("deferral:created", { detail: newDeferral })
           );
-        } catch (e) {
+        } catch {
           /* ignore */
         }
       } catch (err) {

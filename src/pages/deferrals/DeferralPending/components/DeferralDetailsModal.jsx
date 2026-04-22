@@ -10,7 +10,6 @@ import {
   Avatar,
   Typography,
   Modal,
-  message,
   Descriptions,
   List,
   Select,
@@ -38,7 +37,6 @@ import {
 import { showErrorToast, showSuccessToast } from "../../../../utils/authToast";
 import dayjs from "dayjs";
 import deferralApi from "../../../../service/deferralApi";
-import getFacilityColumns from "../../../../utils/facilityColumns";
 import {
   getDeferralDocumentBuckets,
   getCloseRequestDocumentGroups,
@@ -264,15 +262,15 @@ const MODAL_STYLES = `
   }
 
   .deferral-review-topbar__title {
-    color: ${PRIMARY_BLUE};
-    font-size: 16px;
+    color: var(--color-heading);
+    font-size: 17px;
     font-weight: 700;
   }
 
   .deferral-review-topbar__subtitle {
     margin-top: 4px;
-    color: #6b7280;
-    font-size: 12px;
+    color: var(--color-text-light);
+    font-size: 13px;
   }
 
   .deferral-review-topbar__docs.ant-btn {
@@ -284,6 +282,8 @@ const MODAL_STYLES = `
     border: 1px solid rgba(214, 189, 152, 0.2) !important;
     background: white !important;
     color: var(--color-text-medium) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
     box-shadow: none !important;
   }
 
@@ -297,8 +297,8 @@ const MODAL_STYLES = `
     border-radius: 999px;
     background: rgba(214, 189, 152, 0.2);
     color: var(--color-text-dark);
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
   }
 
   .deferral-review-actionbar {
@@ -330,7 +330,7 @@ const MODAL_STYLES = `
     height: 34px !important;
     padding: 0 14px !important;
     border-radius: 6px !important;
-    font-size: 12px !important;
+    font-size: 13px !important;
     font-weight: 600 !important;
     box-shadow: none !important;
     display: inline-flex !important;
@@ -338,13 +338,17 @@ const MODAL_STYLES = `
     justify-content: center !important;
     gap: 6px !important;
     border: none !important;
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    background: var(--ncb-primary-500) !important;
     border-color: transparent !important;
     color: #FFFFFF !important;
   }
 
   .deferral-review-actionbar__button.ant-btn span,
-  .deferral-review-sidebar__post.ant-btn span {
+  .deferral-review-sidebar__post.ant-btn span,
+  .deferral-review-actionbar__button.ant-btn .anticon,
+  .deferral-review-sidebar__post.ant-btn .anticon,
+  .deferral-review-actionbar__button.ant-btn *,
+  .deferral-review-sidebar__post.ant-btn * {
     color: #FFFFFF !important;
   }
 
@@ -354,15 +358,23 @@ const MODAL_STYLES = `
   .deferral-review-sidebar__post.ant-btn[disabled] {
     background: #D1D5DB !important;
     border-color: #D1D5DB !important;
-    color: #FFFFFF !important;
+    color: #374151 !important;
     border: none !important;
   }
 
   .deferral-review-actionbar__button.ant-btn:disabled span,
   .deferral-review-actionbar__button.ant-btn[disabled] span,
   .deferral-review-sidebar__post.ant-btn:disabled span,
-  .deferral-review-sidebar__post.ant-btn[disabled] span {
-    color: #FFFFFF !important;
+  .deferral-review-sidebar__post.ant-btn[disabled] span,
+  .deferral-review-actionbar__button.ant-btn:disabled .anticon,
+  .deferral-review-actionbar__button.ant-btn[disabled] .anticon,
+  .deferral-review-sidebar__post.ant-btn:disabled .anticon,
+  .deferral-review-sidebar__post.ant-btn[disabled] .anticon,
+  .deferral-review-actionbar__button.ant-btn:disabled *,
+  .deferral-review-actionbar__button.ant-btn[disabled] *,
+  .deferral-review-sidebar__post.ant-btn:disabled *,
+  .deferral-review-sidebar__post.ant-btn[disabled] * {
+    color: #374151 !important;
   }
 
   .deferral-review-tabs {
@@ -379,11 +391,10 @@ const MODAL_STYLES = `
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--color-text-light);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
-    font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
   }
 
   .deferral-review-tab--active {
@@ -426,7 +437,7 @@ const MODAL_STYLES = `
 
   .deferral-review-sidebar__title,
   .deferral-review-sidebar__history-title {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -435,8 +446,8 @@ const MODAL_STYLES = `
 
   .deferral-review-sidebar__label,
   .deferral-review-sidebar__hint {
-    color: #6b7280;
-    font-size: 11px;
+    color: var(--color-text-light);
+    font-size: 12px;
   }
 
   .deferral-review-sidebar__textarea.ant-input {
@@ -471,20 +482,20 @@ const MODAL_STYLES = `
   }
 
   .deferral-review-sidebar__history-user {
-    color: ${PRIMARY_BLUE};
-    font-size: 12px;
+    color: var(--color-heading);
+    font-size: 13px;
     font-weight: 600;
   }
 
   .deferral-review-sidebar__history-time {
     color: #94a3b8;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .deferral-review-sidebar__history-text,
   .deferral-review-sidebar__empty {
     color: var(--color-text-medium);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.5;
   }
 
@@ -503,7 +514,7 @@ const MODAL_STYLES = `
 
   .deferral-review-stat__label {
     color: #64748b;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -529,7 +540,7 @@ const MODAL_STYLES = `
   .deferral-review-table-shell .ant-table-thead > tr > th {
     background: var(--color-bg, #f5f7f4) !important;
     color: #64748b !important;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -538,14 +549,14 @@ const MODAL_STYLES = `
 
   .deferral-review-table-shell .ant-table-tbody > tr > td {
     color: #334155;
-    font-size: 12px;
+    font-size: 13px;
     border-bottom: 1px solid rgba(214, 189, 152, 0.14) !important;
     vertical-align: top;
   }
  
   .deferral-info-card .ant-card-head { border-bottom: 2px solid ${ACCENT_LIME} !important; }
-  .deferral-info-card .ant-descriptions-item-label { font-weight: 600 !important; color: #7e6496 !important; padding-bottom: 4px; }
-  .deferral-info-card .ant-descriptions-item-content { color: ${PRIMARY_BLUE} !important; font-weight: 700 !important; font-size: 13px !important; }
+  .deferral-info-card .ant-descriptions-item-label { font-weight: 600 !important; color: var(--color-text-medium) !important; font-size: 12px !important; padding-bottom: 4px; }
+  .deferral-info-card .ant-descriptions-item-content { color: var(--color-text-dark) !important; font-weight: 700 !important; font-size: 14px !important; }
 
   .deferral-review-summary .ant-descriptions-view {
     border: 1px solid rgba(214, 189, 152, 0.2);
@@ -578,8 +589,8 @@ const MODAL_STYLES = `
     border: 1px solid rgba(214, 189, 152, 0.2);
     border-radius: 8px;
     padding: 14px 16px;
-    color: #475569;
-    font-size: 13px;
+    color: var(--color-text-medium);
+    font-size: 14px;
     line-height: 1.6;
     background: #fff;
     white-space: pre-wrap;
@@ -676,10 +687,7 @@ const DeferralDetailsModal = ({
   onClose,
   onAction,
   headerTag,
-  overrideDaysSought,
-  overrideNextDueDate,
   readOnly = false,
-  overrideApprovals,
   activeTab = "pending",
   embedded = false,
 }) => {
@@ -700,7 +708,7 @@ const DeferralDetailsModal = ({
   const [approvalFlowExpanded, setApprovalFlowExpanded] = useState(true);
   const [closeLoading, setCloseLoading] = useState(false);
   const [fullDeferral, setFullDeferral] = useState(deferral);
-  const [loadingFullDeferral, setLoadingFullDeferral] = useState(false);
+  const [, setLoadingFullDeferral] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState("details");
 
   // Fetch full deferral details when modal opens to ensure documents are loaded
@@ -732,7 +740,7 @@ const DeferralDetailsModal = ({
     };
 
     fetchFullDeferral();
-  }, [open, deferral?._id]);
+  }, [open, deferral]);
 
   // Initialize remind block status from localStorage
   useEffect(() => {
@@ -770,7 +778,7 @@ const DeferralDetailsModal = ({
     if (open && deferral) {
       setWorkspaceTab("details");
     }
-  }, [open, deferral?._id]);
+  }, [open, deferral]);
 
   const handleRemindApprover = async () => {
     if (!deferral || !deferral._id) {
@@ -1010,6 +1018,7 @@ const DeferralDetailsModal = ({
   const handleEditApproversClick = async () => {
     setEditedApprovers(deferral.approverFlow ? [...deferral.approverFlow] : []);
     setEditingApprovers(true);
+    setWorkspaceTab("edit-approvers");
 
     // Fetch approvers from database using deferralApi
     setLoadingApprovers(true);
@@ -1164,6 +1173,7 @@ const DeferralDetailsModal = ({
       }
 
       setEditingApprovers(false);
+      setWorkspaceTab("details");
     } catch (error) {
       console.error("[EditApprovers] Error:", error);
       showErrorToast(error.message || "Failed to update approvers");
@@ -1282,9 +1292,6 @@ const DeferralDetailsModal = ({
   const extensionApprovalFlow = Array.isArray(currentExtension?.approvers)
     ? currentExtension.approvers
     : [];
-  const extensionApprovedApproversCount = extensionApprovalFlow.filter(
-    isApprovalMarkedApproved,
-  ).length;
   const normalizedExtensionCreatorApprovalStatus = String(
     currentExtension?.creatorApprovalStatus || "",
   )
@@ -1439,7 +1446,7 @@ const DeferralDetailsModal = ({
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+        <span style={{ color: "var(--color-text-dark)", fontWeight: 500, fontSize: 13 }}>
           {value || "-"}
         </span>
       ),
@@ -1468,7 +1475,7 @@ const DeferralDetailsModal = ({
       key: "document",
       render: (_, doc) => (
         <div>
-          <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+          <div style={{ color: "var(--color-text-dark)", fontWeight: 500, fontSize: 13 }}>
             {doc.name || "Uploaded Document"}
           </div>
           {doc.uploadDate ? (
@@ -1590,7 +1597,7 @@ const DeferralDetailsModal = ({
       key: "name",
       render: (_, upload) => (
         <div>
-          <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+          <div style={{ color: "var(--color-text-dark)", fontWeight: 500, fontSize: 13 }}>
             {upload.name || "Evidence Document"}
           </div>
           {upload.uploadDate ? (
@@ -1630,7 +1637,7 @@ const DeferralDetailsModal = ({
       dataIndex: "documentName",
       key: "documentName",
       render: (value) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+        <span style={{ color: "var(--color-text-dark)", fontWeight: 500, fontSize: 13 }}>
           {value || "-"}
         </span>
       ),
@@ -1778,6 +1785,15 @@ const DeferralDetailsModal = ({
                 >
                   Documents
                 </button>
+                {!readOnly && activeTab === "pending" && editingApprovers && (
+                  <button
+                    type="button"
+                    className={`deferral-review-tab ${workspaceTab === "edit-approvers" ? "deferral-review-tab--active" : ""}`}
+                    onClick={() => setWorkspaceTab("edit-approvers")}
+                  >
+                    Edit Approvers
+                  </button>
+                )}
                 {!readOnly && activeTab === "approved" && (
                   <button
                     type="button"
@@ -1849,6 +1865,26 @@ const DeferralDetailsModal = ({
                       onSubmit={handleSubmitCloseRequest}
                     />
                   )}
+
+                  {workspaceTab === "edit-approvers" && !readOnly && activeTab === "pending" && (
+                    <RMEditApproversModal
+                      open={editingApprovers}
+                      embedded
+                      editedApprovers={editedApprovers}
+                      handleApproverChange={handleApproverChange}
+                      handleApproverSelection={handleApproverSelection}
+                      handleRemoveApprover={handleRemoveApprover}
+                      handleAddApprover={handleAddApprover}
+                      approversFromDb={approversFromDb}
+                      loadingApprovers={loadingApprovers}
+                      confirmingApprovers={confirmingApprovers}
+                      onCancel={() => {
+                        setEditingApprovers(false);
+                        setWorkspaceTab("details");
+                      }}
+                      onConfirm={handleConfirmApprovers}
+                    />
+                  )}
                 </div>
 
                 <RMDeferralReviewSidebar history={history} />
@@ -1868,20 +1904,6 @@ const DeferralDetailsModal = ({
           setWithdrawReason("");
         }}
         onConfirm={handleWithdraw}
-      />
-
-      <RMEditApproversModal
-        open={editingApprovers}
-        editedApprovers={editedApprovers}
-        handleApproverChange={handleApproverChange}
-        handleApproverSelection={handleApproverSelection}
-        handleRemoveApprover={handleRemoveApprover}
-        handleAddApprover={handleAddApprover}
-        approversFromDb={approversFromDb}
-        loadingApprovers={loadingApprovers}
-        confirmingApprovers={confirmingApprovers}
-        onCancel={() => setEditingApprovers(false)}
-        onConfirm={handleConfirmApprovers}
       />
 
       {/* Return for Rework Modal */}

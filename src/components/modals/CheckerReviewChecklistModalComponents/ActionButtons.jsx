@@ -119,14 +119,14 @@ const ActionButtons = ({
         .checker-action-buttons .review-action-button.ant-btn:hover,
         .checker-action-buttons .review-action-button.ant-btn:focus,
         .checker-action-buttons .review-action-button.ant-btn:active {
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           border-color: transparent !important;
-          color: #FFFFFF !important;
+          color: #6B7280 !important;
         }
         .checker-action-buttons .ant-upload-wrapper .ant-btn span,
         .checker-action-buttons .pdf-generator-btn.ant-btn span,
         .checker-action-buttons .review-action-button.ant-btn span {
-          color: #FFFFFF !important;
+          color: #6B7280 !important;
         }
         .checker-action-buttons .ant-upload-wrapper .ant-btn:disabled,
         .checker-action-buttons .ant-upload-wrapper .ant-btn[disabled],

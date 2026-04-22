@@ -86,7 +86,32 @@ const ActiveDCLs = () => {
   ];
 
   return (
-    <>
+    <div className="checker-active-dcls-page">
+      <style>{`
+        .checker-active-dcls-page {
+          min-height: 100%;
+          width: 100%;
+          background: var(--color-white);
+          font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+        }
+        .checker-active-dcls-page .ant-table-wrapper,
+        .checker-active-dcls-page .ant-spin-nested-loading,
+        .checker-active-dcls-page .ant-spin-container,
+        .checker-active-dcls-page .ant-table,
+        .checker-active-dcls-page .ant-table-container,
+        .checker-active-dcls-page .ant-table-content,
+        .checker-active-dcls-page table {
+          background: var(--color-white) !important;
+          box-shadow: none !important;
+        }
+        .checker-active-dcls-page .ant-table-thead > tr > th {
+          background: var(--color-white) !important;
+          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+        }
+        .checker-active-dcls-page .ant-table-tbody > tr > td {
+          background: var(--color-white) !important;
+        }
+      `}</style>
       <Table
         columns={columns}
         dataSource={dcls}
@@ -136,7 +161,7 @@ const ActiveDCLs = () => {
           </>
         )}
       </Drawer>
-    </>
+    </div>
   );
 };
 

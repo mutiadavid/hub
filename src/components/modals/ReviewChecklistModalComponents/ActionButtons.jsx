@@ -214,14 +214,14 @@ const ActionButtons = ({
         .review-action-buttons .review-action-button.ant-btn:hover,
         .review-action-buttons .review-action-button.ant-btn:focus,
         .review-action-buttons .review-action-button.ant-btn:active {
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           border-color: transparent !important;
-          color: #FFFFFF !important;
+          color: #6B7280 !important;
         }
         .review-action-buttons .ant-upload-wrapper .ant-btn span,
         .review-action-buttons .pdf-generator-btn.ant-btn span,
         .review-action-buttons .review-action-button.ant-btn span {
-          color: #FFFFFF !important;
+          color: #6B7280 !important;
         }
         .review-action-buttons .ant-upload-wrapper .ant-btn:disabled,
         .review-action-buttons .ant-upload-wrapper .ant-btn[disabled],

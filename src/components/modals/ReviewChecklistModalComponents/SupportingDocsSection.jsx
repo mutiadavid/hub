@@ -80,7 +80,7 @@ const SupportingDocsSection = ({
         .supporting-docs-section .supporting-docs-action--view.ant-btn:hover,
         .supporting-docs-section .supporting-docs-action--view.ant-btn:focus,
         .supporting-docs-section .supporting-docs-action--view.ant-btn:active {
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           border: none !important;
           color: #FFFFFF !important;
         }

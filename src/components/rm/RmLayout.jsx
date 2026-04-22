@@ -17,6 +17,7 @@ import Navbar from "../Navbar";
 import SharedSidebar from "../common/SharedSidebar";
 import DraftsPage from "../shared/DraftsPage";
 import CompletedChecklistPage from "../modals/CompletedChecklistModalComponents/CompletedChecklistPage";
+import { getSidebarWidth } from "../../utils/sidebarUtils";
 
 // Import Deferral Components
 import DeferralForm from "../../pages/deferrals/DeferralForm";
@@ -64,14 +65,19 @@ const RmLayout = ({ userId }) => {
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
 
-  // Handle restoring a draft - navigate to MyQueue and pass draft data
+  // Handle restoring a draft - route checklist drafts to My Queue and deferral drafts to the deferral form.
   const handleRestoreDraft = (draft) => {
-    console.log("🔄 RmLayout - handleRestoreDraft called with:", draft);
-    if (draft.data?.checklistId || draft.data?.dclNo) {
-      // Set draft first, then navigate to ensure MyQueue receives the draft
-      setDraftToRestore(draft);
+    if (!draft) {
+      return;
+    }
 
-      // Navigate to myqueue to trigger the page load
+    if (draft.type === "deferral") {
+      navigate(`/rm/deferrals/request?draftId=${encodeURIComponent(draft.id)}`);
+      return;
+    }
+
+    if (draft.data?.checklistId || draft.data?.dclNo) {
+      setDraftToRestore(draft);
       navigate("/rm/myqueue");
     }
   };
@@ -119,7 +125,12 @@ const RmLayout = ({ userId }) => {
   };
 
   return (
-    <div className="creator-layout-shell creator-theme">
+    <div
+      className="creator-layout-shell creator-layout-shell--white-surface creator-theme"
+      style={{
+        "--sidebar-width": `${getSidebarWidth(sidebarCollapsed)}px`,
+      }}
+    >
       {isMobile && !sidebarCollapsed && (
         <div className="creator-layout-overlay" onClick={() => setSidebarCollapsed(true)} />
       )}
@@ -161,7 +172,7 @@ const RmLayout = ({ userId }) => {
             <Route
               path="/drafts"
               element={
-                <DraftsPage type="rm" onSelectDraft={handleRestoreDraft} />
+                <DraftsPage type={["rm", "deferral"]} onSelectDraft={handleRestoreDraft} />
               }
             />
             <Route

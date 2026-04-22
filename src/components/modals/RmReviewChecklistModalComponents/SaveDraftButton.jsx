@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "antd";
+import "./actionButtonStyles.css";
 import { message } from "antd";
 import {
   buildDraftCommentTrail,
@@ -17,6 +18,7 @@ const SaveDraftButton = ({
   className = "",
   icon,
   onSaved,
+  disabled = false,
 }) => {
   const [isSavingDraft, setIsSavingDraft] = React.useState(false);
 
@@ -86,13 +88,12 @@ const SaveDraftButton = ({
 
   return (
     <Button
-      key="save-draft"
-      onClick={handleSaveDraft}
-      loading={isSavingDraft}
-      disabled={isSavingDraft}
-      className={className}
+      type="primary"
+      className={`rm-review-action-button ${className}`}
       icon={icon}
-      style={{ borderRadius: "6px", fontWeight: 600 }}
+      loading={isSavingDraft}
+      onClick={handleSaveDraft}
+      disabled={disabled || isSavingDraft}
     >
       Save Draft
     </Button>

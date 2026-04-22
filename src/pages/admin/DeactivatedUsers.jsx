@@ -264,7 +264,7 @@ const DeactivatedUsers = () => {
           className="admin-page__stat-card"
           style={{
             "--admin-stat-accent": "#8f1d2c",
-            "--admin-stat-surface": "linear-gradient(135deg, #ffffff 0%, #fdf0f2 100%)",
+            "--admin-stat-surface": "#ffffff",
           }}
         >
           <div className="admin-page__stat-icon">
@@ -278,7 +278,7 @@ const DeactivatedUsers = () => {
           className="admin-page__stat-card"
           style={{
             "--admin-stat-accent": "#8B5E3C",
-            "--admin-stat-surface": "linear-gradient(135deg, #ffffff 0%, #fbf2e8 100%)",
+            "--admin-stat-surface": "#ffffff",
           }}
         >
           <div className="admin-page__stat-icon">%</div>

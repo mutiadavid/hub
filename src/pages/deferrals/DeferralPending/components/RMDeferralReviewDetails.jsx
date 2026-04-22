@@ -27,7 +27,6 @@ const RMDeferralReviewDetails = ({
   returnedForReworkReasonText,
   allApproversApproved,
   currentApproverLabel,
-  pendingFinalApproversLabel,
   approvedApproversCount,
   approvalFlow,
   creatorApproved,
@@ -50,69 +49,69 @@ const RMDeferralReviewDetails = ({
       >
         {isWithdrawnDeferral ? (
           <>
-            <div style={{ color: "#ff4d4f", fontWeight: 600 }}>
+            <div style={{ color: "#ff4d4f", fontWeight: 600, fontSize: 14 }}>
               Deferral Withdrawn
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 4, lineHeight: 1.45 }}>
               This deferral has been withdrawn by {withdrawalActor}.
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 8, fontStyle: "italic" }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 8, fontStyle: "italic", lineHeight: 1.45 }}>
               <b>Withdrawal Reason:</b> {withdrawalReasonText}
             </div>
           </>
         ) : isRejectedDeferral ? (
           <>
-            <div style={{ color: "#ff4d4f", fontWeight: 600 }}>
+            <div style={{ color: "#ff4d4f", fontWeight: 600, fontSize: 14 }}>
               Deferral Rejected
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 4, lineHeight: 1.45 }}>
               This deferral has been rejected by {rejectionActor}.
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 8, fontStyle: "italic" }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 8, fontStyle: "italic", lineHeight: 1.45 }}>
               <b>Rejection Reason:</b> {rejectionReasonText}
             </div>
           </>
         ) : isReturnedForReworkDeferral ? (
           <>
-            <div style={{ color: warningOrange, fontWeight: 600 }}>
+            <div style={{ color: warningOrange, fontWeight: 600, fontSize: 14 }}>
               Returned for Rework
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 4, lineHeight: 1.45 }}>
               This deferral has been returned for rework by {returnedForReworkActor}.
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 8, fontStyle: "italic" }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 8, fontStyle: "italic", lineHeight: 1.45 }}>
               <b>Rework Reason:</b> {returnedForReworkReasonText}
             </div>
           </>
         ) : isApprovedTabContext ? (
           <>
-            <div style={{ color: successGreen, fontWeight: 600 }}>
+            <div style={{ color: successGreen, fontWeight: 600, fontSize: 14 }}>
               Deferral Fully Approved
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 4, lineHeight: 1.45 }}>
               This deferral appears under the approved tab, so the approval flow is complete and no further approvals are pending.
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 8, fontStyle: "italic" }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 8, fontStyle: "italic", lineHeight: 1.45 }}>
               <b>Approval Progress:</b> {approvalFlow.length} of {approvalFlow.length} approvers approved. Creator approved; Checker approved.
             </div>
           </>
         ) : (
           <>
-            <div style={{ color: primaryBlue, fontWeight: 600 }}>
+            <div style={{ color: primaryBlue, fontWeight: 600, fontSize: 14 }}>
               {allApproversApproved
                 ? "Awaiting Creator and Checker Closure"
                 : currentApproverLabel !== "System"
                   ? `Under Review by ${currentApproverLabel}`
                   : "Under Review by Approvers"}
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 4, lineHeight: 1.45 }}>
               {allApproversApproved
                 ? "This deferral is awaiting co creator and checker closure"
                 : currentApproverLabel !== "System"
                   ? `This deferral request is currently awaiting approval from ${currentApproverLabel}.`
                   : "This deferral request is currently undergoing approval from the designated approvers."}
             </div>
-            <div style={{ fontSize: 12, color: "#666", marginTop: 8, fontStyle: "italic" }}>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 8, fontStyle: "italic", lineHeight: 1.45 }}>
               <b>Approval Progress:</b> {approvedApproversCount} of {approvalFlow.length} approvers approved. Creator {creatorApproved ? "approved" : "pending"}; Checker {checkerApproved ? "approved" : "pending"}.
             </div>
           </>
@@ -122,22 +121,22 @@ const RMDeferralReviewDetails = ({
       <Card
         className="deferral-info-card deferral-review-section"
         size="small"
-        title={<span style={{ color: primaryBlue }}>Customer Information</span>}
+        title={<span style={{ color: "var(--color-heading)" }}>Customer Information</span>}
         style={{ marginBottom: 18 }}
       >
         <Descriptions className="deferral-review-summary" size="middle" column={{ xs: 1, sm: 3, lg: 3 }}>
           <Descriptions.Item label="Customer Name">
-            <Typography.Text strong style={{ color: primaryBlue }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 500 }}>
               {displayDeferral.customerName}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Customer Number">
-            <Typography.Text strong style={{ color: primaryBlue }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 500 }}>
               {displayDeferral.customerNumber}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Loan Type">
-            <Typography.Text strong style={{ color: primaryBlue }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 500 }}>
               {toSentenceCase(displayDeferral.loanType)}
             </Typography.Text>
           </Descriptions.Item>
@@ -147,47 +146,47 @@ const RMDeferralReviewDetails = ({
       <Card
         className="deferral-info-card deferral-review-section"
         size="small"
-        title={<span style={{ color: primaryBlue }}>Deferral Details</span>}
+        title={<span style={{ color: "var(--color-heading)" }}>Deferral Details</span>}
         style={{ marginBottom: 18 }}
       >
         <Descriptions className="deferral-review-summary" size="middle" column={{ xs: 1, sm: 2, lg: 3 }}>
           <Descriptions.Item label="Deferral Number">
-            <Typography.Text strong style={{ color: primaryBlue }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 500 }}>
               {displayDeferral.deferralNumber}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="DCL No">
-            <Typography.Text strong style={{ color: primaryBlue }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 500 }}>
               {displayDeferral.dclNumber || displayDeferral.dclNo || "-"}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Status">
-            <Typography.Text strong style={{ color: deferralStatusColor }}>
+            <Typography.Text style={{ color: deferralStatusColor, fontWeight: 500 }}>
               {deferralStatusLabel}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Creator Status">
-            <Typography.Text style={{ color: creatorApproved ? "green" : primaryBlue }}>
+            <Typography.Text style={{ color: creatorApproved ? "green" : "var(--color-text-dark)", fontWeight: 500 }}>
               {creatorApproved ? "Approved" : "Pending"}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Checker Status">
-            <Typography.Text style={{ color: checkerApproved ? "green" : primaryBlue }}>
+            <Typography.Text style={{ color: checkerApproved ? "green" : "var(--color-text-dark)", fontWeight: 500 }}>
               {checkerApproved ? "Approved" : "Pending"}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Approver Status">
-            <Typography.Text strong style={{ color: primaryBlue }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 500 }}>
               {`${approvedApproversCount} of ${approvalFlow.length} Approved`}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Loan Amount">
-            <Typography.Text strong style={{ color: primaryBlue }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 500 }}>
               {displayDeferral.loanAmountCategory || "Below 75 million"}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Created At">
-            <Typography.Text strong style={{ color: primaryBlue }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 500 }}>
               {displayDeferral.createdAt || displayDeferral.CreatedAt
                 ? dayjs(displayDeferral.createdAt || displayDeferral.CreatedAt).format("DD MMM YYYY")
                 : "-"}
@@ -199,7 +198,7 @@ const RMDeferralReviewDetails = ({
       <Card
         className="deferral-review-section"
         size="small"
-        title={<span style={{ color: primaryBlue }}>Review Summary</span>}
+        title={<span style={{ color: "var(--color-heading)" }}>Review Summary</span>}
         style={{ marginBottom: 18 }}
       >
         <div className="deferral-review-stats">
@@ -221,7 +220,7 @@ const RMDeferralReviewDetails = ({
       <Card
         className="deferral-review-section"
         size="small"
-        title={<span style={{ color: primaryBlue }}>Deferral Description</span>}
+        title={<span style={{ color: "var(--color-heading)" }}>Deferral Description</span>}
         style={{ marginBottom: 18 }}
       >
         <div className="deferral-review-text-block">
@@ -233,7 +232,7 @@ const RMDeferralReviewDetails = ({
         <Card
           className="deferral-review-section"
           size="small"
-          title={<span style={{ color: primaryBlue }}>Facility Details ({displayDeferral.facilities.length})</span>}
+          title={<span style={{ color: "var(--color-heading)" }}>Facility Details ({displayDeferral.facilities.length})</span>}
           style={{ marginBottom: 18 }}
         >
           <div className="deferral-review-table-shell">
@@ -256,6 +255,7 @@ const RMDeferralReviewDetails = ({
           title={
             <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={onToggleApprovalFlow}>
               <span style={{ color: primaryBlue }}>Approval Flow</span>
+              <span style={{ color: "var(--color-heading)" }}>Approval Flow</span>
               <span style={{ fontSize: 12, color: "#999" }}>
                 {approvalFlowExpanded ? "▼" : "▶"}
               </span>

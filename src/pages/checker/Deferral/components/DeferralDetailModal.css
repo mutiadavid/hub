@@ -296,6 +296,9 @@
 
 .deferral-review-table-shell {
   margin-bottom: 18px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .deferral-review-table-shell .ant-table {
@@ -362,6 +365,8 @@
 .deferral-review-summary .ant-descriptions-item-content {
   padding: 12px 14px !important;
   background: #fff;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .deferral-review-text-block {
@@ -395,6 +400,19 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.deferral-review-sidebar,
+.deferral-review-section,
+.deferral-review-stat,
+.deferral-review-text-block,
+.deferral-review-summary .ant-descriptions-item-label,
+.deferral-review-summary .ant-descriptions-item-content,
+.deferral-review-sidebar__history-text,
+.deferral-review-sidebar__history-user,
+.deferral-review-sidebar__history-time {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .deferral-review-status-pill {
@@ -532,13 +550,21 @@
   margin-top: 18px;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1100px) {
   .deferral-review-workspace {
     grid-template-columns: 1fr;
+  }
+
+  .deferral-review-sidebar {
+    order: -1;
   }
 }
 
 @media (max-width: 767px) {
+  .deferral-review-container {
+    min-width: 0;
+  }
+
   .deferral-review-confirm-overlay {
     align-items: flex-end;
     padding: 12px;
@@ -573,10 +599,93 @@
     align-items: stretch;
   }
 
+  .deferral-review-actionbar {
+    padding: 12px;
+  }
+
+  .deferral-review-actionbar__group,
+  .deferral-review-actionbar__group--end {
+    width: 100%;
+    margin-left: 0;
+  }
+
   .deferral-review-topbar__docs.ant-btn,
   .deferral-review-topbar__back.ant-btn,
   .deferral-review-actionbar .ant-btn {
     width: 100%;
+  }
+
+  .deferral-review-tabs {
+    gap: 8px;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+
+  .deferral-review-tab {
+    flex: 0 0 auto;
+    padding: 10px 8px;
+  }
+
+  .deferral-review-workspace {
+    gap: 12px;
+  }
+
+  .deferral-review-sidebar,
+  .deferral-review-section .ant-card-body {
+    padding: 12px;
+  }
+
+  .deferral-review-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .deferral-review-sidebar__history-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .deferral-review-actionset {
+    display: flex;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .deferral-review-actionset .ant-btn {
+    flex: 1 1 120px;
+  }
+
+  .deferral-review-summary .ant-descriptions-view,
+  .deferral-review-summary table,
+  .deferral-review-summary tbody,
+  .deferral-review-summary tr,
+  .deferral-review-summary th,
+  .deferral-review-summary td {
+    display: block;
+    width: 100%;
+  }
+
+  .deferral-review-summary .ant-descriptions-row {
+    display: grid;
+    gap: 0;
+  }
+
+  .deferral-review-summary .ant-descriptions-item {
+    display: block;
+    border-bottom: 1px solid rgba(214, 189, 152, 0.14);
+  }
+
+  .deferral-review-summary .ant-descriptions-item:last-child {
+    border-bottom: none;
+  }
+
+  .deferral-review-summary .ant-descriptions-item-label {
+    min-width: 0;
+    border-bottom: none;
+    padding-bottom: 6px !important;
+  }
+
+  .deferral-review-summary .ant-descriptions-item-content {
+    padding-top: 0 !important;
   }
 
 }

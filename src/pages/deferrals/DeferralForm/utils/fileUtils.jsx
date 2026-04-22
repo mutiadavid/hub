@@ -12,11 +12,33 @@ import { Button, Tooltip } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import "../../../../styles/creatorDesignSystem.css";
 
+const resolveFileName = (fileOrName) => {
+  if (typeof fileOrName === "string") {
+    return fileOrName;
+  }
+
+  if (!fileOrName || typeof fileOrName !== "object") {
+    return "document";
+  }
+
+  return (
+    fileOrName.name ||
+    fileOrName.fileName ||
+    fileOrName.title ||
+    fileOrName.originalName ||
+    "document"
+  );
+};
+
 /**
  * Get appropriate file icon based on file extension
  */
 export const getFileIcon = (fileName) => {
-  const extension = fileName.split(".").pop().toLowerCase();
+  const normalizedFileName = resolveFileName(fileName);
+  const extension = normalizedFileName.includes(".")
+    ? normalizedFileName.split(".").pop().toLowerCase()
+    : "";
+
   switch (extension) {
     case "pdf":
       return <FilePdfOutlined style={{ color: ERROR_RED }} />;
@@ -61,19 +83,19 @@ export const handleViewDocument = (file) => {
     setTimeout(() => {
       URL.revokeObjectURL(fileURL);
     }, 10000);
-    message.info(`Opening ${file.name}`);
+    message.info(`Opening ${resolveFileName(file)}`);
   } else if (file && file instanceof File) {
     const fileURL = URL.createObjectURL(file);
     window.open(fileURL, "_blank");
     setTimeout(() => {
       URL.revokeObjectURL(fileURL);
     }, 10000);
-    message.info(`Opening ${file.name}`);
+    message.info(`Opening ${resolveFileName(file)}`);
   } else if (file && file.url) {
     window.open(file.url, "_blank");
-    message.info(`Opening ${file.name || "document"}`);
+    message.info(`Opening ${resolveFileName(file)}`);
   } else {
-    message.info("No preview available");
+    message.info("This draft restored without a local file copy. Please re-upload to preview.");
   }
 };
 
@@ -118,6 +140,7 @@ export const handleDownload = (item) => {
  * Render a document list item with view and delete actions
  */
 export const renderDocumentItem = (file, allowDelete = true, onDelete = null) => {
+  const fileName = resolveFileName(file);
   const fileSize = file.size
     ? `${(file.size / 1024).toFixed(2)} KB`
     : "Size unknown";
@@ -137,10 +160,10 @@ export const renderDocumentItem = (file, allowDelete = true, onDelete = null) =>
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        {getFileIcon(file.name)}
+        {getFileIcon(fileName)}
         <div>
           <Typography.Text strong style={{ display: "block", fontSize: "13px", color: "var(--color-text-dark)" }}>
-            {file.name}
+            {fileName}
           </Typography.Text>
           <Typography.Text type="secondary" style={{ fontSize: "11px", color: "var(--color-text-light)" }}>
             {fileSize}

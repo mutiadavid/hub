@@ -193,7 +193,7 @@ const CompletedChecklistModal = ({
         }
 
         .completed-modal-container {
-          background: var(--color-bg);
+          background: var(--color-white);
           border-radius: 12px;
           overflow: hidden;
           width: 1280px;
@@ -211,7 +211,7 @@ const CompletedChecklistModal = ({
           flex-direction: column;
           gap: 16px;
           padding: 20px;
-          background: var(--color-bg);
+          background: var(--color-white);
         }
         .completed-review-topbar {
           display: flex;
@@ -288,7 +288,7 @@ const CompletedChecklistModal = ({
         .completed-review-actionbar .completed-review-actionbtn--primary.ant-btn,
         .completed-review-actionbar .completed-review-actionbtn--primary.ant-btn:hover,
         .completed-review-actionbar .completed-review-actionbtn--primary.ant-btn:focus {
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           border-color: transparent !important;
           color: #ffffff !important;
         }

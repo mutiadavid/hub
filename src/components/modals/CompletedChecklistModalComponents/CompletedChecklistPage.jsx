@@ -304,7 +304,7 @@ const CompletedChecklistPage = ({
         .rm-completed-page-actionbar .rm-completed-page-actionbtn--primary.ant-btn,
         .rm-completed-page-actionbar .rm-completed-page-actionbtn--primary.ant-btn:hover,
         .rm-completed-page-actionbar .rm-completed-page-actionbtn--primary.ant-btn:focus {
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           border-color: transparent !important;
           color: #ffffff !important;
         }

@@ -8,14 +8,14 @@
 
 /* Primary Button */
 .ant-btn-primary {
-  background: linear-gradient(135deg, #164679 0%, #0f3a56 100%) !important;
+  background: var(--ncb-primary-500) !important;
   border-color: transparent !important;
   color: #FFFFFF !important;
 }
 
 .ant-btn-primary:hover,
 .ant-btn-primary:focus {
-  background: linear-gradient(135deg, #0f3a56 0%, #06213d 100%) !important;
+  background: var(--ncb-primary-700) !important;
   border-color: transparent !important;
   color: #FFFFFF !important;
 }
@@ -94,9 +94,9 @@
 
 /* Document Drawer Badge - Green with dark text */
 .document-drawer-badge {
-  background-color: #52C41A !important;
+  background-color: var(--color-status-success, #4f8a10) !important;
   color: #1a1a1a !important;
-  border-color: #52C41A !important;
+  border-color: var(--color-status-success, #4f8a10) !important;
   font-weight: 600 !important;
 }
 

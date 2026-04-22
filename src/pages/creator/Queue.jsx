@@ -48,8 +48,8 @@ const Queue = ({ userId }) => {
             onClick={() => setDrawerOpen(true)}
             className="create-dcl-btn"
             style={{
-              background: "linear-gradient(180deg, #164679 0%, #0f3a56 100%)",
-              borderColor: "transparent",
+              background: "var(--ncb-primary-500)",
+              borderColor: "var(--ncb-primary-500)",
               color: "#fff !important",
               fontWeight: 600,
               fontSize: "14px",

@@ -22,6 +22,7 @@ import {
   InfoCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
+import "../../styles/deferralFormGlobalStyles.css";
 
 const { Text } = Typography;
 
@@ -407,9 +408,8 @@ function DocumentPicker({
       align: "center",
       render: (_, __, index) => (
         <div
+          className="form-body-text"
           style={{
-            fontWeight: "bold",
-            color: PRIMARY_PURPLE,
             fontSize: 13,
           }}
         >
@@ -477,9 +477,9 @@ function DocumentPicker({
       align: "center",
       render: (type) => (
         <div
+          className="form-body-text"
           style={{
             color: getTypeColor(type),
-            fontWeight: 600,
             fontSize: 13,
             textAlign: "center",
           }}
@@ -563,17 +563,19 @@ function DocumentPicker({
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(43, 28, 103, 0.08);
       border: 1px solid #e0e0e0;
+      background: var(--color-white) !important;
     }
     .document-picker-table .ant-table-thead > tr > th {
-      background-color: #f7f7f7 !important;
+      background-color: var(--color-white) !important;
       color: ${PRIMARY_PURPLE} !important;
-      font-weight: 700;
+      font-weight: 600;
       font-size: 13px;
       padding: 14px 12px !important;
       border-bottom: 3px solid ${ACCENT_LIME} !important;
       border-right: none !important;
     }
     .document-picker-table .ant-table-tbody > tr > td {
+      background: var(--color-white) !important;
       border-bottom: 1px solid #f0f0f0 !important;
       border-right: none !important;
       padding: 12px 12px !important;
@@ -581,7 +583,7 @@ function DocumentPicker({
       color: #333;
     }
     .document-picker-table .ant-table-tbody > tr.ant-table-row:hover > td {
-      background-color: rgba(181, 211, 52, 0.1) !important;
+      background-color: rgba(245, 247, 244, 0.9) !important;
       cursor: pointer;
     }
     .document-picker-table .ant-pagination .ant-pagination-item-active {
@@ -602,7 +604,7 @@ function DocumentPicker({
       <Card
         style={{
           marginBottom: 16,
-          background: "#fafafa",
+          background: "#ffffff",
           border: `1px solid ${PRIMARY_PURPLE}20`,
           borderRadius: 8,
         }}
@@ -692,7 +694,7 @@ function DocumentPicker({
           <div
             style={{
               padding: "8px 12px",
-              backgroundColor: "#fafafa",
+              backgroundColor: "#ffffff",
               borderRadius: 4,
               fontSize: 13,
               color: "#666",
@@ -748,7 +750,7 @@ function DocumentPicker({
                     backgroundColor: isSelected
                       ? `${SUCCESS_GREEN}08`
                       : isMaxReached
-                        ? "#fafafa"
+                        ? "#ffffff"
                         : "white",
                     transition: "all 0.2s",
                     opacity: isMaxReached && !isSelected ? 0.6 : 1,
@@ -813,9 +815,9 @@ function DocumentPicker({
                         }}
                       >
                         <div
+                          className="form-body-text"
                           style={{
                             color: getTypeColor(doc.type),
-                            fontWeight: 500,
                             fontSize: 12,
                             opacity: isMaxReached && !isSelected ? 0.7 : 1,
                           }}
@@ -823,9 +825,9 @@ function DocumentPicker({
                           {doc.type}
                         </div>
                         <div
+                          className="form-body-text"
                           style={{
                             color: getCategoryColor(doc.category),
-                            fontWeight: 500,
                             fontSize: 12,
                             opacity: isMaxReached && !isSelected ? 0.7 : 1,
                           }}
@@ -924,7 +926,7 @@ function DocumentPicker({
             }}
           >
             <div>
-              <strong>{selectedDocuments.length}</strong> document
+              <span style={{ fontWeight: 600 }}>{selectedDocuments.length}</span> document
               {selectedDocuments.length !== 1 ? "s" : ""} selected
             </div>
             <div

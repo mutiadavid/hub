@@ -55,18 +55,18 @@ const queueTextStyles = {
     minWidth: 0,
     color: "var(--color-text-dark)",
     fontSize: 13,
-    fontWeight: 700,
+    fontWeight: 400,
     lineHeight: 1.2,
   },
   secondaryValue: {
-    color: "var(--color-text-light)",
+    color: "var(--color-text-dark)",
     fontSize: 11,
     lineHeight: 1.2,
   },
   mutedValue: {
-    color: "var(--color-text-medium)",
+    color: "var(--color-text-dark)",
     fontSize: 12,
-    fontWeight: 500,
+    fontWeight: 400,
     lineHeight: 1.2,
   },
 };
@@ -119,7 +119,7 @@ const renderMutedValue = (value, options = {}) => {
 export const renderQueueStatusTag = (status) => {
   const config = statusToneMap[status] || {
     background: "rgba(64, 83, 76, 0.08)",
-    color: "var(--color-text-medium)",
+    color: "var(--color-text-dark)",
     text: status ? String(status).replace(/_/g, " ") : "Unknown",
   };
 
@@ -182,7 +182,7 @@ export const getDeferralColumns = (onRowClick) => [
     render: (_, record) =>
       renderMutedValue(
         resolveRecordValue(record, ["dclNumber", "dclNo", "checklistNumber", "checklist.dclNo"]),
-        { color: "#7A5C93", fontWeight: 600 },
+        { color: "var(--color-text-dark)", fontWeight: 400 },
       ),
   },
   {
@@ -192,7 +192,7 @@ export const getDeferralColumns = (onRowClick) => [
     render: (customerName, record) =>
       renderMutedValue(
         customerName || resolveRecordValue(record, ["customer.name", "customerName"]),
-        { color: "var(--color-text-dark)", fontWeight: 600 },
+        { color: "var(--color-text-dark)", fontWeight: 400 },
       ),
   },
   {
@@ -241,7 +241,7 @@ export const getExtensionColumns = (onRowClick) => [
     render: (_, record) =>
       renderMutedValue(
         resolveRecordValue(record, ["dclNumber", "dclNo", "deferral.dclNumber", "deferral.dclNo"]),
-        { color: "#7A5C93", fontWeight: 600 },
+        { color: "var(--color-text-dark)", fontWeight: 400 },
       ),
   },
   {
@@ -251,7 +251,7 @@ export const getExtensionColumns = (onRowClick) => [
     render: (v, record) =>
       renderMutedValue(
         v || resolveRecordValue(record, ["deferral.customerName", "customer.name"]),
-        { color: "var(--color-text-dark)", fontWeight: 600 },
+        { color: "var(--color-text-dark)", fontWeight: 400 },
       ),
   },
   {

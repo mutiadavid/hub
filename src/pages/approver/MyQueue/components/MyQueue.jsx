@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Card, Tabs, Input, Button, Select, DatePicker, Space, Empty, Spin, message, Table, Descriptions, Typography, Modal } from "antd";
-import { SearchOutlined, ReloadOutlined, CalendarOutlined, FilePdfOutlined, FileDoneOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
+import { SearchOutlined, ReloadOutlined, CalendarOutlined, FilePdfOutlined, FileDoneOutlined, CloseOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
 import { PRIMARY_BLUE, ACCENT_LIME, SUCCESS_GREEN } from "../utils/constants";
@@ -18,6 +18,7 @@ import {
 import { DeferralDetailsModal, ExtensionApplicationsTab } from ".";
 import ExtensionApplicationModal from "./ExtensionApplicationModal";
 import { API_BASE_URL } from "../../../../config/runtimeConfig";
+import { getDrafts, deleteDraft, formatDraftDate } from "../../../../utils/draftsUtils";
 import "../../../../styles/creatorDesignSystem.css";
 
 const { RangePicker } = DatePicker;
@@ -55,7 +56,7 @@ const queuePageStyles = `
   .approver-queue-title {
     color: var(--color-text-dark);
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 400;
     line-height: 1.2;
     letter-spacing: -0.02em;
     margin: 0;
@@ -63,7 +64,7 @@ const queuePageStyles = `
 
   .approver-queue-copy {
     margin: 0;
-    color: var(--color-text-light);
+    color: var(--color-text-dark);
     font-size: 12px;
     line-height: 1.5;
   }
@@ -90,7 +91,7 @@ const queuePageStyles = `
   .approver-queue-search input {
     background: transparent !important;
     font-size: 12px !important;
-    color: var(--color-text-medium) !important;
+    color: var(--color-text-dark) !important;
   }
 
   .approver-queue-search .anticon {
@@ -146,7 +147,7 @@ const queuePageStyles = `
 
   .approver-queue-button--primary.ant-btn {
     border: none !important;
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: #fff !important;
   }
 
@@ -154,8 +155,8 @@ const queuePageStyles = `
   .approver-queue-button--primary.ant-btn:focus,
   .approver-queue-button--primary.ant-btn:active {
     border: none !important;
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
-    color: #fff !important;
+    background: var(--ncb-primary-700) !important;
+    color: #6b7280 !important;
   }
 
   .approver-queue-button--secondary.ant-btn {
@@ -177,7 +178,7 @@ const queuePageStyles = `
     border: none !important;
     background: #D1D5DB !important;
     border-color: #D1D5DB !important;
-    color: #fff !important;
+    color: #6b7280 !important;
   }
 
   .approver-queue-button.ant-btn:disabled span,
@@ -220,7 +221,7 @@ const queuePageStyles = `
 
   .approver-queue-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
     color: var(--color-primary-dark) !important;
-    font-weight: 600;
+    font-weight: 400;
   }
 
   .approver-queue-tabs .ant-tabs-ink-bar {
@@ -248,7 +249,7 @@ const queuePageStyles = `
     border: none;
     color: var(--color-text-dark);
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 400;
   }
 
   .approver-queue-table-shell {
@@ -275,9 +276,9 @@ const queuePageStyles = `
 
   .approver-queue-table-shell .ant-table-thead > tr > th {
     background: transparent !important;
-    color: var(--color-text-medium) !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 400;
     text-transform: uppercase;
     border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
     border-right: none !important;
@@ -290,7 +291,7 @@ const queuePageStyles = `
     border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
     border-top: none !important;
     border-right: none !important;
-    color: var(--color-text-medium);
+    color: var(--color-text-dark);
     padding: 16px 12px !important;
     font-size: 12px;
     line-height: 1.25;
@@ -329,7 +330,7 @@ const queuePageStyles = `
 
   .approver-queue-table-shell .ant-pagination-item-active a {
     color: var(--color-text-dark) !important;
-    font-weight: 700;
+    font-weight: 400;
   }
 
   .approver-queue-table-shell .ant-pagination {
@@ -387,7 +388,7 @@ const queuePageStyles = `
   }
 `;
 
-const MyQueue = () => {
+const MyQueue = ({ initialTab = "deferrals" }) => {
   const navigate = useNavigate();
   const token = useSelector((state) => state.auth.token);
 
@@ -413,7 +414,7 @@ const MyQueue = () => {
     handleCloseExtensionModal,
   } = useMyQueueModal();
 
-  const { activeTab, handleTabChange } = useMyQueueTabs("deferrals");
+  const { activeTab, handleTabChange } = useMyQueueTabs(initialTab);
 
   const {
     searchText,
@@ -449,6 +450,54 @@ const MyQueue = () => {
   const [extensionApproveLoading, setExtensionApproveLoading] = useState(false);
   const [extensionRejectLoading, setExtensionRejectLoading] = useState(false);
   const [extensionReworkLoading, setExtensionReworkLoading] = useState(false);
+
+  // Draft management
+  const [draftsList, setDraftsList] = useState([]);
+  const [draftsLoading, setDraftsLoading] = useState(false);
+
+  // Load drafts
+  const loadDrafts = useCallback(() => {
+    setDraftsLoading(true);
+    try {
+      const allDrafts = getDrafts('deferral');
+      setDraftsList(allDrafts);
+    } catch (err) {
+      console.error('Error loading drafts:', err);
+      message.error('Failed to load drafts');
+    } finally {
+      setDraftsLoading(false);
+    }
+  }, []);
+
+  // Load drafts on mount and when tab changes to drafts
+  useEffect(() => {
+    if (activeTab === 'drafts') {
+      loadDrafts();
+    }
+  }, [activeTab, loadDrafts]);
+
+  const handleRestoreDraft = (draft) => {
+    navigate(`/rm/deferrals/request?draftId=${encodeURIComponent(draft.id)}`);
+  };
+
+  const handleDeleteDraftFromList = (draftId) => {
+    Modal.confirm({
+      title: 'Delete Draft',
+      content: 'Are you sure you want to delete this draft? This action cannot be undone.',
+      okText: 'Delete',
+      okType: 'danger',
+      onOk() {
+        try {
+          deleteDraft(draftId);
+          setDraftsList(draftsList.filter(d => d.id !== draftId));
+          message.success('Draft deleted successfully');
+        } catch (err) {
+          console.error('Error deleting draft:', err);
+          message.error('Failed to delete draft');
+        }
+      },
+    });
+  };
 
   const handleOpenDeferralDetails = (deferral) => {
     setSelectedDeferral(deferral);
@@ -861,6 +910,94 @@ const MyQueue = () => {
                           onOpenExtensionDetails={handleOpenExtensionDetails}
                           tableClassName="approver-queue-table-shell"
                         />
+                      </div>
+                    ),
+                  },
+                  {
+                    key: "drafts",
+                    label: renderTabLabel("Drafts", draftsList.length),
+                    children: (
+                      <div>
+                      <div className="approver-queue-filters-row" style={{ gridTemplateColumns: "minmax(220px, 1.2fr) auto" }}>
+                        <div className="approver-queue-actions">
+                          <Button
+                            className="approver-queue-button approver-queue-button--primary"
+                            icon={<ReloadOutlined />}
+                            onClick={loadDrafts}
+                            loading={draftsLoading}
+                            size="large"
+                          >
+                            Refresh
+                          </Button>
+                        </div>
+                      </div>
+
+                      {draftsLoading ? (
+                        <div className="creator-tab-loading">
+                          <Spin />
+                        </div>
+                      ) : draftsList.length === 0 ? (
+                        <div className="creator-tab-empty">
+                          <Empty description="No saved deferral drafts" />
+                        </div>
+                      ) : (
+                        <div className="approver-queue-table-shell">
+                          <Table
+                            columns={[
+                              {
+                                title: "Customer",
+                                dataIndex: ["data", "customerName"],
+                                key: "customerName",
+                                render: (text) => text || "N/A",
+                              },
+                              {
+                                title: "DCL #",
+                                dataIndex: ["data", "dclNumber"],
+                                key: "dclNumber",
+                                render: (text) => text || "N/A",
+                              },
+                              {
+                                title: "Loan Amount",
+                                dataIndex: ["data", "loanAmount"],
+                                key: "loanAmount",
+                                render: (text) => (text ? `$${Number(text).toLocaleString()}` : "N/A"),
+                              },
+                              {
+                                title: "Saved",
+                                dataIndex: "updatedAt",
+                                key: "updatedAt",
+                                render: (text) => formatDraftDate(text),
+                              },
+                              {
+                                title: "Actions",
+                                key: "actions",
+                                render: (_, record) => (
+                                  <Space size="small">
+                                    <Button
+                                      type="primary"
+                                      size="small"
+                                      onClick={() => handleRestoreDraft(record)}
+                                    >
+                                      Restore
+                                    </Button>
+                                    <Button
+                                      danger
+                                      size="small"
+                                      icon={<DeleteOutlined />}
+                                      onClick={() => handleDeleteDraftFromList(record.id)}
+                                    />
+                                  </Space>
+                                ),
+                              },
+                            ]}
+                            dataSource={draftsList}
+                            rowKey={(record) => record.id}
+                            tableLayout="fixed"
+                            pagination={{ pageSize: 5, showSizeChanger: true, pageSizeOptions: ["5", "10", "20", "50"] }}
+                            scroll={{ x: 720 }}
+                          />
+                        </div>
+                      )}
                       </div>
                     ),
                   },

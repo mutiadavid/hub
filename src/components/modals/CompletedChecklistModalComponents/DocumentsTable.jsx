@@ -168,13 +168,14 @@ const DocumentsTable = ({ docs, checklist }) => {
           border: none !important;
           outline: none !important;
           box-shadow: none !important;
-          background: transparent !important;
+          background: var(--color-white) !important;
         }
         .completed-doc-table .ant-table-thead > tr > th {
-          background: transparent !important;
-          color: #374151 !important;
+          background: var(--color-white) !important;
+          color: var(--color-heading) !important;
           font-weight: 600 !important;
           font-size: 12px !important;
+          letter-spacing: 0.08em;
           padding: 12px 16px !important;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
           border-right: none !important;
@@ -182,13 +183,13 @@ const DocumentsTable = ({ docs, checklist }) => {
           font-family: ${tableFontFamily} !important;
         }
         .completed-doc-table .ant-table-tbody > tr > td {
-          background: transparent !important;
+          background: var(--color-white) !important;
           border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
           border-top: none !important;
           border-right: none !important;
           padding: 12px 16px !important;
-          font-size: 12px !important;
-          color: #374151;
+          font-size: 13px !important;
+          color: var(--color-text-body) !important;
           line-height: 1.45;
           font-family: ${tableFontFamily} !important;
         }
@@ -204,12 +205,12 @@ const DocumentsTable = ({ docs, checklist }) => {
           display: none !important;
         }
         .completed-doc-table .ant-table-tbody > tr.ant-table-row:hover > td {
-          background-color: rgba(214, 189, 152, 0.06) !important;
+          background-color: rgba(245, 247, 244, 0.9) !important;
         }
         .completed-doc-table-primary {
-          color: #374151;
-          font-size: 12px;
-          font-weight: 600;
+          color: var(--color-text-dark);
+          font-size: 13px;
+          font-weight: 500;
           font-family: ${tableFontFamily};
         }
         .completed-doc-table-primary--wrap {
@@ -220,8 +221,8 @@ const DocumentsTable = ({ docs, checklist }) => {
           line-height: 1.45;
         }
         .completed-doc-table-muted {
-          color: #374151;
-          font-size: 12px;
+          color: var(--color-text-body);
+          font-size: 13px;
           font-weight: 400;
           font-family: ${tableFontFamily};
         }
@@ -233,8 +234,8 @@ const DocumentsTable = ({ docs, checklist }) => {
           line-height: 1.45;
         }
         .completed-doc-table-status {
-          font-size: 12px;
-          font-weight: 600;
+          font-size: 13px;
+          font-weight: 500;
           font-family: ${tableFontFamily};
         }
         .completed-doc-table-status--wrap {
@@ -250,15 +251,15 @@ const DocumentsTable = ({ docs, checklist }) => {
           border-radius: 6px !important;
           border: 1px solid rgba(214, 189, 152, 0.2) !important;
           background: var(--color-white) !important;
-          color: var(--color-primary-dark) !important;
+          color: var(--color-text-dark) !important;
           box-shadow: none !important;
-          font-size: 12px !important;
+          font-size: 13px !important;
           font-weight: 600 !important;
           font-family: ${tableFontFamily} !important;
         }
         .completed-modal-view-btn.ant-btn:hover,
         .completed-modal-view-btn.ant-btn:focus {
-          border-color: var(--color-primary-dark) !important;
+          border-color: var(--color-text-dark) !important;
           background: rgba(214, 189, 152, 0.08) !important;
         }
       `}</style>

@@ -214,7 +214,7 @@ const REVIEW_STYLES = `
 
   .checker-extension-review__primary-btn.ant-btn {
     border: none !important;
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: var(--color-white) !important;
     border-color: transparent !important;
     box-shadow: none !important;
@@ -235,7 +235,7 @@ const REVIEW_STYLES = `
   .checker-extension-review__secondary-btn.ant-btn[disabled] {
     background: #D1D5DB !important;
     border-color: #D1D5DB !important;
-    color: #fff !important;
+    color: #6b7280 !important;
     box-shadow: none !important;
   }
 
@@ -243,7 +243,7 @@ const REVIEW_STYLES = `
   .checker-extension-review__primary-btn.ant-btn[disabled] span,
   .checker-extension-review__secondary-btn.ant-btn:disabled span,
   .checker-extension-review__secondary-btn.ant-btn[disabled] span {
-    color: #fff !important;
+    color: #6b7280 !important;
   }
 
   .checker-extension-review .ant-descriptions-item-label {

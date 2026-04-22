@@ -108,7 +108,7 @@ export default function ApproverSelector({
         .deferral-approver-selector-title {
           color: var(--color-text-dark) !important;
           margin-bottom: 8px !important;
-          font-size: 16px !important;
+          font-size: 17px !important;
           font-weight: 700 !important;
           letter-spacing: -0.02em;
         }
@@ -124,7 +124,8 @@ export default function ApproverSelector({
         }
         .deferral-approver-alert .ant-alert-message {
           color: var(--color-text-dark) !important;
-          font-weight: 500;
+          font-size: 13px;
+          font-weight: 600;
         }
         .deferral-approver-summary {
           border: 1px solid rgba(214, 189, 152, 0.28);
@@ -138,11 +139,12 @@ export default function ApproverSelector({
           align-items: center;
           gap: 6px;
           color: var(--color-text-dark);
+          font-size: 13px;
           font-weight: 600;
         }
         .deferral-approver-summary-caption {
           margin-top: 4px;
-          font-size: 11px;
+          font-size: 12px;
           color: var(--color-text-light);
         }
         .deferral-approver-summary-stats {
@@ -152,7 +154,7 @@ export default function ApproverSelector({
           gap: 6px;
         }
         .deferral-approver-summary-stat {
-          font-size: 11px;
+          font-size: 12px;
           display: flex;
           align-items: center;
           gap: 6px;
@@ -184,6 +186,8 @@ export default function ApproverSelector({
         .deferral-approver-empty-title {
           margin: 12px 0 6px !important;
           color: rgba(64, 83, 76, 0.52) !important;
+          font-size: 15px;
+          font-weight: 600;
         }
         .deferral-approver-list {
           display: flex;
@@ -201,8 +205,16 @@ export default function ApproverSelector({
           align-items: center;
           gap: 6px;
           color: var(--color-text-dark) !important;
-          font-size: 13px;
+          font-size: 14px;
+          font-weight: 600;
           margin-bottom: 8px;
+        }
+        .deferral-approver-selector .ant-select-selection-item,
+        .deferral-approver-selector .ant-select-selection-placeholder,
+        .deferral-approver-selector .ant-select-item,
+        .deferral-approver-selector .ant-typography,
+        .deferral-approver-selector .ant-btn {
+          font-size: 13px !important;
         }
         .deferral-approver-selector .ant-select-selector {
           border: 1px solid rgba(214, 189, 152, 0.2) !important;
@@ -239,21 +251,22 @@ export default function ApproverSelector({
           width: 100%;
           border-radius: 8px !important;
           border: none !important;
-          background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: var(--color-white) !important;
           box-shadow: 0 10px 20px rgba(26, 54, 54, 0.12) !important;
         }
         .deferral-approver-submit.ant-btn[disabled],
         .deferral-approver-submit.ant-btn:disabled {
-          background: rgba(64, 83, 76, 0.35) !important;
-          color: rgba(255, 255, 255, 0.9) !important;
+          background: #d1d5db !important;
+          color: #6b7280 !important;
           box-shadow: none !important;
         }
         .deferral-approver-status {
-          font-size: 12px;
+          font-size: 13px;
           text-align: center;
           min-height: 36px;
           padding-top: 10px;
+          line-height: 1.45;
         }
         .deferral-approver-status--danger {
           color: #b42318;

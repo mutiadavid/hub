@@ -139,12 +139,15 @@ export default function Reports() {
 
     if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
       const [start, end] = filters.dateRange;
+      const startTime = start.startOf("day").valueOf();
+      const endTime = end.endOf("day").valueOf();
       rows = rows.filter((deferral) => {
         const createdAt = deferral.createdAt ? dayjs(deferral.createdAt) : null;
         return (
           createdAt &&
           createdAt.isValid() &&
-          createdAt.isBetween(start.startOf("day"), end.endOf("day"), null, "[]")
+          createdAt.valueOf() >= startTime &&
+          createdAt.valueOf() <= endTime
         );
       });
     }
@@ -172,16 +175,14 @@ export default function Reports() {
       const dateMatch = !isTatTab || !filters.dateRange || !filters.dateRange[0] || !filters.dateRange[1]
         ? true
         : (() => {
+            const startTime = filters.dateRange[0].startOf("day").valueOf();
+            const endTime = filters.dateRange[1].endOf("day").valueOf();
             const createdAt = row.createdAt ? dayjs(row.createdAt) : null;
             return (
               createdAt &&
               createdAt.isValid() &&
-              createdAt.isBetween(
-                filters.dateRange[0].startOf("day"),
-                filters.dateRange[1].endOf("day"),
-                null,
-                "[]",
-              )
+              createdAt.valueOf() >= startTime &&
+              createdAt.valueOf() <= endTime
             );
           })();
 
@@ -417,7 +418,7 @@ export default function Reports() {
     .creator-reports-page {
       min-height: 100%;
       width: 100%;
-      background: var(--color-bg);
+      background: var(--color-white);
       font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
     }
     .creator-reports-shell {
@@ -442,7 +443,7 @@ export default function Reports() {
       gap: 12px;
       padding: 16px;
       border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-      background: var(--color-bg);
+      background: var(--color-white);
     }
     .creator-reports-title-block {
       display: flex;
@@ -567,7 +568,7 @@ export default function Reports() {
     }
     .reports-export-modal .ant-modal-body {
       padding: 20px !important;
-      background: var(--color-bg) !important;
+      background: var(--color-white) !important;
     }
     .reports-export-modal__title {
       display: flex;

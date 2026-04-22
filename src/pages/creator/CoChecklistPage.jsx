@@ -126,7 +126,7 @@ const CoChecklistPage = ({
       .cochecklist-page {
         min-height: 100%;
         width: 100%;
-        background: var(--color-bg);
+        background: var(--color-white);
         font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
       }
       .cochecklist-shell {
@@ -146,7 +146,7 @@ const CoChecklistPage = ({
         gap: 12px;
         padding: 16px;
         border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-        background: var(--color-bg);
+        background: var(--color-white);
       }
       .cochecklist-toolbar-left {
         display: flex;
@@ -210,7 +210,7 @@ const CoChecklistPage = ({
         padding: 8px 16px !important;
         border: none !important;
         border-radius: 8px !important;
-        background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+        background: var(--ncb-primary-500) !important;
         color: var(--color-white) !important;
         font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
         font-size: 13px !important;

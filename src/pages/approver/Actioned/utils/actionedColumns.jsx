@@ -60,7 +60,7 @@ export const getActionedColumns = () => [
     width: 120,
     fixed: "left",
     render: (text) => (
-      <div style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+      <div style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
         <FileTextOutlined style={{ marginRight: 6 }} />
         {text}
       </div>
@@ -78,7 +78,7 @@ export const getActionedColumns = () => [
     key: "customerName",
     width: 180,
     render: (name) => (
-      <Typography.Text strong style={{ color: "var(--color-text-dark)", fontSize: 13 }}>
+      <Typography.Text style={{ color: "var(--color-text-dark)", fontSize: 13, fontWeight: 400 }}>
         {name}
       </Typography.Text>
     ),
@@ -89,7 +89,7 @@ export const getActionedColumns = () => [
     key: "loanType",
     width: 120,
     render: (loanType) => (
-      <div style={{ fontSize: 12, fontWeight: 500 }}>{loanType}</div>
+      <div style={{ fontSize: 12, fontWeight: 400, color: "var(--color-text-dark)" }}>{loanType}</div>
     ),
   },
   {
@@ -108,7 +108,7 @@ export const getActionedColumns = () => [
 
       if (withdrawnBy) {
         return (
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#8d3a2a" }}>
+          <div style={{ fontSize: 12, fontWeight: 400, color: "var(--color-text-dark)" }}>
             Withdrawn
           </div>
         );
@@ -116,7 +116,7 @@ export const getActionedColumns = () => [
 
       const config = statusToneMap[status] || {
         background: "rgba(64, 83, 76, 0.08)",
-        color: "var(--color-text-medium)",
+        color: "var(--color-text-dark)",
         text: status ? String(status).replace(/_/g, " ") : "Unknown",
       };
 
@@ -124,8 +124,8 @@ export const getActionedColumns = () => [
         <span
           style={{
             fontSize: 12,
-            fontWeight: 700,
-            color: config.color,
+            fontWeight: 400,
+            color: "var(--color-text-dark)",
             display: "inline-flex",
             alignItems: "center",
             gap: 4,

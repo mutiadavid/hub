@@ -73,7 +73,7 @@ const DocumentInputSectionCoCreator = ({
         }
         .creator-doc-input-helper {
           color: var(--color-text-light);
-          font-size: 12px;
+          font-size: 11px;
           line-height: 1.45;
         }
         .creator-doc-input-row {
@@ -109,7 +109,7 @@ const DocumentInputSectionCoCreator = ({
           padding: 0 16px !important;
           border-radius: 6px !important;
           border: none !important;
-          background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: #fff !important;
           box-shadow: none !important;
           font-weight: 600 !important;
@@ -117,6 +117,27 @@ const DocumentInputSectionCoCreator = ({
         }
         .creator-create-card--documents .ant-select {
           width: 100%;
+        }
+        .creator-create-card--documents .creator-caption {
+          font-size: 11px;
+          font-weight: 700;
+        }
+        .creator-create-card--documents .creator-label {
+          margin-bottom: 6px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-medium);
+        }
+        .creator-create-card--documents .ant-input,
+        .creator-create-card--documents .ant-select-selection-item,
+        .creator-create-card--documents .ant-select-selection-placeholder,
+        .creator-create-card--documents .ant-input::placeholder {
+          font-size: 13px !important;
+        }
+        .creator-create-primary-button.ant-btn,
+        .creator-create-primary-button.ant-btn:hover,
+        .creator-create-primary-button.ant-btn:focus {
+          font-size: 13px !important;
         }
       `}</style>
       <div className="creator-doc-input-copy">

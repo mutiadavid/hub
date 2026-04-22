@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, List, Typography, Button, Empty, Popconfirm, message, Tooltip, Spin } from "antd";
 import { DeleteOutlined, UndoOutlined, FileTextOutlined, HistoryOutlined } from "@ant-design/icons";
 import { getDrafts, deleteDraft, getDraftTypeLabel, formatDraftDate } from "../../utils/draftsUtils";
@@ -12,16 +12,28 @@ const DraftsPage = ({ type = null, onSelectDraft = null }) => {
   const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const allowedTypes = useMemo(() => {
+    if (!type) {
+      return null;
+    }
+
+    return Array.isArray(type) ? type : [type];
+  }, [type]);
+
   const loadDrafts = () => {
-    const allDrafts = getDrafts(type);
-    setDrafts(allDrafts);
+    const allDrafts = getDrafts();
+    const filteredDrafts = allowedTypes
+      ? allDrafts.filter((draft) => allowedTypes.includes(draft.type))
+      : allDrafts;
+
+    setDrafts(filteredDrafts);
     setLoading(false);
   };
 
   useEffect(() => {
     loadDrafts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type]);
+  }, [allowedTypes]);
 
   const handleDeleteDraft = (id) => {
     const success = deleteDraft(id);

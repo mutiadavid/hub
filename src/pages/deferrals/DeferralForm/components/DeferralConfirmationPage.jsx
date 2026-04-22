@@ -4,6 +4,7 @@ import { LeftOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
 import "../../../../styles/creatorDesignSystem.css";
+import "../../../../styles/deferralFormGlobalStyles.css";
 import { LOAN_THRESHOLD } from "../utils/constants";
 import {
   formatLoanType,
@@ -313,7 +314,7 @@ export default function DeferralConfirmationPage({
         .deferral-confirm-title {
           margin: 0;
           font-size: 18px;
-          font-weight: 700;
+          font-weight: 600;
           letter-spacing: -0.02em;
           color: var(--color-text-dark);
         }
@@ -344,7 +345,7 @@ export default function DeferralConfirmationPage({
           background: rgba(214, 189, 152, 0.2);
           color: var(--color-text-dark);
           font-size: 9px;
-          font-weight: 600;
+          font-weight: 400;
         }
         .deferral-confirm-actionbar {
           display: flex;
@@ -377,7 +378,7 @@ export default function DeferralConfirmationPage({
         .deferral-confirm-primary.ant-btn {
           border: none !important;
           border-radius: 6px !important;
-          background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: var(--color-white) !important;
           box-shadow: 0 10px 20px rgba(26, 54, 54, 0.14) !important;
         }
@@ -388,13 +389,13 @@ export default function DeferralConfirmationPage({
           overflow-x: auto;
         }
         .deferral-confirm-tab {
-          padding: 8px 12px;
+          padding: 12px 16px;
           border: none;
           border-bottom: 2px solid transparent;
           background: transparent;
           color: var(--color-text-light);
-          font-size: 11px;
-          font-weight: 600;
+          font-size: 14px;
+          font-weight: 400;
           cursor: pointer;
           white-space: nowrap;
           font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
@@ -431,11 +432,12 @@ export default function DeferralConfirmationPage({
           width: 180px;
           color: var(--color-text-light);
           font-size: 12px;
-          font-weight: 600;
+          font-weight: 400;
         }
         .deferral-confirm-summary td {
           color: var(--color-text-dark);
           font-size: 13px;
+          font-weight: 400;
         }
         .deferral-confirm-description {
           padding: 10px 12px;
@@ -459,13 +461,14 @@ export default function DeferralConfirmationPage({
         .deferral-confirm-approver-name,
         .deferral-confirm-comment-author {
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 400;
           color: var(--color-text-dark);
         }
         .deferral-confirm-approver-role,
         .deferral-confirm-comment-meta,
         .deferral-confirm-comment-message {
           font-size: 12px;
+          font-weight: 400;
           color: var(--color-text-light);
         }
         .deferral-confirm-table-shell .ant-table,
@@ -484,7 +487,7 @@ export default function DeferralConfirmationPage({
           background: transparent !important;
           color: var(--color-text-medium) !important;
           font-size: 11px;
-          font-weight: 600;
+          font-weight: 400;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
           padding: 14px 12px !important;
         }
@@ -493,6 +496,8 @@ export default function DeferralConfirmationPage({
           border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
           padding: 14px 12px !important;
           font-size: 12px;
+          font-weight: 400;
+          color: var(--color-text-dark);
         }
         .deferral-confirm-table-primary {
           display: flex;
@@ -503,7 +508,7 @@ export default function DeferralConfirmationPage({
         .deferral-confirm-table-primary-value {
           color: var(--color-text-dark);
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 400;
         }
         .deferral-confirm-table-secondary-value,
         .deferral-confirm-table-muted {

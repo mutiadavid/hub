@@ -1,15 +1,168 @@
 @import "tailwindcss";
 
 :root {
-  --teams-preview-bg: var(--color-bg, #F5F7F4);
-  --teams-preview-top: var(--color-bg, #F5F7F4);
-  --teams-preview-surface: linear-gradient(180deg, #ffffff 0%, #fcfcfb 76%, #f3f2f1 100%);
-  --teams-preview-surface-soft: linear-gradient(180deg, #ffffff 0%, #fbfbfa 100%);
-  --teams-preview-brand: linear-gradient(180deg, #ffffff 0%, #faf9f8 100%);
-  --teams-preview-line: rgba(214, 189, 152, 0.2);
-  --teams-preview-hover: rgba(214, 189, 152, 0.1);
+  --ncb-blue: #3ab3e5;
+  --ncb-blue-light: #6bc5ed;
+  --ncb-blue-dark: #2a8cb5;
+  --ncb-primary-50: #ebf7fd;
+  --ncb-primary-100: #d6eff9;
+  --ncb-primary-200: #addef4;
+  --ncb-primary-300: #85ceee;
+  --ncb-primary-400: #5cbde9;
+  --ncb-primary-500: #3ab3e5;
+  --ncb-primary-600: #2e8fb7;
+  --ncb-primary-700: #236b8a;
+  --ncb-primary-800: #17485c;
+  --ncb-primary-900: #0c242e;
+  --ncb-primary-950: #0c242e;
+
+  --ncb-gray-50: #ffffff;
+  --ncb-gray-100: #edf1ee;
+  --ncb-gray-200: #e3e9e4;
+  --ncb-gray-300: #d6bd98;
+  --ncb-gray-400: #9aa89d;
+  --ncb-gray-500: #677d6a;
+  --ncb-gray-600: #40534c;
+  --ncb-gray-700: #1a3636;
+  --ncb-gray-800: #152c2c;
+  --ncb-gray-900: #0f2020;
+  --ncb-gray-950: #091414;
+
+  --ncb-neutral-0: #ffffff;
+  --ncb-neutral-50: #ffffff;
+  --ncb-neutral-100: #ffffff;
+  --ncb-neutral-200: #e3e9e4;
+  --ncb-neutral-300: #d7ddd5;
+  --ncb-neutral-400: #bcc7bf;
+  --ncb-neutral-500: #8c9990;
+  --ncb-neutral-600: #677d6a;
+  --ncb-neutral-700: #40534c;
+  --ncb-neutral-800: #1a3636;
+  --ncb-neutral-900: #102424;
+  --ncb-neutral-950: #081212;
+
+  --ncb-status-50: #fffaf2;
+  --ncb-status-100: #f8ecd8;
+  --ncb-status-200: #edd8b7;
+  --ncb-status-300: #e2c58f;
+  --ncb-status-400: #d6bd98;
+  --ncb-status-500: #b48a4a;
+  --ncb-status-600: #9a6700;
+  --ncb-status-700: #7d5400;
+  --ncb-status-800: #664500;
+  --ncb-status-900: #533800;
+  --ncb-status-950: #332100;
+
+  --color-heading: #1C1018;
+  --color-heading-light: #392030;
+  --color-heading-dark: #1C1018;
+  --color-primary: var(--ncb-primary-500);
+  --color-text: #374151;
+  --color-text-dark: #374151;
+  --color-text-medium: #374151;
+  --color-text-light: #A0A0A0;
+  --color-divider: var(--ncb-gray-300);
+  --color-lightbg: var(--ncb-gray-50);
+  --color-surface: var(--ncb-neutral-0);
+  --color-success: #4f8a10;
+  --color-success-soft: #eef8e7;
+  --color-success-border: #9ccc73;
+  --color-danger: #c43d4b;
+  --color-danger-soft: #fff1f1;
+  --color-danger-border: #e7a4ab;
+  --color-warning: var(--ncb-status-500);
+  --color-warning-soft: #fff8ec;
+  --color-warning-border: var(--ncb-status-400);
+
+  --teams-preview-bg: var(--color-bg, #ffffff);
+  --teams-preview-top: var(--color-bg, #ffffff);
+  --teams-preview-surface: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+  --teams-preview-surface-soft: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+  --teams-preview-brand: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+  --teams-preview-line: rgba(64, 83, 76, 0.12);
+  --teams-preview-hover: rgba(64, 83, 76, 0.06);
   --teams-preview-active: var(--color-accent, #D6BD98);
   --teams-preview-overlay: rgba(0, 0, 0, 0.3);
+}
+
+@theme inline {
+  --color-blue-50: var(--ncb-primary-50);
+  --color-blue-100: var(--ncb-primary-100);
+  --color-blue-200: var(--ncb-primary-200);
+  --color-blue-300: var(--ncb-primary-300);
+  --color-blue-400: var(--ncb-primary-400);
+  --color-blue-500: var(--ncb-primary-500);
+  --color-blue-600: var(--ncb-primary-600);
+  --color-blue-700: var(--ncb-primary-700);
+  --color-blue-800: var(--ncb-primary-800);
+  --color-blue-900: var(--ncb-primary-900);
+  --color-blue-950: var(--ncb-primary-950);
+
+  --color-gray-50: var(--ncb-gray-50);
+  --color-gray-100: var(--ncb-gray-100);
+  --color-gray-200: var(--ncb-gray-200);
+  --color-gray-300: var(--ncb-gray-300);
+  --color-gray-400: var(--ncb-gray-400);
+  --color-gray-500: var(--ncb-gray-500);
+  --color-gray-600: var(--ncb-gray-600);
+  --color-gray-700: var(--ncb-gray-700);
+  --color-gray-800: var(--ncb-gray-800);
+  --color-gray-900: var(--ncb-gray-900);
+  --color-gray-950: var(--ncb-gray-950);
+
+  --color-neutral-0: var(--ncb-neutral-0);
+  --color-neutral-50: var(--ncb-neutral-50);
+  --color-neutral-100: var(--ncb-neutral-100);
+  --color-neutral-200: var(--ncb-neutral-200);
+  --color-neutral-300: var(--ncb-neutral-300);
+  --color-neutral-400: var(--ncb-neutral-400);
+  --color-neutral-500: var(--ncb-neutral-500);
+  --color-neutral-600: var(--ncb-neutral-600);
+  --color-neutral-700: var(--ncb-neutral-700);
+  --color-neutral-800: var(--ncb-neutral-800);
+  --color-neutral-900: var(--ncb-neutral-900);
+  --color-neutral-950: var(--ncb-neutral-950);
+  --color-white: var(--ncb-neutral-0);
+
+  --color-stone-50: var(--ncb-status-50);
+  --color-stone-100: var(--ncb-status-100);
+  --color-stone-200: var(--ncb-status-200);
+  --color-stone-300: var(--ncb-status-300);
+  --color-stone-400: var(--ncb-status-400);
+  --color-stone-500: var(--ncb-status-500);
+  --color-stone-600: var(--ncb-status-600);
+  --color-stone-700: var(--ncb-status-700);
+  --color-stone-800: var(--ncb-status-800);
+  --color-stone-900: var(--ncb-status-900);
+  --color-stone-950: var(--ncb-status-950);
+
+  --color-amber-50: var(--ncb-status-50);
+  --color-amber-100: var(--ncb-status-100);
+  --color-amber-200: var(--ncb-status-200);
+  --color-amber-300: var(--ncb-status-300);
+  --color-amber-400: var(--ncb-status-400);
+  --color-amber-500: var(--ncb-status-500);
+  --color-amber-600: var(--ncb-status-600);
+  --color-amber-700: var(--ncb-status-700);
+  --color-amber-800: var(--ncb-status-800);
+  --color-amber-900: var(--ncb-status-900);
+  --color-amber-950: var(--ncb-status-950);
+
+  --color-yellow-50: var(--ncb-status-50);
+  --color-yellow-100: var(--ncb-status-100);
+  --color-yellow-200: var(--ncb-status-200);
+  --color-yellow-300: var(--ncb-status-300);
+  --color-yellow-400: var(--ncb-status-400);
+  --color-yellow-500: var(--ncb-status-500);
+  --color-yellow-600: var(--ncb-status-600);
+  --color-yellow-700: var(--ncb-status-700);
+  --color-yellow-800: var(--ncb-status-800);
+  --color-yellow-900: var(--ncb-status-900);
+  --color-yellow-950: var(--ncb-status-950);
+
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--ncb-gray-600);
+  --color-accent: var(--ncb-status-400);
 }
 
 @layer utilities {
@@ -43,9 +196,18 @@
     background: var(--teams-preview-bg);
   }
 
+  .teams-layout-preview.creator-layout-shell--white-surface {
+    background: var(--color-white);
+  }
+
   .teams-layout-preview .creator-layout-main,
   .teams-layout-preview .creator-layout-content {
     background: var(--teams-preview-surface);
+  }
+
+  .teams-layout-preview.creator-layout-shell--white-surface .creator-layout-main,
+  .teams-layout-preview.creator-layout-shell--white-surface .creator-layout-content {
+    background: var(--color-white);
   }
 
   .teams-layout-preview .creator-layout-content {
@@ -58,10 +220,19 @@
     box-shadow: none;
   }
 
+  .teams-layout-preview.creator-layout-shell--white-surface .creator-header {
+    background: var(--color-white);
+  }
+
   .teams-layout-preview .creator-sidebar {
     background: var(--teams-preview-surface);
     border-right: 1px solid var(--teams-preview-line);
     box-shadow: none;
+  }
+
+  .teams-layout-preview.creator-layout-shell--white-surface .creator-sidebar,
+  .teams-layout-preview.creator-layout-shell--white-surface .creator-sidebar__brand {
+    background: var(--color-white);
   }
 
   .teams-layout-preview .creator-sidebar__brand {
@@ -106,10 +277,10 @@ html, body {
 }
 
 :root {
-  --ncba-primary: #3a2a82;
-  --ncba-bg: #f4f6ff;
-  --ncba-card: #ffffff;
-  --ncba-text: #1a1a1a;
+  --ncba-primary: var(--ncb-primary-500);
+  --ncba-bg: var(--ncb-neutral-0);
+  --ncba-card: var(--ncb-neutral-0);
+  --ncba-text: var(--color-text);
 }
 
 .dark {
@@ -123,6 +294,36 @@ body {
   background: var(--ncba-bg);
   color: var(--ncba-text);
   transition: 0.25s ease-in-out;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.ant-typography h1,
+.ant-typography h2,
+.ant-typography h3,
+.ant-typography h4,
+.ant-typography h5,
+.ant-typography-title,
+[class*="__title"],
+[class*="-title"],
+[class*="__heading"],
+[class*="-heading"] {
+  color: var(--color-heading) !important;
+}
+
+[class*="__subtitle"],
+[class*="-subtitle"] {
+  color: var(--color-heading-light) !important;
+}
+
+strong,
+b,
+.ant-typography strong {
+  color: var(--color-heading-dark);
 }
 
 .system-toast .ant-message-notice-content {
@@ -230,11 +431,11 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 /* ✅ TOGGLE BUTTONS with transparent background - Show PRIMARY_BLUE text */
 .ant-btn[style*="transparent"] {
-  color: #164679 !important;
+  color: var(--ncb-primary-500) !important;
 }
 
 .ant-btn[style*="transparent"] span {
-  color: #164679 !important;
+  color: var(--ncb-primary-500) !important;
 }
 
 /* ✅ ANT BUTTON TEXT VISIBILITY - keep variant text readable globally */
@@ -251,6 +452,219 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .ant-btn.ant-btn-variant-solid span,
 .ant-btn.ant-btn-variant-solid .anticon {
   color: #ffffff !important;
+}
+
+body .ant-btn.ant-btn-primary,
+body .ant-btn.ant-btn-color-primary,
+body .ant-btn.ant-btn-variant-solid,
+body [class*="__primary-btn"].ant-btn,
+body [class*="--primary"].ant-btn,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]),
+body .submit-deferral-btn,
+body .create-dcl-btn,
+body .review-action-button.ant-btn,
+body .pdf-generator-btn.ant-btn,
+body .action-button-primary.ant-btn,
+body .deferrals-table__action-button.ant-btn,
+body .new-deferral-btn.ant-btn-primary,
+body .confirm-submit-btn.ant-btn-primary {
+  background: var(--ncb-primary-500) !important;
+  background-color: var(--ncb-primary-500) !important;
+  border-color: var(--ncb-primary-500) !important;
+  color: #ffffff !important;
+}
+
+body .ant-btn.ant-btn-primary span,
+body .ant-btn.ant-btn-primary .anticon,
+body .ant-btn.ant-btn-color-primary span,
+body .ant-btn.ant-btn-color-primary .anticon,
+body .ant-btn.ant-btn-variant-solid span,
+body .ant-btn.ant-btn-variant-solid .anticon,
+body [class*="__primary-btn"].ant-btn span,
+body [class*="__primary-btn"].ant-btn .anticon,
+body [class*="--primary"].ant-btn span,
+body [class*="--primary"].ant-btn .anticon,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]) span,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]) .anticon,
+body .submit-deferral-btn span,
+body .submit-deferral-btn .anticon,
+body .create-dcl-btn span,
+body .create-dcl-btn .anticon,
+body .review-action-button.ant-btn span,
+body .review-action-button.ant-btn .anticon,
+body .pdf-generator-btn.ant-btn span,
+body .pdf-generator-btn.ant-btn .anticon,
+body .action-button-primary.ant-btn span,
+body .action-button-primary.ant-btn .anticon,
+body .deferrals-table__action-button.ant-btn span,
+body .deferrals-table__action-button.ant-btn .anticon,
+body .new-deferral-btn.ant-btn-primary span,
+body .new-deferral-btn.ant-btn-primary .anticon,
+body .confirm-submit-btn.ant-btn-primary span,
+body .confirm-submit-btn.ant-btn-primary .anticon {
+  color: #ffffff !important;
+}
+
+body .ant-btn.ant-btn-primary *,
+body .ant-btn.ant-btn-color-primary *,
+body .ant-btn.ant-btn-variant-solid *,
+body [class*="__primary-btn"].ant-btn *,
+body [class*="--primary"].ant-btn *,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]) *,
+body .submit-deferral-btn *,
+body .create-dcl-btn *,
+body .review-action-button.ant-btn *,
+body .pdf-generator-btn.ant-btn *,
+body .action-button-primary.ant-btn *,
+body .deferrals-table__action-button.ant-btn *,
+body .new-deferral-btn.ant-btn-primary *,
+body .confirm-submit-btn.ant-btn-primary *,
+body .primary-dcl-button *,
+body .creator-button--primary * {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}
+
+body .ant-btn.ant-btn-primary:hover,
+body .ant-btn.ant-btn-primary:focus,
+body .ant-btn.ant-btn-primary:active,
+body .ant-btn.ant-btn-color-primary:hover,
+body .ant-btn.ant-btn-color-primary:focus,
+body .ant-btn.ant-btn-color-primary:active,
+body .ant-btn.ant-btn-variant-solid:hover,
+body .ant-btn.ant-btn-variant-solid:focus,
+body .ant-btn.ant-btn-variant-solid:active,
+body [class*="__primary-btn"].ant-btn:hover,
+body [class*="__primary-btn"].ant-btn:focus,
+body [class*="__primary-btn"].ant-btn:active,
+body [class*="--primary"].ant-btn:hover,
+body [class*="--primary"].ant-btn:focus,
+body [class*="--primary"].ant-btn:active,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]):hover,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]):focus,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]):active,
+body .submit-deferral-btn:hover,
+body .submit-deferral-btn:focus,
+body .submit-deferral-btn:active,
+body .create-dcl-btn:hover,
+body .create-dcl-btn:focus,
+body .create-dcl-btn:active,
+body .review-action-button.ant-btn:hover,
+body .review-action-button.ant-btn:focus,
+body .review-action-button.ant-btn:active,
+body .pdf-generator-btn.ant-btn:hover,
+body .pdf-generator-btn.ant-btn:focus,
+body .pdf-generator-btn.ant-btn:active,
+body .action-button-primary.ant-btn:hover,
+body .action-button-primary.ant-btn:focus,
+body .action-button-primary.ant-btn:active,
+body .deferrals-table__action-button.ant-btn:hover,
+body .deferrals-table__action-button.ant-btn:focus,
+body .deferrals-table__action-button.ant-btn:active,
+body .new-deferral-btn.ant-btn-primary:hover,
+body .new-deferral-btn.ant-btn-primary:focus,
+body .new-deferral-btn.ant-btn-primary:active,
+body .confirm-submit-btn.ant-btn-primary:hover,
+body .confirm-submit-btn.ant-btn-primary:focus,
+body .confirm-submit-btn.ant-btn-primary:active {
+  background: var(--ncb-primary-700) !important;
+  background-color: var(--ncb-primary-700) !important;
+  border-color: var(--ncb-primary-700) !important;
+  color: #ffffff !important;
+}
+
+body .ant-btn.ant-btn-primary:disabled,
+body .ant-btn.ant-btn-primary[disabled],
+body .ant-btn.ant-btn-color-primary:disabled,
+body .ant-btn.ant-btn-color-primary[disabled],
+body .ant-btn.ant-btn-variant-solid:disabled,
+body .ant-btn.ant-btn-variant-solid[disabled],
+body [class*="__primary-btn"].ant-btn:disabled,
+body [class*="__primary-btn"].ant-btn[disabled],
+body [class*="--primary"].ant-btn:disabled,
+body [class*="--primary"].ant-btn[disabled],
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]):disabled,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"])[disabled],
+body .submit-deferral-btn:disabled,
+body .submit-deferral-btn[disabled],
+body .create-dcl-btn:disabled,
+body .create-dcl-btn[disabled],
+body .review-action-button.ant-btn:disabled,
+body .review-action-button.ant-btn[disabled],
+body .pdf-generator-btn.ant-btn:disabled,
+body .pdf-generator-btn.ant-btn[disabled],
+body .action-button-primary.ant-btn:disabled,
+body .action-button-primary.ant-btn[disabled],
+body .deferrals-table__action-button.ant-btn:disabled,
+body .deferrals-table__action-button.ant-btn[disabled],
+body .new-deferral-btn.ant-btn-primary:disabled,
+body .new-deferral-btn.ant-btn-primary[disabled],
+body .confirm-submit-btn.ant-btn-primary:disabled,
+body .confirm-submit-btn.ant-btn-primary[disabled] {
+  background: #d1d5db !important;
+  background-color: #d1d5db !important;
+  border-color: #d1d5db !important;
+  color: #6b7280 !important;
+  box-shadow: none !important;
+}
+
+body .ant-btn.ant-btn-primary:disabled span,
+body .ant-btn.ant-btn-primary[disabled] span,
+body .ant-btn.ant-btn-primary:disabled .anticon,
+body .ant-btn.ant-btn-primary[disabled] .anticon,
+body .ant-btn.ant-btn-color-primary:disabled span,
+body .ant-btn.ant-btn-color-primary[disabled] span,
+body .ant-btn.ant-btn-color-primary:disabled .anticon,
+body .ant-btn.ant-btn-color-primary[disabled] .anticon,
+body .ant-btn.ant-btn-variant-solid:disabled span,
+body .ant-btn.ant-btn-variant-solid[disabled] span,
+body .ant-btn.ant-btn-variant-solid:disabled .anticon,
+body .ant-btn.ant-btn-variant-solid[disabled] .anticon,
+body [class*="__primary-btn"].ant-btn:disabled span,
+body [class*="__primary-btn"].ant-btn[disabled] span,
+body [class*="__primary-btn"].ant-btn:disabled .anticon,
+body [class*="__primary-btn"].ant-btn[disabled] .anticon,
+body [class*="--primary"].ant-btn:disabled span,
+body [class*="--primary"].ant-btn[disabled] span,
+body [class*="--primary"].ant-btn:disabled .anticon,
+body [class*="--primary"].ant-btn[disabled] .anticon,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]):disabled span,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"])[disabled] span,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"]):disabled .anticon,
+body [class*="action-button"].ant-btn:not([class*="secondary"]):not([class*="ghost"])[disabled] .anticon,
+body .submit-deferral-btn:disabled span,
+body .submit-deferral-btn[disabled] span,
+body .submit-deferral-btn:disabled .anticon,
+body .submit-deferral-btn[disabled] .anticon,
+body .create-dcl-btn:disabled span,
+body .create-dcl-btn[disabled] span,
+body .create-dcl-btn:disabled .anticon,
+body .create-dcl-btn[disabled] .anticon,
+body .review-action-button.ant-btn:disabled span,
+body .review-action-button.ant-btn[disabled] span,
+body .review-action-button.ant-btn:disabled .anticon,
+body .review-action-button.ant-btn[disabled] .anticon,
+body .pdf-generator-btn.ant-btn:disabled span,
+body .pdf-generator-btn.ant-btn[disabled] span,
+body .pdf-generator-btn.ant-btn:disabled .anticon,
+body .pdf-generator-btn.ant-btn[disabled] .anticon,
+body .action-button-primary.ant-btn:disabled span,
+body .action-button-primary.ant-btn[disabled] span,
+body .action-button-primary.ant-btn:disabled .anticon,
+body .action-button-primary.ant-btn[disabled] .anticon,
+body .deferrals-table__action-button.ant-btn:disabled span,
+body .deferrals-table__action-button.ant-btn[disabled] span,
+body .deferrals-table__action-button.ant-btn:disabled .anticon,
+body .deferrals-table__action-button.ant-btn[disabled] .anticon,
+body .new-deferral-btn.ant-btn-primary:disabled span,
+body .new-deferral-btn.ant-btn-primary[disabled] span,
+body .new-deferral-btn.ant-btn-primary:disabled .anticon,
+body .new-deferral-btn.ant-btn-primary[disabled] .anticon,
+body .confirm-submit-btn.ant-btn-primary:disabled span,
+body .confirm-submit-btn.ant-btn-primary[disabled] span,
+body .confirm-submit-btn.ant-btn-primary:disabled .anticon,
+body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
+  color: #6b7280 !important;
 }
 
 .ant-modal .ant-btn.ant-btn-default,
@@ -315,7 +729,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .ant-modal .ant-btn.ant-btn-color-default:focus,
 .ant-modal .ant-btn.ant-btn-variant-outlined:hover,
 .ant-modal .ant-btn.ant-btn-variant-outlined:focus {
-  background-color: #fafafa !important;
+  background-color: #ffffff !important;
   border-color: #bfbfbf !important;
   color: #111827 !important;
 }
@@ -372,7 +786,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 /* ✅ PRIMARY DCL BUTTON STYLING - Consistent #164679 blue with white text */
 .primary-dcl-button {
-  background: linear-gradient(180deg, #164679 0%, #0f3a56 100%) !important;
+  background: var(--ncb-primary-500) !important;
   border-color: transparent !important;
   color: #ffffff !important;
 }
@@ -380,16 +794,21 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .primary-dcl-button:hover,
 .primary-dcl-button:focus,
 .primary-dcl-button:active {
-  background: linear-gradient(180deg, #0f3a56 0%, #0a2a3d 100%) !important;
+  background: var(--ncb-primary-700) !important;
   border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+.primary-dcl-button span,
+.primary-dcl-button .anticon {
   color: #ffffff !important;
 }
 
 .primary-dcl-button:disabled,
 .primary-dcl-button[disabled] {
-  background: #cccccc !important;
-  border-color: #cccccc !important;
-  color: #ffffff !important;
+  background: #d1d5db !important;
+  border-color: #d1d5db !important;
+  color: #6b7280 !important;
 }
 
 /* ✅ SUBMIT DEFERRAL BUTTON - White text */
@@ -406,23 +825,24 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .ant-tag[color="success"],
 .ant-tag-green {
   background-color: #ffffff !important;
-  border-color: #a8d5b6 !important;
-  color: #25613a !important;
+  border-color: var(--color-success-border, #9ccc73) !important;
+  color: var(--color-success, #4f8a10) !important;
 }
 
 .ant-tag-green {
   background-color: #ffffff !important;
-  color: #25613a !important;
-  border: 1px solid #a8d5b6 !important;
+  color: var(--color-success, #4f8a10) !important;
+  border: 1px solid var(--color-success-border, #9ccc73) !important;
 }
 
 /* Status badges - Green for submitted/active */
 .status-tag-success,
+.status-tag-approved,
 .status-tag-submitted,
 .status-tag-active {
   background-color: #ffffff !important;
-  border-color: #a8d5b6 !important;
-  color: #25613a !important;
+  border-color: var(--color-success-border, #9ccc73) !important;
+  color: var(--color-success, #4f8a10) !important;
 }
 
 /* Role badges styling */
@@ -441,17 +861,17 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 /* ✅ CREATE DCL MODAL FOOTER BUTTONS - Blue background with white text when active */
 .create-dcl-modal-footer .ant-btn {
   color: #ffffff !important;
-  background-color: #164679 !important;
-  border-color: #164679 !important;
+  background-color: var(--ncb-primary-500) !important;
+  border-color: var(--ncb-primary-500) !important;
   font-weight: 600;
 }
 
 /* Disabled state - White background with blue text */
 .create-dcl-modal-footer .ant-btn:disabled,
 .create-dcl-modal-footer .ant-btn[disabled] {
-  color: #164679 !important;
-  background-color: #ffffff !important;
-  border-color: #164679 !important;
+  color: #6b7280 !important;
+  background-color: #d1d5db !important;
+  border-color: #d1d5db !important;
   cursor: not-allowed !important;
 }
 
@@ -459,16 +879,16 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .create-dcl-modal-footer .ant-btn:not(:disabled):hover,
 .create-dcl-modal-footer .ant-btn:not([disabled]):hover {
   color: #ffffff !important;
-  background-color: #0f3a56 !important;
-  border-color: #0f3a56 !important;
+  background-color: var(--ncb-primary-700) !important;
+  border-color: var(--ncb-primary-700) !important;
 }
 
 /* Active/Click state - Darker blue background with white text */
 .create-dcl-modal-footer .ant-btn:not(:disabled):active,
 .create-dcl-modal-footer .ant-btn:not([disabled]):active {
   color: #ffffff !important;
-  background-color: #0a2a3d !important;
-  border-color: #0a2a3d !important;
+  background-color: var(--ncb-primary-900) !important;
+  border-color: var(--ncb-primary-900) !important;
 }
 
 .submit-deferral-btn span {
@@ -489,7 +909,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 }
 
 .ant-modal-title {
-  color: #ffffff !important;
+  color: var(--color-heading) !important;
 }
 
 .create-dcl-btn,
@@ -498,8 +918,15 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
   fill: #fff !important;
 }
 
+.create-dcl-btn {
+  background: var(--ncb-primary-500) !important;
+  border-color: var(--ncb-primary-500) !important;
+}
+
 .create-dcl-btn:hover,
 .create-dcl-btn:focus {
+  background: var(--ncb-primary-700) !important;
+  border-color: var(--ncb-primary-700) !important;
   color: #fff !important;
 }
 
@@ -523,21 +950,21 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 /* ✅ ACTION BUTTONS - Post Comment, Add Row, Add Approvers */
 .action-button-primary.ant-btn {
-  background-color: #164679 !important;
-  border-color: #164679 !important;
+  background-color: var(--ncb-primary-500) !important;
+  border-color: var(--ncb-primary-500) !important;
   color: #ffffff !important;
 }
 
 .action-button-primary.ant-btn:hover,
 .action-button-primary.ant-btn:focus {
-  background-color: #0f3a56 !important;
-  border-color: #0f3a56 !important;
+  background-color: var(--ncb-primary-700) !important;
+  border-color: var(--ncb-primary-700) !important;
   color: #ffffff !important;
 }
 
 .action-button-primary.ant-btn:active {
-  background-color: #0a1f2e !important;
-  border-color: #0a1f2e !important;
+  background-color: var(--ncb-primary-900) !important;
+  border-color: var(--ncb-primary-900) !important;
   color: #ffffff !important;
 }
 
@@ -550,8 +977,8 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .new-deferral-btn,
 .new-deferral-btn.ant-btn,
 .new-deferral-btn.ant-btn-primary {
-  background-color: #164679 !important;
-  border-color: #164679 !important;
+  background-color: var(--ncb-primary-500) !important;
+  border-color: var(--ncb-primary-500) !important;
   color: #ffffff !important;
 }
 
@@ -570,13 +997,13 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .reports-export-modal .ant-modal-header {
   margin: 0 !important;
   padding: 18px 24px !important;
-  background: #164679 !important;
+  background: var(--ncb-primary-500) !important;
   border-radius: 16px 16px 0 0 !important;
   border-bottom: none !important;
 }
 
 .reports-export-modal .ant-modal-title {
-  color: #ffffff !important;
+  color: var(--color-heading) !important;
   font-size: 15px !important;
   font-weight: 700 !important;
 }
@@ -617,9 +1044,9 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
   height: 46px !important;
   justify-content: flex-start !important;
   border-radius: 10px !important;
-  border: 1px solid #d6e0ee !important;
-  background: #f8fbff !important;
-  color: #164679 !important;
+  border: 1px solid var(--ncb-primary-200) !important;
+  background: var(--ncb-primary-50) !important;
+  color: var(--ncb-primary-500) !important;
   font-weight: 600 !important;
   box-shadow: none !important;
 }
@@ -627,21 +1054,21 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .reports-export-option.ant-btn span,
 .reports-export-option.ant-btn .anticon,
 .reports-export-option.ant-btn .ant-btn-icon {
-  color: #164679 !important;
+  color: var(--ncb-primary-500) !important;
 }
 
 .reports-export-option.ant-btn:hover,
 .reports-export-option.ant-btn:focus {
-  background: #eef5ff !important;
-  border-color: #bdd0ea !important;
-  color: #164679 !important;
+  background: var(--ncb-primary-100) !important;
+  border-color: var(--ncb-primary-300) !important;
+  color: var(--ncb-primary-500) !important;
 }
 
 .reports-export-option.ant-btn:hover span,
 .reports-export-option.ant-btn:hover .anticon,
 .reports-export-option.ant-btn:focus span,
 .reports-export-option.ant-btn:focus .anticon {
-  color: #164679 !important;
+  color: var(--ncb-primary-500) !important;
 }
 
 .reports-export-note {
@@ -665,8 +1092,8 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 .new-deferral-btn:hover,
 .new-deferral-btn:focus,
 .new-deferral-btn:active {
-  background-color: #0f3a56 !important;
-  border-color: #0f3a56 !important;
+  background-color: var(--ncb-primary-700) !important;
+  border-color: var(--ncb-primary-700) !important;
   color: #ffffff !important;
 }
 
@@ -701,18 +1128,18 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 /* ✅ Thick green line (4px) below table headers - Professional separator */
 .ant-table-thead > tr > th {
-  background-color: #f7f7f7 !important;
-  color: #164679 !important;
+  background-color: #ffffff !important;
+  color: var(--color-heading) !important;
   font-weight: 700;
   padding: 16px 12px !important;
-  border-bottom: 4px solid #52c41a !important;
+  border-bottom: 4px solid rgba(57, 32, 48, 0.18) !important;
   text-align: left !important;
   font-size: 13px;
 }
 
 /* ✅ Table header section with thick green bottom border */
 .ant-table-thead {
-  border-bottom: 4px solid #52c41a;
+  border-bottom: 4px solid rgba(57, 32, 48, 0.18);
 }
 
 /* ✅ Table body styling */
@@ -721,7 +1148,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 }
 
 .ant-table-tbody > tr:hover > td {
-  background-color: rgba(82, 196, 26, 0.1) !important;
+  background-color: var(--color-success-soft, #eef8e7) !important;
   cursor: pointer;
 }
 
@@ -841,7 +1268,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
   .document-uploader-role-badge.ant-tag-blue {
     border-color: #9fb8d7 !important;
-    color: #164679 !important;
+    color: var(--ncb-primary-500) !important;
   }
 
   .document-uploader-role-badge.ant-tag-orange {
@@ -1080,7 +1507,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 }
 
 .ant-modal-wrap.confirm-modal-wrapper .ant-modal-title {
-  color: #ffffff !important;
+  color: var(--color-heading) !important;
   font-weight: 700 !important;
   font-size: 1.15rem !important;
   letter-spacing: 0.5px !important;
@@ -1136,7 +1563,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 .confirm-cancel-btn:hover,
 .confirm-cancel-btn:focus {
-  background-color: #fafafa !important;
+  background-color: #ffffff !important;
   border-color: #b3b3b3 !important;
   color: #000000 !important;
 }
@@ -1227,6 +1654,45 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
   opacity: 0.6 !important;
 }
 
+/* Deferral review action buttons - keep white text on blue and dark text on disabled */
+.deferral-review-actionbar__button.ant-btn,
+.deferral-review-sidebar__post.ant-btn {
+  color: #ffffff !important;
+}
+
+.deferral-review-actionbar__button.ant-btn span,
+.deferral-review-actionbar__button.ant-btn .anticon,
+.deferral-review-actionbar__button.ant-btn *,
+.deferral-review-sidebar__post.ant-btn span,
+.deferral-review-sidebar__post.ant-btn .anticon,
+.deferral-review-sidebar__post.ant-btn * {
+  color: #ffffff !important;
+}
+
+.deferral-review-actionbar__button.ant-btn:disabled,
+.deferral-review-actionbar__button.ant-btn[disabled],
+.deferral-review-sidebar__post.ant-btn:disabled,
+.deferral-review-sidebar__post.ant-btn[disabled] {
+  background-color: #d1d5db !important;
+  border-color: #d1d5db !important;
+  color: #374151 !important;
+}
+
+.deferral-review-actionbar__button.ant-btn:disabled span,
+.deferral-review-actionbar__button.ant-btn[disabled] span,
+.deferral-review-actionbar__button.ant-btn:disabled .anticon,
+.deferral-review-actionbar__button.ant-btn[disabled] .anticon,
+.deferral-review-actionbar__button.ant-btn:disabled *,
+.deferral-review-actionbar__button.ant-btn[disabled] *,
+.deferral-review-sidebar__post.ant-btn:disabled span,
+.deferral-review-sidebar__post.ant-btn[disabled] span,
+.deferral-review-sidebar__post.ant-btn:disabled .anticon,
+.deferral-review-sidebar__post.ant-btn[disabled] .anticon,
+.deferral-review-sidebar__post.ant-btn:disabled *,
+.deferral-review-sidebar__post.ant-btn[disabled] * {
+  color: #374151 !important;
+}
+
 /* ✅ MODAL ACTION BUTTON - White background with black text for confirm/action buttons */
 .modal-action-btn,
 .modal-action-btn.ant-btn {
@@ -1242,7 +1708,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 .modal-action-btn:hover,
 .modal-action-btn:focus {
-  background-color: #fafafa !important;
+  background-color: #ffffff !important;
   border-color: #b3b3b3 !important;
   color: #000000 !important;
 }
@@ -1276,7 +1742,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 .modal-cancel-btn:hover,
 .modal-cancel-btn:focus {
-  background-color: #fafafa !important;
+  background-color: #ffffff !important;
   border-color: #b3b3b3 !important;
   color: #000000 !important;
 }
@@ -1310,7 +1776,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 .modal-close-btn:hover,
 .modal-close-btn:focus {
-  background-color: #fafafa !important;
+  background-color: #ffffff !important;
   border-color: #b3b3b3 !important;
   color: #000000 !important;
 }
@@ -1344,7 +1810,7 @@ button:not(.ant-btn)[class*="bg-[#0A1929]"] {
 
 .modal-secondary-action-btn:hover,
 .modal-secondary-action-btn:focus {
-  background-color: #fafafa !important;
+  background-color: #ffffff !important;
   border-color: #b3b3b3 !important;
   color: #000000 !important;
 }

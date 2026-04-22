@@ -45,13 +45,13 @@ const CreateUserModal = ({
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(255,255,255,0.18)",
-            border: "1px solid rgba(255,255,255,0.18)",
+            background: "rgba(214, 189, 152, 0.12)",
+            border: "1px solid rgba(214, 189, 152, 0.22)",
             borderRadius: 12,
             marginBottom: 14,
           }}
         >
-          <UserOutlined style={{ color: "white", fontSize: 24 }} />
+          <UserOutlined style={{ color: "var(--ncb-primary-500)", fontSize: 24 }} />
         </div>
         <h2 className="admin-page__modal-title">Create New User</h2>
         <p className="admin-page__modal-subtitle">

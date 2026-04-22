@@ -532,7 +532,7 @@ const customTableStyles = `
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
-  background: transparent !important;
+  background: var(--color-white) !important;
 }
 .creator-completed-table .ant-table {
   table-layout: fixed;
@@ -549,7 +549,7 @@ const customTableStyles = `
   background: inherit !important;
 }
 .creator-completed-table .ant-table-thead > tr > th {
-  background: transparent !important;
+  background: var(--color-white) !important;
   color: var(--color-text-medium) !important;
   font-weight: 600;
   font-size: 12px;
@@ -560,7 +560,7 @@ const customTableStyles = `
   text-transform: uppercase;
 }
 .creator-completed-table .ant-table-tbody > tr > td {
-  background: transparent !important;
+  background: var(--color-white) !important;
   border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
   border-top: none !important;
   border-right: none !important;
@@ -582,7 +582,7 @@ const customTableStyles = `
   display: none !important;
 }
 .creator-completed-table .ant-table-tbody > tr:hover > td {
-  background-color: rgba(214, 189, 152, 0.06) !important;
+  background-color: rgba(245, 247, 244, 0.9) !important;
   cursor: pointer;
 }
 .creator-completed-table .ant-table-tbody > tr > td:first-child,

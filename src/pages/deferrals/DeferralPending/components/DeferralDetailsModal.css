@@ -86,14 +86,14 @@
 
 .deferral-review-topbar__title {
   color: #164679;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
 }
 
 .deferral-review-topbar__subtitle {
   margin-top: 4px;
   color: #6b7280;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .deferral-review-topbar__docs.ant-btn {
@@ -105,6 +105,8 @@
   border: 1px solid rgba(214, 189, 152, 0.2) !important;
   background: white !important;
   color: var(--color-text-medium) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
   box-shadow: none !important;
 }
 
@@ -118,8 +120,8 @@
   border-radius: 999px;
   background: rgba(214, 189, 152, 0.2);
   color: var(--color-text-dark);
-  font-size: 9px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .deferral-review-actionbar {
@@ -151,7 +153,7 @@
   height: 34px !important;
   padding: 0 14px !important;
   border-radius: 6px !important;
-  font-size: 12px !important;
+  font-size: 13px !important;
   font-weight: 600 !important;
   box-shadow: none !important;
   display: inline-flex !important;
@@ -159,13 +161,17 @@
   justify-content: center !important;
   gap: 6px !important;
   border: none !important;
-  background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+  background: var(--ncb-primary-500) !important;
   border-color: transparent !important;
   color: #ffffff !important;
 }
 
 .deferral-review-actionbar__button.ant-btn span,
-.deferral-review-sidebar__post.ant-btn span {
+.deferral-review-sidebar__post.ant-btn span,
+.deferral-review-actionbar__button.ant-btn .anticon,
+.deferral-review-sidebar__post.ant-btn .anticon,
+.deferral-review-actionbar__button.ant-btn * ,
+.deferral-review-sidebar__post.ant-btn * {
   color: #ffffff !important;
 }
 
@@ -200,11 +206,10 @@
   border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--color-text-light);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
 }
 
 .deferral-review-tab--active {
@@ -247,7 +252,7 @@
 
 .deferral-review-sidebar__title,
 .deferral-review-sidebar__history-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -257,7 +262,7 @@
 .deferral-review-sidebar__label,
 .deferral-review-sidebar__hint {
   color: #6b7280;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .deferral-review-sidebar__textarea.ant-input {
@@ -293,19 +298,19 @@
 
 .deferral-review-sidebar__history-user {
   color: #164679;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .deferral-review-sidebar__history-time {
   color: #94a3b8;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .deferral-review-sidebar__history-text,
 .deferral-review-sidebar__empty {
   color: var(--color-text-medium);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -324,7 +329,7 @@
 
 .deferral-review-stat__label {
   color: #64748b;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -350,7 +355,7 @@
 .deferral-review-table-shell .ant-table-thead > tr > th {
   background: var(--color-bg, #f5f7f4) !important;
   color: #64748b !important;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -359,7 +364,7 @@
 
 .deferral-review-table-shell .ant-table-tbody > tr > td {
   color: #334155;
-  font-size: 12px;
+  font-size: 13px;
   border-bottom: 1px solid rgba(214, 189, 152, 0.14) !important;
   vertical-align: top;
 }
@@ -371,13 +376,14 @@
 .deferral-info-card .ant-descriptions-item-label {
   font-weight: 600 !important;
   color: #7e6496 !important;
+  font-size: 12px !important;
   padding-bottom: 4px;
 }
 
 .deferral-info-card .ant-descriptions-item-content {
   color: #164679 !important;
   font-weight: 700 !important;
-  font-size: 13px !important;
+  font-size: 14px !important;
 }
 
 .deferral-review-summary .ant-descriptions-view {
@@ -412,7 +418,7 @@
   border-radius: 8px;
   padding: 14px 16px;
   color: #475569;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   background: #fff;
   white-space: pre-wrap;

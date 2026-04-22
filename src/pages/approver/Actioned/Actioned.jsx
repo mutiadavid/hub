@@ -48,7 +48,7 @@ const actionedPageStyles = `
   .approver-actioned-title {
     color: var(--color-text-dark);
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 400;
     line-height: 1.2;
     letter-spacing: -0.02em;
     margin: 0;
@@ -56,7 +56,7 @@ const actionedPageStyles = `
 
   .approver-actioned-copy {
     margin: 0;
-    color: var(--color-text-light);
+    color: var(--color-text-dark);
     font-size: 12px;
     line-height: 1.5;
   }
@@ -95,7 +95,7 @@ const actionedPageStyles = `
 
   .approver-actioned-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
     color: var(--color-primary-dark) !important;
-    font-weight: 600;
+    font-weight: 400;
   }
 
   .approver-actioned-tabs .ant-tabs-ink-bar {
@@ -122,7 +122,7 @@ const actionedPageStyles = `
     background: rgba(214, 189, 152, 0.18);
     color: var(--color-text-dark);
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 400;
   }
 
   .approver-actioned-table {
@@ -166,8 +166,8 @@ const actionedPageStyles = `
 
   .approver-actioned-table .ant-table-thead > tr > th {
     background: transparent !important;
-    color: var(--color-text-medium) !important;
-    font-weight: 600;
+    color: var(--color-text-dark) !important;
+    font-weight: 400;
     font-size: 11px;
     padding: 14px 12px !important;
     border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
@@ -183,7 +183,7 @@ const actionedPageStyles = `
     border-right: none !important;
     padding: 16px 12px !important;
     font-size: 12px;
-    color: var(--color-text-medium);
+    color: var(--color-text-dark);
     line-height: 1.25;
   }
 
@@ -234,7 +234,7 @@ const actionedPageStyles = `
 
   .approver-actioned-table .ant-pagination .ant-pagination-item-active a {
     color: var(--color-text-dark) !important;
-    font-weight: 700;
+    font-weight: 400;
   }
 
   .creator-tab-empty,

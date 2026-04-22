@@ -581,6 +581,7 @@ import {
   CheckOutlined,
 } from "@ant-design/icons";
 import "../../styles/creatorDesignSystem.css";
+import "../../styles/deferralFormGlobalStyles.css";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -689,7 +690,7 @@ export default function FacilityTable({ facilities, setFacilities }) {
         if (record.isSubtotal) {
           return (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Text strong style={{ color: "var(--color-text-dark)" }}>
+              <Text className="form-body-text" style={{ color: "var(--color-text-dark)" }}>
                 Sub-Total
               </Text>
             </div>
@@ -792,7 +793,7 @@ export default function FacilityTable({ facilities, setFacilities }) {
                         style={{
                           padding: 8,
                           borderTop: "1px solid #f0f0f0",
-                          backgroundColor: "#fafafa",
+                          backgroundColor: "#ffffff",
                         }}
                       >
                         <Button
@@ -847,9 +848,9 @@ export default function FacilityTable({ facilities, setFacilities }) {
         if (record.isSubtotal) {
           return (
             <div
+              className="form-body-text"
               style={{
                 textAlign: "right",
-                fontWeight: "bold",
                 color: "var(--color-text-dark)",
               }}
             >
@@ -886,9 +887,9 @@ export default function FacilityTable({ facilities, setFacilities }) {
         if (record.isSubtotal) {
           return (
             <div
+              className="form-body-text"
               style={{
                 textAlign: "right",
-                fontWeight: "bold",
                 color: "var(--color-accent)",
               }}
             >
@@ -934,7 +935,6 @@ export default function FacilityTable({ facilities, setFacilities }) {
                     : "green"
               }
               style={{
-                fontWeight: "bold",
                 fontSize: "13px",
                 padding: "4px 12px",
                 borderRadius: "12px",
@@ -950,7 +950,6 @@ export default function FacilityTable({ facilities, setFacilities }) {
             className="facility-table-headroom-tag"
             color={value < 0 ? "red" : value === 0 ? "orange" : "green"}
             style={{
-              fontWeight: "bold",
               fontSize: "13px",
               padding: "4px 12px",
               borderRadius: "12px",
@@ -1012,9 +1011,9 @@ export default function FacilityTable({ facilities, setFacilities }) {
         <th
           {...props}
           style={{
-            backgroundColor: "rgba(245, 247, 244, 0.95)",
+            backgroundColor: "#ffffff",
             color: "var(--color-text-dark)",
-            fontWeight: 600,
+            fontWeight: 500,
             fontSize: "13px",
             padding: "12px 16px",
             borderBottom: "1px solid rgba(214, 189, 152, 0.2)",
@@ -1028,7 +1027,7 @@ export default function FacilityTable({ facilities, setFacilities }) {
     <div className="facility-table-shell">
       <style>{`
         .facility-table-shell {
-          background: rgba(255, 255, 255, 0.92);
+          background: var(--color-white);
           padding: 16px;
           border-radius: 10px;
           border: 1px solid rgba(214, 189, 152, 0.16);
@@ -1049,7 +1048,7 @@ export default function FacilityTable({ facilities, setFacilities }) {
         .facility-table-add-btn.ant-btn {
           border: none !important;
           border-radius: 8px !important;
-          background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: var(--color-white) !important;
           box-shadow: 0 10px 20px rgba(26, 54, 54, 0.12) !important;
         }
@@ -1075,11 +1074,11 @@ export default function FacilityTable({ facilities, setFacilities }) {
           box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
         }
         .facility-table-type-pill {
-          background: rgba(245, 247, 244, 0.9);
+          background: var(--color-white);
           border: 1px solid rgba(214, 189, 152, 0.16);
         }
         .facility-table-type-pill:hover {
-          background: rgba(214, 189, 152, 0.08);
+          background: rgba(245, 247, 244, 0.9);
           border-color: rgba(214, 189, 152, 0.3);
         }
         .facility-table-custom-btn.ant-btn {
@@ -1096,15 +1095,15 @@ export default function FacilityTable({ facilities, setFacilities }) {
           color: #dc2626 !important;
         }
         .facility-data-row:hover > td {
-          background-color: rgba(245, 247, 244, 0.7) !important;
+          background-color: rgba(245, 247, 244, 0.9) !important;
         }
         .facility-subtotal-row > td {
-          background-color: rgba(214, 189, 152, 0.08) !important;
+          background-color: var(--color-white) !important;
           border-top: 1px solid rgba(214, 189, 152, 0.25) !important;
-          font-weight: 700 !important;
+          font-weight: 600 !important;
         }
         .facility-subtotal-row:hover > td {
-          background-color: rgba(214, 189, 152, 0.08) !important;
+          background-color: var(--color-white) !important;
         }
         .facility-table-shell .ant-table-tbody > tr:not(.facility-subtotal-row) > td {
           border-bottom: 1px solid rgba(214, 189, 152, 0.12);

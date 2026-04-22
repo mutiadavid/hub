@@ -567,9 +567,10 @@ const Completed = () => {
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(22, 70, 121, 0.08);
       border: 1px solid #e0e0e0;
+      background: var(--color-white) !important;
     }
     .creator-completed-table .ant-table-thead > tr > th {
-      background-color: #f7f7f7 !important;
+      background-color: var(--color-white) !important;
       color: ${PRIMARY_BLUE} !important;
       font-weight: 700;
       font-size: 15px;
@@ -578,6 +579,7 @@ const Completed = () => {
       border-right: none !important;
     }
     .creator-completed-table .ant-table-tbody > tr > td {
+      background: var(--color-white) !important;
       border-bottom: 1px solid #f0f0f0 !important;
       border-right: none !important;
       padding: 14px 16px !important;
@@ -585,7 +587,7 @@ const Completed = () => {
       color: #374151;
     }
     .creator-completed-table .ant-table-tbody > tr.ant-table-row:hover > td {
-      background-color: rgba(181, 211, 52, 0.1) !important;
+      background-color: rgba(245, 247, 244, 0.9) !important;
       cursor: pointer;
     }
     .creator-completed-table .ant-pagination .ant-pagination-item-active {
@@ -599,7 +601,7 @@ const Completed = () => {
   `;
 
   return (
-    <div style={{ padding: "8px 2px", boxSizing: "border-box" }}>
+    <div style={{ padding: "8px 2px", boxSizing: "border-box", background: "var(--color-white)" }}>
       <style>{customTableStyles}</style>
 
       <Card
@@ -650,7 +652,7 @@ const Completed = () => {
         size="small"
         style={{
           marginBottom: 16,
-          background: "#fafafa",
+          background: "#ffffff",
           borderRadius: 8,
         }}
       >

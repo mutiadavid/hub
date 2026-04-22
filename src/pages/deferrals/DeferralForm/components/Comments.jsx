@@ -79,7 +79,7 @@ export default function Comments({
         .deferral-form-comments .deferral-form-comments-primary.ant-btn {
           border-radius: 8px !important;
           border: none !important;
-          background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: var(--color-white) !important;
           box-shadow: 0 10px 20px rgba(26, 54, 54, 0.12) !important;
         }

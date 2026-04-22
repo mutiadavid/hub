@@ -1,27 +1,29 @@
+import { NCBA_COLORS } from "../../../utils/colors";
+
 export const DEFERRAL_TABS = ["deferrals", "deferralCharts"];
 export const DCL_TABS = ["allDCLs", "dclCharts"];
 export const TAT_TABS = ["tatConsumed", "tatConsumedCharts"];
 
 export const NCBA_REPORT_THEME = {
-  brand: "#6A4A3A",
-  brandDark: "#4A342A",
-  brandDeep: "#2F201A",
-  brandSoft: "#B59A8C",
-  brandMist: "#F3E9E1",
-  ink: "#241A17",
-  inkSoft: "#4F433E",
-  inkMuted: "#8B7D76",
-  line: "#D8CCC1",
-  surface: "#FFFFFF",
-  surfaceAlt: "#FAF5F1",
+  brand: NCBA_COLORS.primary,
+  brandDark: NCBA_COLORS.primaryHover,
+  brandDeep: NCBA_COLORS.primaryDeep,
+  brandSoft: NCBA_COLORS.accent,
+  brandMist: NCBA_COLORS.infoSoft,
+  ink: NCBA_COLORS.textStrong,
+  inkSoft: NCBA_COLORS.textMedium,
+  inkMuted: NCBA_COLORS.textMuted,
+  line: NCBA_COLORS.border,
+  surface: NCBA_COLORS.surface,
+  surfaceAlt: NCBA_COLORS.background,
 };
 
 export const REPORT_COLOR_PALETTES = {
-  ocean: ["#3F6478", "#325161", "#6C8790", "#8FA4AB", "#526E76"],
-  citrus: ["#8A9466", "#717A52", "#AAB18C", "#C1C8AB", "#626A47"],
-  amber: ["#B9855B", "#9F6D46", "#CAA789", "#8C5A37", "#DFC6AE"],
-  plum: ["#A88370", "#8E6B5C", "#C2A696", "#755648", "#D7C1B7"],
-  cocoa: ["#6A4A3A", "#4A342A", "#8B6551", "#2F201A", "#B59A8C"],
+  ocean: [NCBA_COLORS.primary, NCBA_COLORS.primaryHover, "#5f94c2", "#92bad9", "#bfd7ea"],
+  citrus: [NCBA_COLORS.success, "#6d9a3f", "#9ccc73", "#cfe4b5", "#edf6e1"],
+  amber: [NCBA_COLORS.warning, NCBA_COLORS.accentStrong, NCBA_COLORS.accent, "#edd8b7", "#fff8ec"],
+  plum: [NCBA_COLORS.reviewPurple, "#6f5688", "#9b87b0", "#cbbfda", "#f5f1f8"],
+  cocoa: [NCBA_COLORS.textStrong, NCBA_COLORS.textMedium, NCBA_COLORS.textMuted, "#9aa89d", NCBA_COLORS.background],
 };
 
 export const PIE_COLORS = [
@@ -97,5 +99,5 @@ export const DCL_STATUS_COLORS = {
   revived: REPORT_COLOR_PALETTES.plum[2],
   active: REPORT_COLOR_PALETTES.ocean[1],
   submitted: REPORT_COLOR_PALETTES.ocean[2],
-  unknown: "#9AA8AE",
+  unknown: "#9aa89d",
 };

@@ -187,7 +187,7 @@ const REVIEW_STYLES = `
   .approver-deferral-review__title {
     margin: 0;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: -0.02em;
     color: var(--color-text-dark);
   }
@@ -225,8 +225,8 @@ const REVIEW_STYLES = `
   }
 
   .approver-deferral-review__banner-title {
-    color: ${PRIMARY_BLUE};
-    font-weight: 700;
+    color: var(--color-text-dark);
+    font-weight: 400;
     font-size: 13px;
   }
 
@@ -287,7 +287,7 @@ const REVIEW_STYLES = `
   .approver-deferral-review__section-title {
     margin: 0;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-text-dark);
   }
 
@@ -487,18 +487,18 @@ const REVIEW_STYLES = `
     height: 44px;
     border-radius: 10px !important;
     border: none !important;
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
     font-weight: 700 !important;
   }
 
   .approver-deferral-review__decision-primary.ant-btn:hover,
   .approver-deferral-review__decision-primary.ant-btn:focus,
   .approver-deferral-review__decision-primary.ant-btn:active {
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    background: var(--ncb-primary-700) !important;
     color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
   }
 
   .approver-deferral-review__warning-btn.ant-btn,
@@ -585,7 +585,7 @@ const REVIEW_STYLES = `
 
   .approver-deferral-review__primary-btn.ant-btn {
     border: none !important;
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: var(--color-white) !important;
     border-color: transparent !important;
     box-shadow: none !important;
@@ -596,7 +596,7 @@ const REVIEW_STYLES = `
   .approver-deferral-review__primary-btn.ant-btn:focus,
   .approver-deferral-review__primary-btn.ant-btn:active {
     border: none !important;
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+    background: var(--ncb-primary-700) !important;
     color: var(--color-white) !important;
     border-color: transparent !important;
     box-shadow: none !important;
@@ -629,7 +629,7 @@ const REVIEW_STYLES = `
   .approver-deferral-review__decision-secondary.ant-btn[disabled] {
     background: #D1D5DB !important;
     border-color: #D1D5DB !important;
-    color: #fff !important;
+    color: #6b7280 !important;
     box-shadow: none !important;
   }
 
@@ -641,7 +641,7 @@ const REVIEW_STYLES = `
   .approver-deferral-review__decision-primary.ant-btn[disabled] span,
   .approver-deferral-review__decision-secondary.ant-btn:disabled span,
   .approver-deferral-review__decision-secondary.ant-btn[disabled] span {
-    color: #fff !important;
+    color: #6b7280 !important;
   }
 
   .approver-deferral-review__table-shell {
@@ -656,8 +656,8 @@ const REVIEW_STYLES = `
   }
 
   .approver-deferral-review .ant-descriptions-item-label {
-    font-weight: 700 !important;
-    color: var(--color-text-light) !important;
+    font-weight: 400 !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px !important;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -665,8 +665,10 @@ const REVIEW_STYLES = `
 
   .approver-deferral-review .ant-descriptions-item-content {
     color: var(--color-text-dark) !important;
-    font-weight: 700 !important;
+    font-weight: 400 !important;
     font-size: 13px !important;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   .approver-deferral-review .ant-table,
@@ -687,9 +689,9 @@ const REVIEW_STYLES = `
 
   .approver-deferral-review .ant-table-thead > tr > th {
     background: transparent !important;
-    color: var(--color-text-medium) !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 400;
     padding: 12px 16px !important;
     border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
     text-transform: uppercase;
@@ -784,7 +786,7 @@ const REVIEW_STYLES = `
     color: var(--color-text-light);
   }
 
-  @media (max-width: 1023px) {
+  @media (max-width: 1100px) {
     .approver-deferral-review__details-layout {
       grid-template-columns: 1fr;
     }
@@ -793,6 +795,44 @@ const REVIEW_STYLES = `
     .approver-deferral-review__actionbar-actions {
       flex-direction: column;
       align-items: stretch;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .approver-deferral-review .ant-descriptions-view,
+    .approver-deferral-review .ant-descriptions-view table,
+    .approver-deferral-review .ant-descriptions-view tbody,
+    .approver-deferral-review .ant-descriptions-row,
+    .approver-deferral-review .ant-descriptions-item,
+    .approver-deferral-review .ant-descriptions-item-label,
+    .approver-deferral-review .ant-descriptions-item-content {
+      display: block;
+      width: 100%;
+    }
+
+    .approver-deferral-review .ant-descriptions-item {
+      padding: 0;
+      border-bottom: 1px solid rgba(214, 189, 152, 0.14);
+    }
+
+    .approver-deferral-review .ant-descriptions-item:last-child {
+      border-bottom: none;
+    }
+
+    .approver-deferral-review .ant-descriptions-item-label,
+    .approver-deferral-review .ant-descriptions-item-content {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      white-space: normal;
+    }
+
+    .approver-deferral-review .ant-descriptions-item-label {
+      padding-bottom: 6px !important;
+    }
+
+    .approver-deferral-review .ant-descriptions-item-content {
+      padding-top: 0 !important;
+      min-width: 0;
     }
   }
 `;
@@ -999,7 +1039,7 @@ const DeferralDetailsModal = ({
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
           {value || "Untitled document"}
         </span>
       ),
@@ -1032,7 +1072,7 @@ const DeferralDetailsModal = ({
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
           {value || "Document"}
         </span>
       ),
@@ -1069,7 +1109,7 @@ const DeferralDetailsModal = ({
       title: "Approver",
       key: "approver",
       render: (_, record) => (
-        <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
           {record.name || record.approverName || "User"}
         </span>
       ),
@@ -1087,7 +1127,7 @@ const DeferralDetailsModal = ({
       render: (_, record) => {
         const approved = record.approved || record.approvalStatus === "approved";
         return (
-          <span style={{ fontWeight: 700, color: approved ? SUCCESS_GREEN : PRIMARY_BLUE }}>
+          <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
             {approved ? "Approved" : record.current ? "Current Reviewer" : "Pending Approval"}
           </span>
         );

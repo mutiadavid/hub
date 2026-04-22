@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, message } from "antd";
 import { FilePdfOutlined as PdfIcon } from "@ant-design/icons";
-import { PRIMARY_BLUE } from "../../../utils/colors";
+import "./actionButtonStyles.css";
 import { generateChecklistPDF } from "../../../utils/reportGenerator";
 
 const PdfExportButton = ({ checklist, docs, documentStats, comments = [] }) => {
@@ -23,17 +23,13 @@ const PdfExportButton = ({ checklist, docs, documentStats, comments = [] }) => {
   return (
     <Button
       key="download"
+      type="primary"
+      className="rm-review-action-button"
       icon={<PdfIcon />}
       loading={isGeneratingPDF}
       onClick={handleDownloadPDF}
-      style={{
-        backgroundColor: PRIMARY_BLUE,
-        borderColor: PRIMARY_BLUE,
-        color: "white",
-        borderRadius: "6px",
-        fontWeight: 600,
-        marginRight: 8,
-      }}
+      disabled={isGeneratingPDF}
+      style={{ marginRight: 8 }}
     >
       Download PDF
     </Button>

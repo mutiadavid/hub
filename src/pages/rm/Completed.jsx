@@ -201,7 +201,7 @@ const Completed = ({ userId }) => {
     .rm-completed-page {
       min-height: 100%;
       width: 100%;
-      background: var(--color-bg);
+      background: var(--color-white);
       font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
     }
     .rm-completed-shell {
@@ -222,7 +222,7 @@ const Completed = ({ userId }) => {
       flex-wrap: wrap;
       padding: 16px;
       border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-      background: var(--color-bg);
+      background: var(--color-white);
     }
     .rm-completed-title-wrap {
       display: flex;
@@ -325,7 +325,7 @@ const Completed = ({ userId }) => {
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
-      background: transparent !important;
+      background: var(--color-white) !important;
     }
     .rm-completed-table .ant-table {
       table-layout: fixed;
@@ -345,7 +345,7 @@ const Completed = ({ userId }) => {
       background: inherit !important;
     }
     .rm-completed-table .ant-table-thead > tr > th {
-      background: transparent !important;
+      background: var(--color-white) !important;
       color: var(--color-text-medium) !important;
       font-weight: 600;
       font-size: 11px;
@@ -356,7 +356,7 @@ const Completed = ({ userId }) => {
       text-transform: uppercase;
     }
     .rm-completed-table .ant-table-tbody > tr > td {
-      background: transparent !important;
+      background: var(--color-white) !important;
       border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
       border-top: none !important;
       border-right: none !important;
@@ -377,7 +377,7 @@ const Completed = ({ userId }) => {
       display: none !important;
     }
     .rm-completed-table .ant-table-tbody > tr.ant-table-row:hover > td {
-      background-color: rgba(214, 189, 152, 0.06) !important;
+      background-color: rgba(245, 247, 244, 0.9) !important;
       cursor: pointer;
     }
     .rm-completed-table .ant-table-tbody > tr > td:first-child,

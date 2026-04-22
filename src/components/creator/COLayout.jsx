@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { message } from "antd";
 import "../../styles/creatorDesignSystem.css";
+import { getSidebarWidth } from "../../utils/sidebarUtils";
 
 // Pages
 import CoChecklistPage from "../../pages/creator/CoChecklistPage";
@@ -91,7 +92,12 @@ const MainLayout = () => {
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
 
   return (
-      <div className="creator-layout-shell creator-theme teams-layout-preview">
+      <div
+        className="creator-layout-shell creator-layout-shell--white-surface creator-theme teams-layout-preview"
+        style={{
+          "--sidebar-width": `${getSidebarWidth(sidebarCollapsed)}px`,
+        }}
+      >
       {isMobile && !sidebarCollapsed && (
         <div className="creator-layout-overlay" onClick={() => setSidebarCollapsed(true)} />
       )}

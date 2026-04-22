@@ -254,7 +254,7 @@ const AddDocumentModal = ({
 
     .checklist-add-document-modal__primary-btn.ant-btn {
       border: none !important;
-      background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+      background: var(--ncb-primary-500) !important;
       color: var(--color-white) !important;
       font-weight: 600 !important;
       border-radius: 10px !important;
@@ -264,7 +264,7 @@ const AddDocumentModal = ({
 
     .checklist-add-document-modal__primary-btn.ant-btn:hover,
     .checklist-add-document-modal__primary-btn.ant-btn:focus {
-      background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+      background: var(--ncb-primary-700) !important;
       color: var(--color-white) !important;
       box-shadow: none !important;
     }

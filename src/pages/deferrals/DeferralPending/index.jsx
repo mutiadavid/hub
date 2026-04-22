@@ -374,7 +374,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
         }
         .creator-queue-action--primary.ant-btn {
           border: none !important;
-          background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: var(--color-white) !important;
         }
         @media (max-width: 768px) {

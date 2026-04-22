@@ -337,7 +337,7 @@ const MODAL_STYLES = `
   }
   .rm-resubmit-modal-edit.ant-btn {
     border: none !important;
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: var(--color-white) !important;
     font-weight: 600 !important;
   }
@@ -395,9 +395,9 @@ const MODAL_STYLES = `
     height: 44px;
     border-radius: 10px !important;
     border: none !important;
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
     font-weight: 700 !important;
   }
   @media (max-width: 640px) {

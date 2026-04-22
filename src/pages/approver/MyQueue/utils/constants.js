@@ -111,7 +111,7 @@ export const TABLE_STYLES = `
 // Modal Custom Styles
 export const MODAL_STYLES = `
   .ant-modal-header { background-color: ${PRIMARY_BLUE} !important; padding: 18px 24px !important; }
-  .ant-modal-title { color: white !important; font-size: 1.15rem !important; font-weight: 700 !important; letter-spacing: 0.5px; }
+  .ant-modal-title { color: var(--color-heading) !important; font-size: 1.15rem !important; font-weight: 700 !important; letter-spacing: 0.5px; }
   .ant-modal-close-x { color: white !important; }
 
   .deferral-info-card .ant-card-head { border-bottom: 2px solid ${ACCENT_LIME} !important; }

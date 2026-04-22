@@ -51,7 +51,7 @@ export const getConfirmModalStyles = () => `
 
   .confirm-modal-header h3 {
     color: white !important;
-    font-weight: 700 !important;
+    font-weight: 600 !important;
     margin: 0 !important;
     font-size: 1.15rem;
     letter-spacing: 0.5px;

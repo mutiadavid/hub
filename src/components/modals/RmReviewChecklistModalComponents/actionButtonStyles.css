@@ -1,0 +1,19 @@
+.rm-review-action-button.ant-btn {
+  min-width: 120px;
+  min-height: 36px;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  background: var(--ncb-primary-500) !important;
+  color: #fff !important;
+  border: none !important;
+}
+.rm-review-action-button.ant-btn[disabled],
+.rm-review-action-button.ant-btn[aria-disabled="true"],
+.rm-review-action-button.ant-btn:disabled {
+  background: var(--color-disabled) !important;
+  color: var(--color-text-light) !important;
+  border: none !important;
+  opacity: 1 !important;
+}

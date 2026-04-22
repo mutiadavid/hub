@@ -194,7 +194,7 @@ const REVIEW_STYLES = `
   .approver-extension-review__section-title {
     margin: 0;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-text-dark);
   }
 
@@ -219,7 +219,7 @@ const REVIEW_STYLES = `
   .approver-extension-review__primary-btn.ant-btn,
   .approver-extension-review__decision-primary.ant-btn {
     border: none !important;
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: var(--color-white) !important;
     border-color: transparent !important;
     box-shadow: none !important;
@@ -237,7 +237,7 @@ const REVIEW_STYLES = `
   .approver-extension-review__decision-primary.ant-btn:focus,
   .approver-extension-review__decision-primary.ant-btn:active {
     border: none !important;
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+    background: var(--ncb-primary-700) !important;
     color: var(--color-white) !important;
     border-color: transparent !important;
     box-shadow: none !important;
@@ -313,8 +313,8 @@ const REVIEW_STYLES = `
   }
 
   .approver-extension-review .ant-descriptions-item-label {
-    font-weight: 700 !important;
-    color: var(--color-text-light) !important;
+    font-weight: 400 !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px !important;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -322,7 +322,7 @@ const REVIEW_STYLES = `
 
   .approver-extension-review .ant-descriptions-item-content {
     color: var(--color-text-dark) !important;
-    font-weight: 700 !important;
+    font-weight: 400 !important;
     font-size: 13px !important;
   }
 
@@ -344,9 +344,9 @@ const REVIEW_STYLES = `
 
   .approver-extension-review .ant-table-thead > tr > th {
     background: transparent !important;
-    color: var(--color-text-medium) !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 400;
     padding: 12px 16px !important;
     border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
     text-transform: uppercase;
@@ -388,7 +388,7 @@ const REVIEW_STYLES = `
 
   .approver-extension-decision-modal .ant-modal-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-text-dark) !important;
   }
 
@@ -478,10 +478,10 @@ const REVIEW_STYLES = `
     display: block;
     margin-bottom: 6px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--color-text-light);
+    color: var(--color-text-dark);
   }
 
   .approver-extension-review__decision-title {
@@ -512,7 +512,7 @@ const REVIEW_STYLES = `
   .approver-extension-review__decision-title-copy strong {
     color: var(--color-text-dark);
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 400;
     line-height: 1.2;
   }
 
@@ -625,9 +625,9 @@ const REVIEW_STYLES = `
     height: 44px;
     border-radius: 10px !important;
     border: none !important;
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
     font-weight: 700 !important;
   }
 
@@ -647,9 +647,9 @@ const REVIEW_STYLES = `
   .approver-extension-review__decision-primary--edit-style.ant-btn:hover,
   .approver-extension-review__decision-primary--edit-style.ant-btn:focus,
   .approver-extension-review__decision-primary--edit-style.ant-btn:active {
-    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+    background: var(--ncb-primary-700) !important;
     color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
   }
 
   .approver-extension-review__decision-primary--edit-style.ant-btn:hover span,
@@ -664,7 +664,7 @@ const REVIEW_STYLES = `
   .approver-extension-review__decision-primary--edit-style.ant-btn[disabled] {
     background: #D1D5DB !important;
     border-color: #D1D5DB !important;
-    color: #fff !important;
+    color: #6b7280 !important;
     box-shadow: none !important;
   }
 
@@ -672,7 +672,7 @@ const REVIEW_STYLES = `
   .approver-extension-review__decision-secondary--edit-style.ant-btn[disabled] span,
   .approver-extension-review__decision-primary--edit-style.ant-btn:disabled span,
   .approver-extension-review__decision-primary--edit-style.ant-btn[disabled] span {
-    color: #fff !important;
+    color: #6b7280 !important;
   }
 
   @media (max-width: 1023px) {
@@ -922,7 +922,7 @@ const ExtensionApplicationModal = ({
       title: "Approver",
       key: "approver",
       render: (_, record, index) => (
-        <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
           {getApproverDisplayName(record, index)}
         </span>
       ),
@@ -945,12 +945,8 @@ const ExtensionApplicationModal = ({
         return (
           <span
             style={{
-              fontWeight: 700,
-              color: approved
-                ? SUCCESS_GREEN
-                : returnedForRework || rejected
-                  ? ERROR_RED
-                  : PRIMARY_BLUE,
+              fontWeight: 400,
+              color: "var(--color-text-dark)",
             }}
           >
             {approved
@@ -1002,7 +998,7 @@ const ExtensionApplicationModal = ({
         <div className={`approver-extension-review__decision-title ${titleClassName || ""}`.trim()}>
           <span className={`approver-extension-review__decision-title-icon ${titleIconClassName || ""}`.trim()}>{titleIcon}</span>
           <span className={`approver-extension-review__decision-title-copy ${titleCopyClassName || ""}`.trim()}>
-            <strong>{title}</strong>
+            <span style={{ fontWeight: 400, color: "var(--color-white)" }}>{title}</span>
             {/* Moved subtitle to summary body */}
           </span>
         </div>
@@ -1033,16 +1029,16 @@ const ExtensionApplicationModal = ({
     >
       <div className={`approver-extension-review__decision-card ${cardClassName || ""}`.trim()}>
         <div className={`approver-extension-review__decision-summary ${summaryClassName || ""}`.trim()}>
-          <div style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+          <div style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
             {extensionLabel || "Extension request"}
           </div>
-          <div style={{ marginTop: 4, fontSize: 12, color: "var(--color-text-medium)" }}>
+          <div style={{ marginTop: 4, fontSize: 12, color: "var(--color-text-dark)" }}>
             {currentExtension.customerName || linkedDeferral.customerName || "Customer"}
           </div>
-          <div style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-medium)" }}>
+          <div style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-dark)" }}>
             {subtitle}
           </div>
-          <div style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-medium)" }}>
+          <div style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-dark)" }}>
             {summaryCopy}
           </div>
         </div>

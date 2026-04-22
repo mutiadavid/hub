@@ -5,8 +5,8 @@ import {
   Typography,
 } from "antd";
 import { getStatusColor, formatStatusText } from "../../../../utils/statusColors";
-import { PRIMARY_BLUE, PRIMARY_PURPLE, SECONDARY_BLUE } from "../utils/constants";
 import "../../../../styles/creatorDesignSystem.css";
+import "../../../../styles/deferralFormGlobalStyles.css";
 
 export default function CustomerInfo({
   customerName,
@@ -48,6 +48,7 @@ export default function CustomerInfo({
           overflow: hidden;
         }
         .deferral-form-customer-card .ant-descriptions-item-label {
+          /* Uses global form-descriptions-label from deferralFormGlobalStyles.css */
           background: rgba(245, 247, 244, 0.9) !important;
           color: var(--color-text-light) !important;
           font-size: 12px !important;
@@ -57,41 +58,35 @@ export default function CustomerInfo({
           background: var(--color-white) !important;
         }
         .deferral-form-section-title {
-          color: #164679;
-          font-size: 18px;
-          font-weight: 700;
-          font-family: inherit;
-          letter-spacing: -0.02em;
-          margin: 0;
-          line-height: 1.3;
+          /* Uses global form-section-title from deferralFormGlobalStyles.css */
         }
       `}</style>
     <Card
       className="deferral-form-customer-card"
       size="small"
       title={
-        <div className="deferral-form-section-title">Customer Information</div>
+        <div className="deferral-form-section-title form-section-title">Customer Information</div>
       }
     >
       <Descriptions size="middle" column={{ xs: 1, sm: 2, lg: 3 }}>
         <Descriptions.Item label="Customer Name">
-          <Typography.Text strong style={{ color: PRIMARY_PURPLE }}>
+          <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 400 }}>
             {customerName}
           </Typography.Text>
         </Descriptions.Item>
         <Descriptions.Item label="Customer Number">
-          <Typography.Text strong style={{ color: PRIMARY_BLUE }}>
+          <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 400 }}>
             {customerNumber}
           </Typography.Text>
         </Descriptions.Item>
         <Descriptions.Item label="DCL No">
-          <Typography.Text strong style={{ color: SECONDARY_BLUE }}>
+          <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 400 }}>
             {dclNumber || "Not entered"}
           </Typography.Text>
         </Descriptions.Item>
         <Descriptions.Item label="Created At">
           <div>
-            <Typography.Text strong style={{ color: PRIMARY_PURPLE }}>
+            <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 400 }}>
               {new Date().toLocaleDateString("en-GB", {
                 day: "2-digit",
                 month: "short",
@@ -108,7 +103,7 @@ export default function CustomerInfo({
         </Descriptions.Item>
         <Descriptions.Item label="DCL Status">
           <div style={{ display: "flex", alignItems: "center" }}>
-            <Typography.Text strong style={{ color: dclStatusColor }}>
+            <Typography.Text style={{ color: dclStatusColor, fontWeight: 400 }}>
               {selectedChecklistStatus
                 ? formatStatusText(selectedChecklistStatus)
                 : "Pending"}
@@ -116,7 +111,7 @@ export default function CustomerInfo({
           </div>
         </Descriptions.Item>
         <Descriptions.Item label="Loan Type">
-          <Typography.Text strong style={{ color: SECONDARY_BLUE }}>
+          <Typography.Text style={{ color: "var(--color-text-dark)", fontWeight: 400 }}>
             {formatLoanType(loanType)}
           </Typography.Text>
         </Descriptions.Item>

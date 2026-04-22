@@ -80,7 +80,7 @@ const EXTENSION_REVIEW_STYLES = `
   .actioned-extension-review__section-title {
     margin: 0;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-text-dark);
   }
   .actioned-extension-review__section-body {
@@ -93,14 +93,14 @@ const EXTENSION_REVIEW_STYLES = `
     gap: 12px;
   }
   .actioned-extension-review .ant-descriptions-item-label {
-    font-weight: 700 !important;
-    color: var(--color-text-light) !important;
+    font-weight: 400 !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px !important;
     text-transform: uppercase;
   }
   .actioned-extension-review .ant-descriptions-item-content {
     color: var(--color-text-dark) !important;
-    font-weight: 700 !important;
+    font-weight: 400 !important;
     font-size: 13px !important;
   }
   .actioned-extension-review .ant-table,
@@ -120,9 +120,9 @@ const EXTENSION_REVIEW_STYLES = `
   }
   .actioned-extension-review .ant-table-thead > tr > th {
     background: transparent !important;
-    color: var(--color-text-medium) !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 400;
     padding: 12px 16px !important;
     border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
     text-transform: uppercase;
@@ -227,7 +227,7 @@ const ExtensionApplicationsTab = ({
       key: "deferralNumber",
       width: 120,
       render: (text, record) => (
-        <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
           {text || record.deferralNumber || record.deferralId || "N/A"}
         </span>
       ),
@@ -238,7 +238,7 @@ const ExtensionApplicationsTab = ({
       key: "customerName",
       width: 200,
       render: (text, record) => (
-        <span style={{ color: "var(--color-text-medium)", fontWeight: 600 }}>
+        <span style={{ color: "var(--color-text-dark)", fontWeight: 400 }}>
           {text || record.customerName || "Unknown Customer"}
         </span>
       ),
@@ -256,9 +256,9 @@ const ExtensionApplicationsTab = ({
             padding: "4px 10px",
             borderRadius: 999,
             background: "rgba(214, 189, 152, 0.18)",
-            color: "var(--color-primary-dark)",
+            color: "var(--color-text-dark)",
             fontSize: 12,
-            fontWeight: 700,
+            fontWeight: 400,
             textTransform: "capitalize",
           }}
         >

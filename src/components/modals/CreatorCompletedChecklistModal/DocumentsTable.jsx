@@ -298,20 +298,20 @@ const DocumentsTable = ({ docs, checklist }) => {
         .creator-completed-docs-card .ant-table-wrapper .ant-table-thead,
         .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr,
         .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr > th {
-          background: var(--color-bg) !important;
+          background: var(--color-white) !important;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
           box-shadow: none !important;
         }
         .creator-completed-docs-card .ant-table-wrapper .ant-table-header,
         .creator-completed-docs-card .ant-table-wrapper .ant-table-container {
-          background: var(--color-bg) !important;
+          background: var(--color-white) !important;
         }
         .doc-table.ant-table .ant-table-thead > tr > th {
           padding: 9px 12px !important;
           font-size: 12px !important;
           font-weight: 600 !important;
-          color: var(--color-text-medium) !important;
-          background: var(--color-bg) !important;
+            color: var(--color-heading) !important;
+          background: var(--color-white) !important;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
           text-transform: uppercase;
           letter-spacing: 0.08em;
@@ -320,7 +320,7 @@ const DocumentsTable = ({ docs, checklist }) => {
         .doc-table.ant-table .ant-table-tbody > tr > td {
           padding: 8px 12px !important;
           font-size: 12px !important;
-          color: var(--color-text-body) !important;
+            color: var(--color-heading-light) !important;
           line-height: 1.45 !important;
           vertical-align: middle !important;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;

@@ -339,7 +339,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         }
 
         .create-dcl-inline-container {
-          background: var(--color-bg);
+          background: var(--color-white);
           border-radius: 12px;
           overflow: hidden;
           width: 100%;
@@ -397,7 +397,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         }
         .creator-create-subtitle {
           margin-top: 4px;
-          font-size: 12px;
+          font-size: 13px;
+          line-height: 1.45;
           color: var(--color-text-light);
         }
         .creator-create-autosave {
@@ -409,7 +410,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           border: 1px solid rgba(214, 189, 152, 0.2);
           background: var(--color-white);
           color: var(--color-text-medium);
-          font-size: 12px;
+          font-size: 13px;
+          font-weight: 500;
           white-space: nowrap;
         }
         .creator-create-autosave-count {
@@ -422,8 +424,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           border-radius: 999px;
           background: rgba(214, 189, 152, 0.2);
           color: var(--color-text-dark);
-          font-size: 9px;
-          font-weight: 600;
+          font-size: 10px;
+          font-weight: 700;
         }
         .creator-create-actionbar {
           background: var(--color-white);
@@ -450,15 +452,23 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           padding: 0 14px !important;
           border-radius: 6px !important;
           box-shadow: none !important;
-          font-size: 12px !important;
-          font-weight: 500 !important;
+          font-size: 13px !important;
+          font-weight: 600 !important;
         }
         .creator-create-button--primary.ant-btn,
         .creator-create-button--primary.ant-btn:hover,
         .creator-create-button--primary.ant-btn:focus {
           border: none !important;
-          background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: #fff !important;
+        }
+        .creator-create-button--primary.ant-btn[disabled],
+        .creator-create-button--primary.ant-btn[aria-disabled="true"],
+        .creator-create-button--primary.ant-btn:disabled {
+          background: var(--color-disabled) !important;
+          color: var(--color-text-light) !important;
+          border: none !important;
+          opacity: 1 !important;
         }
         .creator-create-button--secondary.ant-btn,
         .creator-create-button--secondary.ant-btn:hover,
@@ -478,7 +488,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         }
         .creator-create-validation {
           color: #b42318;
-          font-size: 12px;
+          font-size: 13px;
+          line-height: 1.45;
         }
         .creator-create-layout {
           display: block;
@@ -532,22 +543,23 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         .creator-create-summary-item {
           padding: 10px 12px;
           border-radius: 8px;
-          background: rgba(214, 189, 152, 0.08);
+          background: rgba(245, 247, 244, 0.9);
           display: flex;
           flex-direction: column;
           gap: 4px;
         }
         .creator-create-summary-label {
-          color: var(--color-text-light);
-          font-size: 10px;
+          color: var(--color-text-medium);
+          font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          font-weight: 500;
+          font-weight: 600;
         }
         .creator-create-summary-value {
           color: var(--color-text-dark);
-          font-size: 12px;
+          font-size: 14px;
           font-weight: 500;
+          line-height: 1.4;
         }
         .creator-create-tabs {
           display: flex;
@@ -562,12 +574,11 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           border-bottom: 2px solid transparent;
           background: transparent;
           color: var(--color-text-light);
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 500;
           line-height: 1.25;
           cursor: pointer;
           white-space: nowrap;
-          font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
         }
         .creator-create-tab--active {
           color: var(--color-primary-dark);
@@ -586,14 +597,26 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           border-radius: 6px;
           border: 1px solid rgba(214, 189, 152, 0.2);
           padding: 8px 12px;
-          font-size: 12px;
+          font-size: 13px;
           color: var(--color-text-medium);
           outline: none;
         }
+        .creator-create-page .creator-caption {
+          font-size: 11px;
+          font-weight: 700;
+        }
         .creator-create-page .creator-label {
-          font-size: 9px;
-          font-weight: 500;
+          margin-bottom: 6px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-medium);
           letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        .creator-create-page .creator-helper-text {
+          font-size: 11px;
+          line-height: 1.45;
+          color: var(--color-text-light);
         }
         .creator-create-page .ant-input,
         .creator-create-page .ant-input-affix-wrapper,
@@ -603,14 +626,14 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         .creator-create-page .ant-picker-input > input,
         .creator-create-page input,
         .creator-create-page textarea {
-          font-size: 12px !important;
+          font-size: 13px !important;
         }
         .creator-create-page .ant-select-selector,
         .creator-create-page .ant-picker {
           min-height: 42px !important;
         }
         .creator-create-page .ant-btn {
-          font-size: 12px;
+          font-size: 13px;
         }
         .creator-create-ibps-input:focus {
           border-color: var(--color-primary-dark);

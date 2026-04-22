@@ -77,7 +77,7 @@ const ReviveConfirmationModal = ({ open, onCancel, onConfirm, loading }) => {
         .creator-revive-modal .ant-modal-footer .ant-btn-primary:hover,
         .creator-revive-modal .ant-modal-footer .ant-btn-primary:focus,
         .creator-revive-modal .ant-modal-footer .ant-btn-primary:active {
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           border: none !important;
           color: #FFFFFF !important;
         }

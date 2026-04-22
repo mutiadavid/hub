@@ -472,7 +472,7 @@ export const getModalStyles = () => `
       padding: 18px 24px !important;
   }
   .ant-modal-title {
-      color: white !important;
+      color: var(--color-heading) !important;
       font-size: 1.15rem !important;
       font-weight: 700 !important;
       letter-spacing: 0.5px;

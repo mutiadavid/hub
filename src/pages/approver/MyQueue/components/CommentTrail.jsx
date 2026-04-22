@@ -183,10 +183,11 @@ const CommentTrail = ({ history, isLoading }) => {
                   title={`${item.systemText}${item.merged ? "; " + item.userText : item.userText ? item.userText : ""}`}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flexWrap: "wrap" }}>
-                    <b
+                    <span
                       style={{
                         fontSize: 12,
                         color: "var(--color-text-dark)",
+                        fontWeight: 400,
                         minWidth: 0,
                         whiteSpace: "nowrap",
                         overflow: "hidden",
@@ -195,13 +196,13 @@ const CommentTrail = ({ history, isLoading }) => {
                       }}
                     >
                       {item.name}
-                    </b>
+                    </span>
                     {item.roleLabel && getRoleTag(item.roleLabel)}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0, flexWrap: "wrap" }}>
                     <span
                       style={{
-                        color: "var(--color-text-medium)",
+                        color: "var(--color-text-dark)",
                         fontSize: 12,
                         lineHeight: 1.4,
                         minWidth: 0,
@@ -213,7 +214,7 @@ const CommentTrail = ({ history, isLoading }) => {
                       <span
                         style={{
                           margin: "0 2px",
-                          color: "var(--color-text-light)",
+                          color: "var(--color-text-dark)",
                           flexShrink: 0,
                         }}
                       >
@@ -222,7 +223,7 @@ const CommentTrail = ({ history, isLoading }) => {
                     )}
                     <span
                       style={{
-                        color: "var(--color-text-medium)",
+                        color: "var(--color-text-dark)",
                         fontSize: 12,
                         lineHeight: 1.4,
                         minWidth: 0,
@@ -236,7 +237,7 @@ const CommentTrail = ({ history, isLoading }) => {
               <div
                 style={{
                   fontSize: 10,
-                  color: "var(--color-text-light)",
+                  color: "var(--color-text-dark)",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                 }}

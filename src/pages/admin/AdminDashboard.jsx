@@ -52,7 +52,7 @@ const AdminDashboard = () => {
         value: totalUsers,
         note: "All registered accounts",
         accent: "#1A3636",
-        surface: "linear-gradient(135deg, #ffffff 0%, #f5f7f4 100%)",
+        surface: "#ffffff",
         icon: <UserOutlined />,
       },
       {
@@ -61,7 +61,7 @@ const AdminDashboard = () => {
         value: activeUsers,
         note: "Currently enabled users",
         accent: "#40534C",
-        surface: "linear-gradient(135deg, #ffffff 0%, #eef5ef 100%)",
+        surface: "#ffffff",
         icon: <CheckCircleOutlined />,
       },
       {
@@ -70,7 +70,7 @@ const AdminDashboard = () => {
         value: inactiveUsers,
         note: "Accounts awaiting reactivation",
         accent: "#8B5E3C",
-        surface: "linear-gradient(135deg, #ffffff 0%, #fbf2e8 100%)",
+        surface: "#ffffff",
         icon: <ClockCircleOutlined />,
       },
       {
@@ -79,7 +79,7 @@ const AdminDashboard = () => {
         value: adminUsers,
         note: "System administrators",
         accent: "#8f1d2c",
-        surface: "linear-gradient(135deg, #ffffff 0%, #fdf0f2 100%)",
+        surface: "#ffffff",
         icon: <UserAddOutlined />,
       },
       {
@@ -88,7 +88,7 @@ const AdminDashboard = () => {
         value: approverUsers,
         note: "Approval workflow users",
         accent: "#6D5A43",
-        surface: "linear-gradient(135deg, #ffffff 0%, #f7f1ea 100%)",
+        surface: "#ffffff",
         icon: <CheckCircleOutlined />,
       },
       {
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
         value: customerUsers,
         note: "Customer-facing accounts",
         accent: "#7A5C2E",
-        surface: "linear-gradient(135deg, #ffffff 0%, #fcf6ea 100%)",
+        surface: "#ffffff",
         icon: <UserOutlined />,
       },
       {
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
         value: coCreatorUsers,
         note: "Checklist creators",
         accent: "#5E686D",
-        surface: "linear-gradient(135deg, #ffffff 0%, #eef1f2 100%)",
+        surface: "#ffffff",
         icon: <UserOutlined />,
       },
       {
@@ -115,7 +115,7 @@ const AdminDashboard = () => {
         value: rmUsers,
         note: "Relationship managers",
         accent: "#6C4E31",
-        surface: "linear-gradient(135deg, #ffffff 0%, #f8f1eb 100%)",
+        surface: "#ffffff",
         icon: <UserAddOutlined />,
       },
       {
@@ -124,7 +124,7 @@ const AdminDashboard = () => {
         value: coCheckerUsers,
         note: "Checklist reviewers",
         accent: "#54656F",
-        surface: "linear-gradient(135deg, #ffffff 0%, #eef2f5 100%)",
+        surface: "#ffffff",
         icon: <CheckCircleOutlined />,
       },
     ],

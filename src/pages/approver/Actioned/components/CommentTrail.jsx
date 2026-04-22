@@ -89,10 +89,11 @@ const CommentTrail = ({ history = [], isLoading = false }) => {
                   />
                   <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flexWrap: "wrap" }}>
-                      <b
+                      <span
                         style={{
                           fontSize: 12,
                           color: "var(--color-text-dark)",
+                          fontWeight: 400,
                           minWidth: 0,
                           whiteSpace: "nowrap",
                           overflow: "hidden",
@@ -100,7 +101,7 @@ const CommentTrail = ({ history = [], isLoading = false }) => {
                         }}
                       >
                         {name}
-                      </b>
+                      </span>
                       {roleLabel && (
                         <div style={{ flex: "0 0 auto" }}>
                           <UniformTag
@@ -112,12 +113,12 @@ const CommentTrail = ({ history = [], isLoading = false }) => {
                         </div>
                       )}
                     </div>
-                    <span style={{ fontSize: 12, color: "var(--color-text-medium)", lineHeight: 1.4 }}>
+                    <span style={{ fontSize: 12, color: "var(--color-text-dark)", lineHeight: 1.4 }}>
                       {text}
                     </span>
                   </div>
                 </div>
-                <span style={{ fontSize: 10, color: "var(--color-text-light)", flexShrink: 0, whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 10, color: "var(--color-text-dark)", flexShrink: 0, whiteSpace: "nowrap" }}>
                   {timestamp ? formatCommentTimestamp(timestamp) : "No date"}
                 </span>
               </div>

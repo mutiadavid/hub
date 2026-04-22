@@ -131,7 +131,7 @@ const ChecklistFormFields = ({
         .creator-create-card--details .ant-select-selection-placeholder,
         .creator-create-card--details .ant-input::placeholder {
           color: var(--color-text-medium) !important;
-          font-size: 12px !important;
+          font-size: 13px !important;
         }
         .creator-create-grid {
           display: grid;
@@ -147,6 +147,10 @@ const ChecklistFormFields = ({
           font-weight: 600;
           letter-spacing: 0.08em;
           text-transform: uppercase;
+        }
+        .creator-create-card .creator-caption {
+          font-size: 11px;
+          font-weight: 700;
         }
         @media (max-width: 1023px) {
           .creator-create-grid {

@@ -1154,13 +1154,14 @@ const RmReviewChecklistModal = ({
         .rm-review-title {
           margin: 0;
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           letter-spacing: -0.02em;
           color: var(--color-text-dark);
         }
         .rm-review-subtitle {
           margin-top: 4px;
           font-size: 12px;
+          font-weight: 400;
           color: var(--color-text-light);
         }
         .rm-review-viewdocs.ant-btn,
@@ -1186,12 +1187,44 @@ const RmReviewChecklistModal = ({
           padding: 0 5px;
           border-radius: 999px;
           background: rgba(214, 189, 152, 0.2);
-          color: var(--color-text-dark) !important;
-          font-size: 9px;
-          font-weight: 600;
+          color: var(--color-text-medium);
+          font-size: 10px;
+          font-weight: 500;
           line-height: 1;
         }
-        .rm-review-actionbar {
+        .rm-review-page .ant-descriptions-item-label {
+          color: var(--color-text-medium) !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+        }
+        .rm-review-page .ant-descriptions-item-content {
+          color: var(--color-text-dark) !important;
+          font-size: 13px !important;
+          font-weight: 400 !important;
+        }
+        .rm-review-page .ant-table-cell {
+          font-size: 12px !important;
+          color: var(--color-text-dark) !important;
+        }
+        .rm-review-page .ant-table-thead > tr > th {
+          background: transparent !important;
+          color: var(--color-text-medium) !important;
+          font-size: 11px !important;
+          font-weight: 600 !important;
+          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+        }
+        .rm-review-page .ant-table-tbody > tr > td {
+          background: transparent !important;
+          font-size: 12px !important;
+          color: var(--color-text-dark) !important;
+          font-weight: 400 !important;
+          border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
+        }
+        .rm-review-documents-card-body .ant-table-cell {
+          font-size: 12px !important;
+          color: var(--color-text-dark) !important;
+          font-weight: 400 !important;
+        }
           background: var(--color-white);
           border: 1px solid rgba(214, 189, 152, 0.2);
           border-radius: 8px;
@@ -1249,15 +1282,15 @@ const RmReviewChecklistModal = ({
         .rm-review-actionbar .rm-review-action-submit.ant-btn:hover,
         .rm-review-actionbar .rm-review-action-submit.ant-btn:focus,
         .rm-review-actionbar .rm-review-action-submit.ant-btn:active {
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           border-color: transparent !important;
-          color: #FFFFFF !important;
+          color: #fff !important;
           border: none !important;
         }
         .rm-review-actionbar .pdf-generator-btn.ant-btn span,
         .rm-review-actionbar .rm-review-save-draft.ant-btn span,
         .rm-review-actionbar .rm-review-action-submit.ant-btn span {
-          color: #FFFFFF !important;
+          color: #fff !important;
         }
         .rm-review-actionbar .pdf-generator-btn.ant-btn:disabled,
         .rm-review-actionbar .pdf-generator-btn.ant-btn[disabled],
@@ -1338,9 +1371,9 @@ const RmReviewChecklistModal = ({
         .rm-review-documents-card-header {
           padding: 12px 16px;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-          font-size: 12px;
-          font-weight: 700;
-          color: var(--color-text-dark);
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-medium);
           text-transform: uppercase;
           letter-spacing: 0.04em;
         }

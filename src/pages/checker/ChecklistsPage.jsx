@@ -227,12 +227,12 @@ const CoChecklistPage = ({ userId }) => {
 
   const customTableStyles = `
     .ant-table-wrapper { border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(22, 70, 121, 0.08); border: 1px solid #e0e0e0; }
-    .ant-table-thead > tr > th { background-color: #f7f7f7 !important; color: ${PRIMARY_BLUE} !important; font-weight: 700; font-size: 15px; padding: 16px 16px !important; border-bottom: 3px solid ${ACCENT_LIME} !important; border-right: none !important; }
-    .ant-table-tbody > tr > td { border-bottom: 1px solid #f0f0f0 !important; border-right: none !important; padding: 14px 16px !important; font-size: 14px; color: #333; }
+    .ant-table-thead > tr > th { background-color: #f7f7f7 !important; color: var(--color-heading) !important; font-weight: 700; font-size: 15px; padding: 16px 16px !important; border-bottom: 3px solid rgba(57, 32, 48, 0.18) !important; border-right: none !important; }
+    .ant-table-tbody > tr > td { border-bottom: 1px solid #f0f0f0 !important; border-right: none !important; padding: 14px 16px !important; font-size: 14px; color: var(--color-heading-light); }
     .ant-table-tbody > tr.ant-table-row:hover > td { background-color: rgba(181, 211, 52, 0.1) !important; cursor: pointer; }
     .ant-table-bordered .ant-table-container, .ant-table-bordered .ant-table-tbody > tr > td, .ant-table-bordered .ant-table-thead > tr > th { border: none !important; }
     .ant-pagination .ant-pagination-item-active { background-color: ${ACCENT_LIME} !important; border-color: ${ACCENT_LIME} !important; }
-    .ant-pagination .ant-pagination-item-active a { color: ${PRIMARY_BLUE} !important; font-weight: 600; }
+    .ant-pagination .ant-pagination-item-active a { color: var(--color-heading) !important; font-weight: 600; }
     .ant-pagination .ant-pagination-item:hover { border-color: ${ACCENT_LIME} !important; }
     .ant-pagination .ant-pagination-prev:hover .ant-pagination-item-link, .ant-pagination .ant-pagination-next:hover .ant-pagination-item-link { color: ${ACCENT_LIME} !important; }
     .ant-pagination .ant-pagination-options .ant-select-selector { border-radius: 8px !important; }

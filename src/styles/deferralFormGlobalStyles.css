@@ -1,0 +1,130 @@
+/* ==============================================
+   DEFERRAL FORM TEXT STYLING - GLOBAL STANDARDS
+   ============================================== */
+
+/* Section Headers - Large titles for form sections */
+.form-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  font-family: inherit;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Form Section Headers - Medium titles */
+.form-section-heading {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  font-family: inherit;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Subsection Titles - for nested sections */
+.form-subsection-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  font-family: inherit;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Inline Titles - for inline section labels */
+.form-inline-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  font-family: inherit;
+  display: block;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+/* Subtitles - secondary text under headers */
+.form-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-dark);
+  font-family: inherit;
+  display: block;
+  margin-bottom: 10px;
+  line-height: 1.35;
+}
+
+/* Form Labels - based on creator-label */
+.form-label {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--color-text-light);
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* Form Helper Text - based on creator-helper-text */
+.form-helper-text {
+  font-size: 8px;
+  color: var(--color-text-light);
+}
+
+/* Form Caption - based on creator-caption */
+.form-caption {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-medium);
+}
+
+/* Body text in form tables and content */
+.form-body-text {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-dark);
+}
+
+/* Table header cells */
+.form-table-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  background: rgba(245, 247, 244, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Table cell values */
+.form-table-cell {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-dark);
+}
+
+/* Ant Design Typography text overrides */
+.form-details .ant-typography,
+.form-customer-card .ant-typography,
+.form-document-picker .ant-typography {
+  color: var(--color-text-dark);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* Descriptions item label styling */
+.form-descriptions-label {
+  color: var(--color-text-light) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+/* Descriptions item content styling */
+.form-descriptions-content {
+  color: var(--color-text-dark) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}

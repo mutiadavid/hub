@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { Row, Col, message } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useGetApproversQuery } from "../../../api/userApi";
 import deferralApi from "../../../service/deferralApi";
 import { API_BASE_URL } from "../../../config/runtimeConfig";
@@ -12,6 +12,7 @@ import { useApprovers } from "./hooks/useApprovers";
 import { useDocuments } from "./hooks/useDocuments";
 import { useCustomerSearch } from "./hooks/useCustomerSearch";
 import { useFormSubmission } from "./hooks/useFormSubmission";
+import { useAutoSaveDraft } from "../../../hooks/useAutoSaveDraft";
 
 // Components
 import CustomerInfo from "./components/CustomerInfo";
@@ -24,9 +25,49 @@ import DeferralConfirmationPage from "./components/DeferralConfirmationPage";
 // Utils and helpers
 import { formatLoanType } from "./utils/helpers";
 import { validateCustomerSearch, validateDclSearch } from "./utils/validation";
+import { getDraftById } from "../../../utils/draftsUtils";
+
+const serializeDraftFile = (file) => {
+  if (!file) {
+    return null;
+  }
+
+  return {
+    name: file.name || file.fileName || file.title || "document",
+    size: Number(file.size) || 0,
+    type: file.type || "",
+    url: file.url || file.fileUrl || null,
+    isDCL: Boolean(file.isDCL),
+    isRestorable: Boolean(file.url || file.fileUrl),
+  };
+};
+
+const restoreDraftFile = (file) => {
+  if (!file || typeof file !== "object") {
+    return null;
+  }
+
+  if (file.url) {
+    return {
+      name: file.name || "document",
+      size: Number(file.size) || 0,
+      type: file.type || "",
+      url: file.url,
+      isDCL: Boolean(file.isDCL),
+    };
+  }
+
+  return null;
+};
 
 export default function DeferralForm() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const restoredDraftIdRef = useRef(null);
+  
+  // Draft management state
+  const [draftId, setDraftId] = useState(null);
+  const [isRestoringDraft, setIsRestoringDraft] = useState(false);
 
   // Main form state
   const formState = useDeferralForm();
@@ -52,6 +93,178 @@ export default function DeferralForm() {
   const { selectedDocuments, initializePerDocumentDays } = documentState;
   const { loanAmount } = formState;
   const { updateApproverSlots } = approverState;
+  const {
+    setCustomerName,
+    setBusinessName,
+    setCustomerNumber,
+    setLoanType,
+    setDclNumber,
+    setLoanAmount,
+    setDeferralDescription,
+    setFacilities,
+    setPostedComments,
+    setIsCustomerFetched,
+    setShowSearchForm,
+  } = formState;
+  const {
+    setSelectedDocuments,
+    handlePerDocumentDaysChange,
+    setDclFile,
+    setAdditionalFiles,
+  } = documentState;
+  const {
+    setSelectedCustomerId,
+    setSelectedChecklistStatus,
+  } = searchState;
+
+  // Handle draft restoration from URL
+  useEffect(() => {
+    const draftIdParam = searchParams.get('draftId');
+    if (!draftIdParam || restoredDraftIdRef.current === draftIdParam || isRestoringDraft) {
+      return;
+    }
+
+    restoredDraftIdRef.current = draftIdParam;
+    setIsRestoringDraft(true);
+
+    const draft = getDraftById(draftIdParam);
+    if (draft && draft.data) {
+      try {
+        const data = draft.data;
+        let uploadsRequiringReattach = 0;
+
+        // Restore form state
+        if (data.customerName) setCustomerName(data.customerName);
+        if (data.businessName) setBusinessName(data.businessName);
+        if (data.customerNumber) setCustomerNumber(data.customerNumber);
+        if (data.loanType) setLoanType(data.loanType);
+        if (data.dclNumber) setDclNumber(data.dclNumber);
+        if (data.loanAmount) setLoanAmount(data.loanAmount);
+        if (data.deferralDescription) setDeferralDescription(data.deferralDescription);
+        if (data.facilities) setFacilities(data.facilities);
+        if (data.postedComments) setPostedComments(data.postedComments);
+
+        // Restore document state
+        if (data.selectedDocuments) setSelectedDocuments(data.selectedDocuments);
+        if (data.perDocumentDays) {
+          Object.keys(data.perDocumentDays).forEach((key) => {
+            handlePerDocumentDaysChange(key, data.perDocumentDays[key]);
+          });
+        }
+        if (data.dclFile) {
+          const restoredDclFile = restoreDraftFile(data.dclFile);
+          setDclFile(restoredDclFile);
+          if (!restoredDclFile) {
+            uploadsRequiringReattach += 1;
+          }
+        }
+        if (Array.isArray(data.additionalFiles)) {
+          const restoredAdditionalFiles = data.additionalFiles
+            .map((file) => restoreDraftFile(file))
+            .filter(Boolean);
+
+          uploadsRequiringReattach += data.additionalFiles.length - restoredAdditionalFiles.length;
+          setAdditionalFiles(restoredAdditionalFiles);
+        }
+
+        // Restore search/customer state
+        if (data.selectedCustomerId) setSelectedCustomerId(data.selectedCustomerId);
+        if (data.selectedChecklistStatus) setSelectedChecklistStatus(data.selectedChecklistStatus);
+
+        // Mark customer as fetched to show form
+        setIsCustomerFetched(true);
+        setShowSearchForm(false);
+
+        // Set draft ID for future saves
+        setDraftId(draftIdParam);
+
+        if (uploadsRequiringReattach > 0) {
+          message.warning(`Draft restored. Please re-upload ${uploadsRequiringReattach} file${uploadsRequiringReattach === 1 ? "" : "s"} before submitting.`);
+        } else {
+          message.success('Draft restored successfully');
+        }
+      } catch (err) {
+        console.error('Error restoring draft:', err);
+        message.error('Failed to restore draft');
+      } finally {
+        setIsRestoringDraft(false);
+      }
+    } else {
+      message.error('Draft not found');
+      setIsRestoringDraft(false);
+    }
+  }, [
+    searchParams,
+    isRestoringDraft,
+    handlePerDocumentDaysChange,
+    setAdditionalFiles,
+    setBusinessName,
+    setCustomerName,
+    setCustomerNumber,
+    setDclFile,
+    setDclNumber,
+    setDeferralDescription,
+    setFacilities,
+    setIsCustomerFetched,
+    setLoanAmount,
+    setLoanType,
+    setPostedComments,
+    setSelectedChecklistStatus,
+    setSelectedCustomerId,
+    setSelectedDocuments,
+    setShowSearchForm,
+  ]);
+
+  // Create formData object for auto-save
+  const formData = useMemo(() => ({
+    selectedCustomerId: searchState.selectedCustomerId || null,
+    customerNumber: formState.customerNumber,
+    dclNumber: formState.dclNumber,
+    loanAmount: formState.loanAmount,
+    loanType: formState.loanType,
+    customerName: formState.customerName,
+    businessName: formState.businessName,
+    deferralDescription: formState.deferralDescription,
+    facilities: formState.facilities,
+    selectedDocuments: documentState.selectedDocuments,
+    perDocumentDays: documentState.perDocumentDays,
+    dclFile: serializeDraftFile(documentState.dclFile),
+    additionalFiles: documentState.additionalFiles.map((file) => serializeDraftFile(file)),
+    selectedChecklistStatus: searchState.selectedChecklistStatus,
+    postedComments: formState.postedComments,
+  }), [
+    searchState.selectedCustomerId,
+    formState.customerNumber,
+    formState.dclNumber,
+    formState.loanAmount,
+    formState.loanType,
+    formState.customerName,
+    formState.businessName,
+    formState.deferralDescription,
+    formState.facilities,
+    documentState.selectedDocuments,
+    documentState.perDocumentDays,
+    documentState.dclFile,
+    documentState.additionalFiles,
+    searchState.selectedChecklistStatus,
+    formState.postedComments,
+  ]);
+
+  // Auto-save draft - only enable when customer is fetched and form has data
+  const autoSaveDraft = useAutoSaveDraft({
+    type: 'deferral',
+    formData,
+    interval: 2000,
+    draftId,
+    enabled: formState.isCustomerFetched && !formState.showConfirmModal && Object.keys(formData).some(key => formData[key]),
+  });
+
+  // Update draftId when auto-save creates a new draft
+  useEffect(() => {
+    if (autoSaveDraft.draftId && !draftId) {
+      setDraftId(autoSaveDraft.draftId);
+    }
+  }, [autoSaveDraft.draftId, draftId]);
 
   // Initialize per-document days when documents change
   useEffect(() => {
@@ -312,6 +525,7 @@ export default function DeferralForm() {
         currentUser: formState.currentUser,
         postedComments: formState.postedComments,
         additionalFiles: documentState.additionalFiles,
+        draftId,
       },
       formState.setIsSubmitting
     );

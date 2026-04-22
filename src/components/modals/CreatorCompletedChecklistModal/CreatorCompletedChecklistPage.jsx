@@ -289,7 +289,7 @@ const CreatorCompletedChecklistPage = ({
           align-items: center !important;
           justify-content: center !important;
           gap: 6px !important;
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           border: none !important;
           color: #FFFFFF !important;
           box-shadow: none !important;

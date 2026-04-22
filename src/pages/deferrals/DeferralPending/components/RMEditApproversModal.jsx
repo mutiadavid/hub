@@ -1,11 +1,12 @@
 import React from "react";
-import { Button, Input, Modal, Select } from "antd";
+import { Button, Input, Select } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { WARNING_ORANGE } from "../utils/constants";
 import "../../../../styles/creatorDesignSystem.css";
 
 const RMEditApproversModal = ({
   open,
+  embedded = false,
   editedApprovers,
   handleApproverChange,
   handleApproverSelection,
@@ -17,79 +18,40 @@ const RMEditApproversModal = ({
   onCancel,
   onConfirm,
 }) => {
-  const modalTitle = (
-    <div className="rm-edit-approvers-modal-hero">
-      <div className="rm-edit-approvers-modal-hero-copy">
-        <h2>Edit Approvers</h2>
-      </div>
-    </div>
-  );
+  if (!open) {
+    return null;
+  }
 
   return (
     <>
       <style>{`
-        .rm-edit-approvers-modal .ant-modal-content {
-          border-radius: 0 !important;
-          overflow: hidden;
-          padding: 0 !important;
-          background: var(--color-white) !important;
-          border: none !important;
-          box-shadow: 0 32px 72px rgba(18, 36, 36, 0.24) !important;
-        }
-        .rm-edit-approvers-modal .ant-modal-header {
-          margin-bottom: 0 !important;
-          padding: 22px 26px 18px !important;
-          background: linear-gradient(180deg, #34504c 0%, #2b4541 100%) !important;
-          border-bottom: none !important;
-        }
-        .rm-edit-approvers-modal .ant-modal-title {
-          color: var(--color-white) !important;
-        }
-        .rm-edit-approvers-modal .ant-modal-close {
-          top: 20px !important;
-          inset-inline-end: 20px !important;
-          color: rgba(255, 255, 255, 0.88) !important;
-          width: 32px !important;
-          height: 32px !important;
-        }
-        .rm-edit-approvers-modal .ant-modal-close:hover {
-          color: var(--color-white) !important;
-          background: rgba(255, 255, 255, 0.12) !important;
-        }
-        .rm-edit-approvers-modal .ant-modal-body {
-          max-height: 70vh;
-          overflow-y: auto;
-          padding: 28px 26px 24px !important;
-          background: #f7f6f2;
+        .rm-edit-approvers-panel {
+          background: var(--color-white);
+          border: 1px solid rgba(214, 189, 152, 0.2);
+          border-radius: 12px;
+          box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
+          padding: 24px;
         }
         .rm-edit-approvers-modal-hero {
           display: flex;
           align-items: flex-start;
           gap: 16px;
-          padding-right: 36px;
-        }
-        .rm-edit-approvers-modal-hero-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 52px;
-          height: 52px;
-          border-radius: 14px;
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          background: rgba(255, 255, 255, 0.08);
-          color: rgba(255, 255, 255, 0.92);
-          flex-shrink: 0;
-        }
-        .rm-edit-approvers-modal-hero-icon svg {
-          width: 26px;
-          height: 26px;
+          padding-right: 0;
+          margin-bottom: 24px;
         }
         .rm-edit-approvers-modal-hero-copy h2 {
           margin: 0;
-          color: var(--color-white);
-          font-size: 20px;
+          color: var(--color-heading);
+          font-size: 16px;
           font-weight: 700;
-          line-height: 1.2;
+          line-height: 1.3;
+          letter-spacing: -0.02em;
+        }
+        .rm-edit-approvers-modal-hero-copy p {
+          margin: 6px 0 0;
+          color: var(--color-text-light);
+          font-size: 13px;
+          line-height: 1.45;
         }
         .rm-edit-approvers-modal-shell {
           margin-bottom: 26px;
@@ -173,11 +135,17 @@ const RMEditApproversModal = ({
         }
         .rm-edit-approvers-modal-step-fields .ant-input {
           color: var(--color-text-dark);
-          font-size: 15px;
+          font-size: 13px;
         }
         .rm-edit-approvers-modal-step-fields .ant-input::placeholder,
         .rm-edit-approvers-modal-step-fields .ant-select-selection-placeholder {
           color: #98a2b3 !important;
+        }
+        .rm-edit-approvers-modal-step-fields .ant-select-selection-item,
+        .rm-edit-approvers-modal-step-fields .ant-select-selection-placeholder,
+        .rm-edit-approvers-modal-step-fields .ant-input,
+        .rm-edit-approvers-modal-note {
+          font-size: 13px !important;
         }
         .rm-edit-approvers-modal-step-fields .ant-select-selection-item {
           color: var(--color-text-dark) !important;
@@ -231,6 +199,8 @@ const RMEditApproversModal = ({
           justify-content: flex-end;
           gap: 12px;
           margin-top: 0;
+          padding-top: 20px;
+          border-top: 1px solid rgba(214, 189, 152, 0.16);
         }
         .rm-edit-approvers-modal-cancel.ant-btn {
           min-width: 92px;
@@ -242,26 +212,46 @@ const RMEditApproversModal = ({
           box-shadow: none !important;
           font-weight: 600 !important;
         }
+        .rm-edit-approvers-modal-cancel.ant-btn:disabled,
+        .rm-edit-approvers-modal-cancel.ant-btn[disabled] {
+          background: #d1d5db !important;
+          border-color: #d1d5db !important;
+          color: #374151 !important;
+        }
         .rm-edit-approvers-modal-confirm.ant-btn {
           min-width: 156px;
           height: 44px;
           border-radius: 10px !important;
           border: none !important;
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: var(--color-white) !important;
-          box-shadow: 0 10px 20px rgba(26, 54, 54, 0.18) !important;
+          box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
           font-weight: 700 !important;
         }
+        .rm-edit-approvers-modal-confirm.ant-btn,
+        .rm-edit-approvers-modal-confirm.ant-btn span,
+        .rm-edit-approvers-modal-confirm.ant-btn .anticon,
+        .rm-edit-approvers-modal-confirm.ant-btn * {
+          color: #ffffff !important;
+        }
+        .rm-edit-approvers-modal-confirm.ant-btn:disabled,
+        .rm-edit-approvers-modal-confirm.ant-btn[disabled] {
+          background: #d1d5db !important;
+          border-color: #d1d5db !important;
+          box-shadow: none !important;
+          color: #374151 !important;
+        }
+        .rm-edit-approvers-modal-confirm.ant-btn:disabled span,
+        .rm-edit-approvers-modal-confirm.ant-btn[disabled] span,
+        .rm-edit-approvers-modal-confirm.ant-btn:disabled .anticon,
+        .rm-edit-approvers-modal-confirm.ant-btn[disabled] .anticon,
+        .rm-edit-approvers-modal-confirm.ant-btn:disabled *,
+        .rm-edit-approvers-modal-confirm.ant-btn[disabled] * {
+          color: #374151 !important;
+        }
         @media (max-width: 640px) {
-          .rm-edit-approvers-modal .ant-modal {
-            max-width: calc(100vw - 24px) !important;
-            margin: 12px auto !important;
-          }
-          .rm-edit-approvers-modal .ant-modal-header {
-            padding: 18px 18px 16px !important;
-          }
-          .rm-edit-approvers-modal .ant-modal-body {
-            padding: 20px 18px !important;
+          .rm-edit-approvers-panel {
+            padding: 18px;
           }
           .rm-edit-approvers-modal-step {
             flex-direction: column;
@@ -279,15 +269,13 @@ const RMEditApproversModal = ({
           }
         }
       `}</style>
-      <Modal
-        className="rm-edit-approvers-modal"
-        title={modalTitle}
-        open={open}
-        onCancel={onCancel}
-        footer={null}
-        width={760}
-        zIndex={1400}
-      >
+      <div className={`rm-edit-approvers-panel ${embedded ? "rm-edit-approvers-panel--embedded" : ""}`}>
+      <div className="rm-edit-approvers-modal-hero">
+        <div className="rm-edit-approvers-modal-hero-copy">
+          <h2>Edit Approvers</h2>
+          <p>Review each step below, assign the right approver, and keep the existing sequence intact.</p>
+        </div>
+      </div>
       <div className="rm-edit-approvers-modal-shell">
         <div className="rm-edit-approvers-modal-heading">
           <h3>Approval Flow Setup</h3>
@@ -404,11 +392,12 @@ const RMEditApproversModal = ({
           className="rm-edit-approvers-modal-confirm"
           onClick={onConfirm}
           loading={confirmingApprovers}
+          disabled={confirmingApprovers}
         >
           Confirm Approvers
         </Button>
       </div>
-    </Modal>
+    </div>
     </>
   );
 };

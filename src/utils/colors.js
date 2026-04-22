@@ -1,3 +1,36 @@
-export const PRIMARY_BLUE = "#164679";
-export const ACCENT_LIME = "#b5d334";
-export const SECONDARY_PURPLE = "#7e6496";
+export const NCBA_COLORS = {
+	primary: "#164479",
+	primaryHover: "#143f70",
+	primaryActive: "#102f52",
+	primaryDeep: "#0a1f3a",
+	textStrong: "#1a3636",
+	textMedium: "#40534c",
+	textMuted: "#677d6a",
+	accent: "#d6bd98",
+	accentStrong: "#b48a4a",
+	background: "#f5f7f4",
+	surface: "#ffffff",
+	border: "#d6bd98",
+	success: "#4f8a10",
+	successSoft: "#eef8e7",
+	successBorder: "#9ccc73",
+	warning: "#b48a4a",
+	warningSoft: "#fff8ec",
+	warningBorder: "#d6bd98",
+	danger: "#c43d4b",
+	dangerSoft: "#fff1f1",
+	dangerBorder: "#e7a4ab",
+	info: "#164479",
+	infoSoft: "#eff6fb",
+	infoBorder: "#bfd7ea",
+	reviewPurple: "#7e6496",
+	reviewPurpleSoft: "#f5f1f8",
+	reviewPurpleBorder: "#cbbfda",
+	reviewTeal: "#2f7d73",
+	reviewTealSoft: "#eaf7f4",
+	reviewTealBorder: "#9fd1c7",
+};
+
+export const PRIMARY_BLUE = NCBA_COLORS.primary;
+export const ACCENT_LIME = NCBA_COLORS.accentStrong;
+export const SECONDARY_PURPLE = NCBA_COLORS.reviewPurple;

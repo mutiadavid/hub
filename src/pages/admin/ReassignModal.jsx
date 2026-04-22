@@ -102,7 +102,7 @@ const ReassignModal = ({
                     padding: 0 14px !important;
                     border-radius: 6px !important;
                     border: none !important;
-                    background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+                    background: var(--ncb-primary-500) !important;
                     color: #fff !important;
                     font-size: 12px !important;
                     font-weight: 600 !important;

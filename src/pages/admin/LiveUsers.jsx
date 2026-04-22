@@ -218,7 +218,7 @@ const LiveUsers = () => {
           className="admin-page__stat-card"
           style={{
             "--admin-stat-accent": "#40534C",
-            "--admin-stat-surface": "linear-gradient(135deg, #ffffff 0%, #eef5ef 100%)",
+            "--admin-stat-surface": "#ffffff",
           }}
         >
           <div className="admin-page__stat-icon">

@@ -3,6 +3,57 @@
  * Standardized color scheme for all status indicators across the system
  */
 
+import { NCBA_COLORS } from "./colors";
+
+const dangerStatus = {
+  color: NCBA_COLORS.danger,
+  textColor: NCBA_COLORS.danger,
+  bgColor: NCBA_COLORS.dangerSoft,
+  borderColor: NCBA_COLORS.dangerBorder,
+};
+
+const warningStatus = {
+  color: NCBA_COLORS.warning,
+  textColor: NCBA_COLORS.warning,
+  bgColor: NCBA_COLORS.warningSoft,
+  borderColor: NCBA_COLORS.warningBorder,
+};
+
+const successStatus = {
+  color: NCBA_COLORS.success,
+  textColor: NCBA_COLORS.success,
+  bgColor: NCBA_COLORS.successSoft,
+  borderColor: NCBA_COLORS.successBorder,
+};
+
+const infoStatus = {
+  color: NCBA_COLORS.info,
+  textColor: NCBA_COLORS.info,
+  bgColor: NCBA_COLORS.infoSoft,
+  borderColor: NCBA_COLORS.infoBorder,
+};
+
+const rmReviewStatus = {
+  color: NCBA_COLORS.reviewPurple,
+  textColor: NCBA_COLORS.reviewPurple,
+  bgColor: NCBA_COLORS.reviewPurpleSoft,
+  borderColor: NCBA_COLORS.reviewPurpleBorder,
+};
+
+const coCheckerStatus = {
+  color: NCBA_COLORS.reviewTeal,
+  textColor: NCBA_COLORS.reviewTeal,
+  bgColor: NCBA_COLORS.reviewTealSoft,
+  borderColor: NCBA_COLORS.reviewTealBorder,
+};
+
+const defaultStatus = {
+  color: NCBA_COLORS.border,
+  textColor: NCBA_COLORS.textMedium,
+  bgColor: NCBA_COLORS.background,
+  borderColor: NCBA_COLORS.border,
+};
+
 /**
  * Format status text for display - converts snake_case to readable format
  * @param {string} status - Status string (can be snake_case or spaced)
@@ -60,200 +111,45 @@ export const formatStatusForSnakeCase = (status) => {
 
 export const STATUS_COLORS = {
   // RED - Pending statuses (action required)
-  pending: {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  pendingrm: {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  pendingco: {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  pending_rm: {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  pending_co: {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  "pending from rm": {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  "pending from co": {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
+  pending: dangerStatus,
+  pendingrm: dangerStatus,
+  pendingco: dangerStatus,
+  pending_rm: dangerStatus,
+  pending_co: dangerStatus,
+  "pending from rm": dangerStatus,
+  "pending from co": dangerStatus,
 
   // AMBER - Deferred/Waived statuses (pending attention)
-  deferred: {
-    color: "#FAAD14",      // Amber
-    textColor: "#FAAD14",
-    bgColor: "#FFFBE6",
-    borderColor: "#FAAD14",
-  },
-  tbo: {
-    color: "#FAAD14",      // Amber (To Be Obtained)
-    textColor: "#FAAD14",
-    bgColor: "#FFFBE6",
-    borderColor: "#FAAD14",
-  },
-  waived: {
-    color: "#FAAD14",      // Amber
-    textColor: "#FAAD14",
-    bgColor: "#FFFBE6",
-    borderColor: "#FAAD14",
-  },
+  deferred: warningStatus,
+  tbo: warningStatus,
+  waived: warningStatus,
 
   // GREEN - Completed/Approved statuses (success)
-  sighted: {
-    color: "#52C41A",      // Green
-    textColor: "#52C41A",
-    bgColor: "#F6FFED",
-    borderColor: "#52C41A",
-  },
-  submitted: {
-    color: "#52C41A",      // Green
-    textColor: "#52C41A",
-    bgColor: "#F6FFED",
-    borderColor: "#52C41A",
-  },
-  approved: {
-    color: "#52C41A",      // Green
-    textColor: "#52C41A",
-    bgColor: "#F6FFED",
-    borderColor: "#52C41A",
-  },
-  "submitted for review": {
-    color: "#52C41A",      // Green
-    textColor: "#52C41A",
-    bgColor: "#FFF",
-    borderColor: "#52C41A",
-  },
-  submitted_for_review: {
-    color: "#52C41A",      // Green
-    textColor: "#52C41A",
-    bgColor: "#FFF",
-    borderColor: "#52C41A",
-  },
-  "pending from customer": {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  pending_from_customer: {
-    color: "#FF4D4F",      // Red
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  "deferral requested": {
-    color: "#FAAD14",      // Amber
-    textColor: "#FAAD14",
-    bgColor: "#FFF",
-    borderColor: "#FAAD14",
-  },
-  deferral_requested: {
-    color: "#FAAD14",      // Amber
-    textColor: "#FAAD14",
-    bgColor: "#FFF",
-    borderColor: "#FAAD14",
-  },
-  defferal_requested: {
-    color: "#FAAD14",      // Amber (typo variant)
-    textColor: "#FAAD14",
-    bgColor: "#FFF",
-    borderColor: "#FAAD14",
-  },
-  completed: {
-    color: "#52C41A",      // Green
-    textColor: "#52C41A",
-    bgColor: "#F6FFED",
-    borderColor: "#52C41A",
-  },
-  sighted_and_approved: {
-    color: "#52C41A",      // Green
-    textColor: "#52C41A",
-    bgColor: "#F6FFED",
-    borderColor: "#52C41A",
-  },
+  sighted: successStatus,
+  submitted: successStatus,
+  approved: successStatus,
+  "submitted for review": { ...successStatus, bgColor: NCBA_COLORS.surface },
+  submitted_for_review: { ...successStatus, bgColor: NCBA_COLORS.surface },
+  "pending from customer": dangerStatus,
+  pending_from_customer: dangerStatus,
+  "deferral requested": { ...warningStatus, bgColor: NCBA_COLORS.surface },
+  deferral_requested: { ...warningStatus, bgColor: NCBA_COLORS.surface },
+  defferal_requested: { ...warningStatus, bgColor: NCBA_COLORS.surface },
+  completed: successStatus,
+  sighted_and_approved: successStatus,
 
   // Checklist Stage Statuses - Distinct colors for each stage
-  cocreatorreview: {
-    color: "#1890FF",      // Bright Blue - Co-Creator Review stage
-    textColor: "#0958D9",
-    bgColor: "#E6F7FF",
-    borderColor: "#1890FF",
-  },
-  co_creator_review: {
-    color: "#1890FF",      // Bright Blue - Co-Creator Review stage
-    textColor: "#0958D9",
-    bgColor: "#E6F7FF",
-    borderColor: "#1890FF",
-  },
-  rmreview: {
-    color: "#722ED1",      // Purple - RM Review stage
-    textColor: "#531DAB",
-    bgColor: "#F9F0FF",
-    borderColor: "#722ED1",
-  },
-  rm_review: {
-    color: "#722ED1",      // Purple - RM Review stage
-    textColor: "#531DAB",
-    bgColor: "#F9F0FF",
-    borderColor: "#722ED1",
-  },
-  cocheckerreview: {
-    color: "#13C2C2",      // Cyan/Teal - Co-Checker Review stage
-    textColor: "#08979C",
-    bgColor: "#E6FFFB",
-    borderColor: "#13C2C2",
-  },
-  co_checker_review: {
-    color: "#13C2C2",      // Cyan/Teal - Co-Checker Review stage
-    textColor: "#08979C",
-    bgColor: "#E6FFFB",
-    borderColor: "#13C2C2",
-  },
-  rejected: {
-    color: "#FF4D4F",      // Red - Rejected
-    textColor: "#CF1322",
-    bgColor: "#FFEBE6",
-    borderColor: "#FF4D4F",
-  },
-  revived: {
-    color: "#FA8C16",      // Orange - Revived
-    textColor: "#D46B08",
-    bgColor: "#FFF7E6",
-    borderColor: "#FA8C16",
-  },
+  cocreatorreview: infoStatus,
+  co_creator_review: infoStatus,
+  rmreview: rmReviewStatus,
+  rm_review: rmReviewStatus,
+  cocheckerreview: coCheckerStatus,
+  co_checker_review: coCheckerStatus,
+  rejected: dangerStatus,
+  revived: warningStatus,
 
   // Default fallback
-  default: {
-    color: "#D9D9D9",      // Gray
-    textColor: "#595959",
-    bgColor: "#FAFAFA",
-    borderColor: "#D9D9D9",
-  },
+  default: defaultStatus,
 };
 
 /**
@@ -313,7 +209,7 @@ export const hexToRGB = (hex) => {
     parseInt(result[1], 16),
     parseInt(result[2], 16),
     parseInt(result[3], 16)
-  ] : [217, 217, 217]; // Default gray if parsing fails
+  ] : [214, 189, 152];
 };
 
 /**

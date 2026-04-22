@@ -17,6 +17,7 @@ import Navbar from "../Navbar.jsx";
 import SharedSidebar from "../common/SharedSidebar";
 import DeactivatedUsers from "../../pages/admin/DeactivatedUsers.jsx";
 import DraftsPage from "../../components/shared/DraftsPage";
+import { getSidebarWidth } from "../../utils/sidebarUtils";
 
 const getSelectedKeyFromPath = (pathname) => {
   if (pathname.includes("/deactivated-users")) {
@@ -102,7 +103,12 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="creator-layout-shell creator-theme">
+    <div
+      className="creator-layout-shell creator-layout-shell--white-surface creator-theme"
+      style={{
+        "--sidebar-width": `${getSidebarWidth(sidebarCollapsed)}px`,
+      }}
+    >
       {isMobile && !sidebarCollapsed && (
         <div className="creator-layout-overlay" onClick={() => setSidebarCollapsed(true)} />
       )}

@@ -169,7 +169,7 @@ const REVIEW_STYLES = `
   .actioned-deferral-review__title {
     margin: 0;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: -0.02em;
     color: var(--color-text-dark);
   }
@@ -206,8 +206,8 @@ const REVIEW_STYLES = `
   }
 
   .actioned-deferral-review__banner-title {
-    color: ${SUCCESS_GREEN};
-    font-weight: 700;
+    color: var(--color-text-dark);
+    font-weight: 400;
     font-size: 13px;
   }
 
@@ -268,7 +268,7 @@ const REVIEW_STYLES = `
   .actioned-deferral-review__section-title {
     margin: 0;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 400;
     color: var(--color-text-dark);
   }
 
@@ -292,7 +292,7 @@ const REVIEW_STYLES = `
 
   .actioned-deferral-review__primary-btn.ant-btn {
     border: none !important;
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+    background: var(--ncb-primary-500) !important;
     color: var(--color-white) !important;
     border-color: transparent !important;
     box-shadow: none !important;
@@ -303,7 +303,7 @@ const REVIEW_STYLES = `
   .actioned-deferral-review__primary-btn.ant-btn:focus,
   .actioned-deferral-review__primary-btn.ant-btn:active {
     border: none !important;
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+    background: var(--ncb-primary-700) !important;
     color: var(--color-white) !important;
     border-color: transparent !important;
     box-shadow: none !important;
@@ -332,7 +332,7 @@ const REVIEW_STYLES = `
   .actioned-deferral-review__secondary-btn.ant-btn[disabled] {
     background: #D1D5DB !important;
     border-color: #D1D5DB !important;
-    color: #fff !important;
+    color: #6b7280 !important;
     box-shadow: none !important;
   }
 
@@ -340,7 +340,7 @@ const REVIEW_STYLES = `
   .actioned-deferral-review__primary-btn.ant-btn[disabled] span,
   .actioned-deferral-review__secondary-btn.ant-btn:disabled span,
   .actioned-deferral-review__secondary-btn.ant-btn[disabled] span {
-    color: #fff !important;
+    color: #6b7280 !important;
   }
 
   .actioned-deferral-review__table-shell {
@@ -355,8 +355,8 @@ const REVIEW_STYLES = `
   }
 
   .actioned-deferral-review .ant-descriptions-item-label {
-    font-weight: 700 !important;
-    color: var(--color-text-light) !important;
+    font-weight: 400 !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px !important;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -364,7 +364,7 @@ const REVIEW_STYLES = `
 
   .actioned-deferral-review .ant-descriptions-item-content {
     color: var(--color-text-dark) !important;
-    font-weight: 700 !important;
+    font-weight: 400 !important;
     font-size: 13px !important;
   }
 
@@ -386,9 +386,9 @@ const REVIEW_STYLES = `
 
   .actioned-deferral-review .ant-table-thead > tr > th {
     background: transparent !important;
-    color: var(--color-text-medium) !important;
+    color: var(--color-text-dark) !important;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 400;
     padding: 12px 16px !important;
     border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
     text-transform: uppercase;
@@ -422,7 +422,7 @@ const REVIEW_STYLES = `
     padding: 24px;
   }
 
-  @media (max-width: 1023px) {
+  @media (max-width: 1100px) {
     .actioned-deferral-review__details-layout {
       grid-template-columns: 1fr;
     }
@@ -507,7 +507,7 @@ const DeferralDetailsModal = ({
         title: "Document",
         dataIndex: "name",
         key: "name",
-        render: (value) => <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>{value || "Untitled document"}</span>,
+        render: (value) => <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>{value || "Untitled document"}</span>,
       },
       {
         title: "Type",
@@ -536,7 +536,7 @@ const DeferralDetailsModal = ({
         title: "Document",
         dataIndex: "name",
         key: "name",
-        render: (value) => <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>{value || "Document"}</span>,
+        render: (value) => <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>{value || "Document"}</span>,
       },
       {
         title: "Actions",
@@ -569,7 +569,7 @@ const DeferralDetailsModal = ({
       {
         title: "Approver",
         key: "approver",
-        render: (_, record) => <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>{record.name || record.approverName || "User"}</span>,
+        render: (_, record) => <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>{record.name || record.approverName || "User"}</span>,
       },
       {
         title: "Role",
@@ -584,7 +584,7 @@ const DeferralDetailsModal = ({
         render: (_, record) => {
           const approved = record.approved || record.approvalStatus === "approved";
           return (
-            <span style={{ fontWeight: 700, color: approved ? SUCCESS_GREEN : PRIMARY_BLUE }}>
+            <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
               {approved ? "Approved" : "Pending Approval"}
             </span>
           );

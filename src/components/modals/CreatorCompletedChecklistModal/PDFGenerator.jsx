@@ -42,7 +42,7 @@ const PDFGenerator = ({
       loading={isLoading || isGenerating}
       onClick={handleGeneratePDF}
       style={{
-        background: "linear-gradient(135deg, #1A3636 0%, #40534C 100%)",
+        background: "var(--ncb-primary-500)",
         borderColor: "transparent",
         color: "#ffffff",
         fontWeight: 600,

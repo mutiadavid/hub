@@ -3,7 +3,7 @@
 }
 
 .deferral-review-container {
-  background: transparent;
+  background: var(--color-white);
   border-radius: 0;
   overflow: visible;
   width: 100%;
@@ -36,7 +36,7 @@
   border-radius: 6px !important;
   border: 1px solid rgba(214, 189, 152, 0.35) !important;
   color: var(--color-text-medium) !important;
-  background: transparent !important;
+  background: var(--color-white) !important;
   box-shadow: none !important;
 }
 
@@ -117,12 +117,12 @@
   border: none !important;
   background: var(--gradient-primary) !important;
   border-color: transparent !important;
-  color: var(--color-white) !important;
+  color: #6b7280 !important;
 }
 
 .deferral-review-actionbar__button.ant-btn span,
 .deferral-review-sidebar__post.ant-btn span {
-  color: var(--color-white) !important;
+  color: #6b7280 !important;
 }
 
 .deferral-review-actionbar__button.ant-btn:disabled,
@@ -240,7 +240,7 @@
 }
 
 .deferral-review-confirm--acceptance.admin-page__modal .ant-modal-header {
-  background: transparent !important;
+  background: var(--color-white) !important;
   border-bottom: none !important;
 }
 
@@ -260,11 +260,11 @@
 
 .deferral-review-confirm .ant-modal-body {
   padding: 0;
-  background: var(--gradient-surface-soft);
+  background: var(--color-white);
 }
 
 .deferral-review-confirm .ant-modal-footer {
-  background: var(--gradient-surface-soft);
+  background: var(--color-white);
 }
 
 .deferral-review-confirm__icon {
@@ -334,7 +334,7 @@
   margin-bottom: 12px;
   padding: 12px;
   border-radius: 10px;
-  background: rgba(214, 189, 152, 0.12);
+  background: rgba(245, 247, 244, 0.9);
 }
 
 .deferral-review-confirm__summary-title {
@@ -437,7 +437,7 @@
   padding: 12px;
   border: 1px solid rgba(214, 189, 152, 0.16);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(245, 240, 231, 0.58) 0%, #fff 100%);
+  background: var(--color-white);
 }
 
 .deferral-review-stat__label {
@@ -466,7 +466,7 @@
 }
 
 .deferral-review-table-shell .ant-table-thead > tr > th {
-  background: var(--color-bg, #f5f7f4) !important;
+  background: var(--color-white) !important;
   color: var(--color-text-muted) !important;
   font-size: 11px;
   font-weight: 700;
@@ -480,6 +480,7 @@
   font-size: 12px;
   border-bottom: 1px solid rgba(214, 189, 152, 0.14) !important;
   vertical-align: top;
+  background: var(--color-white) !important;
 }
 
 .deferral-info-card .ant-card-head {
@@ -515,7 +516,7 @@
 }
 
 .deferral-review-summary .ant-descriptions-item-label {
-  background: var(--color-bg, #f5f7f4);
+  background: var(--color-white);
   min-width: 140px;
   padding: 12px 14px !important;
 }

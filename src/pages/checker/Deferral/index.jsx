@@ -584,14 +584,14 @@ const DeferralIndex = ({ userId }) => {
         }
         .checker-workspace-btn--primary.ant-btn {
           border: none !important;
-          background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-500) !important;
           color: var(--color-white) !important;
         }
         .checker-workspace-btn--primary.ant-btn:hover,
         .checker-workspace-btn--primary.ant-btn:focus,
         .checker-workspace-btn--primary.ant-btn:active {
           border: none !important;
-          background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+          background: var(--ncb-primary-700) !important;
           color: var(--color-white) !important;
           box-shadow: none !important;
         }
@@ -612,12 +612,12 @@ const DeferralIndex = ({ userId }) => {
         .checker-workspace-btn.ant-btn[disabled] {
           background: #D1D5DB !important;
           border-color: #D1D5DB !important;
-          color: #fff !important;
+          color: #6b7280 !important;
           box-shadow: none !important;
         }
         .checker-workspace-btn.ant-btn:disabled span,
         .checker-workspace-btn.ant-btn[disabled] span {
-          color: #fff !important;
+          color: #6b7280 !important;
         }
         .checker-comment-trail__header {
           margin-bottom: 12px;

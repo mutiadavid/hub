@@ -6,6 +6,7 @@ import { consumeAuthStatusMessage } from "../../../api/baseQueryWithSession";
 import { setCredentials } from "../../../api/authSlice";
 import { redirectUserByRole } from "../utils/authRedirect";
 import { getAuthErrorMessage, toLoggableAuthError } from "../utils/authError";
+import ncbaLogo from "../../../assets/ncbabanklogo.png";
 import "../../../styles/microsoftLogin.css";
 
 const LoginPage = () => {
@@ -39,21 +40,12 @@ const LoginPage = () => {
 
   return (
     <div className="ms-login-page">
-      <div className="ms-login-card" role="main" aria-label="Microsoft-style sign in">
-        <div className="ms-login-brand" aria-label="Microsoft">
-          <span className="ms-login-brand__mark" aria-hidden="true">
-            <span className="ms-login-brand__square ms-login-brand__square--red" />
-            <span className="ms-login-brand__square ms-login-brand__square--green" />
-            <span className="ms-login-brand__square ms-login-brand__square--blue" />
-            <span className="ms-login-brand__square ms-login-brand__square--yellow" />
-          </span>
-          <span className="ms-login-brand__wordmark">Microsoft</span>
+      <div className="ms-login-card" role="main" aria-label="NCBA sign in">
+        <div className="ms-login-brand" aria-label="NCBA">
+          <img src={ncbaLogo} alt="NCBA" className="ms-login-brand__logo" />
         </div>
 
         <h1 className="ms-login-card__title">Sign in</h1>
-        <p className="ms-login-card__subtitle">
-          Use your Microsoft account. <span className="ms-login-card__subtitle-link">What&apos;s this?</span>
-        </p>
 
         {statusMessage ? (
           <div className="ms-login-card__message ms-login-card__message--status">

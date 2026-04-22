@@ -21,6 +21,7 @@ import FacilityTable from "../../../../components/deferrals/FacilityTable";
 import { renderDocumentItem } from "../utils/fileUtils";
 import { WARNING_ORANGE } from "../utils/constants";
 import "../../../../styles/creatorDesignSystem.css";
+import "../../../../styles/deferralFormGlobalStyles.css";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -80,6 +81,18 @@ export default function DeferralDetails({
           background: var(--color-white) !important;
           box-shadow: none !important;
           min-height: 42px;
+        }
+        .deferral-form-details .ant-select-selection-item,
+        .deferral-form-details .ant-select-selection-placeholder,
+        .deferral-form-details .ant-input,
+        .deferral-form-details .ant-input::placeholder,
+        .deferral-form-details .ant-input-number input,
+        .deferral-form-details .ant-picker-input > input,
+        .deferral-form-details textarea,
+        .deferral-form-details textarea::placeholder,
+        .deferral-form-details .ant-typography,
+        .deferral-form-details .ant-btn {
+          font-size: 13px !important;
         }
         .deferral-form-details .deferral-form-loan-amount-select.ant-select .ant-select-selector {
           min-height: 42px !important;
@@ -150,13 +163,7 @@ export default function DeferralDetails({
           background: rgba(255, 255, 255, 0.92) !important;
         }
         .deferral-form-details .deferral-form-section-heading {
-          color: #164679;
-          font-size: 18px;
-          font-weight: 700;
-          font-family: inherit;
-          letter-spacing: -0.02em;
-          margin: 0;
-          line-height: 1.3;
+          /* Uses global form-section-heading from deferralFormGlobalStyles.css */
         }
         .deferral-form-details .deferral-form-divider-block {
           padding-top: 18px;
@@ -170,32 +177,18 @@ export default function DeferralDetails({
           border-bottom: 1px solid rgba(22, 70, 121, 0.16);
         }
         .deferral-form-details .deferral-form-subsection-title {
-          color: #164679 !important;
-          font-size: 18px !important;
-          font-weight: 700 !important;
-          font-family: inherit !important;
-          margin: 0 !important;
-          letter-spacing: -0.02em;
-          line-height: 1.3;
+          /* Uses global form-subsection-title from deferralFormGlobalStyles.css */
         }
         .deferral-form-details .deferral-form-inline-title {
-          color: #164679 !important;
-          font-size: 18px !important;
-          font-weight: 700 !important;
-          font-family: inherit !important;
-          display: block !important;
-          margin-bottom: 12px !important;
-          letter-spacing: -0.02em;
-          line-height: 1.3;
+          /* Uses global form-inline-title from deferralFormGlobalStyles.css */
         }
         .deferral-form-details .deferral-form-subtitle {
-          color: #1f1f1f !important;
-          font-size: 15px !important;
-          font-weight: 600 !important;
-          font-family: inherit !important;
-          display: block !important;
-          margin-bottom: 10px !important;
-          line-height: 1.35;
+          /* Uses global form-subtitle from deferralFormGlobalStyles.css */
+        }
+        .deferral-form-details .deferral-form-table-header .ant-typography,
+        .deferral-form-details .deferral-form-days-row .ant-typography,
+        .deferral-form-details .deferral-form-inline-card .ant-typography {
+          font-size: 13px !important;
         }
         .deferral-form-details .deferral-form-table-header {
           padding: 10px 12px !important;
@@ -217,16 +210,21 @@ export default function DeferralDetails({
         .deferral-form-details .deferral-form-disabled-input.ant-input {
           background: rgba(245, 247, 244, 0.9) !important;
         }
+        .deferral-form-details .deferral-form-upload-btn.ant-btn,
+        .deferral-form-details .deferral-form-upload-btn.ant-btn span,
+        .deferral-form-details .deferral-form-upload-btn.ant-btn .anticon {
+          color: var(--color-text-medium) !important;
+        }
       `}</style>
     <Card
       className="deferral-form-details"
       title={
-        <div className="deferral-form-section-heading">Deferral Details</div>
+        <div className="deferral-form-section-heading form-section-heading">Deferral Details</div>
       }
     >
       <Row gutter={[16, 16]}>
         <Col span={12}>
-          <div className="deferral-form-subtitle">Loan Amount</div>
+          <div className="deferral-form-subtitle form-subtitle">Loan Amount</div>
           <Select
             className="deferral-form-loan-amount-select"
             value={loanAmount}
@@ -252,7 +250,7 @@ export default function DeferralDetails({
               }}
             >
               <div>
-                <div className="deferral-form-subtitle" style={{ marginBottom: 0 }}>
+                <div className="deferral-form-subtitle form-subtitle" style={{ marginBottom: 0 }}>
                   Days Sought (per document)
                 </div>
               </div>
@@ -387,7 +385,7 @@ export default function DeferralDetails({
         </Col>
 
         <Col span={24} className="deferral-form-divider-block">
-          <div className="deferral-form-subtitle">DCL Number</div>
+          <div className="deferral-form-subtitle form-subtitle">DCL Number</div>
           <Input
             className={isSearchedByDcl ? "deferral-form-disabled-input" : undefined}
             value={dclNumber}

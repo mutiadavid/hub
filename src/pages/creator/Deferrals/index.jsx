@@ -221,7 +221,7 @@ const isCreatorQueueDeferral = (deferral) => {
 const deferralsPageStyles = `
   .creator-deferrals-page {
     min-height: 100%;
-    background: var(--color-bg);
+    background: var(--color-white);
     padding: 0;
   }
 
@@ -249,7 +249,7 @@ const deferralsPageStyles = `
     gap: 12px;
     padding: 16px;
     border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-    background: var(--color-bg);
+    background: var(--color-white);
   }
 
   .deferrals-header,
@@ -309,7 +309,7 @@ const deferralsPageStyles = `
   }
 
   .deferrals-header__button--primary {
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%) !important;
+    background: var(--ncb-primary-500) !important;
     border-color: transparent !important;
     color: var(--color-white) !important;
   }
@@ -358,7 +358,7 @@ const deferralsPageStyles = `
     padding: 8px 12px !important;
     border: 1px solid rgba(214, 189, 152, 0.22) !important;
     border-radius: 8px !important;
-    background: transparent !important;
+    background: var(--color-white) !important;
     transition: all 0.2s ease;
   }
 
@@ -382,6 +382,7 @@ const deferralsPageStyles = `
     border-top: 1px solid rgba(214, 189, 152, 0.18);
     border-radius: 0;
     box-shadow: none;
+    background: var(--color-white);
   }
 
   .deferrals-table__primary-cell {
@@ -461,9 +462,9 @@ const deferralsPageStyles = `
     min-height: 32px;
     padding: 6px 12px !important;
     border-radius: 8px !important;
-    border: 1px solid rgba(214, 189, 152, 0.22) !important;
-    background: rgba(214, 189, 152, 0.1) !important;
-    color: var(--color-text-dark) !important;
+    border: 1px solid var(--ncb-primary-500) !important;
+    background: var(--ncb-primary-500) !important;
+    color: var(--color-white) !important;
     box-shadow: none !important;
     font-size: 12px !important;
     font-weight: 600 !important;
@@ -491,7 +492,7 @@ const deferralsPageStyles = `
   }
 
   .deferrals-confirm-modal__button--primary.ant-btn {
-    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%);
+    background: var(--ncb-primary-500);
     border: none;
     color: var(--color-white);
   }
