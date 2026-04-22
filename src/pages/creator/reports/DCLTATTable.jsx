@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Empty, Table, Tooltip } from "antd";
 import dayjs from "dayjs";
 import { buildTATTableRows } from "./reportUtils";
+import { DCL_DISPLAY_NAME } from "./reportTheme";
 import styles from "./TATTableStyles.module.css";
 import useReportNow from "./useReportNow";
 
@@ -12,7 +13,7 @@ import useReportNow from "./useReportNow";
 const TABLE_CONFIG = {
   PAGE_SIZE: 15,
   SORT_KEY: "key",
-  EMPTY_MESSAGE: "No DCL TAT data available for the selected filters",
+  EMPTY_MESSAGE: `No ${DCL_DISPLAY_NAME} TAT data available for the selected filters`,
 };
 
 const COLUMN_WIDTH = {
@@ -169,8 +170,15 @@ const getLiveStageLabel = (stage, now) => {
   return `${formatLiveDuration(stage.startAt, now)} (in progress)`;
 };
 
-const getDclCurrentStageKey = (status) => {
-  const normalizedStatus = String(status || "").trim().toLowerCase();
+const getDclCurrentStageKey = (record) => {
+  if (record?.currentStageKey) {
+    return record.currentStageKey;
+  }
+
+  const normalizedStatus = String(record?.status || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_");
 
   if (["approved", "rejected", "completed"].includes(normalizedStatus)) {
     return "done";
@@ -188,7 +196,7 @@ const getDclCurrentStageKey = (status) => {
     return "coCreator";
   }
 
-  return "coCreator";
+  return "rm";
 };
 
 const stripInProgressSuffix = (label) => String(label || "0m").replace(/\s*\(in progress\)$/i, "");
@@ -232,7 +240,7 @@ const createLiveStageFallback = (stage, startAt) => ({
 });
 
 const getEffectiveRmStage = (record) => {
-  const currentStage = getDclCurrentStageKey(record?.status);
+  const currentStage = getDclCurrentStageKey(record);
 
   return normalizeStageForDisplay(record?.rmReviewTat, {
     allowInProgress: currentStage === "rm" && !record?.rmReviewCompletedAt,
@@ -241,7 +249,7 @@ const getEffectiveRmStage = (record) => {
 };
 
 const getEffectiveCoCreatorStages = (record) => {
-  const currentStage = getDclCurrentStageKey(record?.status);
+  const currentStage = getDclCurrentStageKey(record);
   const isInitialStageActive =
     currentStage === "coCreator" && !record?.coCreatorInitialCompletedAt && !record?.rmReviewCompletedAt;
   const isRevisionStageActive =
@@ -260,7 +268,7 @@ const getEffectiveCoCreatorStages = (record) => {
 };
 
 const getEffectiveCheckerStage = (record) => {
-  const currentStage = getDclCurrentStageKey(record?.status);
+  const currentStage = getDclCurrentStageKey(record);
 
   return normalizeStageForDisplay(record?.coCheckerTat, {
     allowInProgress: currentStage === "coChecker" && !record?.coCheckerCompletedAt,
@@ -419,7 +427,7 @@ StatusCell.displayName = "StatusCell";
  */
 const createTableColumns = (now) => [
   {
-    title: "DCL Number",
+    title: `${DCL_DISPLAY_NAME} Number`,
     dataIndex: "itemId",
     key: "itemId",
     width: COLUMN_WIDTH.DCL_NUMBER,

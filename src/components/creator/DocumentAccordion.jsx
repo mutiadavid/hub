@@ -160,7 +160,7 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
             style={{
               color: colors.text,
               fontWeight: 600,
-              fontSize: 10,
+              fontSize: 12,
               textTransform: "lowercase",
             }}
           >
@@ -268,8 +268,8 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
           border-radius: 6px !important;
           border: 1px solid rgba(214, 189, 152, 0.2) !important;
           box-shadow: none !important;
-          font-size: 10px !important;
-          color: var(--color-text-dark) !important;
+          font-size: 12px !important;
+          color: var(--color-text-body) !important;
         }
         .creator-document-accordion-table .ant-input {
           padding: 4px 10px !important;
@@ -282,7 +282,7 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
         .creator-document-accordion-table .ant-select-selection-placeholder,
         .creator-document-accordion-table .ant-picker,
         .creator-document-accordion-table .ant-btn {
-          font-size: 10px !important;
+          font-size: 12px !important;
         }
         .creator-document-accordion-table .ant-input:hover,
         .creator-document-accordion-table .ant-input:focus,
@@ -299,27 +299,31 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
           overflow-x: auto !important;
         }
         .creator-document-accordion-table .ant-table-thead > tr > th {
-          background: var(--color-bg) !important;
-          color: var(--color-primary-dark) !important;
-          font-size: 10px !important;
-          font-weight: 700 !important;
-          letter-spacing: 0.08em;
+          background: var(--color-white) !important;
+          color: var(--color-text-medium) !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+          letter-spacing: 0.04em;
           text-transform: uppercase;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-          padding: 14px 12px !important;
+          border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+          padding: 11px 12px !important;
           white-space: nowrap;
+          line-height: 1.25 !important;
         }
         .creator-document-accordion-table .ant-table-tbody > tr > td {
-          padding: 18px 12px !important;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.16) !important;
+          padding: 12px !important;
+          border-bottom: 1px solid rgba(226, 232, 240, 0.75) !important;
           vertical-align: middle;
-          font-size: 10px;
+          font-size: 12px !important;
+          color: var(--color-text-body) !important;
+          line-height: 1.45 !important;
+          background: var(--color-white) !important;
         }
         .creator-document-accordion-table .ant-table-tbody > tr:last-child > td {
           border-bottom: none !important;
         }
         .creator-document-accordion-table .ant-table-tbody > tr:hover > td {
-          background: rgba(245, 240, 231, 0.32) !important;
+          background: var(--color-white) !important;
         }
         .creator-document-status-text {
           display: inline-block;
@@ -361,11 +365,11 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
           margin-bottom: 0 !important;
           padding: 18px 20px 16px !important;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-          background: linear-gradient(180deg, rgba(245, 240, 231, 0.72) 0%, rgba(255, 255, 255, 0.98) 100%) !important;
+          background: var(--color-white) !important;
         }
         .creator-document-modal.ant-modal .ant-modal-title {
           color: var(--color-text-dark) !important;
-          font-size: 16px !important;
+          font-size: 18px !important;
           font-weight: 700 !important;
           letter-spacing: -0.02em;
           padding-right: 32px;
@@ -381,7 +385,7 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
           height: 32px !important;
           border-radius: 6px !important;
           color: var(--color-text-medium) !important;
-          background: rgba(255, 255, 255, 0.82) !important;
+          background: rgba(64, 83, 76, 0.06) !important;
           border: 1px solid rgba(214, 189, 152, 0.22) !important;
         }
         .creator-document-modal .ant-modal-close:hover {
@@ -389,8 +393,8 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
           background: var(--color-white) !important;
         }
         .creator-document-modal-header-copy {
-          color: var(--color-text-light);
-          font-size: 12px;
+          color: var(--color-text-medium);
+          font-size: 13px;
           margin-top: 2px;
           line-height: 1.45;
         }
@@ -414,7 +418,7 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
           border-radius: 999px;
         }
         .creator-document-modal-table-scroll::-webkit-scrollbar-track {
-          background: rgba(214, 189, 152, 0.1);
+          background: rgba(64, 83, 76, 0.04);
           border-radius: 999px;
         }
         .creator-document-close.ant-btn,

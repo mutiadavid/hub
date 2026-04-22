@@ -31,6 +31,8 @@ import DeferralTATTable from "./reports/DeferralTATTable";
 import TATConsumedDashboard from "./reports/TATConsumedDashboard";
 import TATConsumedTablesView from "./reports/TATConsumedTablesView";
 import {
+  DCL_DISPLAY_NAME,
+  DCL_PLURAL_DISPLAY_NAME,
   DCL_TABS,
   DEFERRAL_TABS,
   TAT_TABS,
@@ -493,6 +495,12 @@ export default function Reports() {
       font-weight: 500;
       margin: 0 24px 0 0 !important;
     }
+    .creator-reports-tabs .ant-tabs-tab-btn {
+      color: var(--color-text-medium) !important;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
     .creator-reports-tabs .ant-tabs-tab-active {
       background: transparent !important;
       border-color: transparent !important;
@@ -661,7 +669,7 @@ export default function Reports() {
           <div className="creator-reports-title-block">
             <div className="creator-reports-title-block">
               <h2 className="creator-reports-title">
-                DCL Reports & Analytics
+                {DCL_DISPLAY_NAME} Reports & Analytics
               </h2>
               <Text className="creator-reports-subtitle">
                 Simple operational reporting with export-ready views.
@@ -692,7 +700,7 @@ export default function Reports() {
                   key: "allDCLs",
                   label: (
                     <>
-                      <FileTextOutlined /> All DCLs
+                      <FileTextOutlined /> All {DCL_PLURAL_DISPLAY_NAME}
                     </>
                   ),
                 },
@@ -708,7 +716,7 @@ export default function Reports() {
                   key: "dclCharts",
                   label: (
                     <>
-                      <BarChartOutlined /> DCL Charts
+                      <BarChartOutlined /> {DCL_DISPLAY_NAME} Charts
                     </>
                   ),
                 },

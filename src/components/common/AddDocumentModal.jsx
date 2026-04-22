@@ -111,7 +111,7 @@ const AddDocumentModal = ({
     }
 
     .checklist-add-document-modal .ant-modal-header {
-      background: linear-gradient(180deg, rgba(245, 240, 231, 0.58) 0%, #fff 100%) !important;
+      background: #fff !important;
       padding: 18px 22px !important;
       border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
       border-radius: 16px 16px 0 0 !important;
@@ -132,10 +132,13 @@ const AddDocumentModal = ({
       right: 16px !important;
       inset-inline-end: 16px !important;
       color: var(--color-text-medium) !important;
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 8px !important;
     }
 
     .checklist-add-document-modal .ant-modal-close:hover {
-      background: rgba(214, 189, 152, 0.1) !important;
+      background: rgba(64, 83, 76, 0.06) !important;
       border-radius: 8px !important;
     }
 
@@ -169,8 +172,8 @@ const AddDocumentModal = ({
       width: 28px;
       height: 28px;
       border-radius: 8px;
-      background: rgba(214, 189, 152, 0.14);
-      color: var(--color-primary-dark);
+      background: rgba(64, 83, 76, 0.06);
+      color: var(--color-text-dark);
       font-size: 14px;
     }
 
@@ -232,7 +235,7 @@ const AddDocumentModal = ({
       padding: 14px;
       border: 1px dashed rgba(214, 189, 152, 0.45);
       border-radius: 12px;
-      background: linear-gradient(180deg, rgba(245, 240, 231, 0.36) 0%, #fff 100%);
+      background: #fff;
     }
 
     .checklist-add-document-modal__upload-btn.ant-btn,

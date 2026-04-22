@@ -17,7 +17,7 @@ import {
   Tooltip as RechartsTooltip,
 } from "recharts";
 import { buildTATAnalytics, formatNumber } from "./reportUtils";
-import { NCBA_REPORT_THEME, REPORT_COLOR_PALETTES } from "./reportTheme";
+import { DCL_DISPLAY_NAME, NCBA_REPORT_THEME, REPORT_COLOR_PALETTES } from "./reportTheme";
 import useReportNow from "./useReportNow";
 
 const { Text } = Typography;
@@ -46,8 +46,15 @@ const TAT_BUCKET_COLORS = {
 export default function TATConsumedDashboard({ deferralRows = [], dclRows = [] }) {
   const now = useReportNow();
   const computed = useMemo(() => buildTATAnalytics(deferralRows, dclRows, now), [deferralRows, dclRows, now]);
+  const workflowComparisonData = useMemo(
+    () => computed.totalComparisonData.map((entry) => ({
+      ...entry,
+      name: entry.name === "DCL" ? DCL_DISPLAY_NAME : entry.name,
+    })),
+    [computed.totalComparisonData],
+  );
   const metricCards = [
-    { label: "Processed Items", value: computed.totalItems, suffix: "", note: "DCL and Deferral records in scope" },
+    { label: "Processed Items", value: computed.totalItems, suffix: "", note: `${DCL_DISPLAY_NAME} and Deferral records in scope` },
     { label: "Total TAT Consumed", value: computed.totalTATConsumed, suffix: "d", note: "Accumulated end-to-end TAT" },
     { label: "Avg RM TAT", value: computed.averageRmTat, suffix: "d", note: "Creation to RM completion" },
     { label: "Avg CO Creator TAT", value: computed.averageCoCreatorTat, suffix: "d", note: "RM handoff to CO Creator completion" },
@@ -148,7 +155,7 @@ export default function TATConsumedDashboard({ deferralRows = [], dclRows = [] }
                       formatter={(value, name) => [`${Number(value).toFixed(2)} days`, name]}
                     />
                     <Legend />
-                    <Bar dataKey="DCL" fill={REPORT_COLOR_PALETTES.cocoa[1]} name="DCL" radius={[6, 6, 0, 0]}>
+                    <Bar dataKey="DCL" fill={REPORT_COLOR_PALETTES.cocoa[1]} name={DCL_DISPLAY_NAME} radius={[6, 6, 0, 0]}>
                       <LabelList dataKey="DCL" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} formatter={(value) => Number(value).toFixed(1)} />
                     </Bar>
                     <Bar dataKey="Deferral" fill={REPORT_COLOR_PALETTES.ocean[0]} name="Deferral" radius={[6, 6, 0, 0]}>
@@ -184,7 +191,7 @@ export default function TATConsumedDashboard({ deferralRows = [], dclRows = [] }
                     <RechartsTooltip
                       contentStyle={TOOLTIP_STYLE}
                       formatter={(value, name) => {
-                        if (name === "dclAvgTat") return [`${value} days`, "DCL Avg TAT"];
+                        if (name === "dclAvgTat") return [`${value} days`, `${DCL_DISPLAY_NAME} Avg TAT`];
                         if (name === "deferralAvgTat") return [`${value} days`, "Deferral Avg TAT"];
                         return [value, name];
                       }}
@@ -197,7 +204,7 @@ export default function TATConsumedDashboard({ deferralRows = [], dclRows = [] }
                       strokeWidth={2}
                       dot={{ fill: REPORT_COLOR_PALETTES.cocoa[1], r: 4 }}
                       activeDot={{ r: 6 }}
-                      name="DCL Avg TAT"
+                      name={`${DCL_DISPLAY_NAME} Avg TAT`}
                     />
                     <Line
                       type="monotone"
@@ -223,9 +230,9 @@ export default function TATConsumedDashboard({ deferralRows = [], dclRows = [] }
         <Col xs={24} xl={12}>
           <Card title="Average Total TAT by Workflow" size="small" style={{ borderRadius: 14 }}>
             <div style={{ width: "100%", height: 250 }}>
-              {computed.totalComparisonData && computed.totalComparisonData.length > 0 ? (
+              {workflowComparisonData && workflowComparisonData.length > 0 ? (
                 <ResponsiveContainer>
-                  <BarChart data={computed.totalComparisonData}>
+                  <BarChart data={workflowComparisonData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis label={{ value: "Average TAT (days)", angle: -90, position: "insideLeft" }} />
@@ -263,15 +270,15 @@ export default function TATConsumedDashboard({ deferralRows = [], dclRows = [] }
                 </Text>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, borderBottom: "1px solid rgba(214, 189, 152, 0.2)" }}>
-                <Text type="secondary">DCL Count</Text>
+                <Text type="secondary">{DCL_DISPLAY_NAME} Count</Text>
                 <Text strong>{computed.dclMetrics.count}</Text>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, borderBottom: "1px solid rgba(214, 189, 152, 0.2)" }}>
-                <Text type="secondary">DCL Avg Total TAT</Text>
+                <Text type="secondary">{DCL_DISPLAY_NAME} Avg Total TAT</Text>
                 <Text strong>{formatNumber(computed.dclMetrics.averageTAT)} days</Text>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <Text type="secondary">DCL Avg RM / CO Creator / CO Checker</Text>
+                <Text type="secondary">{DCL_DISPLAY_NAME} Avg RM / CO Creator / CO Checker</Text>
                 <Text strong>
                   {formatNumber(computed.dclMetrics.averageRmTat)} / {formatNumber(computed.dclMetrics.averageCoCreatorTat)} / {formatNumber(computed.dclMetrics.averageCoCheckerTat)} days
                 </Text>

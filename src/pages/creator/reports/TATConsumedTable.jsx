@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Empty, Table, Tooltip } from "antd";
 import dayjs from "dayjs";
 import { buildTATTableRows } from "./reportUtils";
+import { DCL_DISPLAY_NAME } from "./reportTheme";
 import useReportNow from "./useReportNow";
 
 const renderStageValue = (stage) => {
@@ -195,7 +196,7 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-weight: 600;
+      font-weight: 400;
       font-size: 12px;
       color: var(--color-text-medium);
     }
@@ -206,7 +207,7 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
       align-items: center;
       justify-content: center;
       text-align: center;
-      font-weight: 600;
+      font-weight: 400;
       color: var(--color-text-medium);
       font-size: 12px;
     }
@@ -219,7 +220,7 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 400;
       line-height: 1.2;
       white-space: nowrap;
     }
@@ -296,7 +297,7 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
       align: "center",
       render: (text) => (
         <span className="tat-consumed-type">
-          {text}
+          {text === "DCL" ? DCL_DISPLAY_NAME : text}
         </span>
       ),
     },

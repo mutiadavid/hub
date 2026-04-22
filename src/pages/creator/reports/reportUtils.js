@@ -556,7 +556,7 @@ const calculateBusinessHoursTAT = (start, end) => {
     const timeToUse = end.isBefore(endOfBusinessToday) ? end : endOfBusinessToday;
 
     if (current.isBefore(timeToUse)) {
-      totalMinutes += timeToUse.diff(current, "minute");
+      totalMinutes += timeToUse.diff(current, "minute", true);
       current = timeToUse;
     }
 
@@ -597,22 +597,21 @@ export const formatTatDuration = (minutes, fallback = "-") => {
 
   // Business hours: 9 hours per day
   const BUSINESS_HOURS_PER_DAY = 9;
-  const businessDays = Math.floor(minutes / (BUSINESS_HOURS_PER_DAY * 60));
-  const remainingMinutes = minutes % (BUSINESS_HOURS_PER_DAY * 60);
-  const hours = Math.floor(remainingMinutes / 60);
-  const mins = Math.round(remainingMinutes % 60);
+  const totalSeconds = Math.max(0, Math.round(minutes * 60));
+  const secondsPerBusinessDay = BUSINESS_HOURS_PER_DAY * 60 * 60;
+  const businessDays = Math.floor(totalSeconds / secondsPerBusinessDay);
+  const remainingDaySeconds = totalSeconds % secondsPerBusinessDay;
+  const hours = Math.floor(remainingDaySeconds / 3600);
+  const remainingHourSeconds = remainingDaySeconds % 3600;
+  const mins = Math.floor(remainingHourSeconds / 60);
+  const seconds = remainingHourSeconds % 60;
 
-  // Show exact time - break down by days, hours, minutes, and seconds
   const parts = [];
   if (businessDays > 0) parts.push(`${businessDays}d`);
   if (hours > 0) parts.push(`${hours}h`);
   if (mins > 0) parts.push(`${mins}m`);
 
-  if (parts.length === 0) {
-    // Show exact seconds/fractions for times under 1 minute
-    const seconds = Math.round((minutes % 1) * 60);
-    return seconds > 0 ? `${seconds}s` : `0m`;
-  }
+  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
   
   return parts.join(" ");
 };
@@ -807,6 +806,19 @@ const buildChecklistTatBreakdown = (checklist, nowAt = dayjs()) => {
     [rmReviewCompletedAt, coCreatorRevisionCompletedAt, coCheckerCompletedAt],
     createdAt,
   );
+
+  // Trust the workflow status over stale downstream timestamps so the active stage
+  // is rendered in the correct column when historical fields/logs are inconsistent.
+  if (currentStageKey === "rm") {
+    rmReviewCompletedAt = null;
+    coCreatorRevisionCompletedAt = null;
+    coCheckerCompletedAt = null;
+  } else if (currentStageKey === "coCreator") {
+    coCreatorRevisionCompletedAt = null;
+    coCheckerCompletedAt = null;
+  } else if (currentStageKey === "coChecker") {
+    coCheckerCompletedAt = null;
+  }
 
   if (!coCreatorInitialCompletedAt && currentStageKey !== "coCreator" && createdAt) {
     coCreatorInitialCompletedAt = createdAt;

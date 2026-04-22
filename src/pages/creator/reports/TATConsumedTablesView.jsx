@@ -1,12 +1,38 @@
 import React, { useState } from "react";
 import { Empty, Tabs } from "antd";
 import { ClockCircleOutlined, FileTextOutlined } from "@ant-design/icons";
-import { NCBA_REPORT_THEME } from "./reportTheme";
+import { DCL_DISPLAY_NAME, NCBA_REPORT_THEME } from "./reportTheme";
 import DeferralTATTable from "./DeferralTATTable";
 import DCLTATTable from "./DCLTATTable";
 
 export default function TATConsumedTablesView({ deferralRows = [], dclRows = [] }) {
   const [activeTab, setActiveTab] = useState("deferral");
+
+  const tabLabelStyles = `
+    .tat-consumed-tabs .ant-tabs-tab-btn {
+      color: var(--color-text-medium) !important;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .tat-consumed-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+      color: var(--color-primary-dark) !important;
+    }
+
+    .tat-consumed-tabs__label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .tat-consumed-tabs__icon {
+      font-size: 14px;
+    }
+  `;
 
   if (!deferralRows.length && !dclRows.length) {
     return (
@@ -23,8 +49,8 @@ export default function TATConsumedTablesView({ deferralRows = [], dclRows = [] 
     tabItems.push({
       key: "deferral",
       label: (
-        <span>
-          <ClockCircleOutlined style={{ marginRight: 8 }} />
+        <span className="tat-consumed-tabs__label">
+          <ClockCircleOutlined className="tat-consumed-tabs__icon" />
           Deferral TAT
         </span>
       ),
@@ -40,9 +66,9 @@ export default function TATConsumedTablesView({ deferralRows = [], dclRows = [] 
     tabItems.push({
       key: "dcl",
       label: (
-        <span>
-          <FileTextOutlined style={{ marginRight: 8 }} />
-          DCL TAT
+        <span className="tat-consumed-tabs__label">
+          <FileTextOutlined className="tat-consumed-tabs__icon" />
+          {DCL_DISPLAY_NAME} TAT
         </span>
       ),
       children: (
@@ -54,15 +80,19 @@ export default function TATConsumedTablesView({ deferralRows = [], dclRows = [] 
   }
 
   return (
-    <Tabs
-      activeKey={activeTab}
-      onChange={setActiveTab}
-      items={tabItems}
-      tabBarStyle={{
-        borderBottom: `2px solid ${NCBA_REPORT_THEME.brandLight}`,
-        marginBottom: 0,
-      }}
-      tabBarGutter={32}
-    />
+    <>
+      <style>{tabLabelStyles}</style>
+      <Tabs
+        className="tat-consumed-tabs"
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={tabItems}
+        tabBarStyle={{
+          borderBottom: `2px solid ${NCBA_REPORT_THEME.brandLight}`,
+          marginBottom: 0,
+        }}
+        tabBarGutter={32}
+      />
+    </>
   );
 }

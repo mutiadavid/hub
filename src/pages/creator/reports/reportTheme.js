@@ -4,6 +4,9 @@ export const DEFERRAL_TABS = ["deferrals", "deferralCharts"];
 export const DCL_TABS = ["allDCLs", "dclCharts"];
 export const TAT_TABS = ["tatConsumed", "tatConsumedCharts"];
 
+export const DCL_DISPLAY_NAME = "Dcl";
+export const DCL_PLURAL_DISPLAY_NAME = "Dcls";
+
 export const NCBA_REPORT_THEME = {
   brand: NCBA_COLORS.primary,
   brandDark: NCBA_COLORS.primaryHover,
