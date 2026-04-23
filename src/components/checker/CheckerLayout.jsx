@@ -51,7 +51,6 @@ const CheckerLayout = () => {
 
   // Handle restoring a draft - navigate to MyQueue and pass draft data
   const handleRestoreDraft = (draft) => {
-    console.log("🔄 CheckerLayout - handleRestoreDraft called with:", draft);
     if (draft.data?.checklistId || draft.data?.dclNo) {
       // Set draft first, then navigate to ensure AllChecklists receives the draft
       setDraftToRestore(draft);

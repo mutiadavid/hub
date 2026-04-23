@@ -25,13 +25,38 @@ import DeferralReviewHeader from "./DeferralReviewHeader";
 import DeferralReviewContent from "./DeferralReviewContent";
 import DeferralReviewFooter from "./DeferralReviewFooter";
 import DeferralReviewSidebar from "./DeferralReviewSidebar";
-import "./DeferralDetailsModal.css";
 
 dayjs.extend(relativeTime);
 
 const PRIMARY_BLUE = "var(--color-primary-dark)";
 const SUCCESS_GREEN = "var(--color-status-success)";
 const ERROR_RED = "var(--color-status-danger)";
+const reviewShellClassName = "border-t border-[rgba(214,189,152,0.2)] bg-(--color-bg)";
+const reviewContainerClassName = "w-full max-w-full";
+const tabsClassName = "mb-4 flex gap-1 overflow-x-auto border-b border-[rgba(214,189,152,0.2)]";
+const workspaceClassName = "grid items-start gap-4 min-[1024px]:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)]";
+const actionSetClassName = "inline-flex flex-nowrap items-center gap-1.5 whitespace-nowrap [&_.ant-btn]:h-[27px] [&_.ant-btn]:min-w-0 [&_.ant-btn]:rounded-[7px] [&_.ant-btn]:px-2 [&_.ant-btn]:text-xs [&_.ant-btn>span]:inline-flex [&_.ant-btn>span]:items-center [&_.ant-btn>span]:gap-1";
+const modalRootClassName = "[&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:rounded-2xl [&_.ant-modal-content]:border [&_.ant-modal-content]:border-[rgba(214,189,152,0.28)] [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_24px_64px_rgba(26,54,54,0.14)] [&_.ant-modal-body]:bg-white [&_.ant-modal-body]:p-4 [&_.ant-modal-footer]:bg-white [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:px-5 [&_.ant-modal-header]:py-[18px] [&_.ant-modal-title]:text-(--color-text-dark) [&_.ant-modal-title]:font-semibold [&_.ant-modal-close]:text-(--color-text-dark)";
+const acceptanceModalRootClassName = `${modalRootClassName} [&_.ant-modal-header]:border-b-0`;
+const rejectionModalRootClassName = `${modalRootClassName} [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[rgba(214,189,152,0.2)]`;
+const modalTitleClassName = "inline-flex items-center gap-2.5 text-(--color-text-dark)";
+const modalTitleAcceptanceClassName = "inline-flex items-center gap-2.5 text-(--color-primary-dark)";
+const modalIconClassName = "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border border-[rgba(26,54,54,0.12)] bg-[rgba(26,54,54,0.08)]";
+const modalRejectIconClassName = "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border border-[rgba(196,29,20,0.16)] bg-[rgba(196,29,20,0.08)]";
+const modalBodyCardClassName = "rounded-xl border border-[rgba(214,189,152,0.22)] bg-white p-3.5";
+const modalSummaryClassName = "mb-3 rounded-[10px] bg-[rgba(245,247,244,0.9)] p-3";
+const modalSummaryTitleClassName = "text-sm font-bold text-(--color-text-dark)";
+const modalSummaryCopyClassName = "mt-1 text-xs leading-6 text-(--color-text-medium)";
+const modalLabelClassName = "mb-1.5 block text-[11px] font-bold tracking-[0.04em] text-(--color-text-light) uppercase";
+const modalTextareaClassName = "rounded-[10px] border-[rgba(214,189,152,0.22)]";
+const modalFooterClassName = "admin-page__modal-footer mt-4 flex justify-end gap-2";
+
+const getStatusToneClassName = (tone) => {
+  if (tone === "success") return "text-[var(--color-status-success)]";
+  if (tone === "danger") return "text-[var(--color-status-danger)]";
+  if (tone === "muted") return "text-(--color-text-muted)";
+  return "text-(--color-primary-dark)";
+};
 
 const GENERIC_ROLE_LABELS = new Set([
   "user",
@@ -281,7 +306,7 @@ const DeferralDetailsModal = (props) => {
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+        <span className="font-semibold text-(--color-primary-dark)">
           {value || "-"}
         </span>
       ),
@@ -310,11 +335,11 @@ const DeferralDetailsModal = (props) => {
       key: "document",
       render: (_, doc) => (
         <div>
-          <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+          <div className="font-semibold text-(--color-primary-dark)">
             {doc.name || "Uploaded Document"}
           </div>
           {doc.uploadDate ? (
-            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+            <div className="text-xs text-(--color-text-muted)">
               {`Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`}
             </div>
           ) : null}
@@ -326,7 +351,7 @@ const DeferralDetailsModal = (props) => {
       key: "actions",
       width: 168,
       render: (_, doc) => (
-        <div className="deferral-review-actionset">
+        <div className={actionSetClassName}>
           <Button
             type="default"
             size="small"
@@ -383,10 +408,7 @@ const DeferralDetailsModal = (props) => {
             .every((item) => item.approved || item.approvalStatus === "approved");
 
         return (
-          <span
-            className="deferral-review-status-pill"
-            style={{ color: isApprovedInFlow ? SUCCESS_GREEN : isCurrent ? PRIMARY_BLUE : "var(--color-text-muted)" }}
-          >
+          <span className={`inline-flex items-center text-xs font-semibold ${getStatusToneClassName(isApprovedInFlow ? "success" : isCurrent ? "primary" : "muted")}`}>
             {isApprovedInFlow ? "Approved" : isCurrent ? "Current" : "Pending Approval"}
           </span>
         );
@@ -400,11 +422,11 @@ const DeferralDetailsModal = (props) => {
       key: "name",
       render: (_, upload) => (
         <div>
-          <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+          <div className="font-semibold text-(--color-primary-dark)">
             {upload.name || "Evidence Document"}
           </div>
           {upload.uploadDate ? (
-            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+            <div className="text-xs text-(--color-text-muted)">
               {`Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`}
             </div>
           ) : null}
@@ -416,7 +438,7 @@ const DeferralDetailsModal = (props) => {
       key: "actions",
       width: 168,
       render: (_, upload) => (
-        <div className="deferral-review-actionset">
+        <div className={actionSetClassName}>
           <Button size="small" onClick={() => openFileInNewTab(upload.fileUrl || upload.url)}>
             View
           </Button>
@@ -451,7 +473,7 @@ const DeferralDetailsModal = (props) => {
       dataIndex: "documentName",
       key: "documentName",
       render: (value) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+        <span className="font-semibold text-(--color-primary-dark)">
           {value || "-"}
         </span>
       ),
@@ -476,10 +498,7 @@ const DeferralDetailsModal = (props) => {
 
         return (
           <div>
-            <div
-              className="deferral-review-status-pill"
-              style={{ color: state === "approved" ? SUCCESS_GREEN : state === "rejected" ? ERROR_RED : PRIMARY_BLUE }}
-            >
+            <div className={`inline-flex items-center text-xs font-semibold ${getStatusToneClassName(state === "approved" ? "success" : state === "rejected" ? "danger" : "primary")}`}>
               {label}
             </div>
           </div>
@@ -500,10 +519,7 @@ const DeferralDetailsModal = (props) => {
 
         return (
           <div>
-            <div
-              className="deferral-review-status-pill"
-              style={{ color: checkerState === "approved" ? SUCCESS_GREEN : checkerState === "rejected" ? ERROR_RED : PRIMARY_BLUE }}
-            >
+            <div className={`inline-flex items-center text-xs font-semibold ${getStatusToneClassName(checkerState === "approved" ? "success" : checkerState === "rejected" ? "danger" : "primary")}`}>
               {checkerLabel}
             </div>
           </div>
@@ -515,7 +531,7 @@ const DeferralDetailsModal = (props) => {
       key: "actions",
       width: 300,
       render: (_, document) => (
-        <div className="deferral-review-actionset">
+        <div className={actionSetClassName}>
           <Button
             type={document.decision?.status === "approved" ? "primary" : "default"}
             onClick={() => _onDocDecision?.(document.decisionKey, "approved", document.decision?.comment || "")}
@@ -549,8 +565,8 @@ const DeferralDetailsModal = (props) => {
 
   return (
     <>
-      <div className="deferral-review-panel">
-          <div className="deferral-review-container creator-theme">
+      <div className={reviewShellClassName}>
+          <div className={reviewContainerClassName}>
             <DeferralReviewHeader
               deferral={deferral}
               onClose={onClose}
@@ -569,26 +585,26 @@ const DeferralDetailsModal = (props) => {
               sourceTab={sourceTab}
             />
 
-            <div className="deferral-review-tabs">
+            <div className={tabsClassName}>
               <button
                 type="button"
-                className={`deferral-review-tab${activeTab === "details" ? " deferral-review-tab--active" : ""}`}
+                className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2 text-[11px] font-semibold ${activeTab === "details" ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
                 onClick={() => setActiveTab("details")}
               >
                 Deferral Details
               </button>
               <button
                 type="button"
-                className={`deferral-review-tab${activeTab === "documents" ? " deferral-review-tab--active" : ""}`}
+                className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2 text-[11px] font-semibold ${activeTab === "documents" ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
                 onClick={() => setActiveTab("documents")}
               >
                 Required Documents
               </button>
             </div>
 
-            <div className="deferral-review-workspace">
-              <div className="deferral-review-main">
-                <div className="deferral-review-body">
+            <div className={workspaceClassName}>
+              <div className="min-w-0">
+                <div>
                   <Spin spinning={isLoading}>
                     <DeferralReviewContent
                       deferral={deferral}
@@ -632,48 +648,38 @@ const DeferralDetailsModal = (props) => {
         footer={null}
         centered
         width={550}
-        className="admin-page__modal deferral-review-confirm deferral-review-confirm--acceptance"
+        rootClassName={acceptanceModalRootClassName}
         closeIcon={
-          <span style={{ color: "var(--color-primary-dark)", fontSize: 24, lineHeight: 1 }}>
+          <span className="text-2xl leading-none text-(--color-primary-dark)">
             ×
           </span>
         }
         title={
-          <div className="deferral-review-confirm__title">
-            <div className="deferral-review-confirm__icon"><CheckCircleOutlined /></div>
+          <div className={modalTitleAcceptanceClassName}>
+            <div className={modalIconClassName}><CheckCircleOutlined /></div>
             <span>{sourceTab === "closeRequests" ? "Submit Close Request Review" : "Confirm Acceptance"}</span>
           </div>
         }
-        styles={{
-          header: {
-            margin: 0,
-            background: "transparent",
-            borderBottom: "none",
-            padding: "18px 20px",
-          },
-          body: { padding: 16 },
-          content: { padding: 0, borderRadius: 16 },
-        }}
       >
         <div className="admin-page__modal-body">
-          <div className="deferral-review-confirm__body-card">
-            <div className="deferral-review-confirm__summary">
-              <div className="deferral-review-confirm__summary-title">
+          <div className={modalBodyCardClassName}>
+            <div className={modalSummaryClassName}>
+              <div className={modalSummaryTitleClassName}>
                 {sourceTab === "closeRequests" ? (deferral.deferralNumber || "Close request review") : (deferral.deferralNumber || "Deferral acceptance")}
               </div>
-              <div className="deferral-review-confirm__summary-copy">
+              <div className={modalSummaryCopyClassName}>
                 {sourceTab === "closeRequests"
                   ? "Review and submit the close-request decision for this deferral."
                   : "Accept this deferral using the same controlled review flow as the other system modals."}
               </div>
-              <div className="deferral-review-confirm__summary-copy">
+              <div className={modalSummaryCopyClassName}>
                 {sourceTab === "closeRequests"
                   ? "Submit the creator review for these close request documents?"
                   : "Accepting this deferral will move it forward in the workflow and record your comment in the audit trail."}
               </div>
             </div>
 
-            <label className="deferral-review-confirm__label">
+            <label className={modalLabelClassName}>
               {sourceTab === "closeRequests" ? "Review comment" : "Acceptance comment"}
             </label>
             <TextArea
@@ -681,11 +687,11 @@ const DeferralDetailsModal = (props) => {
               value={creatorComment}
               onChange={(e) => onCommentChange(e.target.value)}
               rows={4}
-              className="deferral-review-confirm__textarea"
+              className={modalTextareaClassName}
             />
           </div>
 
-          <div className="admin-page__modal-footer">
+          <div className={modalFooterClassName}>
             <Button
               onClick={onApprovalCancel}
               className="admin-page__action-button admin-page__action-button--secondary"
@@ -709,50 +715,40 @@ const DeferralDetailsModal = (props) => {
         footer={null}
         centered
         width={550}
-        className="admin-page__modal deferral-review-confirm deferral-review-confirm--rework"
-        closeIcon={<span style={{ color: "var(--color-text-dark)", fontSize: 24, lineHeight: 1 }}>×</span>}
+        rootClassName={rejectionModalRootClassName}
+        closeIcon={<span className="text-2xl leading-none text-(--color-text-dark)">×</span>}
         title={
-          <div className="deferral-review-confirm__title">
-            <div className="deferral-review-confirm__icon"><ExclamationCircleOutlined /></div>
+          <div className={modalTitleClassName}>
+            <div className={modalRejectIconClassName}><ExclamationCircleOutlined /></div>
             <span>Return for Rework</span>
           </div>
         }
-        styles={{
-          header: {
-            margin: 0,
-            background: "var(--color-white)",
-            borderBottom: "1px solid rgba(214, 189, 152, 0.2)",
-            padding: "18px 20px",
-          },
-          body: { padding: 16 },
-          content: { padding: 0, borderRadius: 16 },
-        }}
       >
         <div className="admin-page__modal-body">
-          <div className="deferral-review-confirm__body-card">
-            <div className="deferral-review-confirm__summary">
-              <div className="deferral-review-confirm__summary-title">
+          <div className={modalBodyCardClassName}>
+            <div className={modalSummaryClassName}>
+              <div className={modalSummaryTitleClassName}>
                 {deferral.deferralNumber || "Return for rework"}
               </div>
-              <div className="deferral-review-confirm__summary-copy">
+              <div className={modalSummaryCopyClassName}>
                 Send the deferral back with clear next-step instructions for the request owner.
               </div>
-              <div className="deferral-review-confirm__summary-copy">
+              <div className={modalSummaryCopyClassName}>
                 Returning this deferral will send it back for correction and preserve your instructions in the workflow history.
               </div>
             </div>
 
-            <label className="deferral-review-confirm__label">Rework instructions</label>
+            <label className={modalLabelClassName}>Rework instructions</label>
             <TextArea
               placeholder="Rework instructions..."
               value={reworkComment}
               onChange={(e) => onReworkCommentChange(e.target.value)}
               rows={4}
-              className="deferral-review-confirm__textarea"
+              className={modalTextareaClassName}
             />
           </div>
 
-          <div className="admin-page__modal-footer">
+          <div className={modalFooterClassName}>
             <Button
               onClick={onReworkCancel}
               className="admin-page__action-button admin-page__action-button--secondary"

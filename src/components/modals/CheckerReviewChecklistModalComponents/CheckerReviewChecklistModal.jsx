@@ -106,20 +106,6 @@ const CheckerReviewChecklistModal = ({
       skip: !resolvedChecklistId,
     });
 
-  // DEBUG: Log comment fetching
-  React.useEffect(() => {
-    const checklistId = checklist?.id || checklist?._id;
-    console.log(
-      "🛡️ CheckerReviewChecklistModal - Checklist ID for comments:",
-      checklistId,
-    );
-    console.log("🛡️ Comments Loading:", commentsLoading);
-    console.log("🛡️ Comments Data:", comments);
-    if (comments && Array.isArray(comments)) {
-      console.log(`🛡️ Total comments fetched: ${comments.length}`);
-    }
-  }, [checklist?.id, checklist?._id, comments, commentsLoading]);
-
   const uploadedDocsCount = useMemo(() => {
     const mainDocsCount = docs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
     const supportingDocsCount = supportingDocs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
@@ -163,16 +149,6 @@ const CheckerReviewChecklistModal = ({
         localChecklist?.supportingDocs ||
         [],
     };
-
-    console.log("🔄 Checker handleChecklistUpdate called:");
-    console.log(
-      "   Updated checklist supportingDocs:",
-      updatedChecklist?.supportingDocs?.length || 0,
-    );
-    console.log(
-      "   Merged checklist supportingDocs:",
-      mergedChecklist.supportingDocs?.length || 0,
-    );
 
     setLocalChecklist(mergedChecklist);
     if (onChecklistUpdate) {
@@ -384,11 +360,6 @@ const CheckerReviewChecklistModal = ({
     const shouldForceApproved =
       effectiveReadOnly || isApprovedChecklistStatus(activeChecklist?.status);
 
-    console.log("📋 Processing documents for CheckerReviewChecklistModal:", {
-      totalDocs: flatDocs.length,
-      shouldForceApproved,
-    });
-
     const processedDocs = flatDocs.map((doc, idx) => {
       const resolvedCheckerStatus = resolveCheckerStatus(
         doc,
@@ -412,17 +383,9 @@ const CheckerReviewChecklistModal = ({
     });
 
     const supportingDocsData = activeChecklist.supportingDocs || [];
-    console.log(
-      "📎 Checker Modal - Supporting docs from backend:",
-      supportingDocsData.length,
-    );
 
     setSupportingDocs(supportingDocsData);
     setDocs(processedDocs);
-    console.log(
-      "📋 Checker Modal - Main docs (excluding supporting):",
-      processedDocs.length,
-    );
   }, [activeChecklist, effectiveReadOnly]);
 
   const handlePdfDownload = async () => {
@@ -473,7 +436,6 @@ const CheckerReviewChecklistModal = ({
       }
 
       const result = await response.json();
-      console.log("✅ Checker Modal - Upload response:", result);
 
       if (!result.success || !result.data) {
         throw new Error("Invalid upload response");
@@ -507,17 +469,15 @@ const CheckerReviewChecklistModal = ({
         },
       };
 
-      console.log("✅ Checker Modal - Adding supporting doc to supporting docs:", newSupportingDoc);
-
       setSupportingDocs((prevDocs) => [...prevDocs, newSupportingDoc]);
 
-      message.success(`"${file.name}" uploaded successfully!`);
+      showSuccessToast(`"${file.name}" uploaded successfully.`);
     } catch (error) {
       console.error(
         "❌ Checker Modal - Error uploading supporting doc:",
         error,
       );
-      message.error(error.message || "Failed to upload supporting document");
+      showErrorToast(error?.message || "Failed to upload supporting document");
     } finally {
       setUploadingSupportingDoc(false);
     }
@@ -613,14 +573,6 @@ const CheckerReviewChecklistModal = ({
         checkerComments: checkerComment,
         checkerComment: checkerComment,
       };
-
-      console.log("📤 CHECKER SUBMISSION:");
-      console.log("   Total docs in state:", docs.length);
-      console.log(
-        "   Supporting docs:",
-        docs.filter((d) => d.category === "Supporting Documents").length,
-      );
-      console.log("   Checker decisions:", payload.checkerDecisions.length);
 
       await submitCheckerStatus(payload).unwrap();
       submittedRef.current = true;

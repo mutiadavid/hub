@@ -672,8 +672,6 @@ const OnlineUsersTable = () => {
   // 🔹 Listen for live online users updates from backend
   useEffect(() => {
     const handleOnlineUsers = (onlineUsers) => {
-      console.log("🟢 Online users updated via socket:", onlineUsers);
-
       // If it's an array, replace the full list
       if (Array.isArray(onlineUsers)) {
         setUsers(onlineUsers);
@@ -706,7 +704,6 @@ const OnlineUsersTable = () => {
   // 🔹 Sync RTK Query response with state
   useEffect(() => {
     if (data?.users && Array.isArray(data.users)) {
-      console.log("📄 Online Users API raw response:", data);
       // Merge API data with socket data to avoid losing any users
       setUsers((prevUsers) => {
         const newUsers = data.users;
@@ -768,9 +765,6 @@ const OnlineUsersTable = () => {
 
     return true;
   });
-
-  console.log("🔎 Filtered users array:", filteredUsers);
-  console.log("🔎 Filtered users count:", filteredUsers.length);
 
   const columns = [
     {

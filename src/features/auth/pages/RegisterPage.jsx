@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRegisterAdminMutation } from "../../../api/authApi";
-import { getAuthErrorMessage, toLoggableAuthError } from "../utils/authError";
-import ncbaLogo from "../../../assets/ncbabanklogo.png";
+import { getAuthErrorMessage } from "../utils/authError";
 import "../../../styles/microsoftLogin.css";
 
 const RegisterPage = () => {
@@ -18,7 +17,7 @@ const RegisterPage = () => {
 
   const getRegistrationErrorMessage = (error) => {
     const message = getAuthErrorMessage(error);
-    return message === "Login failed" ? "Registration failed" : message;
+    return message === "Authentication failed." ? "Registration failed." : message;
   };
 
   const handleSubmit = async (event) => {
@@ -40,8 +39,6 @@ const RegisterPage = () => {
         state: { status: "Your account has been created successfully." },
       });
     } catch (err) {
-      console.error("❌ [REGISTER ERROR]", toLoggableAuthError(err));
-      console.error("Error Details:", getRegistrationErrorMessage(err));
       setRegisterError(getRegistrationErrorMessage(err));
     }
   };
@@ -51,10 +48,16 @@ const RegisterPage = () => {
       <div
         className="ms-login-card ms-login-card--register"
         role="main"
-        aria-label="NCBA registration"
+        aria-label="Microsoft registration"
       >
-        <div className="ms-login-brand" aria-label="NCBA">
-          <img src={ncbaLogo} alt="NCBA" className="ms-login-brand__logo" />
+        <div className="ms-login-brand" aria-label="Microsoft">
+          <span className="ms-login-brand__mark" aria-hidden="true">
+            <span className="ms-login-brand__tile ms-login-brand__tile--red" />
+            <span className="ms-login-brand__tile ms-login-brand__tile--green" />
+            <span className="ms-login-brand__tile ms-login-brand__tile--blue" />
+            <span className="ms-login-brand__tile ms-login-brand__tile--yellow" />
+          </span>
+          <span className="ms-login-brand__name">Microsoft</span>
         </div>
 
         <h1 className="ms-login-card__title">Create account</h1>

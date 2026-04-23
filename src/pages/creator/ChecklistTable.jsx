@@ -1,6 +1,6 @@
 // ChecklistTable.jsx
 import React from "react";
-import { Table, Tag, Button } from "antd";
+import { Table, Button } from "antd";
 import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 
 const PRIMARY_BLUE = "#164679";
@@ -9,6 +9,26 @@ const HIGHLIGHT_GOLD = "#fcb116";
 const LIGHT_YELLOW = "#fcd716";
 const SECONDARY_PURPLE = "#7e6496";
 
+const tableShellClassName = "bg-white [&_.ant-table]:w-full [&_.ant-table-wrapper]:bg-white [&_.ant-table-container]:bg-white [&_.ant-table-content]:overflow-x-auto [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3.5 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-(--color-text-medium) [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr:hover>td]:bg-[rgba(245,247,244,0.9)] [&_.ant-pagination]:mt-4 [&_.ant-pagination]:mb-0 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+
+const getStatusBadgeClassName = (status) => {
+  const normalizedStatus = status ? status.toLowerCase() : "";
+
+  switch (normalizedStatus) {
+    case "co_creator_review":
+    case "rm_review":
+      return "border-[rgba(181,211,52,0.24)] bg-[rgba(181,211,52,0.14)] text-[#5f0707]";
+    case "co_checker_review":
+      return "border-[rgba(252,209,22,0.3)] bg-[rgba(252,209,22,0.18)] text-(--color-primary-dark)";
+    case "approved":
+      return "border-[rgba(181,211,52,0.24)] bg-[rgba(181,211,52,0.14)] text-[#365314]";
+    case "rejected":
+      return "border-[rgba(252,177,22,0.3)] bg-[rgba(252,177,22,0.18)] text-[#92400e]";
+    default:
+      return "border-[rgba(252,209,22,0.3)] bg-[rgba(252,209,22,0.18)] text-(--color-primary-dark)";
+  }
+};
+
 const ChecklistTable = ({ data, onView, showTat = false }) => {
   const columns = [
     {
@@ -16,21 +36,21 @@ const ChecklistTable = ({ data, onView, showTat = false }) => {
       dataIndex: "dclNo",
       width: 180,
       render: (text) => (
-        <span style={{ fontWeight: "bold", color: PRIMARY_BLUE }}>{text}</span>
+        <span className="truncate whitespace-nowrap text-[13px] font-semibold tracking-[-0.01em] text-(--color-primary-dark)">{text}</span>
       ),
     },
     {
       title: "Customer Name",
       dataIndex: "customerName",
       width: 180,
-      render: (text) => <span style={{ color: SECONDARY_PURPLE }}>{text}</span>,
+      render: (text) => <span className="truncate whitespace-nowrap text-[13px] font-normal text-[#7e6496]">{text}</span>,
     },
     {
       title: "Customer Number",
       dataIndex: "customerNumber",
       width: 150,
       render: (text) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 500 }}>{text}</span>
+        <span className="truncate whitespace-nowrap text-[13px] font-medium text-(--color-primary-dark)">{text}</span>
       ),
     },
     { title: "Loan Type", dataIndex: "loanType", width: 140 },
@@ -39,7 +59,7 @@ const ChecklistTable = ({ data, onView, showTat = false }) => {
       dataIndex: "assignedToRM",
       width: 120,
       render: (rm) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: "500" }}>
+        <span className="truncate whitespace-nowrap text-[13px] font-medium text-(--color-primary-dark)">
           {rm?.name || "Not Assigned"}
         </span>
       ),
@@ -55,7 +75,7 @@ const ChecklistTable = ({ data, onView, showTat = false }) => {
           return total + docListCount;
         }, 0);
         return (
-          <span style={{ fontWeight: "bold", color: PRIMARY_BLUE }}>
+          <span className="truncate whitespace-nowrap text-[13px] font-semibold tracking-[-0.01em] text-(--color-primary-dark)">
             {totalDocCount}
           </span>
         );
@@ -66,56 +86,33 @@ const ChecklistTable = ({ data, onView, showTat = false }) => {
       dataIndex: "status",
       width: 120,
       render: (status) => {
-        let tagColor, tagText, bgColor;
+        let tagText;
         const normalizedStatus = status ? status.toLowerCase() : "";
 
         switch (normalizedStatus) {
           case "co_creator_review":
             tagText = "Co-Creator Review";
-            tagColor = ACCENT_LIME;
-            bgColor = ACCENT_LIME;
             break;
           case "rm_review":
             tagText = "RM Review";
-            tagColor = ACCENT_LIME;
-            bgColor = ACCENT_LIME;
             break;
           case "co_checker_review":
             tagText = "Co-Checker Review";
-            tagColor = PRIMARY_BLUE;
-            bgColor = LIGHT_YELLOW;
             break;
           case "approved":
             tagText = "Approved";
-            tagColor = ACCENT_LIME;
-            bgColor = ACCENT_LIME;
             break;
           case "rejected":
             tagText = "Rejected";
-            tagColor = HIGHLIGHT_GOLD;
-            bgColor = HIGHLIGHT_GOLD;
             break;
           default:
             tagText = "In Progress";
-            tagColor = PRIMARY_BLUE;
-            bgColor = LIGHT_YELLOW;
         }
 
         return (
-          <Tag
-            color={tagColor}
-            style={{
-              fontSize: 12,
-              borderRadius: 999,
-              fontWeight: "bold",
-              padding: "2px 6px",
-              color: "#5F0707",
-              backgroundColor: `${bgColor}40`,
-              borderColor: bgColor,
-            }}
-          >
+          <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold ${getStatusBadgeClassName(status)}`}>
             {tagText}
-          </Tag>
+          </span>
         );
       },
     },
@@ -146,20 +143,18 @@ const ChecklistTable = ({ data, onView, showTat = false }) => {
           size="small"
           type="link"
           onClick={() => onView(record)}
-          style={{
-            color: SECONDARY_PURPLE,
-            fontWeight: "bold",
-            fontSize: 13,
-            borderRadius: 6,
-          }}
+          className="rounded-md p-0 text-[13px] font-bold text-[#7e6496]"
         >
           View
         </Button>
       ),
     },
   ];
-
-  return <Table columns={columns} dataSource={data} rowKey="_id" />;
+  return (
+    <div className={tableShellClassName}>
+      <Table columns={columns} dataSource={data} rowKey="_id" />
+    </div>
+  );
 };
 
 export default ChecklistTable;

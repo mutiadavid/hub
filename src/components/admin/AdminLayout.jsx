@@ -143,7 +143,6 @@ const AdminLayout = () => {
           setFormData={setFormData}
           loading={false}
           onCreate={() => {
-            console.log("FORM VALUES:", formData);
             setFormData({ name: "", email: "", password: "", role: "rm" });
             setDrawerOpen(false);
           }}

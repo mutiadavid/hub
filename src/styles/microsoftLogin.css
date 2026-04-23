@@ -31,15 +31,46 @@
 .ms-login-brand {
   display: inline-flex;
   align-items: center;
+  gap: 12px;
   margin-bottom: 34px;
 }
 
-.ms-login-brand__logo {
+.ms-login-brand__mark {
+  display: grid;
+  grid-template-columns: repeat(2, 11px);
+  grid-template-rows: repeat(2, 11px);
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.ms-login-brand__tile {
   display: block;
-  width: 170px;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
+  width: 11px;
+  height: 11px;
+}
+
+.ms-login-brand__tile--red {
+  background: #f25022;
+}
+
+.ms-login-brand__tile--green {
+  background: #7fba00;
+}
+
+.ms-login-brand__tile--blue {
+  background: #00a4ef;
+}
+
+.ms-login-brand__tile--yellow {
+  background: #ffb900;
+}
+
+.ms-login-brand__name {
+  color: #1f1f1f;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 .ms-login-card__title {
@@ -183,8 +214,22 @@
     margin-bottom: 22px;
   }
 
-  .ms-login-brand__logo {
-    width: 146px;
+  .ms-login-brand {
+    gap: 10px;
+  }
+
+  .ms-login-brand__mark {
+    grid-template-columns: repeat(2, 10px);
+    grid-template-rows: repeat(2, 10px);
+  }
+
+  .ms-login-brand__tile {
+    width: 10px;
+    height: 10px;
+  }
+
+  .ms-login-brand__name {
+    font-size: 27px;
   }
 
   .ms-login-input {

@@ -33,667 +33,26 @@ import {
 import { downloadFile, openFileInNewTab } from "../../../../utils/fileUtils";
 import { PRIMARY_BLUE, SUCCESS_GREEN, ERROR_RED } from "../utils/constants";
 import CommentTrail from "./CommentTrail";
-import "../../../../styles/creatorDesignSystem.css";
+ 
 
 const TABS = [
   { key: "details", label: "Extension Details" },
   { key: "documents", label: "Documents & Flow" },
 ];
 
-const REVIEW_STYLES = `
-  .approver-extension-review {
-    border-top: 1px solid rgba(214, 189, 152, 0.2);
-    background: var(--color-bg);
-  }
+const reviewShellClassName = "border-t border-[rgba(214,189,152,0.2)] bg-(--color-bg) [&_.ant-descriptions-item-label]:text-[11px] [&_.ant-descriptions-item-label]:font-normal [&_.ant-descriptions-item-label]:uppercase [&_.ant-descriptions-item-label]:tracking-[0.04em] [&_.ant-descriptions-item-label]:text-(--color-text-dark) [&_.ant-descriptions-item-content]:text-[13px] [&_.ant-descriptions-item-content]:font-normal [&_.ant-descriptions-item-content]:text-(--color-text-dark) [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:bg-transparent [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-normal [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-thead>tr>th::before]:hidden [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden max-[1023px]:[&_.extension-details-layout]:grid-cols-1 max-md:[&_.ant-descriptions-view]:block max-md:[&_.ant-descriptions-view_table]:block max-md:[&_.ant-descriptions-view_tbody]:block max-md:[&_.ant-descriptions-row]:block max-md:[&_.ant-descriptions-item]:block max-md:[&_.ant-descriptions-item]:w-full max-md:[&_.ant-descriptions-item-label]:block max-md:[&_.ant-descriptions-item-content]:block";
 
-  .approver-extension-review__page {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
-  }
+const tableShellClassName = "overflow-hidden rounded-lg border border-[rgba(214,189,152,0.2)] bg-white";
 
-  .approver-extension-review__topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
+const primaryButtonClassName = "rounded-lg! border-0! bg-(--ncb-primary-500)! text-white! shadow-none! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-white! [&>span]:text-white!";
 
-  .approver-extension-review__title-wrap {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
+const secondaryButtonClassName = "rounded-lg! border-(--color-primary-soft)! bg-transparent! text-(--color-primary-medium)! shadow-none! hover:border-(--color-primary-soft)! hover:bg-[rgba(214,189,152,0.1)]! hover:text-(--color-primary-dark)! focus:border-(--color-primary-soft)! focus:bg-[rgba(214,189,152,0.1)]! focus:text-(--color-primary-dark)! active:border-(--color-primary-soft)! active:bg-[rgba(214,189,152,0.1)]! active:text-(--color-primary-dark)! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-white! disabled:[&>span]:text-white!";
 
-  .approver-extension-review__title-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(26, 54, 54, 0.08);
-    color: var(--color-primary-dark);
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--color-text-dark);
-  }
+const editDecisionModalWrapClassName = "approver-extension-decision-modal [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:mb-0 [&_.ant-modal-header]:border-b-0 [&_.ant-modal-header]:bg-[linear-gradient(180deg,#34504c_0%,#2b4541_100%)] [&_.ant-modal-header]:px-[26px] [&_.ant-modal-header]:pb-[18px] [&_.ant-modal-header]:pt-[22px] [&_.ant-modal-title]:text-white [&_.ant-modal-close]:top-5 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-[rgba(255,255,255,0.88)] hover:[&_.ant-modal-close]:bg-[rgba(255,255,255,0.12)] hover:[&_.ant-modal-close]:text-white [&_.ant-modal-body]:max-h-[70vh] [&_.ant-modal-body]:overflow-y-auto [&_.ant-modal-body]:bg-[#f7f6f2] [&_.ant-modal-body]:px-[26px] [&_.ant-modal-body]:pb-6 [&_.ant-modal-body]:pt-7 [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-[#f7f6f2] [&_.ant-modal-footer]:px-[26px] [&_.ant-modal-footer]:pb-6 [&_.ant-modal-footer]:pt-0";
 
-  .approver-extension-review__subtitle {
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--color-text-light);
-  }
+const decisionSecondaryButtonClassName = "min-w-[92px]! h-11! rounded-[10px]! border-[#d0d5dd]! bg-white! text-(--color-text-medium)! shadow-none! font-semibold! hover:border-[#d0d5dd]! hover:bg-white! hover:text-(--color-text-medium)! focus:border-[#d0d5dd]! focus:bg-white! focus:text-(--color-text-medium)! active:border-[#d0d5dd]! active:bg-white! active:text-(--color-text-medium)! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! disabled:[&>span]:text-[#6b7280]!";
 
-  .approver-extension-review__close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    background: var(--color-white);
-    color: var(--color-text-medium);
-  }
-
-  .approver-extension-review__banner,
-  .approver-extension-review__section,
-  .approver-extension-review__comments,
-  .approver-extension-review__decision-card {
-    background: var(--color-white);
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-  }
-
-  .approver-extension-review__banner {
-    padding: 12px 14px;
-  }
-
-  .approver-extension-review__actionbar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    padding: 12px 14px;
-    background: var(--color-white);
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-  }
-
-  .approver-extension-review__banner-title {
-    color: ${PRIMARY_BLUE};
-    font-weight: 700;
-    font-size: 13px;
-  }
-
-  .approver-extension-review__banner-copy {
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--color-text-medium);
-  }
-
-  .approver-extension-review__tabs {
-    display: flex;
-    gap: 4px;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-    overflow-x: auto;
-  }
-
-  .approver-extension-review__tab {
-    padding: 10px 12px;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: var(--color-text-light);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-  }
-
-  .approver-extension-review__tab--active {
-    color: var(--color-primary-dark);
-    border-bottom-color: var(--color-primary-dark);
-  }
-
-  .approver-extension-review__details-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
-    gap: 16px;
-    align-items: start;
-  }
-
-  .approver-extension-review__details-main {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 0;
-  }
-
-  .approver-extension-review__section-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-  }
-
-  .approver-extension-review__section-title {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--color-text-dark);
-  }
-
-  .approver-extension-review__section-body {
-    padding: 16px;
-  }
-
-  .approver-extension-review__comments {
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .approver-extension-review__decision-card .ant-input {
-    padding: 8px !important;
-    font-size: 12px !important;
-    border-radius: 6px !important;
-    border: 1px solid rgba(214, 189, 152, 0.2) !important;
-  }
-
-  .approver-extension-review__primary-btn.ant-btn,
-  .approver-extension-review__decision-primary.ant-btn {
-    border: none !important;
-    background: var(--ncb-primary-500) !important;
-    color: var(--color-white) !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-    border-radius: 8px !important;
-  }
-
-  .approver-extension-review__decision-primary.ant-btn span {
-    color: var(--color-white) !important;
-  }
-
-  .approver-extension-review__primary-btn.ant-btn:hover,
-  .approver-extension-review__primary-btn.ant-btn:focus,
-  .approver-extension-review__primary-btn.ant-btn:active,
-  .approver-extension-review__decision-primary.ant-btn:hover,
-  .approver-extension-review__decision-primary.ant-btn:focus,
-  .approver-extension-review__decision-primary.ant-btn:active {
-    border: none !important;
-    background: var(--ncb-primary-700) !important;
-    color: var(--color-white) !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .approver-extension-review__decision-primary.ant-btn:hover span,
-  .approver-extension-review__decision-primary.ant-btn:focus span,
-  .approver-extension-review__decision-primary.ant-btn:active span {
-    color: var(--color-white) !important;
-  }
-
-  .approver-extension-review__danger-btn.ant-btn:hover,
-  .approver-extension-review__danger-btn.ant-btn:focus,
-  .approver-extension-review__danger-btn.ant-btn:active {
-    background: ${ERROR_RED} !important;
-  }
-
-  .approver-extension-review__secondary-btn.ant-btn,
-  .approver-extension-review__decision-secondary.ant-btn {
-    border: 1px solid var(--color-primary-soft) !important;
-    background: transparent !important;
-    color: var(--color-primary-medium) !important;
-    box-shadow: none !important;
-    border-radius: 8px !important;
-  }
-
-  .approver-extension-review__secondary-btn.ant-btn:hover,
-  .approver-extension-review__secondary-btn.ant-btn:focus,
-  .approver-extension-review__secondary-btn.ant-btn:active,
-  .approver-extension-review__decision-secondary.ant-btn:hover,
-  .approver-extension-review__decision-secondary.ant-btn:focus,
-  .approver-extension-review__decision-secondary.ant-btn:active {
-    border-color: var(--color-primary-soft) !important;
-    background: rgba(214, 189, 152, 0.1) !important;
-    color: var(--color-primary-dark) !important;
-    box-shadow: none !important;
-  }
-
-  .approver-extension-review__primary-btn.ant-btn:disabled,
-  .approver-extension-review__primary-btn.ant-btn[disabled],
-  .approver-extension-review__secondary-btn.ant-btn:disabled,
-  .approver-extension-review__secondary-btn.ant-btn[disabled],
-  .approver-extension-review__decision-primary.ant-btn:disabled,
-  .approver-extension-review__decision-primary.ant-btn[disabled],
-  .approver-extension-review__decision-secondary.ant-btn:disabled,
-  .approver-extension-review__decision-secondary.ant-btn[disabled] {
-    background: #D1D5DB !important;
-    border-color: #D1D5DB !important;
-    color: #fff !important;
-    box-shadow: none !important;
-  }
-
-  .approver-extension-review__primary-btn.ant-btn:disabled span,
-  .approver-extension-review__primary-btn.ant-btn[disabled] span,
-  .approver-extension-review__secondary-btn.ant-btn:disabled span,
-  .approver-extension-review__secondary-btn.ant-btn[disabled] span,
-  .approver-extension-review__decision-primary.ant-btn:disabled span,
-  .approver-extension-review__decision-primary.ant-btn[disabled] span,
-  .approver-extension-review__decision-secondary.ant-btn:disabled span,
-  .approver-extension-review__decision-secondary.ant-btn[disabled] span {
-    color: #fff !important;
-  }
-
-  .approver-extension-review__table-shell {
-    background: var(--color-white);
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .approver-extension-review__table-shell + .approver-extension-review__table-shell {
-    margin-top: 16px;
-  }
-
-  .approver-extension-review .ant-descriptions-item-label {
-    font-weight: 400 !important;
-    color: var(--color-text-dark) !important;
-    font-size: 11px !important;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .approver-extension-review .ant-descriptions-item-content {
-    color: var(--color-text-dark) !important;
-    font-weight: 400 !important;
-    font-size: 13px !important;
-  }
-
-  .approver-extension-review .ant-table,
-  .approver-extension-review .ant-table-wrapper,
-  .approver-extension-review .ant-spin-nested-loading,
-  .approver-extension-review .ant-spin-container,
-  .approver-extension-review .ant-table-container,
-  .approver-extension-review .ant-table-content,
-  .approver-extension-review table,
-  .approver-extension-review thead,
-  .approver-extension-review tbody,
-  .approver-extension-review tr {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-
-  .approver-extension-review .ant-table-thead > tr > th {
-    background: transparent !important;
-    color: var(--color-text-dark) !important;
-    font-size: 11px;
-    font-weight: 400;
-    padding: 12px 16px !important;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-    text-transform: uppercase;
-    border-right: none !important;
-  }
-
-  .approver-extension-review .ant-table-tbody > tr > td {
-    padding: 14px 16px !important;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-    border-right: none !important;
-    color: var(--color-text-medium);
-    font-size: 12px;
-  }
-
-  .approver-extension-review .ant-table-thead > tr > th::before,
-  .approver-extension-review .ant-table-cell::before,
-  .approver-extension-review .ant-table-cell::after {
-    display: none !important;
-  }
-
-  .approver-extension-review__empty {
-    padding: 24px;
-  }
-
-  .approver-extension-decision-modal .ant-modal-content {
-    border-radius: 16px !important;
-    border: 1px solid rgba(214, 189, 152, 0.28) !important;
-    box-shadow: 0 24px 64px rgba(26, 54, 54, 0.14) !important;
-    overflow: hidden;
-    padding: 0 !important;
-  }
-
-  .approver-extension-decision-modal .ant-modal-header {
-    margin: 0 !important;
-    padding: 18px 20px !important;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-    background: var(--color-white) !important;
-  }
-
-  .approver-extension-decision-modal .ant-modal-title {
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--color-text-dark) !important;
-  }
-
-  .approver-extension-decision-modal .ant-modal-close,
-  .approver-extension-decision-modal .ant-modal-close-x,
-  .approver-extension-decision-modal .ant-modal-close-icon {
-    color: var(--color-text-medium) !important;
-  }
-
-  .approver-extension-decision-modal .ant-modal-body {
-    padding: 16px 20px 20px !important;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(247, 243, 236, 0.72) 100%) !important;
-  }
-
-  .approver-extension-decision-modal .ant-modal-footer {
-    margin: 0 !important;
-    padding: 0 20px 20px !important;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(247, 243, 236, 0.72) 100%) !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .ant-modal-content {
-    border-radius: 0 !important;
-    overflow: hidden;
-    padding: 0 !important;
-    background: var(--color-white) !important;
-    border: none !important;
-    box-shadow: 0 32px 72px rgba(18, 36, 36, 0.24) !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .ant-modal-header {
-    margin-bottom: 0 !important;
-    padding: 22px 26px 18px !important;
-    background: linear-gradient(180deg, #34504c 0%, #2b4541 100%) !important;
-    border-bottom: none !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .ant-modal-title {
-    color: var(--color-white) !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .ant-modal-close {
-    top: 20px !important;
-    inset-inline-end: 20px !important;
-    width: 32px !important;
-    height: 32px !important;
-    color: rgba(255, 255, 255, 0.88) !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .ant-modal-close:hover {
-    color: var(--color-white) !important;
-    background: rgba(255, 255, 255, 0.12) !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .ant-modal-close-x,
-  .approver-extension-decision-modal--edit-style .ant-modal-close-icon {
-    color: inherit !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .ant-modal-body {
-    max-height: 70vh;
-    overflow-y: auto;
-    padding: 28px 26px 24px !important;
-    background: #f7f6f2 !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .ant-modal-footer {
-    margin: 0 !important;
-    padding: 0 26px 24px !important;
-    background: #f7f6f2 !important;
-  }
-
-  .approver-extension-review__decision-card {
-    padding: 14px;
-    border: 1px solid rgba(214, 189, 152, 0.22);
-    border-radius: 12px;
-    background: var(--color-white);
-  }
-
-  .approver-extension-review__decision-summary {
-    margin-bottom: 12px;
-    padding: 12px;
-    border-radius: 10px;
-    background: rgba(214, 189, 152, 0.12);
-  }
-
-  .approver-extension-review__decision-label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 11px;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-text-dark);
-  }
-
-  .approver-extension-review__decision-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--color-text-dark);
-  }
-
-  .approver-extension-review__decision-title-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(22, 68, 121, 0.08);
-    border: 1px solid rgba(22, 68, 121, 0.12);
-    flex-shrink: 0;
-  }
-
-  .approver-extension-review__decision-title-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .approver-extension-review__decision-title-copy strong {
-    color: var(--color-text-dark);
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 1.2;
-  }
-
-  .approver-extension-review__decision-title-copy span {
-    color: rgba(255, 255, 255, 0.82);
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.3;
-  }
-
-  .approver-extension-review__decision-title--edit-style {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding-right: 36px;
-    color: var(--color-white);
-  }
-
-  .approver-extension-review__decision-title-icon--edit-style {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.92);
-    flex-shrink: 0;
-  }
-
-  .approver-extension-review__decision-title-icon--edit-style svg {
-    width: 26px;
-    height: 26px;
-  }
-
-  .approver-extension-review__decision-title-copy--edit-style strong {
-    margin: 0;
-    color: var(--color-white);
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .approver-extension-review__decision-card--edit-style {
-    padding: 0;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  .approver-extension-review__decision-summary--edit-style {
-    margin-bottom: 24px;
-    padding: 18px 18px 16px;
-    background: rgba(255, 255, 255, 0.98);
-    border-radius: 14px;
-    border: 1px solid rgba(214, 189, 152, 0.18);
-    box-shadow: 0 10px 28px rgba(26, 54, 54, 0.06);
-  }
-
-  .approver-extension-review__decision-label--edit-style {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--color-text-medium);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input,
-  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input-textarea textarea {
-    border: 1px solid #eaecf0 !important;
-    border-radius: 10px !important;
-    box-shadow: none !important;
-    min-height: 120px !important;
-    background: var(--color-white) !important;
-    padding: 14px !important;
-    font-size: 15px !important;
-    color: var(--color-text-dark) !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input::placeholder,
-  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input-textarea textarea::placeholder {
-    color: #98a2b3 !important;
-  }
-
-  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input:hover,
-  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input:focus,
-  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input-textarea textarea:hover,
-  .approver-extension-decision-modal--edit-style .approver-extension-review__decision-card .ant-input-textarea textarea:focus {
-    border-color: var(--color-primary-dark) !important;
-    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
-  }
-
-  .approver-extension-review__decision-secondary--edit-style.ant-btn {
-    min-width: 92px;
-    height: 44px;
-    border-radius: 10px !important;
-    border: 1px solid #d0d5dd !important;
-    background: var(--color-white) !important;
-    color: var(--color-text-medium) !important;
-    box-shadow: none !important;
-    font-weight: 600 !important;
-  }
-
-  .approver-extension-review__decision-primary--edit-style.ant-btn {
-    min-width: 156px;
-    height: 44px;
-    border-radius: 10px !important;
-    border: none !important;
-    background: var(--ncb-primary-500) !important;
-    color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
-    font-weight: 700 !important;
-  }
-
-  .approver-extension-review__decision-primary--edit-style.ant-btn span {
-    color: var(--color-white) !important;
-  }
-
-  .approver-extension-review__decision-secondary--edit-style.ant-btn:hover,
-  .approver-extension-review__decision-secondary--edit-style.ant-btn:focus,
-  .approver-extension-review__decision-secondary--edit-style.ant-btn:active {
-    border-color: #d0d5dd !important;
-    background: var(--color-white) !important;
-    color: var(--color-text-medium) !important;
-    box-shadow: none !important;
-  }
-
-  .approver-extension-review__decision-primary--edit-style.ant-btn:hover,
-  .approver-extension-review__decision-primary--edit-style.ant-btn:focus,
-  .approver-extension-review__decision-primary--edit-style.ant-btn:active {
-    background: var(--ncb-primary-700) !important;
-    color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
-  }
-
-  .approver-extension-review__decision-primary--edit-style.ant-btn:hover span,
-  .approver-extension-review__decision-primary--edit-style.ant-btn:focus span,
-  .approver-extension-review__decision-primary--edit-style.ant-btn:active span {
-    color: var(--color-white) !important;
-  }
-
-  .approver-extension-review__decision-secondary--edit-style.ant-btn:disabled,
-  .approver-extension-review__decision-secondary--edit-style.ant-btn[disabled],
-  .approver-extension-review__decision-primary--edit-style.ant-btn:disabled,
-  .approver-extension-review__decision-primary--edit-style.ant-btn[disabled] {
-    background: #D1D5DB !important;
-    border-color: #D1D5DB !important;
-    color: #6b7280 !important;
-    box-shadow: none !important;
-  }
-
-  .approver-extension-review__decision-secondary--edit-style.ant-btn:disabled span,
-  .approver-extension-review__decision-secondary--edit-style.ant-btn[disabled] span,
-  .approver-extension-review__decision-primary--edit-style.ant-btn:disabled span,
-  .approver-extension-review__decision-primary--edit-style.ant-btn[disabled] span {
-    color: #6b7280 !important;
-  }
-
-  @media (max-width: 1023px) {
-    .approver-extension-review__details-layout {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 767px) {
-    .approver-extension-review__topbar,
-    .approver-extension-review__title-wrap,
-    .approver-extension-review__actionbar {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .approver-extension-review__actionbar .ant-btn {
-      width: 100%;
-    }
-  }
-`;
+const decisionPrimaryButtonClassName = "min-w-[156px]! h-11! rounded-[10px]! border-0! bg-(--ncb-primary-500)! text-white! shadow-[0_10px_20px_rgba(58,179,229,0.18)]! font-bold! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! disabled:[&>span]:text-[#6b7280]!";
 
 const getNormalizedApprovalStatus = (approver) =>
   String(
@@ -850,7 +209,7 @@ const ExtensionApplicationModal = ({
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+        <span className="font-bold text-(--color-text-dark)">
           {value || "Untitled document"}
         </span>
       ),
@@ -883,7 +242,7 @@ const ExtensionApplicationModal = ({
       dataIndex: "name",
       key: "name",
       render: (value, record) => (
-        <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+        <span className="font-bold text-(--color-text-dark)">
           {value || record.originalName || "Document"}
         </span>
       ),
@@ -893,7 +252,7 @@ const ExtensionApplicationModal = ({
       key: "actions",
       width: 180,
       render: (_, record) => (
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="flex gap-2">
           <Button
             size="small"
             icon={<EyeOutlined />}
@@ -922,7 +281,7 @@ const ExtensionApplicationModal = ({
       title: "Approver",
       key: "approver",
       render: (_, record, index) => (
-        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
+        <span className="font-normal text-(--color-text-dark)">
           {getApproverDisplayName(record, index)}
         </span>
       ),
@@ -943,12 +302,7 @@ const ExtensionApplicationModal = ({
         const returnedForRework = reviewState === "returnedforrework" || reviewState === "returned_for_rework";
         const rejected = reviewState === "rejected";
         return (
-          <span
-            style={{
-              fontWeight: 400,
-              color: "var(--color-text-dark)",
-            }}
-          >
+          <span className="font-normal text-(--color-text-dark)">
             {approved
               ? "Approved"
               : returnedForRework
@@ -995,10 +349,10 @@ const ExtensionApplicationModal = ({
   }) => (
     <Modal
       title={(
-        <div className={`approver-extension-review__decision-title ${titleClassName || ""}`.trim()}>
-          <span className={`approver-extension-review__decision-title-icon ${titleIconClassName || ""}`.trim()}>{titleIcon}</span>
-          <span className={`approver-extension-review__decision-title-copy ${titleCopyClassName || ""}`.trim()}>
-            <span style={{ fontWeight: 400, color: "var(--color-white)" }}>{title}</span>
+        <div className={`flex items-start gap-4 pr-9 text-white ${titleClassName || ""}`.trim()}>
+          <span className={`inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.92)] [&_svg]:h-[26px] [&_svg]:w-[26px] ${titleIconClassName || ""}`.trim()}>{titleIcon}</span>
+          <span className={`flex flex-col gap-0.5 ${titleCopyClassName || ""}`.trim()}>
+            <span className="font-bold text-white">{title}</span>
             {/* Moved subtitle to summary body */}
           </span>
         </div>
@@ -1006,11 +360,11 @@ const ExtensionApplicationModal = ({
       open={modalOpen}
       onCancel={onCancel}
       maskClosable={false}
-      wrapClassName={`approver-extension-decision-modal ${modalClassName || ""}`.trim()}
+      wrapClassName={`${modalClassName || editDecisionModalWrapClassName}`.trim()}
       footer={[
         <Button
           key="cancel"
-          className={`approver-extension-review__decision-secondary ${cancelButtonClassName || ""}`.trim()}
+          className={`${decisionSecondaryButtonClassName} ${cancelButtonClassName || ""}`.trim()}
           onClick={onCancel}
           disabled={confirmLoading}
         >
@@ -1018,7 +372,7 @@ const ExtensionApplicationModal = ({
         </Button>,
         <Button
           key="confirm"
-          className={`approver-extension-review__decision-primary ${confirmClassName || ""} ${confirmButtonClassName || ""}`.trim()}
+          className={`${decisionPrimaryButtonClassName} ${confirmClassName || ""} ${confirmButtonClassName || ""}`.trim()}
           loading={confirmLoading}
           onClick={onConfirm}
           disabled={confirmDisabled}
@@ -1027,23 +381,23 @@ const ExtensionApplicationModal = ({
         </Button>,
       ]}
     >
-      <div className={`approver-extension-review__decision-card ${cardClassName || ""}`.trim()}>
-        <div className={`approver-extension-review__decision-summary ${summaryClassName || ""}`.trim()}>
-          <div style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
+      <div className={`rounded-xl border border-[rgba(214,189,152,0.22)] bg-white p-3.5 ${cardClassName || ""}`.trim()}>
+        <div className={`mb-3 rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-[rgba(255,255,255,0.98)] px-[18px] pb-4 pt-[18px] shadow-[0_10px_28px_rgba(26,54,54,0.06)] ${summaryClassName || ""}`.trim()}>
+          <div className="font-normal text-(--color-text-dark)">
             {extensionLabel || "Extension request"}
           </div>
-          <div style={{ marginTop: 4, fontSize: 12, color: "var(--color-text-dark)" }}>
+          <div className="mt-1 text-xs text-(--color-text-dark)">
             {currentExtension.customerName || linkedDeferral.customerName || "Customer"}
           </div>
-          <div style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-dark)" }}>
+          <div className="mt-2 text-xs text-(--color-text-dark)">
             {subtitle}
           </div>
-          <div style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-dark)" }}>
+          <div className="mt-2 text-xs text-(--color-text-dark)">
             {summaryCopy}
           </div>
         </div>
 
-        <label className={`approver-extension-review__decision-label ${labelClassName || ""}`.trim()}>
+        <label className={`mb-2 block text-[11px] font-bold uppercase tracking-[0.16em] text-(--color-text-medium) ${labelClassName || ""}`.trim()}>
           {inputLabel}
           {inputRequired ? " (Required)" : ""}
         </label>
@@ -1052,6 +406,7 @@ const ExtensionApplicationModal = ({
           value={inputValue}
           onChange={(event) => onInputChange(event.target.value)}
           placeholder={inputPlaceholder}
+          className="[&.ant-input]:min-h-[120px] [&.ant-input]:rounded-[10px] [&.ant-input]:border-[#eaecf0] [&.ant-input]:bg-white [&.ant-input]:p-3.5 [&.ant-input]:text-[15px] [&.ant-input]:text-(--color-text-dark) [&.ant-input]:shadow-none [&.ant-input]:placeholder:text-[#98a2b3] hover:[&.ant-input]:border-(--color-primary-dark) focus:[&.ant-input]:border-(--color-primary-dark) focus:[&.ant-input]:shadow-[0_0_0_2px_rgba(26,54,54,0.08)]"
         />
       </div>
     </Modal>
@@ -1059,40 +414,38 @@ const ExtensionApplicationModal = ({
 
   return (
     <>
-      <style>{REVIEW_STYLES}</style>
-
-      <div className="approver-extension-review">
-        <div className="approver-extension-review__page">
-          <div className="approver-extension-review__topbar">
-            <div className="approver-extension-review__title-wrap">
-              <span className="approver-extension-review__title-icon">
+      <div className={reviewShellClassName}>
+        <div className="flex flex-col gap-4 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3 max-md:flex-col max-md:items-stretch">
+            <div className="flex items-start gap-3 max-md:flex-col max-md:items-stretch">
+              <span className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[10px] bg-[rgba(26,54,54,0.08)] text-(--color-primary-dark)">
                 <CalendarOutlined />
               </span>
               <div>
-                <h2 className="approver-extension-review__title">
+                <h2 className="m-0 text-base font-bold tracking-[-0.02em] text-(--color-text-dark)">
                   Extension Request: {extensionLabel || "-"}
                 </h2>
-                <div className="approver-extension-review__subtitle">{detailsSubtitle}</div>
+                <div className="mt-1 text-xs text-(--color-text-light)">{detailsSubtitle}</div>
               </div>
             </div>
 
             <Button
-              className="approver-extension-review__close"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[rgba(214,189,152,0.2)] bg-white text-(--color-text-medium) shadow-none hover:border-[rgba(214,189,152,0.2)] hover:bg-white hover:text-(--color-text-dark)"
               icon={<CloseOutlined />}
               onClick={onClose}
             />
           </div>
 
-          <div className="approver-extension-review__banner">
-            <div className="approver-extension-review__banner-title">Under Review by Approvers</div>
-            <div className="approver-extension-review__banner-copy">
+          <div className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+            <div className="text-[13px] font-bold text-(--ncb-primary-500)">Under Review by Approvers</div>
+            <div className="mt-1 text-xs text-(--color-text-medium)">
               This extension request is currently undergoing approval from the designated approvers.
             </div>
           </div>
 
-          <div className="approver-extension-review__actionbar">
+          <div className="flex flex-wrap items-center justify-end gap-2 rounded-lg border border-[rgba(214,189,152,0.2)] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(26,54,54,0.06)] max-md:flex-col max-md:items-stretch">
             <Button
-              className="approver-extension-review__secondary-btn"
+              className={secondaryButtonClassName}
               onClick={onClose}
               disabled={approveLoading || rejectLoading || reworkLoading}
             >
@@ -1101,7 +454,7 @@ const ExtensionApplicationModal = ({
             {showActions ? (
               <>
                 <Button
-                  className="approver-extension-review__secondary-btn"
+                  className={secondaryButtonClassName}
                   icon={<RedoOutlined />}
                   onClick={() => setReworkModalVisible(true)}
                   loading={reworkLoading}
@@ -1109,7 +462,7 @@ const ExtensionApplicationModal = ({
                   Return for Rework
                 </Button>
                 <Button
-                  className="approver-extension-review__primary-btn approver-extension-review__danger-btn"
+                  className={primaryButtonClassName}
                   icon={<CloseOutlined />}
                   onClick={() => setRejectModalVisible(true)}
                   loading={rejectLoading}
@@ -1117,7 +470,7 @@ const ExtensionApplicationModal = ({
                   Reject
                 </Button>
                 <Button
-                  className="approver-extension-review__primary-btn"
+                  className={primaryButtonClassName}
                   icon={<CheckOutlined />}
                   onClick={() => setApproveModalVisible(true)}
                   loading={approveLoading}
@@ -1128,12 +481,12 @@ const ExtensionApplicationModal = ({
             ) : null}
           </div>
 
-          <div className="approver-extension-review__tabs">
+          <div className="flex gap-1 overflow-x-auto border-b border-[rgba(214,189,152,0.2)]">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
-                className={`approver-extension-review__tab ${activeTab === tab.key ? "approver-extension-review__tab--active" : ""}`}
+                className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2.5 text-xs font-medium ${activeTab === tab.key ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
                 onClick={() => setActiveTab(tab.key)}
               >
                 {tab.label}
@@ -1142,13 +495,13 @@ const ExtensionApplicationModal = ({
           </div>
 
           {activeTab === "details" ? (
-            <div className="approver-extension-review__details-layout">
-              <div className="approver-extension-review__details-main">
-                <section className="approver-extension-review__section">
-                  <div className="approver-extension-review__section-head">
-                    <h3 className="approver-extension-review__section-title">Customer Information</h3>
+            <div className="extension-details-layout grid items-start gap-4 min-[1024px]:grid-cols-[minmax(0,7fr)_minmax(280px,3fr)]">
+              <div className="flex min-w-0 flex-col gap-4">
+                <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Customer Information</h3>
                   </div>
-                  <div className="approver-extension-review__section-body">
+                  <div className="p-4">
                     <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
                       <Descriptions.Item label="Customer Name">
                         {currentExtension.customerName || linkedDeferral.customerName || "-"}
@@ -1161,11 +514,11 @@ const ExtensionApplicationModal = ({
                   </div>
                 </section>
 
-                <section className="approver-extension-review__section">
-                  <div className="approver-extension-review__section-head">
-                    <h3 className="approver-extension-review__section-title">Extension Summary</h3>
+                <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Extension Summary</h3>
                   </div>
-                  <div className="approver-extension-review__section-body">
+                  <div className="p-4">
                     <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
                       <Descriptions.Item label="Deferral Number">
                         {currentExtension.deferralNumber || linkedDeferral.deferralNumber || "-"}
@@ -1191,13 +544,13 @@ const ExtensionApplicationModal = ({
                   </div>
                 </section>
 
-                <section className="approver-extension-review__section">
-                  <div className="approver-extension-review__section-head">
-                    <h3 className="approver-extension-review__section-title">Extension Reason</h3>
+                <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Extension Reason</h3>
                   </div>
-                  <div className="approver-extension-review__section-body">
+                  <div className="p-4">
                     <Typography.Paragraph
-                      style={{ marginBottom: 0, whiteSpace: "pre-wrap", color: "var(--color-text-medium)" }}
+                      className="mb-0 whitespace-pre-wrap text-(--color-text-medium)"
                     >
                       {currentExtension.extensionReason || currentExtension.reason || "-"}
                     </Typography.Paragraph>
@@ -1205,16 +558,16 @@ const ExtensionApplicationModal = ({
                 </section>
               </div>
 
-              <aside className="approver-extension-review__comments">
+              <aside className="flex flex-col gap-2 rounded-lg border border-[rgba(214,189,152,0.2)] bg-white p-2.5 shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
                 <div className="creator-caption">Comments</div>
                 <CommentTrail history={extensionComments} isLoading={false} />
               </aside>
             </div>
           ) : (
-            <div>
-              <div className="approver-extension-review__table-shell">
-                <div className="approver-extension-review__section-head">
-                  <h3 className="approver-extension-review__section-title">Documents To Be Deferred</h3>
+            <div className="space-y-4">
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Documents To Be Deferred</h3>
                 </div>
                 {documentsToBeDeferred.length > 0 ? (
                   <Table
@@ -1225,13 +578,13 @@ const ExtensionApplicationModal = ({
                     scroll={{ x: 640 }}
                   />
                 ) : (
-                  <div className="approver-extension-review__empty"><Empty description="No deferred documents" /></div>
+                  <div className="p-6"><Empty description="No deferred documents" /></div>
                 )}
               </div>
 
-              <div className="approver-extension-review__table-shell">
-                <div className="approver-extension-review__section-head">
-                  <h3 className="approver-extension-review__section-title">Facility Details</h3>
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Facility Details</h3>
                 </div>
                 {linkedDeferral.facilities?.length > 0 ? (
                   <Table
@@ -1242,13 +595,13 @@ const ExtensionApplicationModal = ({
                     scroll={{ x: 720 }}
                   />
                 ) : (
-                  <div className="approver-extension-review__empty"><Empty description="No facilities available" /></div>
+                  <div className="p-6"><Empty description="No facilities available" /></div>
                 )}
               </div>
 
-              <div className="approver-extension-review__table-shell">
-                <div className="approver-extension-review__section-head">
-                  <h3 className="approver-extension-review__section-title">Mandatory DCL Upload</h3>
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Mandatory DCL Upload</h3>
                 </div>
                 {dclDocs.length > 0 ? (
                   <Table
@@ -1259,13 +612,13 @@ const ExtensionApplicationModal = ({
                     scroll={{ x: 640 }}
                   />
                 ) : (
-                  <div className="approver-extension-review__empty"><Empty description="No DCL document uploaded" /></div>
+                  <div className="p-6"><Empty description="No DCL document uploaded" /></div>
                 )}
               </div>
 
-              <div className="approver-extension-review__table-shell">
-                <div className="approver-extension-review__section-head">
-                  <h3 className="approver-extension-review__section-title">Additional Documents</h3>
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Additional Documents</h3>
                 </div>
                 {additionalDocuments.length > 0 ? (
                   <Table
@@ -1276,13 +629,13 @@ const ExtensionApplicationModal = ({
                     scroll={{ x: 640 }}
                   />
                 ) : (
-                  <div className="approver-extension-review__empty"><Empty description="No additional documents" /></div>
+                  <div className="p-6"><Empty description="No additional documents" /></div>
                 )}
               </div>
 
-              <div className="approver-extension-review__table-shell">
-                <div className="approver-extension-review__section-head">
-                  <h3 className="approver-extension-review__section-title">Approval Flow</h3>
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Approval Flow</h3>
                 </div>
                 {approvalFlowWithCurrent.length > 0 ? (
                   <Table
@@ -1293,7 +646,7 @@ const ExtensionApplicationModal = ({
                     scroll={{ x: 540 }}
                   />
                 ) : (
-                  <div className="approver-extension-review__empty"><Empty description="No approval flow recorded" /></div>
+                  <div className="p-6"><Empty description="No approval flow recorded" /></div>
                 )}
               </div>
             </div>
@@ -1319,15 +672,15 @@ const ExtensionApplicationModal = ({
         inputValue: approveComment,
         onInputChange: setApproveComment,
         inputPlaceholder: "Enter approval comments...",
-        modalClassName: "approver-extension-decision-modal--edit-style",
-        titleClassName: "approver-extension-review__decision-title--edit-style",
-        titleIconClassName: "approver-extension-review__decision-title-icon--edit-style",
-        titleCopyClassName: "approver-extension-review__decision-title-copy--edit-style",
-        cardClassName: "approver-extension-review__decision-card--edit-style",
-        summaryClassName: "approver-extension-review__decision-summary--edit-style",
-        labelClassName: "approver-extension-review__decision-label--edit-style",
-        cancelButtonClassName: "approver-extension-review__decision-secondary--edit-style",
-        confirmButtonClassName: "approver-extension-review__decision-primary--edit-style",
+        modalClassName: editDecisionModalWrapClassName,
+        titleClassName: "text-white",
+        titleIconClassName: "",
+        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
+        cardClassName: "border-0 bg-transparent p-0 shadow-none",
+        summaryClassName: "mb-6",
+        labelClassName: "mb-2 text-(--color-text-medium)",
+        cancelButtonClassName: "",
+        confirmButtonClassName: "",
       })}
 
       {renderDecisionModal({
@@ -1343,22 +696,22 @@ const ExtensionApplicationModal = ({
         confirmText: "Yes, Return for Rework",
         confirmLoading: reworkLoading,
         confirmDisabled: !reworkReason.trim(),
-        confirmClassName: "approver-extension-review__danger-btn",
+        confirmClassName: "",
         summaryCopy: "Returning for rework pauses the current extension review and routes the resubmission back to you after the RM corrects it.",
         inputLabel: "Rework instructions",
         inputRequired: true,
         inputValue: reworkReason,
         onInputChange: setReworkReason,
         inputPlaceholder: "Enter rework instructions...",
-        modalClassName: "approver-extension-decision-modal--edit-style",
-        titleClassName: "approver-extension-review__decision-title--edit-style",
-        titleIconClassName: "approver-extension-review__decision-title-icon--edit-style",
-        titleCopyClassName: "approver-extension-review__decision-title-copy--edit-style",
-        cardClassName: "approver-extension-review__decision-card--edit-style",
-        summaryClassName: "approver-extension-review__decision-summary--edit-style",
-        labelClassName: "approver-extension-review__decision-label--edit-style",
-        cancelButtonClassName: "approver-extension-review__decision-secondary--edit-style",
-        confirmButtonClassName: "approver-extension-review__decision-primary--edit-style",
+        modalClassName: editDecisionModalWrapClassName,
+        titleClassName: "text-white",
+        titleIconClassName: "",
+        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
+        cardClassName: "border-0 bg-transparent p-0 shadow-none",
+        summaryClassName: "mb-6",
+        labelClassName: "mb-2 text-(--color-text-medium)",
+        cancelButtonClassName: "",
+        confirmButtonClassName: "",
       })}
 
       {renderDecisionModal({
@@ -1374,22 +727,22 @@ const ExtensionApplicationModal = ({
         confirmText: "Yes, Reject",
         confirmLoading: rejectLoading,
         confirmDisabled: !rejectReason.trim(),
-        confirmClassName: "approver-extension-review__danger-btn",
+        confirmClassName: "",
         summaryCopy: "Rejecting this request will stop the extension review and record your reason for the originating team.",
         inputLabel: "Rejection reason",
         inputRequired: true,
         inputValue: rejectReason,
         onInputChange: setRejectReason,
         inputPlaceholder: "Enter rejection reason...",
-        modalClassName: "approver-extension-decision-modal--edit-style",
-        titleClassName: "approver-extension-review__decision-title--edit-style",
-        titleIconClassName: "approver-extension-review__decision-title-icon--edit-style",
-        titleCopyClassName: "approver-extension-review__decision-title-copy--edit-style",
-        cardClassName: "approver-extension-review__decision-card--edit-style",
-        summaryClassName: "approver-extension-review__decision-summary--edit-style",
-        labelClassName: "approver-extension-review__decision-label--edit-style",
-        cancelButtonClassName: "approver-extension-review__decision-secondary--edit-style",
-        confirmButtonClassName: "approver-extension-review__decision-primary--edit-style",
+        modalClassName: editDecisionModalWrapClassName,
+        titleClassName: "text-white",
+        titleIconClassName: "",
+        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
+        cardClassName: "border-0 bg-transparent p-0 shadow-none",
+        summaryClassName: "mb-6",
+        labelClassName: "mb-2 text-(--color-text-medium)",
+        cancelButtonClassName: "",
+        confirmButtonClassName: "",
       })}
     </>
   );

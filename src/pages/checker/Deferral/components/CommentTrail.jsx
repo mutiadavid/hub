@@ -2,7 +2,6 @@ import React from "react";
 import { Empty, Spin } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import "../../../../styles/creatorDesignSystem.css";
 
 const formatTimestamp = (value) => {
   if (!value) return "Unknown time";
@@ -20,32 +19,28 @@ const getRoleTone = (role) => {
 
   if (normalizedRole.includes("COCHECKER")) {
     return {
-      border: "#f59e72",
-      text: "#c2410c",
-      background: "#fff7ed",
+      badgeClassName:
+        "border-[#f59e72] bg-[#fff7ed] text-[#c2410c]",
     };
   }
 
   if (normalizedRole.includes("COCREATOR")) {
     return {
-      border: "#86d3ab",
-      text: "#166534",
-      background: "#f0fdf4",
+      badgeClassName:
+        "border-[#86d3ab] bg-[#f0fdf4] text-[#166534]",
     };
   }
 
   if (normalizedRole.includes("RM")) {
     return {
-      border: "#93c5fd",
-      text: "#1d4ed8",
-      background: "#eff6ff",
+      badgeClassName:
+        "border-[#93c5fd] bg-[#eff6ff] text-[#1d4ed8]",
     };
   }
 
   return {
-    border: "rgba(214, 189, 152, 0.45)",
-    text: "#40534c",
-    background: "#faf7f2",
+    badgeClassName:
+      "border-[rgba(214,189,152,0.45)] bg-[#faf7f2] text-[#40534c]",
   };
 };
 
@@ -62,7 +57,7 @@ const CommentTrail = ({ comments = [], isLoading = false }) => {
 
   if (isLoading) {
     return (
-      <div style={{ padding: 16, display: "flex", justifyContent: "center" }}>
+      <div className="flex justify-center p-4">
         <Spin size="small" />
       </div>
     );
@@ -80,23 +75,8 @@ const CommentTrail = ({ comments = [], isLoading = false }) => {
   }
 
   return (
-    <div
-      className="checker-comment-trail"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-      }}
-    >
-      <div
-        style={{
-          color: "#40534c",
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-        }}
-      >
+    <div className="flex flex-col gap-2.5">
+      <div className="text-[11px] font-bold tracking-[0.08em] text-[#40534c] uppercase">
         Comment Trail ({sortedComments.length})
       </div>
 
@@ -110,122 +90,39 @@ const CommentTrail = ({ comments = [], isLoading = false }) => {
         return (
           <div
             key={comment.id || index}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 12,
-              padding: "12px 14px",
-              borderRadius: 12,
-              border: "1px solid rgba(214, 189, 152, 0.24)",
-              background: "#ffffff",
-              boxShadow: "0 1px 2px rgba(26, 54, 54, 0.04)",
-            }}
+            className="flex items-start gap-3 rounded-xl border border-[rgba(214,189,152,0.24)] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(26,54,54,0.04)]"
           >
-              <span
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 999,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "#40534c",
-                  color: "#ffffff",
-                  flexShrink: 0,
-                  marginTop: 2,
-                }}
-              >
-              <UserOutlined style={{ fontSize: 12 }} />
+            <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#40534c] text-white">
+              <UserOutlined className="text-xs" />
             </span>
 
-              <div
-                style={{
-                  minWidth: 0,
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 6,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    minWidth: 0,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "#102a43",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      lineHeight: 1.35,
-                      flexShrink: 0,
-                    }}
-                  >
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span className="shrink-0 text-[13px] leading-[1.35] font-bold text-[#102a43]">
                     {authorName}
-                  </span>
+                </span>
 
-                  <span
-                    title={roleLabel}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minHeight: 24,
-                      maxWidth: "100%",
-                      padding: "0 10px",
-                      borderRadius: 999,
-                      border: `1px solid ${roleTone.border}`,
-                      background: roleTone.background,
-                      color: roleTone.text,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      lineHeight: 1,
-                      textTransform: "uppercase",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      flexShrink: 1,
-                    }}
-                  >
-                    {roleLabel}
-                  </span>
-
-                  <span
-                    style={{
-                      color: "#64748b",
-                      fontSize: 11,
-                      lineHeight: 1.35,
-                      whiteSpace: "nowrap",
-                      flexShrink: 0,
-                      marginLeft: "auto",
-                    }}
-                  >
-                    {formatTimestamp(comment.createdAt || comment.timestamp)}
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    color: "#334e68",
-                    fontSize: 13,
-                    lineHeight: 1.5,
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    overflowWrap: "anywhere",
-                  }}
+                <span
+                  title={roleLabel}
+                  className={`inline-flex min-h-6 max-w-full shrink truncate rounded-full border px-2.5 text-[11px] leading-none font-semibold uppercase ${roleTone.badgeClassName}`}
                 >
-                  {messageText}
-                </div>
+                    {roleLabel}
+                </span>
+
+                <span className="ml-auto shrink-0 whitespace-nowrap text-[11px] leading-[1.35] text-[#64748b]">
+                    {formatTimestamp(comment.createdAt || comment.timestamp)}
+                </span>
               </div>
+
+              <div className="overflow-wrap-anywhere whitespace-pre-wrap break-words text-[13px] leading-6 text-[#334e68]">
+                  {messageText}
+              </div>
+            </div>
           </div>
         );
       })}
     </div>
   );
 };
-
 
 export default CommentTrail;

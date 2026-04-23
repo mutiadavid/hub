@@ -1108,12 +1108,8 @@ const DeferralDetailsModal = ({
   };
 
   const handleConfirmApprovers = async () => {
-    console.log("=== handleConfirmApprovers CLICKED ===");
-    console.log("editedApprovers:", editedApprovers);
-
     // Validate that all approvers have role and name
     const allValid = editedApprovers.every((a) => a.role && a.name);
-    console.log("All valid?", allValid);
 
     if (!allValid) {
       showErrorToast("Please fill in all approver details");
@@ -1132,12 +1128,8 @@ const DeferralDetailsModal = ({
         approvalStatus: "pending",
       }));
 
-      console.log("[EditApprovers] Saving approvers:", approversToSave);
-      console.log("[EditApprovers] Deferral ID:", deferral?._id);
-
       // Get token from localStorage
       const token = localStorage.getItem("token");
-      console.log("[EditApprovers] Token available:", !!token);
 
       if (!deferral || !deferral._id) {
         showErrorToast("No deferral selected");
@@ -1150,7 +1142,6 @@ const DeferralDetailsModal = ({
         approversToSave,
         token,
       );
-      console.log("[EditApprovers] API Response:", result);
 
       const updatedDeferral = result?.deferral || result;
 

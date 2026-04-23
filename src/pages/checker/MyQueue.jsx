@@ -7,7 +7,30 @@ import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewCh
 import { useGetCheckerMyQueueQuery, useLockDclMutation } from "../../api/checklistApi.js";
 import { showLockToast } from "../../utils/authToast";
 import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
-import "../../styles/creatorDesignSystem.css";
+
+const pageRootClassName = "min-h-full w-full bg-white";
+const inlineReviewClassName = "w-full min-h-full border-0 bg-transparent p-0 shadow-none";
+const queueCardClassName = "overflow-hidden rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
+const toolbarClassName = "flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] bg-white p-4 max-md:flex-col max-md:items-stretch";
+const titleClassName = "m-0 text-[15px] leading-tight font-bold tracking-[-0.02em] text-(--color-text-dark)";
+const searchClassName = "w-full min-[769px]:max-w-[360px] [&_.ant-input-affix-wrapper]:rounded-md [&_.ant-input-affix-wrapper]:border-[rgba(214,189,152,0.2)] [&_.ant-input-affix-wrapper]:bg-white [&_.ant-input-affix-wrapper]:px-3 [&_.ant-input-affix-wrapper]:py-2 [&_.ant-input-affix-wrapper]:shadow-none [&_.ant-input-affix-wrapper:hover]:border-(--color-primary-dark) [&_.ant-input-affix-wrapper-focused]:border-(--color-primary-dark) [&_.ant-input]:bg-transparent [&_.ant-input]:text-xs [&_.ant-input]:text-(--color-text-medium) [&_.anticon]:text-(--color-text-light)";
+const filtersClassName = "grid gap-3 border-b border-[rgba(214,189,152,0.2)] bg-white p-4 min-[1025px]:grid-cols-[minmax(0,1.5fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(120px,160px)] md:grid-cols-2 max-md:grid-cols-1 [&_.ant-select-selector]:h-[38px]! [&_.ant-select-selector]:rounded-md! [&_.ant-select-selector]:border-[rgba(214,189,152,0.2)]! [&_.ant-select-selector]:shadow-none! [&_.ant-select-selector]:px-3! [&_.ant-select-selector]:py-1! [&_.ant-btn]:h-[38px]! [&_.ant-btn]:rounded-md! [&_.ant-btn]:border-[rgba(214,189,152,0.2)]! [&_.ant-btn]:text-(--color-text-medium)! [&_.ant-btn]:font-semibold! [&_.ant-btn]:shadow-none!";
+const filterSelectClassName = "w-full";
+const tableShellClassName = "bg-white px-4 pb-4 [&_.ant-table]:w-full [&_.ant-table]:table-fixed [&_.ant-table-wrapper]:bg-white [&_.ant-spin-nested-loading]:bg-white [&_.ant-spin-container]:bg-white [&_.ant-table-container]:bg-white [&_.ant-table-content]:overflow-x-auto [&_.ant-table-header]:bg-inherit [&_.ant-table-body]:bg-inherit [&_.ant-empty]:bg-inherit [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3.5 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-(--color-text-medium) [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr:hover>td]:bg-[rgba(245,247,244,0.9)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination]:mb-0 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-bold [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark) [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+const loadingClassName = "flex min-h-full items-center justify-center p-6";
+const emptyClassName = "bg-white px-4 py-6";
+
+const getLockBadgeClassName = (variant) => {
+  if (variant === "mine") return "border-[rgba(26,54,54,0.16)] bg-[rgba(26,54,54,0.12)] text-(--color-primary-dark)";
+  if (variant === "locked") return "border-[rgba(185,28,28,0.14)] bg-[rgba(185,28,28,0.08)] text-[#991b1b]";
+  return "border-[rgba(64,83,76,0.12)] bg-[rgba(64,83,76,0.08)] text-(--color-text-medium)";
+};
+
+const getStatusBadgeClassName = (variant) => {
+  if (variant === "approved") return "border-[rgba(82,196,26,0.2)] bg-[rgba(82,196,26,0.12)] text-[var(--color-status-success)]";
+  if (variant === "pending") return "border-[rgba(214,189,152,0.24)] bg-[rgba(214,189,152,0.14)] text-(--color-primary-dark)";
+  return "border-[rgba(22,70,121,0.18)] bg-[rgba(22,70,121,0.1)] text-(--color-primary-dark)";
+};
 
 const getQueueStatusMeta = (status) => {
   const normalizedStatus = (status || "").toLowerCase();
@@ -162,17 +185,10 @@ const MyQueuePage = () => {
     });
   };
 
-  // 🔍 DEBUG LOGS
-  console.log("🔍 MyQueue Component Loaded");
-  console.log("📋 Auth State:", auth);
-  console.log("🔑 Checker ID:", checkerId);
-  console.log("🔐 Auth ID fields:", { id: auth?.id, _id: auth?._id });
-
   // Fetch checklists assigned to this checker for review
   const {
     data: myQueue = [],
     isLoading,
-    error,
     refetch,
   } = useGetCheckerMyQueueQuery(checkerId, {
     skip: !checkerId, // Skip query if no checkerId
@@ -180,12 +196,6 @@ const MyQueuePage = () => {
     refetchOnMountOrArgChange: true,
     refetchOnFocus: true,
   });
-
-  // 🔍 DEBUG: Log API response
-  console.log("📊 My Queue Data:", myQueue);
-  console.log("⏳ Is Loading:", isLoading);
-  console.log("❌ API Error:", error);
-  console.log("🚀 Query Endpoint: /checkerChecklist/my-queue/" + checkerId);
 
   /**
    * ✅ PENDING CHECKLISTS FOR THIS CHECKER
@@ -222,12 +232,6 @@ const MyQueuePage = () => {
 
       return matchesSearch && matchesLoanType && matchesCreator;
     });
-    console.log(
-      "🔍 Filtering checklists by status 'cocheckerreview'/'co_checker_review'",
-    );
-    console.log("📋 All queue items:", myQueue);
-    console.log("✅ Filtered pending checklists:", filtered);
-    console.log("Status comparison - Sample item status:", myQueue[0]?.status);
     return filtered;
   }, [creatorFilter, loanTypeFilter, myQueue, searchText]);
 
@@ -270,8 +274,8 @@ const MyQueuePage = () => {
       width: 124,
       ellipsis: true,
       render: (text) => (
-        <div className="creator-table-primary-cell">
-          <span className="creator-table-primary-value">{text || "-"}</span>
+        <div className="flex min-w-0 flex-col gap-[3px]">
+          <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{text || "-"}</span>
         </div>
       ),
     },
@@ -281,7 +285,7 @@ const MyQueuePage = () => {
       width: 146,
       ellipsis: true,
       render: (text) => (
-        <span className="creator-table-primary-value">{text || "-"}</span>
+        <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{text || "-"}</span>
       ),
     },
     {
@@ -290,7 +294,7 @@ const MyQueuePage = () => {
       width: 134,
       ellipsis: true,
       render: (text) => (
-        <span className="creator-table-muted">{text || "-"}</span>
+        <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{text || "-"}</span>
       ),
     },
     {
@@ -299,7 +303,7 @@ const MyQueuePage = () => {
       width: 118,
       ellipsis: true,
       render: (text) => (
-        <span className="creator-table-muted">{text || "-"}</span>
+        <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{text || "-"}</span>
       ),
     },
     {
@@ -319,7 +323,7 @@ const MyQueuePage = () => {
       width: 122,
       ellipsis: true,
       render: (creator) => (
-        <span className="creator-table-muted">{creator?.name || "Not Assigned"}</span>
+        <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{creator?.name || "Not Assigned"}</span>
       ),
     },
     {
@@ -330,7 +334,7 @@ const MyQueuePage = () => {
       render: (status) => {
         const statusMeta = getQueueStatusMeta(status);
         return (
-          <span className={`creator-badge creator-badge--${statusMeta.variant}`}>
+          <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold ${getStatusBadgeClassName(statusMeta.variant)}`}>
             {statusMeta.label}
           </span>
         );
@@ -344,18 +348,18 @@ const MyQueuePage = () => {
         const { isLockedByMe, isLockedBySomeoneElse, lockedByUserName } = getLockMeta(record);
 
         if (isLockedByMe) {
-          return <span className="creator-lock-badge creator-lock-badge--mine">Locked by you</span>;
+          return <span className={`inline-flex min-h-6 max-w-full items-center truncate rounded-full border px-2.5 text-[11px] font-bold ${getLockBadgeClassName("mine")}`}>Locked by you</span>;
         }
 
         if (isLockedBySomeoneElse) {
           return (
-            <span className="creator-lock-badge creator-lock-badge--locked" title={lockedByUserName || "Locked"}>
+            <span className={`inline-flex min-h-6 max-w-full items-center truncate rounded-full border px-2.5 text-[11px] font-bold ${getLockBadgeClassName("locked")}`} title={lockedByUserName || "Locked"}>
               {`Locked by ${lockedByUserName || "user"}`}
             </span>
           );
         }
 
-        return <span className="creator-lock-badge creator-lock-badge--open">Available</span>;
+        return <span className={`inline-flex min-h-6 max-w-full items-center truncate rounded-full border px-2.5 text-[11px] font-bold ${getLockBadgeClassName("open")}`}>Available</span>;
       },
     },
     {
@@ -386,7 +390,7 @@ const MyQueuePage = () => {
         <Button
           type="link"
           size="small"
-          style={{ fontWeight: 600, color: "var(--color-primary-medium)", padding: 0 }}
+          className="p-0 text-(--color-primary-medium) font-semibold"
           onClick={() => openChecklist(record)}
         >
           Review
@@ -396,284 +400,18 @@ const MyQueuePage = () => {
   ];
 
   if (isLoading) {
-    console.log("⏳ Component in loading state...");
     return (
-      <div className="creator-theme" style={{ minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div className={loadingClassName}>
         <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div className="creator-queue-page creator-theme" style={{ boxSizing: "border-box" }}>
-      <style>{`
-        .creator-queue-page {
-          min-height: 100%;
-          width: 100%;
-          background: var(--color-white);
-        }
-        .checker-myqueue-page {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          background: var(--color-white);
-        }
-        .checker-myqueue-inline-review {
-          width: 100%;
-          min-height: 100%;
-          padding: 0;
-          margin: 0;
-          background: transparent;
-          border: none;
-          border-radius: 0;
-          box-shadow: none;
-        }
-        .creator-queue-shell {
-          width: 100%;
-        }
-        .creator-queue-card {
-          background: var(--color-white);
-          border: 1px solid rgba(214, 189, 152, 0.2);
-          border-radius: 8px;
-          box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-          overflow: hidden;
-        }
-        .creator-queue-toolbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-          padding: 16px;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-          background: var(--color-white);
-        }
-        .creator-queue-title {
-          color: var(--color-text-dark);
-          font-size: 15px;
-          font-weight: 700;
-          line-height: 1.2;
-          letter-spacing: -0.02em;
-          margin: 0;
-        }
-        .creator-queue-search {
-          width: min(360px, 100%);
-        }
-        .creator-queue-search.ant-input-affix-wrapper {
-          border: 1px solid rgba(214, 189, 152, 0.2) !important;
-          background: var(--color-white) !important;
-          border-radius: 6px !important;
-          padding: 8px 12px !important;
-          box-shadow: none !important;
-        }
-        .creator-queue-search.ant-input-affix-wrapper:hover,
-        .creator-queue-search.ant-input-affix-wrapper:focus,
-        .creator-queue-search.ant-input-affix-wrapper-focused {
-          border-color: var(--color-primary-dark) !important;
-          box-shadow: none !important;
-        }
-        .creator-queue-search input {
-          background: transparent !important;
-          font-size: 12px !important;
-          color: var(--color-text-medium) !important;
-        }
-        .creator-queue-search .anticon {
-          color: var(--color-text-light);
-        }
-        .creator-queue-filters {
-          display: grid;
-          grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(180px, 1fr)) minmax(120px, 160px);
-          gap: 12px;
-          padding: 16px;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-          background: var(--color-white);
-        }
-        .creator-queue-filters .ant-select-selector,
-        .creator-queue-filters .ant-btn {
-          height: 38px !important;
-          border-radius: 6px !important;
-        }
-        .creator-queue-filters .ant-select-selector,
-        .creator-queue-filters .ant-btn,
-        .creator-queue-filters .ant-input-affix-wrapper {
-          border-color: rgba(214, 189, 152, 0.2) !important;
-          box-shadow: none !important;
-        }
-        .creator-queue-filters .ant-btn {
-          color: var(--color-text-medium);
-          font-weight: 600;
-        }
-        .creator-lock-badge {
-          display: inline-flex;
-          align-items: center;
-          max-width: 100%;
-          min-height: 24px;
-          padding: 0 10px;
-          border-radius: 999px;
-          font-size: 11px;
-          font-weight: 700;
-          line-height: 1;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          border: 1px solid transparent;
-        }
-        .creator-lock-badge--open {
-          background: rgba(64, 83, 76, 0.08);
-          color: var(--color-text-medium);
-          border-color: rgba(64, 83, 76, 0.12);
-        }
-        .creator-lock-badge--mine {
-          background: rgba(26, 54, 54, 0.12);
-          color: var(--color-primary-dark);
-          border-color: rgba(26, 54, 54, 0.16);
-        }
-        .creator-lock-badge--locked {
-          background: rgba(185, 28, 28, 0.08);
-          color: #991b1b;
-          border-color: rgba(185, 28, 28, 0.14);
-        }
-
-        .myqueue-table {
-          background: var(--color-white);
-          border-radius: 8px;
-          padding: 0 16px 16px;
-        }
-        .myqueue-table .ant-table,
-        .myqueue-table .ant-table-wrapper,
-        .myqueue-table .ant-spin-nested-loading,
-        .myqueue-table .ant-spin-container,
-        .myqueue-table .ant-table-container,
-        .myqueue-table .ant-table-content,
-        .myqueue-table table,
-        .myqueue-table thead,
-        .myqueue-table tbody,
-        .myqueue-table tr {
-          border: none !important;
-          outline: none !important;
-          box-shadow: none !important;
-          background: var(--color-white) !important;
-        }
-        .myqueue-table .ant-table {
-          table-layout: fixed;
-          width: 100%;
-        }
-        .myqueue-table .ant-table-container {
-          background: inherit !important;
-        }
-        .myqueue-table .ant-table-content {
-          overflow-x: auto;
-        }
-        .myqueue-table .ant-table-header,
-        .myqueue-table .ant-table-body,
-        .myqueue-table .ant-table-placeholder,
-        .myqueue-table .ant-empty,
-        .myqueue-table .ant-empty-normal {
-          background: inherit !important;
-        }
-        .myqueue-table .ant-table-thead > tr > th {
-          background: var(--color-white) !important;
-          color: var(--color-text-medium) !important;
-          font-weight: 600;
-          font-size: 11px;
-          padding: 14px 12px !important;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-          border-right: none !important;
-          line-height: 1.2;
-          text-transform: uppercase;
-        }
-        .myqueue-table .ant-table-tbody > tr > td {
-          background: var(--color-white) !important;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-          border-top: none !important;
-          border-right: none !important;
-          padding: 16px 12px !important;
-          font-size: 12px;
-          color: var(--color-text-medium);
-          line-height: 1.25;
-        }
-        .myqueue-table .ant-table-thead > tr > th::before,
-        .myqueue-table .ant-table-cell::before,
-        .myqueue-table .ant-table-cell::after,
-        .myqueue-table .ant-table-wrapper::before,
-        .myqueue-table .ant-table-wrapper::after,
-        .myqueue-table .ant-table-container::before,
-        .myqueue-table .ant-table-container::after,
-        .myqueue-table .ant-table-thead > tr::after,
-        .myqueue-table .ant-table-tbody > tr::after {
-          display: none !important;
-        }
-        .myqueue-table .ant-table-tbody > tr:hover > td {
-          background-color: rgba(245, 247, 244, 0.9) !important;
-          cursor: pointer;
-        }
-        .myqueue-table .ant-table-tbody > tr > td:first-child,
-        .myqueue-table .ant-table-thead > tr > th:first-child {
-          padding-left: 0 !important;
-        }
-        .myqueue-table .ant-table-tbody > tr > td:last-child,
-        .myqueue-table .ant-table-thead > tr > th:last-child {
-          padding-right: 0 !important;
-        }
-        .myqueue-table .ant-pagination {
-          margin-top: 18px !important;
-          margin-bottom: 0 !important;
-        }
-        .myqueue-table .ant-pagination .ant-pagination-item,
-        .myqueue-table .ant-pagination .ant-pagination-prev,
-        .myqueue-table .ant-pagination .ant-pagination-next {
-          border-radius: 999px !important;
-          border-color: transparent !important;
-          background: transparent !important;
-          min-width: 34px;
-        }
-        .myqueue-table .ant-pagination .ant-pagination-item-active {
-          background: rgba(214, 189, 152, 0.18) !important;
-          border-color: rgba(214, 189, 152, 0.18) !important;
-        }
-        .myqueue-table .ant-pagination .ant-pagination-item-active a {
-          color: var(--color-text-dark) !important;
-          font-weight: 700;
-        }
-
-        .creator-table-primary-value {
-          color: var(--color-text-dark);
-          font-size: 13px;
-          font-weight: 400;
-          letter-spacing: -0.01em;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .creator-tab-empty,
-        .creator-tab-loading {
-          padding: 24px 16px;
-          background: var(--color-white);
-        }
-
-        @media (max-width: 1024px) {
-          .creator-queue-filters {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .creator-queue-toolbar {
-            flex-direction: column;
-            align-items: stretch;
-          }
-          .creator-queue-search {
-            width: 100%;
-          }
-          .creator-queue-filters {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-      <div className="checker-myqueue-page">
+    <div className={pageRootClassName}>
+      <div className="flex flex-col gap-4 bg-white">
         {selectedChecklist ? (
-          <section className="checker-myqueue-inline-review">
+          <section className={inlineReviewClassName}>
             <CheckerReviewChecklistModal
               checklist={selectedChecklist}
               embedded
@@ -685,12 +423,12 @@ const MyQueuePage = () => {
             />
           </section>
         ) : (
-          <div className="creator-queue-shell">
-            <div className="creator-queue-card">
-              <div className="creator-queue-toolbar">
-                <h2 className="creator-queue-title">My Queue</h2>
+          <div className="w-full">
+            <div className={queueCardClassName}>
+              <div className={toolbarClassName}>
+                <h2 className={titleClassName}>My Queue</h2>
                 <Input
-                  className="creator-queue-search"
+                  className={searchClassName}
                   placeholder="Search DCL, Customer, Loan, Co-Creator"
                   prefix={<SearchOutlined />}
                   allowClear
@@ -699,11 +437,11 @@ const MyQueuePage = () => {
                 />
               </div>
 
-              <div className="creator-queue-filters">
+              <div className={filtersClassName}>
                 <Select
                   value={loanTypeFilter}
                   onChange={setLoanTypeFilter}
-                  style={{ width: "100%" }}
+                  className={filterSelectClassName}
                   options={[
                     { value: "all", label: "All loan types" },
                     ...loanTypeOptions.map((value) => ({
@@ -715,7 +453,7 @@ const MyQueuePage = () => {
                 <Select
                   value={creatorFilter}
                   onChange={setCreatorFilter}
-                  style={{ width: "100%" }}
+                  className={filterSelectClassName}
                   options={[
                     { value: "all", label: "All co-creators" },
                     ...creatorOptions.map((value) => ({
@@ -730,11 +468,11 @@ const MyQueuePage = () => {
               </div>
 
               {pendingChecklists.length === 0 ? (
-                <div className="creator-tab-empty">
+                <div className={emptyClassName}>
                   <Empty description="No checklists pending review" />
                 </div>
               ) : (
-                <div className="myqueue-table">
+                <div className={tableShellClassName}>
                   <Table
                     columns={columns}
                     dataSource={pendingChecklists}
@@ -749,7 +487,7 @@ const MyQueuePage = () => {
                     }}
                     onRow={(record) => ({
                       onClick: () => openChecklist(record),
-                      style: { cursor: "pointer" },
+                      className: "cursor-pointer",
                     })}
                   />
                 </div>

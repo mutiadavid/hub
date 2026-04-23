@@ -69,11 +69,6 @@ const Completed = () => {
   const [updateCoCreatorChecklistMutation] =
     useUpdateCoCreatorChecklistMutation();
 
-  console.log("Creator ID:", creatorId);
-  console.log("Redux user:", user);
-  console.log("Creator ID:", user?._id);
-  console.log("All Checklists in MyQueue:", allChecklists);
-
   // Helper function to generate the next copy DCL number
   const getNextCopyDCLNumber = (originalDCL) => {
     // Check if DCL already has a copy suffix
@@ -112,13 +107,10 @@ const Completed = () => {
       }
 
       const newDCLNumber = `${originalDCL} Copy ${copyNumber}`;
-
-      console.log("📝 [Completed.jsx] Updating DCL number to:", newDCLNumber);
       await updateCoCreatorChecklistMutation({
         id: checklistId,
         data: { dclNo: newDCLNumber },
       }).unwrap();
-      console.log("✅ [Completed.jsx] DCL number updated successfully");
 
       return newDCLNumber;
     } catch (error) {
@@ -128,12 +120,6 @@ const Completed = () => {
   };
 
   const handleReviveChecklist = async (checklistId) => {
-    console.log(
-      "🚀 [Completed.jsx] handleReviveChecklist called with ID:",
-      checklistId,
-    );
-    console.log("👤 Current user ID:", creatorId);
-
     try {
       message.loading({
         content: "Creating new checklist from template...",
@@ -141,11 +127,7 @@ const Completed = () => {
         duration: 0,
       });
 
-      console.log("📤 [Completed.jsx] Making API call to revive endpoint...");
-
       const response = await reviveChecklistMutation(checklistId).unwrap();
-
-      console.log("✅ [Completed.jsx] API Response:", response);
 
       // Get the current checklist to find its original DCL number
       const currentChecklist = allChecklists.find((c) => c._id === checklistId);
@@ -159,10 +141,6 @@ const Completed = () => {
             originalDCL,
             allChecklists,
           );
-          console.log(
-            "✅ [Completed.jsx] DCL number updated to:",
-            newDCLNumber,
-          );
         } catch (dclError) {
           console.error(
             "⚠️ [Completed.jsx] Failed to update DCL number:",
@@ -175,16 +153,10 @@ const Completed = () => {
       // Update the newly created copy's status to co_creator_review so it shows as "Revived"
       if (response.data?.newChecklistId) {
         try {
-          console.log(
-            "📝 [Completed.jsx] Updating new checklist status to co_creator_review...",
-          );
           await updateChecklistStatusMutation({
             checklistId: response.data.newChecklistId,
             status: "co_creator_review",
           }).unwrap();
-          console.log(
-            "✅ [Completed.jsx] New checklist status updated to co_creator_review",
-          );
         } catch (statusError) {
           console.error(
             "⚠️ [Completed.jsx] Failed to update status, but revival was successful:",
@@ -199,24 +171,9 @@ const Completed = () => {
         duration: 3,
       });
 
-      // Log the state after revive for debugging
-      setTimeout(() => {
-        console.log(
-          "🔍 [Completed.jsx] After revive - Current checklists:",
-          allChecklists.map((c) => ({
-            dclNo: c.dclNo,
-            status: c.status,
-            id: c._id?.substring(0, 8),
-          })),
-        );
-      }, 1000);
-
       refetch();
 
       // Navigate to creator home to see the revived checklist in Created Checklists For Review
-      console.log(
-        "🚀 [Completed.jsx] Navigating to creator home to see revived copy...",
-      );
       navigate("/cocreator");
 
       if (response.data?.newDCL) {
@@ -235,17 +192,11 @@ const Completed = () => {
 
       // If auth fails, try the alternative method
       if (error.status === 401 || error.status === 403) {
-        console.log(
-          "🔄 Trying alternative revive method with creatorId in body...",
-        );
-
         try {
           const response = await reviveChecklistWithCreatorMutation({
             checklistId,
             creatorId,
           }).unwrap();
-
-          console.log("✅ Alternative method success:", response);
 
           // Get the current checklist to find its original DCL number
           const currentChecklist = allChecklists.find(
@@ -261,10 +212,6 @@ const Completed = () => {
                 originalDCL,
                 allChecklists,
               );
-              console.log(
-                "✅ [Completed.jsx] DCL number updated to:",
-                newDCLNumber,
-              );
             } catch (dclError) {
               console.error(
                 "⚠️ [Completed.jsx] Failed to update DCL number:",
@@ -277,16 +224,10 @@ const Completed = () => {
           // Update the newly created copy's status to co_creator_review
           if (response.data?.newChecklistId) {
             try {
-              console.log(
-                "📝 [Completed.jsx] Updating new checklist status to co_creator_review...",
-              );
               await updateChecklistStatusMutation({
                 checklistId: response.data.newChecklistId,
                 status: "co_creator_review",
               }).unwrap();
-              console.log(
-                "✅ [Completed.jsx] New checklist status updated to co_creator_review",
-              );
             } catch (statusError) {
               console.error(
                 "⚠️ [Completed.jsx] Failed to update status, but revival was successful:",
@@ -366,10 +307,6 @@ const Completed = () => {
 
   const handleRevive = useCallback(
     async (checklistId) => {
-      console.log(
-        "🔄 [Completed.jsx] handleRevive wrapper called with:",
-        checklistId,
-      );
       return handleReviveChecklist(checklistId);
     },
     [creatorId, allChecklists],
@@ -383,17 +320,6 @@ const Completed = () => {
       const isCompletedOrApproved =
         statusLower === "approved" || statusLower === "completed";
       const isNotRevived = statusLower !== "co_creator_review";
-
-      // Debug logging
-      if (
-        statusLower === "approved" ||
-        statusLower === "completed" ||
-        statusLower === "co_creator_review"
-      ) {
-        console.log(
-          `[Completed Filter] DCL: ${c.dclNo}, Status: ${c.status}, Include: ${isCompletedOrApproved && isNotRevived}`,
-        );
-      }
 
       return isCompletedOrApproved && isNotRevived;
     });
@@ -410,9 +336,6 @@ const Completed = () => {
       );
     }
 
-    console.log(
-      `[Completed.jsx] Filtered data: ${filtered.length} items from ${allChecklists.length} total`,
-    );
     return filtered;
   }, [allChecklists, searchText]);
 
@@ -687,10 +610,6 @@ const Completed = () => {
             scroll={{ x: 1000 }}
             onRow={(record) => ({
               onClick: () => {
-                console.log(
-                  "📋 Row clicked, setting selected checklist:",
-                  record._id,
-                );
                 setSelectedChecklist(record);
               },
             })}
@@ -700,15 +619,10 @@ const Completed = () => {
 
       {selectedChecklist && (
         <>
-          {console.log(
-            "🔍 [Completed.jsx] Opening modal for checklist:",
-            selectedChecklist._id,
-          )}
           <CreatorCompletedChecklistModal
             checklist={selectedChecklist}
             open={!!selectedChecklist}
             onClose={() => {
-              console.log("❌ Modal closed");
               setSelectedChecklist(null);
             }}
             onRevive={handleRevive}

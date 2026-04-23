@@ -95,7 +95,6 @@ const ChecklistFormFields = ({
   };
 
   if (isLoading) return <h1>Loading customers...</h1>;
-  console.log("RMs:", customers);
 
   return (
     <div className="creator-create-card creator-create-card--details">

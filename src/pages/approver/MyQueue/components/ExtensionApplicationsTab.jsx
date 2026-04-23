@@ -17,7 +17,7 @@ const ExtensionApplicationsTab = ({
 
   if (loading) {
     return (
-      <div className="creator-tab-loading">
+      <div className="flex min-h-[220px] items-center justify-center rounded-lg border border-[rgba(214,189,152,0.2)] bg-white">
         <Spin />
       </div>
     );
@@ -25,7 +25,7 @@ const ExtensionApplicationsTab = ({
 
   if (!Array.isArray(extensions) || extensions.length === 0) {
     return (
-      <div className="creator-tab-empty">
+      <div className="flex min-h-[220px] items-center justify-center rounded-lg border border-[rgba(214,189,152,0.2)] bg-white">
         <Empty description="No extension applications" />
       </div>
     );
@@ -52,7 +52,7 @@ const ExtensionApplicationsTab = ({
         size="middle"
         onRow={(record) => ({
           onClick: () => onOpenExtensionDetails(record),
-          style: { cursor: "pointer" },
+          className: "cursor-pointer",
         })}
       />
     </div>

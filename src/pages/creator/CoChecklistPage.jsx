@@ -5,7 +5,50 @@ import { useNavigate } from "react-router-dom";
 import ChecklistsPage from "./ChecklistsPageCreator";
 import { useGetAllCoCreatorChecklistsQuery } from "../../api/checklistApi";
 import { formatCommentTimestamp } from "../../utils/checklistUtils";
-import "../../styles/creatorDesignSystem.css";
+
+const pageRootClassName =
+  "min-h-full w-full bg-white px-0 [font-family:'Century_Gothic','CenturyGothic','AppleGothic',sans-serif]";
+
+const shellClassName = "w-full";
+
+const cardClassName =
+  "overflow-hidden rounded-lg border border-[#d6bd9833] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
+
+const toolbarClassName =
+  "grid gap-3 border-b border-[#d6bd9833] bg-white p-4 md:grid-cols-[auto_1fr_auto] md:items-center";
+
+const titleClassName =
+  "m-0 text-center text-base font-bold leading-tight tracking-[-0.02em] text-[#1f2933] md:text-[17px] lg:text-lg";
+
+const actionsClassName = "flex flex-wrap items-center justify-start gap-2 md:justify-end";
+
+const filterClassName =
+  "min-w-full md:min-w-[160px] [&_.ant-select-selector]:min-h-9 [&_.ant-select-selector]:rounded-md [&_.ant-select-selector]:border-[#d6bd9833] [&_.ant-select-selector]:bg-white [&_.ant-select-selector]:px-2 [&_.ant-select-selector]:py-2 [&_.ant-select-selector]:shadow-none [&_.ant-select-selection-item]:text-xs [&_.ant-select-selection-item]:font-medium [&_.ant-select-selection-item]:text-[#6b7280] [&_.ant-select-selection-placeholder]:text-xs [&_.ant-select-selection-placeholder]:font-medium [&_.ant-select-selection-placeholder]:text-[#6b7280] [&_.ant-select-arrow]:text-[#6b7280] hover:[&_.ant-select-selector]:border-[#164679] [&_.ant-select-focused_.ant-select-selector]:border-[#164679]";
+
+const createButtonClassName =
+  "inline-flex h-auto items-center justify-center gap-2 rounded-lg border-0 bg-[#3ab3e5] px-4 py-2 text-[13px] font-semibold text-white shadow-none hover:shadow-[0_4px_8px_rgba(26,54,54,0.12)] focus:shadow-[0_4px_8px_rgba(26,54,54,0.12)] !bg-[#3ab3e5] !text-white [&:hover]:!bg-[#2a8cb5] [&:focus]:!bg-[#2a8cb5]";
+
+const tableShellClassName =
+  "rounded-lg bg-white [&_.ant-table]:table-fixed [&_.ant-table]:w-full [&_.ant-table-cell]:before:hidden [&_.ant-table-cell]:after:hidden [&_.ant-table-cell]:align-middle [&_.ant-table-container]:before:hidden [&_.ant-table-container]:after:hidden [&_.ant-table-content]:overflow-x-auto [&_.ant-table-placeholder]:bg-white [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[#d6bd981f] [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-[13px] [&_.ant-table-tbody>tr>td]:text-[#4b5563] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-tbody>tr:hover>td]:bg-[#f5f7f4] [&_.ant-table-thead>tr]:border-b-0 [&_.ant-table-thead>tr:after]:hidden [&_.ant-table-thead>tr:before]:hidden [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:border-b-0 [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-[14px] [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.02em] [&_.ant-table-thead>tr>th]:text-[#6b7280] [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination]:mb-0 [&_.ant-pagination]:items-center [&_.ant-pagination]:gap-1.5 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-item]:bg-transparent [&_.ant-pagination_.ant-pagination-item]:text-[13px] [&_.ant-pagination_.ant-pagination-item-active]:border-[#d6bd982e] [&_.ant-pagination_.ant-pagination-item-active]:bg-[#d6bd982e] [&_.ant-pagination_.ant-pagination-item-active_a]:font-medium [&_.ant-pagination_.ant-pagination-item-active_a]:text-[#1f2933] [&_.ant-pagination_.ant-pagination-item-link]:text-[13px] [&_.ant-pagination_.ant-pagination-item-link]:text-[#1f2933] [&_.ant-pagination_.ant-pagination-item_a]:text-xs [&_.ant-pagination_.ant-pagination-item_a]:font-medium [&_.ant-pagination_.ant-pagination-item_a]:text-[#1f2933] [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-next]:bg-transparent [&_.ant-pagination_.ant-pagination-next]:min-w-[34px] [&_.ant-pagination_.ant-pagination-options]:text-xs [&_.ant-pagination_.ant-pagination-options]:font-medium [&_.ant-pagination_.ant-pagination-options]:text-[#1f2933] [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:bg-transparent [&_.ant-pagination_.ant-pagination-prev]:min-w-[34px] [&_.ant-pagination_.ant-select-arrow]:text-[#1f2933] [&_.ant-pagination_.ant-select-selection-item]:text-xs [&_.ant-pagination_.ant-select-selection-item]:text-[#1f2933] [&_.ant-pagination_.ant-select-selection-placeholder]:text-xs [&_.ant-pagination_.ant-select-selection-placeholder]:text-[#1f2933] [&_.ant-pagination_.ant-select-selector]:text-xs [&_.ant-pagination_.ant-select-selector]:text-[#1f2933] [&_.ant-spin-container]:bg-white";
+
+const primaryCellClassName = "flex min-w-0 flex-col gap-1";
+const primaryValueClassName = "truncate text-[13px] font-normal tracking-[-0.01em] text-[#1f2933]";
+const createdCellClassName = "flex min-w-0 items-center";
+const createdDateClassName = "truncate text-[13px] font-medium text-[#4b5563]";
+const mutedClassName = "truncate text-[13px] font-normal text-[#4b5563]";
+
+const getStatusBadgeClassName = (variant) => {
+  switch (variant) {
+    case "approved":
+      return "inline-flex min-h-[22px] items-center justify-center rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-medium leading-tight text-emerald-800";
+    case "rework":
+      return "inline-flex min-h-[22px] items-center justify-center rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-medium leading-tight text-red-700";
+    case "pending":
+      return "inline-flex min-h-[22px] items-center justify-center rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium leading-tight text-amber-700";
+    default:
+      return "inline-flex min-h-[22px] items-center justify-center rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-medium leading-tight text-sky-800";
+  }
+};
 
 const getChecklistStatusMeta = (status, dclNo) => {
   const normalizedStatus = (status || "").toLowerCase();
@@ -39,6 +82,19 @@ const CoChecklistPage = ({
   setDraftToRestore = null,
 }) => {
   const navigate = useNavigate();
+
+  // Style to remove table header border separator
+  const headerBorderRemovalStyle = `
+    .cochecklist-page .ant-table-thead > tr > th {
+      border-bottom: none !important;
+    }
+    .cochecklist-page .ant-table-thead {
+      border-bottom: none !important;
+    }
+    .cochecklist-page .ant-table-header {
+      border-bottom: none !important;
+    }
+  `;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState(undefined);
   const [loanTypeFilter, setLoanTypeFilter] = useState(undefined);
@@ -122,234 +178,6 @@ const CoChecklistPage = ({
     [myChecklists, statusFilter, loanTypeFilter, rmFilter]
   );
 
-  const customTableStyles = `
-      .cochecklist-page {
-        min-height: 100%;
-        width: 100%;
-        background: var(--color-white);
-        font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-      }
-      .cochecklist-shell {
-        width: 100%;
-      }
-      .cochecklist-card {
-        background: var(--color-white);
-        border: 1px solid rgba(214, 189, 152, 0.2);
-        border-radius: 8px;
-        box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-        overflow: hidden;
-      }
-      .cochecklist-toolbar {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        padding: 16px;
-        border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-        background: var(--color-white);
-      }
-      .cochecklist-toolbar-left {
-        display: flex;
-        align-items: center;
-        width: 100%;
-      }
-      .cochecklist-toolbar-center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-      }
-      .cochecklist-title {
-        color: var(--color-text-dark);
-        font-size: 16px;
-        font-weight: 700;
-        line-height: 1.2;
-        letter-spacing: -0.02em;
-        margin: 0;
-        text-align: center;
-      }
-      .cochecklist-actions {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 8px;
-        flex-wrap: wrap;
-        width: 100%;
-      }
-      .cochecklist-filter {
-        min-width: 160px;
-      }
-      .cochecklist-filter .ant-select-selector {
-        padding: 8px !important;
-        min-height: 36px !important;
-        border: 1px solid rgba(214, 189, 152, 0.2) !important;
-        border-radius: 6px !important;
-        background: var(--color-white) !important;
-        box-shadow: none !important;
-      }
-      .cochecklist-filter .ant-select-selection-placeholder,
-      .cochecklist-filter .ant-select-selection-item {
-        color: var(--color-text-light) !important;
-        font-size: 12px;
-        font-weight: 500;
-        font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-      }
-      .cochecklist-filter .ant-select-arrow {
-        color: var(--color-text-light);
-      }
-      .cochecklist-filter.ant-select-focused .ant-select-selector,
-      .cochecklist-filter:hover .ant-select-selector {
-        border-color: var(--color-primary-dark) !important;
-      }
-      .cochecklist-create {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        height: auto !important;
-        padding: 8px 16px !important;
-        border: none !important;
-        border-radius: 8px !important;
-        background: var(--ncb-primary-500) !important;
-        color: var(--color-white) !important;
-        font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-        font-size: 13px !important;
-        font-weight: 600 !important;
-        box-shadow: none !important;
-      }
-      .cochecklist-create:hover,
-      .cochecklist-create:focus {
-        box-shadow: 0 4px 8px rgba(26, 54, 54, 0.12) !important;
-      }
-      .cochecklist-table-shell {
-        background: var(--color-white);
-        border-radius: 8px;
-      }
-      .cochecklist-table-shell .ant-table-tbody > tr:hover > td {
-        cursor: pointer;
-      }
-      .cochecklist-primary-cell {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      .cochecklist-primary-value {
-        color: var(--color-text-dark);
-        font-size: 13px;
-        font-weight: 400;
-        letter-spacing: -0.01em;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .cochecklist-secondary-value {
-        color: var(--color-text-light);
-        font-size: 12px;
-        line-height: 1.3;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .cochecklist-created-cell {
-        display: flex;
-        align-items: center;
-        min-width: 0;
-      }
-      .cochecklist-created-date {
-        color: var(--color-text-medium);
-        font-size: 13px;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .cochecklist-muted {
-        color: var(--color-text-medium);
-        font-size: 13px;
-        font-weight: 400;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .cochecklist-table-shell .ant-table-thead > tr > th {
-        font-size: 12px;
-        font-weight: 600;
-        font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-      }
-      .cochecklist-table-shell .ant-table-tbody > tr > td {
-        font-size: 13px;
-        font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-      }
-      .cochecklist-table-shell .creator-badge {
-        padding: 4px 10px;
-        font-size: 11px;
-        font-weight: 500;
-        line-height: 1.2;
-      }
-      .cochecklist-table-shell .ant-pagination {
-        align-items: center;
-        gap: 6px;
-      }
-      .cochecklist-table-shell .ant-pagination .ant-pagination-item,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-prev,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-next,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-jump-prev,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-jump-next,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-item-link {
-        font-size: 13px;
-        color: var(--color-text-dark) !important;
-      }
-      .cochecklist-table-shell .ant-pagination .ant-pagination-item a,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-prev button,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-next button,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-jump-prev button,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-jump-next button {
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--color-text-dark) !important;
-      }
-      .cochecklist-table-shell .ant-pagination .ant-pagination-options,
-      .cochecklist-table-shell .ant-pagination .ant-pagination-total-text {
-        color: var(--color-text-dark) !important;
-        font-size: 12px;
-        font-weight: 500;
-      }
-      .cochecklist-table-shell .ant-pagination .ant-select-selector,
-      .cochecklist-table-shell .ant-pagination .ant-select-selection-item,
-      .cochecklist-table-shell .ant-pagination .ant-select-selection-placeholder {
-        font-size: 12px !important;
-        color: var(--color-text-dark) !important;
-      }
-      .cochecklist-table-shell .ant-pagination .ant-select-arrow {
-        color: var(--color-text-dark) !important;
-      }
-      @media (min-width: 768px) {
-        .cochecklist-toolbar {
-          display: grid;
-          grid-template-columns: auto 1fr auto;
-        }
-        .cochecklist-title {
-          font-size: 17px;
-        }
-        .cochecklist-actions {
-          justify-content: flex-end;
-        }
-      }
-      @media (min-width: 1024px) {
-        .cochecklist-title {
-          font-size: 18px;
-        }
-      }
-      @media (max-width: 767px) {
-        .cochecklist-card {
-          border-radius: 8px;
-        }
-        .cochecklist-filter {
-          min-width: 100%;
-        }
-      }
-  `;
-
   const columns = [
     {
       title: "DCL No",
@@ -357,8 +185,8 @@ const CoChecklistPage = ({
       width: 120,
       ellipsis: true,
       render: (text) => (
-        <div className="cochecklist-primary-cell">
-          <span className="cochecklist-primary-value">{text || "-"}</span>
+        <div className={primaryCellClassName}>
+          <span className={primaryValueClassName}>{text || "-"}</span>
         </div>
       ),
     },
@@ -368,7 +196,7 @@ const CoChecklistPage = ({
       width: 140,
       ellipsis: true,
       render: (text) => (
-        <span className="cochecklist-primary-value">{text || "-"}</span>
+        <span className={primaryValueClassName}>{text || "-"}</span>
       ),
     },
     {
@@ -377,7 +205,7 @@ const CoChecklistPage = ({
       width: 130,
       ellipsis: true,
       render: (text) => (
-        <span className="cochecklist-muted">{text || "-"}</span>
+        <span className={mutedClassName}>{text || "-"}</span>
       ),
     },
     {
@@ -391,8 +219,8 @@ const CoChecklistPage = ({
         );
 
         return (
-          <div className="cochecklist-created-cell">
-            <span className="cochecklist-created-date">
+          <div className={createdCellClassName}>
+            <span className={createdDateClassName}>
               {createdTimestamp || "-"}
             </span>
           </div>
@@ -405,7 +233,7 @@ const CoChecklistPage = ({
       width: 95,
       ellipsis: true,
       render: (text) => (
-        <span className="cochecklist-muted" style={{ fontFamily: "monospace" }}>
+        <span className={`${mutedClassName} font-mono`}>
           {text || "Not set"}
         </span>
       ),
@@ -417,7 +245,7 @@ const CoChecklistPage = ({
       ellipsis: true,
       filters: loanTypeOptions,
       onFilter: (value, record) => record.loanType === value,
-      render: (text) => <span className="cochecklist-muted">{text || "-"}</span>,
+      render: (text) => <span className={mutedClassName}>{text || "-"}</span>,
     },
     {
       title: "Assigned RM",
@@ -427,7 +255,7 @@ const CoChecklistPage = ({
       filters: rmOptions,
       onFilter: (value, record) => record.assignedToRM?.name === value,
       render: (rm) => (
-        <span className="cochecklist-muted">
+        <span className={mutedClassName}>
           {rm?.name || "Not Assigned"}
         </span>
       ),
@@ -442,7 +270,7 @@ const CoChecklistPage = ({
           const docListCount = category.docList ? category.docList.length : 0;
           return total + docListCount;
         }, 0);
-        return <span className="cochecklist-primary-value">{totalDocCount}</span>;
+        return <span className={primaryValueClassName}>{totalDocCount}</span>;
       },
     },
     {
@@ -457,7 +285,7 @@ const CoChecklistPage = ({
         const statusMeta = getChecklistStatusMeta(status, record.dclNo);
 
         return (
-          <span className={`creator-badge creator-badge--${statusMeta.variant}`}>
+          <span className={getStatusBadgeClassName(statusMeta.variant)}>
             {statusMeta.label}
           </span>
         );
@@ -467,16 +295,8 @@ const CoChecklistPage = ({
   ];
 
   return (
-    <div
-      style={{
-        padding: 0,
-        boxSizing: "border-box",
-        minHeight: "100%",
-      }}
-      className="cochecklist-page creator-theme"
-    >
-      <style>{customTableStyles}</style>
-
+    <div className={pageRootClassName}>
+      <style>{headerBorderRemovalStyle}</style>
       {isDrawerOpen ? (
         <ChecklistsPage
           open={isDrawerOpen}
@@ -489,31 +309,30 @@ const CoChecklistPage = ({
           coCreatorId={userId}
         />
       ) : (
-      <div className="cochecklist-shell">
-        <div className="cochecklist-card">
-          <div className="cochecklist-toolbar">
-            <div className="cochecklist-toolbar-left">
+      <div className={`${shellClassName} cochecklist-page`}>
+        <div className={cardClassName}>
+          <div className={toolbarClassName}>
+            <div className="flex w-full items-center">
               <Button
-                type="default"
                 onClick={() => setDrawerOpen(true)}
-                className="cochecklist-create"
+                className={createButtonClassName}
               >
                 + Create New DCL
               </Button>
             </div>
 
-            <div className="cochecklist-toolbar-center">
-              <h2 className="cochecklist-title">Created Checklists</h2>
+            <div className="flex w-full items-center justify-center">
+              <h2 className={titleClassName}>Created Checklists</h2>
             </div>
 
-            <div className="cochecklist-actions">
+            <div className={actionsClassName}>
               <Select
                 allowClear
                 placeholder="Status"
                 options={statusOptions}
                 value={statusFilter}
                 onChange={setStatusFilter}
-                className="cochecklist-filter creator-select"
+                className={filterClassName}
               />
               <Select
                 allowClear
@@ -521,7 +340,7 @@ const CoChecklistPage = ({
                 options={loanTypeOptions}
                 value={loanTypeFilter}
                 onChange={setLoanTypeFilter}
-                className="cochecklist-filter creator-select"
+                className={filterClassName}
               />
               <Select
                 allowClear
@@ -529,12 +348,12 @@ const CoChecklistPage = ({
                 options={rmOptions}
                 value={rmFilter}
                 onChange={setRmFilter}
-                className="cochecklist-filter creator-select"
+                className={filterClassName}
               />
             </div>
           </div>
 
-          <div className="creator-table-shell cochecklist-table-shell">
+          <div className={tableShellClassName}>
             <Table
               columns={columns}
               dataSource={filteredChecklists}
@@ -556,7 +375,7 @@ const CoChecklistPage = ({
                     navigate(`/cocreator/review/${checklistId}`);
                   }
                 },
-                style: { cursor: "pointer" },
+                className: "cursor-pointer",
               })}
             />
           </div>

@@ -122,8 +122,6 @@ export const useChecklistDraft = ({
         if (autoSave && checklistId && hasUnsavedChanges) {
             autoSaveRef.current = setInterval(() => {
                 // This would need access to current draft data
-                // For now, just log that auto-save would trigger
-                console.log("Auto-save would trigger here");
             }, autoSaveIntervalMs);
         }
 

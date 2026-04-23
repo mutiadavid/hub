@@ -19,374 +19,26 @@ import { DeferralDetailsModal, ExtensionApplicationsTab } from ".";
 import ExtensionApplicationModal from "./ExtensionApplicationModal";
 import { API_BASE_URL } from "../../../../config/runtimeConfig";
 import { getDrafts, deleteDraft, formatDraftDate } from "../../../../utils/draftsUtils";
-import "../../../../styles/creatorDesignSystem.css";
 
 const { RangePicker } = DatePicker;
 
-const queuePageStyles = `
-  .approver-queue-page {
-    min-height: 100%;
-    width: 100%;
-    background: var(--color-bg);
-  }
+const queueSearchClassName = "w-full max-w-[360px] [&.ant-input-affix-wrapper]:rounded-md [&.ant-input-affix-wrapper]:border-[rgba(214,189,152,0.2)] [&.ant-input-affix-wrapper]:bg-white [&.ant-input-affix-wrapper]:px-3 [&.ant-input-affix-wrapper]:py-2 [&.ant-input-affix-wrapper]:shadow-none hover:[&.ant-input-affix-wrapper]:border-[var(--color-primary-dark)] focus:[&.ant-input-affix-wrapper]:border-[var(--color-primary-dark)] [&.ant-input-affix-wrapper-focused]:border-[var(--color-primary-dark)] [&.ant-input-affix-wrapper-focused]:shadow-none [&_input]:bg-transparent [&_input]:text-xs [&_input]:text-(--color-text-dark) [&_.anticon]:text-(--color-text-light) md:w-[min(360px,100%)]";
 
-  .approver-queue-shell {
-    width: 100%;
-  }
+const baseFiltersRowClassName = "grid items-end gap-3 border-b border-[rgba(214,189,152,0.2)] bg-white p-4 [grid-template-columns:minmax(0,1fr)] min-[769px]:[grid-template-columns:repeat(2,minmax(0,1fr))] min-[1201px]:[grid-template-columns:minmax(220px,1.2fr)_repeat(2,minmax(180px,0.8fr))_auto] [&_.ant-select]:w-full [&_.ant-picker]:w-full [&_.ant-select-selector]:min-h-[46px] [&_.ant-select-selector]:items-center [&_.ant-select-selector]:rounded-lg [&_.ant-select-selector]:border-[rgba(214,189,152,0.24)] [&_.ant-select-selector]:bg-white [&_.ant-select-selector]:shadow-none [&_.ant-picker]:min-h-[46px] [&_.ant-picker]:rounded-lg [&_.ant-picker]:border-[rgba(214,189,152,0.24)] [&_.ant-picker]:bg-white [&_.ant-picker]:shadow-none hover:[&_.ant-select-selector]:border-[var(--color-primary-dark)] hover:[&_.ant-picker]:border-[var(--color-primary-dark)] [&_.ant-select-focused_.ant-select-selector]:border-[var(--color-primary-dark)] [&_.ant-picker-focused]:border-[var(--color-primary-dark)]";
 
-  .approver-queue-card {
-    background: var(--color-white);
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-    overflow: hidden;
-  }
+const compactFiltersRowClassName = "grid items-end gap-3 border-b border-[rgba(214,189,152,0.2)] bg-white p-4 [grid-template-columns:minmax(0,1fr)] min-[769px]:[grid-template-columns:minmax(220px,1.2fr)_auto]";
 
-  .approver-queue-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 16px;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-    background: var(--color-bg);
-  }
+const queueActionsClassName = "flex flex-wrap justify-end gap-2.5 max-md:justify-stretch [&_.ant-btn]:max-md:flex-1";
 
-  .approver-queue-title {
-    color: var(--color-text-dark);
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    margin: 0;
-  }
+const primaryQueueButtonClassName = "!min-h-[42px] !rounded-lg !border-0 !bg-[var(--ncb-primary-500)] !px-4 !text-xs !font-semibold !text-white !shadow-none hover:!bg-[var(--ncb-primary-700)] hover:!text-white focus:!bg-[var(--ncb-primary-700)] focus:!text-white active:!bg-[var(--ncb-primary-700)] active:!text-white disabled:!border-0 disabled:!border-[#D1D5DB] disabled:!bg-[#D1D5DB] disabled:!text-white [&>span]:!text-white disabled:[&>span]:!text-white";
 
-  .approver-queue-copy {
-    margin: 0;
-    color: var(--color-text-dark);
-    font-size: 12px;
-    line-height: 1.5;
-  }
+const secondaryQueueButtonClassName = "!min-h-[42px] !rounded-lg !border !border-[rgba(214,189,152,0.28)] !bg-white !px-4 !text-xs !font-semibold !text-[var(--color-text-medium)] !shadow-none hover:!border-[rgba(64,83,76,0.24)] hover:!bg-white hover:!text-[var(--color-text-dark)] focus:!border-[rgba(64,83,76,0.24)] focus:!bg-white focus:!text-[var(--color-text-dark)] active:!border-[rgba(64,83,76,0.24)] active:!bg-white active:!text-[var(--color-text-dark)] disabled:!border-[#D1D5DB] disabled:!bg-[#D1D5DB] disabled:!text-white disabled:[&>span]:!text-white";
 
-  .approver-queue-search {
-    width: min(360px, 100%);
-  }
+const queueTabsClassName = "[&_.ant-tabs-nav]:mb-0 [&_.ant-tabs-nav]:border-b [&_.ant-tabs-nav]:border-[rgba(214,189,152,0.2)] [&_.ant-tabs-nav]:bg-white [&_.ant-tabs-nav]:px-4 max-md:[&_.ant-tabs-nav]:px-0 [&_.ant-tabs-nav-wrap]:overflow-auto [&_.ant-tabs-nav::before]:border-[rgba(214,189,152,0.2)] [&_.ant-tabs-tab]:mr-6 [&_.ant-tabs-tab]:rounded-none [&_.ant-tabs-tab]:border-none [&_.ant-tabs-tab]:bg-transparent [&_.ant-tabs-tab]:px-2 [&_.ant-tabs-tab]:pb-3 [&_.ant-tabs-tab]:pt-3.5 [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-(--color-text-light) [&_.ant-tabs-tab]:transition-all max-md:[&_.ant-tabs-tab]:mr-[22px] max-md:[&_.ant-tabs-tab]:pb-2.5 max-md:[&_.ant-tabs-tab]:pt-3 [&_.ant-tabs-tab-active]:border-transparent [&_.ant-tabs-tab-active]:bg-transparent [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-normal [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-(--color-primary-dark) [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:rounded-none [&_.ant-tabs-ink-bar]:bg-(--color-primary-dark)";
 
-  .approver-queue-search.ant-input-affix-wrapper {
-    border: 1px solid rgba(214, 189, 152, 0.2) !important;
-    background: var(--color-white) !important;
-    border-radius: 6px !important;
-    padding: 8px 12px !important;
-    box-shadow: none !important;
-  }
+const queueTableShellClassName = "rounded-lg bg-white px-4 pb-4 [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:bg-transparent [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3.5 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-normal [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:leading-[1.2] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-t-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:bg-transparent [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:leading-[1.25] [&_.ant-table-tbody>tr>td]:text-(--color-text-dark) hover:[&_.ant-table-tbody>tr:hover>td]:bg-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-table-thead>tr>th::before]:hidden [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden [&_.ant-table-wrapper::before]:hidden [&_.ant-table-wrapper::after]:hidden [&_.ant-table-container::before]:hidden [&_.ant-table-container::after]:hidden [&_.ant-table-thead>tr::after]:hidden [&_.ant-table-tbody>tr::after]:hidden [&_.ant-pagination]:mb-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination_.ant-pagination-item]:min-w-[34px] [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-item]:bg-transparent [&_.ant-pagination_.ant-pagination-prev]:min-w-[34px] [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:bg-transparent [&_.ant-pagination_.ant-pagination-next]:min-w-[34px] [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-next]:bg-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-normal [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark)";
 
-  .approver-queue-search.ant-input-affix-wrapper:hover,
-  .approver-queue-search.ant-input-affix-wrapper:focus,
-  .approver-queue-search.ant-input-affix-wrapper-focused {
-    border-color: var(--color-primary-dark) !important;
-    box-shadow: none !important;
-  }
-
-  .approver-queue-search input {
-    background: transparent !important;
-    font-size: 12px !important;
-    color: var(--color-text-dark) !important;
-  }
-
-  .approver-queue-search .anticon {
-    color: var(--color-text-light);
-  }
-
-  .approver-queue-filters-row {
-    display: grid;
-    grid-template-columns: minmax(220px, 1.2fr) repeat(2, minmax(180px, 0.8fr)) auto;
-    gap: 12px;
-    align-items: end;
-    padding: 16px;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-    background: var(--color-white);
-  }
-
-  .approver-queue-filters-row .ant-select,
-  .approver-queue-filters-row .ant-picker {
-    width: 100%;
-  }
-
-  .approver-queue-filters-row .ant-select-selector,
-  .approver-queue-filters-row .ant-picker {
-    min-height: 46px !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(214, 189, 152, 0.24) !important;
-    box-shadow: none !important;
-    background: #fff !important;
-  }
-
-  .approver-queue-filters-row .ant-select:hover .ant-select-selector,
-  .approver-queue-filters-row .ant-select-focused .ant-select-selector,
-  .approver-queue-filters-row .ant-picker:hover,
-  .approver-queue-filters-row .ant-picker-focused {
-    border-color: var(--color-primary-dark) !important;
-  }
-
-  .approver-queue-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-
-  .approver-queue-button.ant-btn {
-    min-height: 42px !important;
-    padding: 0 16px !important;
-    border-radius: 8px !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-  }
-
-  .approver-queue-button--primary.ant-btn {
-    border: none !important;
-    background: var(--ncb-primary-500) !important;
-    color: #fff !important;
-  }
-
-  .approver-queue-button--primary.ant-btn:hover,
-  .approver-queue-button--primary.ant-btn:focus,
-  .approver-queue-button--primary.ant-btn:active {
-    border: none !important;
-    background: var(--ncb-primary-700) !important;
-    color: #6b7280 !important;
-  }
-
-  .approver-queue-button--secondary.ant-btn {
-    border: 1px solid rgba(214, 189, 152, 0.28) !important;
-    background: #fff !important;
-    color: var(--color-text-medium) !important;
-  }
-
-  .approver-queue-button--secondary.ant-btn:hover,
-  .approver-queue-button--secondary.ant-btn:focus,
-  .approver-queue-button--secondary.ant-btn:active {
-    border-color: rgba(64, 83, 76, 0.24) !important;
-    background: #fff !important;
-    color: var(--color-text-dark) !important;
-  }
-
-  .approver-queue-button.ant-btn:disabled,
-  .approver-queue-button.ant-btn[disabled] {
-    border: none !important;
-    background: #D1D5DB !important;
-    border-color: #D1D5DB !important;
-    color: #6b7280 !important;
-  }
-
-  .approver-queue-button.ant-btn:disabled span,
-  .approver-queue-button.ant-btn[disabled] span {
-    color: #fff !important;
-  }
-
-  .approver-queue-tabs .ant-tabs-nav {
-    margin-bottom: 0;
-    padding: 0 16px;
-    background: var(--color-white);
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-  }
-
-  .approver-queue-tabs .ant-tabs-nav::before {
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-    display: block !important;
-  }
-
-  .approver-queue-tabs .ant-tabs-nav-wrap {
-    overflow: auto;
-  }
-
-  .approver-queue-tabs .ant-tabs-tab {
-    border: none !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-    padding: 14px 8px 12px !important;
-    color: var(--color-text-light);
-    font-size: 12px;
-    font-weight: 500;
-    margin: 0 24px 0 0 !important;
-    transition: all 0.2s ease;
-  }
-
-  .approver-queue-tabs .ant-tabs-tab-active {
-    background: transparent !important;
-    border-color: transparent !important;
-  }
-
-  .approver-queue-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: var(--color-primary-dark) !important;
-    font-weight: 400;
-  }
-
-  .approver-queue-tabs .ant-tabs-ink-bar {
-    display: block !important;
-    height: 2px !important;
-    background: var(--color-primary-dark) !important;
-    border-radius: 0 !important;
-  }
-
-  .approver-queue-tab-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .approver-queue-tab-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: rgba(214, 189, 152, 0.18);
-    border: none;
-    color: var(--color-text-dark);
-    font-size: 10px;
-    font-weight: 400;
-  }
-
-  .approver-queue-table-shell {
-    background: var(--color-white);
-    border-radius: 8px;
-    padding: 0 16px 16px;
-  }
-
-  .approver-queue-table-shell .ant-table,
-  .approver-queue-table-shell .ant-table-wrapper,
-  .approver-queue-table-shell .ant-spin-nested-loading,
-  .approver-queue-table-shell .ant-spin-container,
-  .approver-queue-table-shell .ant-table-container,
-  .approver-queue-table-shell .ant-table-content,
-  .approver-queue-table-shell table,
-  .approver-queue-table-shell thead,
-  .approver-queue-table-shell tbody,
-  .approver-queue-table-shell tr {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-
-  .approver-queue-table-shell .ant-table-thead > tr > th {
-    background: transparent !important;
-    color: var(--color-text-dark) !important;
-    font-size: 11px;
-    font-weight: 400;
-    text-transform: uppercase;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-    border-right: none !important;
-    line-height: 1.2;
-    padding: 14px 12px !important;
-  }
-
-  .approver-queue-table-shell .ant-table-tbody > tr > td {
-    background: transparent !important;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-    border-top: none !important;
-    border-right: none !important;
-    color: var(--color-text-dark);
-    padding: 16px 12px !important;
-    font-size: 12px;
-    line-height: 1.25;
-  }
-
-  .approver-queue-table-shell .ant-table-thead > tr > th::before,
-  .approver-queue-table-shell .ant-table-cell::before,
-  .approver-queue-table-shell .ant-table-cell::after,
-  .approver-queue-table-shell .ant-table-wrapper::before,
-  .approver-queue-table-shell .ant-table-wrapper::after,
-  .approver-queue-table-shell .ant-table-container::before,
-  .approver-queue-table-shell .ant-table-container::after,
-  .approver-queue-table-shell .ant-table-thead > tr::after,
-  .approver-queue-table-shell .ant-table-tbody > tr::after {
-    display: none !important;
-  }
-
-  .approver-queue-table-shell .ant-table-tbody > tr:hover > td {
-    background: rgba(214, 189, 152, 0.12) !important;
-  }
-
-  .approver-queue-table-shell .ant-table-tbody > tr > td:first-child,
-  .approver-queue-table-shell .ant-table-thead > tr > th:first-child {
-    padding-left: 0 !important;
-  }
-
-  .approver-queue-table-shell .ant-table-tbody > tr > td:last-child,
-  .approver-queue-table-shell .ant-table-thead > tr > th:last-child {
-    padding-right: 0 !important;
-  }
-
-  .approver-queue-table-shell .ant-pagination-item-active {
-    border-color: rgba(214, 189, 152, 0.18) !important;
-    background: rgba(214, 189, 152, 0.18) !important;
-  }
-
-  .approver-queue-table-shell .ant-pagination-item-active a {
-    color: var(--color-text-dark) !important;
-    font-weight: 400;
-  }
-
-  .approver-queue-table-shell .ant-pagination {
-    margin-top: 18px !important;
-    margin-bottom: 0 !important;
-  }
-
-  .approver-queue-table-shell .ant-pagination .ant-pagination-item,
-  .approver-queue-table-shell .ant-pagination .ant-pagination-prev,
-  .approver-queue-table-shell .ant-pagination .ant-pagination-next {
-    border-radius: 999px !important;
-    border-color: transparent !important;
-    background: transparent !important;
-    min-width: 34px;
-  }
-
-  @media (max-width: 1200px) {
-    .approver-queue-filters-row {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 768px) {
-    .approver-queue-toolbar {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .approver-queue-search {
-      width: 100%;
-    }
-
-    .approver-queue-filters-row {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .approver-queue-actions {
-      justify-content: stretch;
-    }
-
-    .approver-queue-actions .ant-btn {
-      flex: 1;
-    }
-
-    .approver-queue-tabs .ant-tabs-nav {
-      padding: 0;
-    }
-
-    .approver-queue-tabs .ant-tabs-tab {
-      margin-right: 22px !important;
-      padding-top: 12px !important;
-      padding-bottom: 10px !important;
-      font-size: 12px;
-    }
-  }
-`;
+const queueLoadingStateClassName = "flex min-h-[220px] items-center justify-center rounded-lg border border-[rgba(214,189,152,0.2)] bg-white";
 
 const MyQueue = ({ initialTab = "deferrals" }) => {
   const navigate = useNavigate();
@@ -740,17 +392,16 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
   const showExtensionDetails = extensionModalOpen && !!selectedExtension;
 
   const renderTabLabel = (label, count) => (
-    <span className="approver-queue-tab-label">
+    <span className="inline-flex items-center gap-1.5">
       <span>{label}</span>
-      <span className="approver-queue-tab-count">{count}</span>
+      <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[rgba(214,189,152,0.18)] px-[5px] text-[10px] font-normal text-(--color-text-dark)">{count}</span>
     </span>
   );
 
   return (
-    <div className="approver-queue-page creator-theme">
-      <style>{queuePageStyles}</style>
-      <div className="approver-queue-shell">
-        <div className="approver-queue-card">
+    <div className="creator-theme min-h-full w-full bg-(--color-bg)">
+      <div className="w-full">
+        <div className="overflow-hidden rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
           {showDeferralDetails ? (
             <DeferralDetailsModal
               deferral={selectedDeferral}
@@ -779,10 +430,10 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
             />
           ) : (
             <>
-              <div className="approver-queue-toolbar">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] bg-(--color-bg) p-4 max-md:flex-col max-md:items-stretch">
                 <div>
-                  <h2 className="approver-queue-title">My Queue</h2>
-                  <p className="approver-queue-copy">
+                  <h2 className="m-0 text-[15px] font-normal leading-[1.2] tracking-[-0.02em] text-(--color-text-dark)">My Queue</h2>
+                  <p className="m-0 text-xs leading-6 text-(--color-text-dark)">
                     Review pending deferrals and extension applications from one workspace.
                   </p>
                 </div>
@@ -798,12 +449,12 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                     }
                   }}
                   allowClear
-                  className="approver-queue-search"
+                  className={queueSearchClassName}
                 />
               </div>
 
               <Tabs
-                className="approver-queue-tabs"
+                className={queueTabsClassName}
                 activeKey={activeTab}
                 onChange={handleTabChange}
                 items={[
@@ -812,7 +463,7 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                     label: renderTabLabel("Deferrals", filteredDeferrals.length),
                     children: (
                       <div>
-                      <div className="approver-queue-filters-row">
+                      <div className={baseFiltersRowClassName}>
                         <Select
                           placeholder="Status"
                           value={statusFilter}
@@ -835,9 +486,9 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                           }}
                           size="large"
                         />
-                        <div className="approver-queue-actions">
+                        <div className={queueActionsClassName}>
                           <Button
-                            className="approver-queue-button approver-queue-button--primary"
+                            className={primaryQueueButtonClassName}
                             icon={<ReloadOutlined />}
                             onClick={refetchDeferrals}
                             loading={isLoading}
@@ -846,7 +497,7 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                             Refresh
                           </Button>
                           {hasActiveFilters && (
-                            <Button className="approver-queue-button approver-queue-button--secondary" onClick={resetFilters} size="large">
+                            <Button className={secondaryQueueButtonClassName} onClick={resetFilters} size="large">
                               Clear Filters
                             </Button>
                           )}
@@ -854,15 +505,15 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                       </div>
 
                       {isLoading ? (
-                        <div className="creator-tab-loading">
+                        <div className={queueLoadingStateClassName}>
                           <Spin />
                         </div>
                       ) : filteredDeferrals.length === 0 ? (
-                        <div className="creator-tab-empty">
+                        <div className={queueLoadingStateClassName}>
                           <Empty description="No pending deferrals" />
                         </div>
                       ) : (
-                        <div className="approver-queue-table-shell">
+                        <div className={queueTableShellClassName}>
                           <Table
                             columns={deferralColumns}
                             dataSource={filteredDeferrals}
@@ -872,7 +523,7 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                             scroll={{ x: 720 }}
                             onRow={(record) => ({
                               onClick: () => handleOpenDeferralDetails(record),
-                              style: { cursor: "pointer" },
+                              className: "cursor-pointer",
                             })}
                           />
                         </div>
@@ -885,10 +536,10 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                     label: renderTabLabel("Extensions", filteredExtensions.length),
                     children: (
                       <div>
-                      <div className="approver-queue-filters-row" style={{ gridTemplateColumns: "minmax(220px, 1.2fr) auto" }}>
-                        <div className="approver-queue-actions">
+                      <div className={compactFiltersRowClassName}>
+                        <div className={queueActionsClassName}>
                           <Button
-                            className="approver-queue-button approver-queue-button--primary"
+                            className={primaryQueueButtonClassName}
                             icon={<ReloadOutlined />}
                             onClick={refetchExtensions}
                             loading={extensionsLoading}
@@ -897,7 +548,7 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                             Refresh
                           </Button>
                           {extensionSearchText && (
-                            <Button className="approver-queue-button approver-queue-button--secondary" onClick={resetExtensionFilters} size="large">
+                            <Button className={secondaryQueueButtonClassName} onClick={resetExtensionFilters} size="large">
                               Clear Search
                             </Button>
                           )}
@@ -908,7 +559,7 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                           extensions={filteredExtensions}
                           loading={extensionsLoading}
                           onOpenExtensionDetails={handleOpenExtensionDetails}
-                          tableClassName="approver-queue-table-shell"
+                          tableClassName={queueTableShellClassName}
                         />
                       </div>
                     ),
@@ -918,10 +569,10 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                     label: renderTabLabel("Drafts", draftsList.length),
                     children: (
                       <div>
-                      <div className="approver-queue-filters-row" style={{ gridTemplateColumns: "minmax(220px, 1.2fr) auto" }}>
-                        <div className="approver-queue-actions">
+                      <div className={compactFiltersRowClassName}>
+                        <div className={queueActionsClassName}>
                           <Button
-                            className="approver-queue-button approver-queue-button--primary"
+                            className={primaryQueueButtonClassName}
                             icon={<ReloadOutlined />}
                             onClick={loadDrafts}
                             loading={draftsLoading}
@@ -933,15 +584,15 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                       </div>
 
                       {draftsLoading ? (
-                        <div className="creator-tab-loading">
+                        <div className={queueLoadingStateClassName}>
                           <Spin />
                         </div>
                       ) : draftsList.length === 0 ? (
-                        <div className="creator-tab-empty">
+                        <div className={queueLoadingStateClassName}>
                           <Empty description="No saved deferral drafts" />
                         </div>
                       ) : (
-                        <div className="approver-queue-table-shell">
+                        <div className={queueTableShellClassName}>
                           <Table
                             columns={[
                               {
@@ -974,14 +625,14 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                                 render: (_, record) => (
                                   <Space size="small">
                                     <Button
-                                      type="primary"
+                                      className="rounded-md! border-0! bg-(--ncb-primary-500)! text-white! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! [&>span]:text-white!"
                                       size="small"
                                       onClick={() => handleRestoreDraft(record)}
                                     >
                                       Restore
                                     </Button>
                                     <Button
-                                      danger
+                                      className="rounded-md! border-[rgba(220,38,38,0.2)]! bg-white! text-red-600! hover:border-red-600! hover:bg-red-50! hover:text-red-700! focus:border-red-600! focus:bg-red-50! focus:text-red-700!"
                                       size="small"
                                       icon={<DeleteOutlined />}
                                       onClick={() => handleDeleteDraftFromList(record.id)}

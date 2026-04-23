@@ -6,10 +6,11 @@ const { RangePicker } = DatePicker;
 
 const DeferralFilters = ({ filters, onFilterChange, onClearFilters }) => {
   return (
-    <div className="deferrals-filters">
-      <div className="deferrals-filters__grid">
-        <div className="deferrals-filters__field">
+    <div className="rounded-2xl border border-[rgba(214,189,152,0.18)] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)_minmax(0,1.15fr)_auto] md:items-center">
+        <div>
           <Input
+            className="h-11 rounded-xl border-[rgba(214,189,152,0.22)] bg-[#fcfbf8]"
             placeholder="Search by DCL, customer, or deferral number"
             value={filters.search ?? ""}
             onChange={(e) => onFilterChange("search", e.target.value)}
@@ -18,11 +19,12 @@ const DeferralFilters = ({ filters, onFilterChange, onClearFilters }) => {
           />
         </div>
 
-        <div className="deferrals-filters__field">
+        <div>
           <Select
+            className="w-full"
             value={filters.statusFilter ?? "all"}
             onChange={(value) => onFilterChange("statusFilter", value)}
-            style={{ width: "100%" }}
+            size="large"
           >
             <Select.Option value="all">All statuses</Select.Option>
             <Select.Option value="pending">Pending</Select.Option>
@@ -33,17 +35,21 @@ const DeferralFilters = ({ filters, onFilterChange, onClearFilters }) => {
           </Select>
         </div>
 
-        <div className="deferrals-filters__field">
+        <div>
           <RangePicker
+            className="h-11 w-full rounded-xl border-[rgba(214,189,152,0.22)] bg-[#fcfbf8]"
             value={filters.dateRange}
             onChange={(value) => onFilterChange("dateRange", value)}
-            style={{ width: "100%" }}
             placeholder={["Start date", "End date"]}
           />
         </div>
 
-        <div className="deferrals-filters__actions">
-          <Button icon={<ClearOutlined />} onClick={onClearFilters}>
+        <div className="flex md:justify-end">
+          <Button
+            className="h-11 rounded-xl border-[rgba(214,189,152,0.22)] bg-white px-4 text-(--color-text-medium) shadow-none hover:border-[rgba(214,189,152,0.32)] hover:bg-[#faf7f2] hover:text-(--color-text-dark)"
+            icon={<ClearOutlined />}
+            onClick={onClearFilters}
+          >
             Clear
           </Button>
         </div>

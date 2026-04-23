@@ -11,7 +11,6 @@ class SocketService {
     if (!this.socket) {
       const socketURL =
         import.meta.env.VITE_SOCKET_URL?.trim() || "http://localhost:5001";
-      console.log("🔌 Connecting to socket server:", socketURL);
       this.socket = io(socketURL, {
         transports: ["websocket", "polling"],
         reconnection: true,
@@ -20,7 +19,6 @@ class SocketService {
       });
 
       this.socket.on("connect", () => {
-        console.log("✅ Socket connected successfully:", this.socket.id);
         // Automatically emit user online status on connection
         if (this.lastUserData) {
           this.emitUserOnline(this.lastUserData);
@@ -37,11 +35,9 @@ class SocketService {
       });
 
       this.socket.on("disconnect", (reason) => {
-        console.log("❌ Socket disconnected:", reason);
       });
 
       this.socket.on("online-users-updated", (data) => {
-        console.log("👥 Online users updated:", data.count, "users");
       });
     }
     return this.socket;
@@ -67,7 +63,6 @@ class SocketService {
         email: userData.email,
         role: userData.role,
       };
-      console.log("📤 Emitting user-online:", userPayload);
       this.socket.emit("user-online", userPayload);
     } else {
       console.warn(

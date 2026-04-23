@@ -99,8 +99,6 @@ const MyQueue = ({
   // Handle draft restoration - open modal with draft data
   useEffect(() => {
     if (draftToRestore && draftToRestore.data) {
-      console.log("🔄 RM MyQueue - Restoring draft:", draftToRestore);
-
       // Reconstruct checklist object from draft data
       const draftChecklist = {
         id: draftToRestore.data.checklistId || draftToRestore.id,
@@ -127,11 +125,6 @@ const MyQueue = ({
         commentTrail: draftToRestore.data.commentTrail || [],
         _draftCommentTrail: draftToRestore.data.commentTrail || [],
       };
-
-      console.log(
-        "✅ RM MyQueue - Opening modal with restored checklist:",
-        draftChecklist,
-      );
 
       setTimeout(() => {
         setSelectedChecklist(draftChecklist);

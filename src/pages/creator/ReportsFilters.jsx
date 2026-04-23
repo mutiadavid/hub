@@ -5,6 +5,13 @@ import { SearchOutlined } from "@ant-design/icons";
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
+const cardClassName = "rounded-lg border border-[rgba(214,189,152,0.2)] bg-white p-4 shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
+const fieldRowClassName = "flex flex-wrap items-center gap-3";
+const searchClassName = "w-full [&_.ant-input-affix-wrapper]:h-10 [&_.ant-input-affix-wrapper]:rounded-md [&_.ant-input-affix-wrapper]:border-[rgba(214,189,152,0.2)] [&_.ant-input-affix-wrapper]:bg-white [&_.ant-input-affix-wrapper]:shadow-none [&_.ant-input-affix-wrapper:hover]:border-(--color-primary-dark) [&_.ant-input-affix-wrapper-focused]:border-(--color-primary-dark) [&_.ant-input]:text-xs [&_.ant-input]:text-(--color-text-medium)";
+const pickerClassName = "w-full [&.ant-picker]:h-10 [&.ant-picker]:rounded-md [&.ant-picker]:border-[rgba(214,189,152,0.2)] [&.ant-picker]:shadow-none hover:[&.ant-picker]:border-(--color-primary-dark) [&.ant-picker-focused]:border-(--color-primary-dark) [&_.ant-picker-input>input]:text-xs [&_.ant-picker-input>input]:text-(--color-text-medium)";
+const selectClassName = "w-full [&_.ant-select-selector]:h-10! [&_.ant-select-selector]:rounded-md! [&_.ant-select-selector]:border-[rgba(214,189,152,0.2)]! [&_.ant-select-selector]:bg-white! [&_.ant-select-selector]:shadow-none! hover:[&_.ant-select-selector]:border-(--color-primary-dark)! [&.ant-select-focused_.ant-select-selector]:border-(--color-primary-dark)! [&_.ant-select-selection-item]:text-xs [&_.ant-select-selection-item]:text-(--color-text-medium) [&_.ant-select-selection-placeholder]:text-xs [&_.ant-select-selection-placeholder]:text-(--color-text-medium)";
+const buttonClassName = "h-10! rounded-md! border-[rgba(214,189,152,0.2)]! bg-white! px-3! text-xs! font-semibold! text-(--color-text-medium)! shadow-none! hover:border-(--color-primary-dark)! hover:text-(--color-primary-dark)!";
+
 export default function ReportsFilters({
   activeTab,
   filters,
@@ -28,76 +35,14 @@ export default function ReportsFilters({
   ];
 
   return (
-    <Card
-      className="creator-reports-filters-card"
-      size="small"
-      bodyStyle={{ padding: "16px" }}
-      style={{
-        marginBottom: 0,
-        background: "var(--color-white)",
-        borderRadius: 8,
-        border: "1px solid rgba(214, 189, 152, 0.2)",
-        boxShadow: "0 1px 2px rgba(26, 54, 54, 0.06)",
-      }}
-    >
-      <style>{`
-        .creator-reports-filters-card.ant-card .ant-card-body {
-          padding: 16px !important;
-        }
-        .creator-reports-filters-card .ant-input-affix-wrapper,
-        .creator-reports-filters-card .ant-picker,
-        .creator-reports-filters-card .ant-select .ant-select-selector {
-          min-height: 40px !important;
-          border-radius: 6px !important;
-          border: 1px solid rgba(214, 189, 152, 0.2) !important;
-          box-shadow: none !important;
-          background: var(--color-white) !important;
-        }
-        .creator-reports-filters-card .ant-input-affix-wrapper:hover,
-        .creator-reports-filters-card .ant-input-affix-wrapper-focused,
-        .creator-reports-filters-card .ant-picker:hover,
-        .creator-reports-filters-card .ant-picker-focused,
-        .creator-reports-filters-card .ant-select-focused .ant-select-selector,
-        .creator-reports-filters-card .ant-select:hover .ant-select-selector {
-          border-color: var(--color-primary-dark) !important;
-        }
-        .creator-reports-filters-card .ant-input,
-        .creator-reports-filters-card .ant-picker input,
-        .creator-reports-filters-card .ant-select-selection-item,
-        .creator-reports-filters-card .ant-select-selection-placeholder {
-          font-size: 12px !important;
-          color: var(--color-text-medium) !important;
-        }
-        .creator-reports-filters-card .ant-btn {
-          min-height: 40px !important;
-          padding: 0 14px !important;
-          border-radius: 6px !important;
-          border: 1px solid rgba(214, 189, 152, 0.2) !important;
-          background: var(--color-white) !important;
-          color: var(--color-text-medium) !important;
-          box-shadow: none !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-        }
-        .creator-reports-filters-card .ant-btn:hover,
-        .creator-reports-filters-card .ant-btn:focus {
-          border-color: var(--color-primary-dark) !important;
-          color: var(--color-primary-dark) !important;
-        }
-      `}</style>
+    <Card className={`${cardClassName} [&_.ant-card-body]:p-0`} size="small">
       <Row gutter={[12, 12]} align="middle" wrap>
         {isTatTab && (
           <Col xs={24}>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 12,
-                alignItems: "center",
-              }}
-            >
-              <div style={{ flex: "1 1 260px", minWidth: 240 }}>
+            <div className={fieldRowClassName}>
+              <div className="min-w-60 flex-[1_1_260px]">
                 <Input
+                  className={searchClassName}
                   prefix={<SearchOutlined />}
                   placeholder="Search by item ID, customer, DCL..."
                   value={filters.searchText}
@@ -108,18 +53,18 @@ export default function ReportsFilters({
                   size="middle"
                 />
               </div>
-              <div style={{ flex: "1 1 260px", minWidth: 240 }}>
+              <div className="min-w-60 flex-[1_1_260px]">
                 <RangePicker
-                  style={{ width: "100%" }}
+                  className={pickerClassName}
                   placeholder={["Start Date", "End Date"]}
                   value={filters.dateRange}
                   onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
                   size="middle"
                 />
               </div>
-              <div style={{ flex: "0 0 220px" }}>
+              <div className="basis-[220px]">
                 <Select
-                  style={{ width: "100%" }}
+                  className={selectClassName}
                   placeholder="Filter by status"
                   value={filters.status}
                   onChange={(value) => setFilters({ ...filters, status: value })}
@@ -133,9 +78,9 @@ export default function ReportsFilters({
                   ))}
                 </Select>
               </div>
-              <div style={{ flex: "0 0 180px" }}>
+              <div className="basis-[180px]">
                 <Select
-                  style={{ width: "100%" }}
+                  className={selectClassName}
                   placeholder="Workflow type"
                   value={filters.itemType}
                   onChange={(value) => setFilters({ ...filters, itemType: value })}
@@ -147,7 +92,7 @@ export default function ReportsFilters({
                 </Select>
               </div>
               <div>
-                <Button onClick={clearFilters} size="middle">
+                <Button onClick={clearFilters} size="middle" className={buttonClassName}>
                   Clear
                 </Button>
               </div>
@@ -159,7 +104,7 @@ export default function ReportsFilters({
         {isDeferralTab && !isTatTab && (
           <Col xs={24} sm={14} md={10} lg={9}>
             <RangePicker
-              style={{ width: "100%" }}
+              className={pickerClassName}
               placeholder={["Start Date", "End Date"]}
               value={filters.dateRange}
               onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
@@ -171,16 +116,10 @@ export default function ReportsFilters({
         {/* Right Section - DCL Filter */}
         {isDclTab && !isTatTab && (
           <Col xs={24}>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 12,
-                alignItems: "center",
-              }}
-            >
-              <div style={{ flex: "1 1 320px", minWidth: 240 }}>
+            <div className={fieldRowClassName}>
+              <div className="min-w-60 flex-[1_1_320px]">
                 <Input
+                  className={searchClassName}
                   prefix={<SearchOutlined />}
                   placeholder="Search by DCL No, Customer..."
                   value={filters.searchText}
@@ -191,9 +130,9 @@ export default function ReportsFilters({
                   size="middle"
                 />
               </div>
-              <div style={{ flex: "0 0 220px" }}>
+              <div className="basis-[220px]">
                 <Select
-                  style={{ width: "100%" }}
+                  className={selectClassName}
                   placeholder="Filter by status"
                   value={filters.status}
                   onChange={(value) =>
@@ -210,7 +149,7 @@ export default function ReportsFilters({
                 </Select>
               </div>
               <div>
-                <Button onClick={clearFilters} size="middle">
+                <Button onClick={clearFilters} size="middle" className={buttonClassName}>
                   Clear
                 </Button>
               </div>

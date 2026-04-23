@@ -474,7 +474,6 @@ const DeferralTable = ({
             scroll={{ x: 1000 }}
             onRow={(record) => ({
               onClick: () => {
-                console.log("Row clicked:", record);
                 if (onRowClick) {
                   onRowClick(record);
                 }

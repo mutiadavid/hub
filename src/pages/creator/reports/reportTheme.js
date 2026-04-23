@@ -12,6 +12,7 @@ export const NCBA_REPORT_THEME = {
   brandDark: NCBA_COLORS.primaryHover,
   brandDeep: NCBA_COLORS.primaryDeep,
   brandSoft: NCBA_COLORS.accent,
+  brandLight: NCBA_COLORS.infoSoft,
   brandMist: NCBA_COLORS.infoSoft,
   ink: NCBA_COLORS.textStrong,
   inkSoft: NCBA_COLORS.textMedium,

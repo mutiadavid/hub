@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import "../../styles/creatorTableOverrides.css";
 import {
   Tabs,
   Tooltip,
@@ -38,10 +39,37 @@ import {
   TAT_TABS,
 } from "./reports/reportTheme";
 import { buildTATTableRows, getDocumentEntries, safeLower } from "./reports/reportUtils";
-import "../../styles/creatorDesignSystem.css";
 
 const { Text } = Typography;
 const LIVE_REPORT_TICK_MS = 1000;
+const loadingStateClassName = "flex justify-center p-8";
+const pageRootClassName =
+  "min-h-full w-full bg-white [font-family:'Century_Gothic','CenturyGothic','AppleGothic',sans-serif]";
+const shellClassName = "flex w-full flex-col gap-4";
+const cardClassName =
+  "overflow-hidden rounded-lg border border-[#d6bd9833] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
+const toolbarClassName =
+  "flex flex-col gap-3 border-b border-[#d6bd9833] bg-white p-4 md:flex-row md:flex-wrap md:items-center md:justify-between";
+const titleBlockClassName = "flex min-w-[260px] flex-col gap-1";
+const titleClassName = "m-0 text-[15px] font-bold leading-tight tracking-[-0.02em] text-[#1f2933]";
+const subtitleClassName = "text-xs text-[#6b7280]";
+const actionsClassName = "flex flex-1 flex-wrap items-center justify-end gap-2.5";
+const tabsClassName =
+  "min-w-0 flex-1 [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:rounded-none [&_.ant-tabs-ink-bar]:bg-[#3ab3e5] [&_.ant-tabs-nav]:m-0 [&_.ant-tabs-nav]:border-b-0 [&_.ant-tabs-nav-wrap]:overflow-auto [&_.ant-tabs-nav:before]:hidden [&_.ant-tabs-tab]:mr-6 [&_.ant-tabs-tab]:rounded-none [&_.ant-tabs-tab]:border-0 [&_.ant-tabs-tab]:bg-transparent [&_.ant-tabs-tab]:px-2 [&_.ant-tabs-tab]:pb-3 [&_.ant-tabs-tab]:pt-3.5 [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-[#6b7280] [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-[#3ab3e5] [&_.ant-tabs-tab-btn]:text-[13px] [&_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-btn]:leading-tight [&_.ant-tabs-tab-btn]:text-[#4b5563] max-md:[&_.ant-tabs-tab]:mr-[22px] max-md:[&_.ant-tabs-tab]:pb-2.5 max-md:[&_.ant-tabs-tab]:pt-3";
+const exportButtonClassName =
+  "h-10 min-h-10 w-10 min-w-10 shrink-0 rounded-md border border-[#d6bd9833] bg-white text-[#4b5563] shadow-none hover:border-[#3ab3e5] hover:bg-white hover:text-[#3ab3e5] focus:border-[#3ab3e5] focus:bg-white focus:text-[#3ab3e5]";
+const contentClassName =
+  "overflow-hidden rounded-lg border border-[#d6bd9833] bg-white p-4 shadow-[0_1px_2px_rgba(26,54,54,0.06)] max-md:p-3 [&_.ant-card]:border-0 [&_.ant-card]:shadow-none [&_.ant-card-body]:bg-transparent [&_.ant-card-body]:shadow-none";
+const generatedClassName = "mt-[-2px] text-xs text-[#6b7280]";
+const modalRootClassName =
+  "[&_.ant-modal-body]:bg-white [&_.ant-modal-body]:p-5 [&_.ant-modal-close]:top-3.5 [&_.ant-modal-close]:end-3.5 [&_.ant-modal-close]:text-[#4b5563] hover:[&_.ant-modal-close]:bg-[#d6bd981f] hover:[&_.ant-modal-close]:text-[#1f2933] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:rounded-xl [&_.ant-modal-content]:border [&_.ant-modal-content]:border-[#d6bd9833] [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_20px_45px_rgba(17,24,39,0.16)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[#d6bd9833] [&_.ant-modal-header]:bg-white [&_.ant-modal-header]:px-5 [&_.ant-modal-header]:pb-3 [&_.ant-modal-header]:pt-[18px] [&_.ant-modal-title]:text-[15px] [&_.ant-modal-title]:font-bold [&_.ant-modal-title]:leading-tight [&_.ant-modal-title]:text-[#1f2933]";
+const modalTitleClassName = "flex flex-col gap-1 pr-7";
+const modalTitleTextClassName = "text-[15px] font-bold leading-tight text-[#1f2933]";
+const modalTitleCopyClassName = "text-xs leading-[1.45] text-[#6b7280]";
+const modalOptionsClassName = "flex flex-col gap-2.5";
+const modalOptionButtonClassName =
+  "flex h-11 min-h-11 items-center justify-start gap-2.5 rounded-lg border border-[#d6bd9838] bg-white px-3.5 text-left font-semibold text-[#1f2933] shadow-none hover:border-[#1a363638] hover:bg-[#faf7f3] hover:text-[#1f2933] focus:border-[#1a363638] focus:bg-[#faf7f3] focus:text-[#1f2933] [&_.anticon]:text-[15px] [&_.anticon]:text-[#3ab3e5]";
+const modalNoteClassName = "mt-1 pl-0.5 text-xs text-[#6b7280]";
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState("deferrals");
@@ -374,7 +402,7 @@ export default function Reports() {
       case "deferrals":
         if (loading) {
           return (
-            <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+            <div className={loadingStateClassName}>
               <Spin />
             </div>
           );
@@ -383,7 +411,7 @@ export default function Reports() {
       case "deferralCharts":
         if (loading) {
           return (
-            <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+            <div className={loadingStateClassName}>
               <Spin />
             </div>
           );
@@ -396,7 +424,7 @@ export default function Reports() {
       case "tatConsumed":
         if (loading) {
           return (
-            <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+            <div className={loadingStateClassName}>
               <Spin />
             </div>
           );
@@ -405,7 +433,7 @@ export default function Reports() {
       case "tatConsumedCharts":
         if (loading) {
           return (
-            <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+            <div className={loadingStateClassName}>
               <Spin />
             </div>
           );
@@ -416,277 +444,31 @@ export default function Reports() {
     }
   };
 
-  const reportsPageStyles = `
-    .creator-reports-page {
-      min-height: 100%;
-      width: 100%;
-      background: var(--color-white);
-      font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-    }
-    .creator-reports-shell {
-      width: 100%;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .creator-reports-card {
-      background: var(--color-white);
-      border: 1px solid rgba(214, 189, 152, 0.2);
-      border-radius: 8px;
-      box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-      overflow: hidden;
-    }
-    .creator-reports-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-      background: var(--color-white);
-    }
-    .creator-reports-title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 260px;
-    }
-    .creator-reports-title {
-      margin: 0;
-      font-size: 15px;
-      line-height: 1.2;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--color-text-dark);
-    }
-    .creator-reports-subtitle {
-      color: var(--color-text-light) !important;
-      font-size: 12px;
-    }
-    .creator-reports-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      flex: 1;
-    }
-    .creator-reports-tabs .ant-tabs-nav {
-      margin: 0;
-      padding: 0;
-      background: transparent;
-      border-bottom: none;
-    }
-    .creator-reports-tabs .ant-tabs-nav::before {
-      display: none !important;
-    }
-    .creator-reports-tabs .ant-tabs-nav-wrap {
-      overflow: auto;
-    }
-    .creator-reports-tabs .ant-tabs-tab {
-      border: none !important;
-      background: transparent !important;
-      border-radius: 0 !important;
-      padding: 14px 8px 12px !important;
-      color: var(--color-text-light);
-      font-size: 12px;
-      font-weight: 500;
-      margin: 0 24px 0 0 !important;
-    }
-    .creator-reports-tabs .ant-tabs-tab-btn {
-      color: var(--color-text-medium) !important;
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-    .creator-reports-tabs .ant-tabs-tab-active {
-      background: transparent !important;
-      border-color: transparent !important;
-    }
-    .creator-reports-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-      color: var(--color-primary-dark) !important;
-      font-weight: 600;
-    }
-    .creator-reports-tabs .ant-tabs-ink-bar {
-      display: block !important;
-      height: 2px !important;
-      background: var(--color-primary-dark) !important;
-      border-radius: 0 !important;
-    }
-    .creator-reports-export {
-      min-width: 40px !important;
-      width: 40px !important;
-      height: 40px !important;
-      border-radius: 6px !important;
-      border: 1px solid rgba(214, 189, 152, 0.2) !important;
-      background: var(--color-white) !important;
-      color: var(--color-text-medium) !important;
-      box-shadow: none !important;
-      flex-shrink: 0;
-    }
-    .creator-reports-export:hover,
-    .creator-reports-export:focus {
-      border-color: var(--color-primary-dark) !important;
-      background: var(--color-white) !important;
-      color: var(--color-primary-dark) !important;
-    }
-    .creator-reports-content {
-      background: var(--color-white);
-      border: 1px solid rgba(214, 189, 152, 0.2);
-      border-radius: 8px;
-      box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-      overflow: hidden;
-      padding: 16px;
-    }
-    .creator-reports-generated {
-      margin-top: -2px;
-      font-size: 12px;
-      color: var(--color-text-light);
-    }
-    .reports-export-modal .ant-modal-content {
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid rgba(214, 189, 152, 0.2);
-      box-shadow: 0 20px 45px rgba(17, 24, 39, 0.16);
-      padding: 0 !important;
-      background: var(--color-white) !important;
-    }
-    .reports-export-modal .ant-modal-header {
-      margin: 0 !important;
-      padding: 18px 20px 12px !important;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-      background: var(--color-white) !important;
-    }
-    .reports-export-modal .ant-modal-title {
-      color: var(--color-text-dark) !important;
-      font-size: 15px !important;
-      font-weight: 700 !important;
-      line-height: 1.2;
-    }
-    .reports-export-modal .ant-modal-close {
-      top: 14px !important;
-      inset-inline-end: 14px !important;
-      color: var(--color-text-medium) !important;
-    }
-    .reports-export-modal .ant-modal-close:hover {
-      color: var(--color-text-dark) !important;
-      background: rgba(214, 189, 152, 0.12) !important;
-    }
-    .reports-export-modal .ant-modal-body {
-      padding: 20px !important;
-      background: var(--color-white) !important;
-    }
-    .reports-export-modal__title {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding-right: 28px;
-    }
-    .reports-export-modal__title-text {
-      color: var(--color-text-dark);
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-    .reports-export-modal__title-copy {
-      color: var(--color-text-light);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-    .reports-export-options {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .reports-export-option {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: flex-start !important;
-      gap: 10px !important;
-      min-height: 44px !important;
-      height: 44px;
-      padding: 0 14px !important;
-      border-radius: 8px !important;
-      border: 1px solid rgba(214, 189, 152, 0.22) !important;
-      background: var(--color-white) !important;
-      color: var(--color-text-dark) !important;
-      font-weight: 600 !important;
-      box-shadow: none !important;
-    }
-    .reports-export-option:hover,
-    .reports-export-option:focus {
-      border-color: rgba(26, 54, 54, 0.22) !important;
-      background: #faf7f3 !important;
-      color: var(--color-text-dark) !important;
-      box-shadow: none !important;
-    }
-    .reports-export-option .anticon {
-      color: var(--color-primary-dark);
-      font-size: 15px;
-    }
-    .reports-export-note {
-      font-size: 12px;
-      color: var(--color-text-light) !important;
-      margin-top: 4px;
-      padding-left: 2px;
-    }
-    .creator-reports-content .ant-card,
-    .creator-reports-content .ant-card-body {
-      border: none !important;
-      box-shadow: none !important;
-      background: transparent !important;
-    }
-    @media (max-width: 768px) {
-      .creator-reports-shell {
-        padding: 0;
-      }
-      .creator-reports-toolbar {
-        align-items: stretch;
-        flex-direction: column;
-      }
-      .creator-reports-actions {
-        justify-content: flex-start;
-      }
-      .creator-reports-tabs .ant-tabs-tab {
-        margin-right: 22px !important;
-        padding-top: 12px !important;
-        padding-bottom: 10px !important;
-      }
-      .creator-reports-content {
-        padding: 12px;
-      }
-    }
-  `;
-
   return (
-    <div className="creator-reports-page creator-theme">
-      <style>{reportsPageStyles}</style>
-      <div className="creator-reports-shell">
-        <div className="creator-reports-card">
-        <div className="creator-reports-toolbar">
-          <div className="creator-reports-title-block">
-            <div className="creator-reports-title-block">
-              <h2 className="creator-reports-title">
+    <div className={pageRootClassName}>
+      <div className={shellClassName}>
+        <div className={cardClassName}>
+        <div className={toolbarClassName}>
+          <div className={titleBlockClassName}>
+            <div className={titleBlockClassName}>
+              <h2 className={titleClassName}>
                 {DCL_DISPLAY_NAME} Reports & Analytics
               </h2>
-              <Text className="creator-reports-subtitle">
+              <Text className={subtitleClassName}>
                 Simple operational reporting with export-ready views.
               </Text>
             </div>
           </div>
 
-          <div className="creator-reports-actions">
+          <div className={actionsClassName}>
             <Tabs
-              className="creator-reports-tabs"
+              className={tabsClassName}
               activeKey={activeTab}
               onChange={(key) => {
                 setActiveTab(key);
                 clearFilters();
               }}
               type="card"
-              style={{ margin: 0 }}
               items={[
                 {
                   key: "deferrals",
@@ -741,7 +523,7 @@ export default function Reports() {
 
             <Tooltip title="Export Report" overlayClassName="reports-export-tooltip">
               <Button
-                className="creator-reports-export"
+                className={exportButtonClassName}
                 icon={<DownloadOutlined />}
                 onClick={() => setExportModalOpen(true)}
               />
@@ -758,13 +540,13 @@ export default function Reports() {
       />
 
       <div
-        className="creator-reports-content"
+        className={contentClassName}
         ref={reportContentRef}
       >
         {renderContent()}
       </div>
 
-      <div className="creator-reports-generated">
+      <div className={generatedClassName}>
         Generated on {reportNow.format("DD/MM/YYYY HH:mm:ss")}
       </div>
 
@@ -773,24 +555,24 @@ export default function Reports() {
         onCancel={() => setExportModalOpen(false)}
         footer={null}
         title={(
-          <div className="reports-export-modal__title">
-            <span className="reports-export-modal__title-text">Download Report</span>
-            <span className="reports-export-modal__title-copy">
+          <div className={modalTitleClassName}>
+            <span className={modalTitleTextClassName}>Download Report</span>
+            <span className={modalTitleCopyClassName}>
               Export the current tab using the active report filters.
             </span>
           </div>
         )}
         width={420}
         centered
-        className="reports-export-modal"
+        className={modalRootClassName}
       >
-        <div className="reports-export-options">
+        <div className={modalOptionsClassName}>
           <Button
             block
             icon={<FilePdfOutlined />}
             loading={exportingFormat === "pdf"}
             onClick={() => handleSelectExportFormat("pdf")}
-            className="reports-export-option"
+            className={modalOptionButtonClassName}
           >
             Download as PDF
           </Button>
@@ -799,7 +581,7 @@ export default function Reports() {
             icon={<FileTextOutlined />}
             loading={exportingFormat === "csv"}
             onClick={() => handleSelectExportFormat("csv")}
-            className="reports-export-option"
+            className={modalOptionButtonClassName}
           >
             Download as CSV
           </Button>
@@ -808,11 +590,11 @@ export default function Reports() {
             icon={<BarChartOutlined />}
             loading={exportingFormat === "chart"}
             onClick={() => handleSelectExportFormat("chart")}
-            className="reports-export-option"
+            className={modalOptionButtonClassName}
           >
             Download as Chart (PNG)
           </Button>
-          <Text type="secondary" className="reports-export-note">
+          <Text type="secondary" className={modalNoteClassName}>
             Exports use the current tab and active filters.
           </Text>
         </div>

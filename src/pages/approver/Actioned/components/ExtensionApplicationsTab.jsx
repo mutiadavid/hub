@@ -20,135 +20,11 @@ const TABS = [
   { key: "documents", label: "Documents & Flow" },
 ];
 
-const EXTENSION_REVIEW_STYLES = `
-  .actioned-extension-review {
-    padding: 16px;
-    background: rgba(245, 247, 244, 0.85);
-    border-top: 1px solid rgba(214, 189, 152, 0.2);
-  }
-  .actioned-extension-review__tabs {
-    display: flex;
-    gap: 4px;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-    margin-bottom: 16px;
-    overflow-x: auto;
-  }
-  .actioned-extension-review__tab {
-    padding: 10px 12px;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: var(--color-text-light);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-  }
-  .actioned-extension-review__tab--active {
-    color: var(--color-primary-dark);
-    border-bottom-color: var(--color-primary-dark);
-  }
-  .actioned-extension-review__layout {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
-    gap: 16px;
-    align-items: start;
-  }
-  .actioned-extension-review__main {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .actioned-extension-review__section,
-  .actioned-extension-review__comments,
-  .actioned-extension-review__table-shell {
-    background: var(--color-white);
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-    overflow: hidden;
-  }
-  .actioned-extension-review__section-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-  }
-  .actioned-extension-review__section-title {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--color-text-dark);
-  }
-  .actioned-extension-review__section-body {
-    padding: 16px;
-  }
-  .actioned-extension-review__comments {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .actioned-extension-review .ant-descriptions-item-label {
-    font-weight: 400 !important;
-    color: var(--color-text-dark) !important;
-    font-size: 11px !important;
-    text-transform: uppercase;
-  }
-  .actioned-extension-review .ant-descriptions-item-content {
-    color: var(--color-text-dark) !important;
-    font-weight: 400 !important;
-    font-size: 13px !important;
-  }
-  .actioned-extension-review .ant-table,
-  .actioned-extension-review .ant-table-wrapper,
-  .actioned-extension-review .ant-spin-nested-loading,
-  .actioned-extension-review .ant-spin-container,
-  .actioned-extension-review .ant-table-container,
-  .actioned-extension-review .ant-table-content,
-  .actioned-extension-review table,
-  .actioned-extension-review thead,
-  .actioned-extension-review tbody,
-  .actioned-extension-review tr {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-  .actioned-extension-review .ant-table-thead > tr > th {
-    background: transparent !important;
-    color: var(--color-text-dark) !important;
-    font-size: 11px;
-    font-weight: 400;
-    padding: 12px 16px !important;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-    text-transform: uppercase;
-    border-right: none !important;
-  }
-  .actioned-extension-review .ant-table-tbody > tr > td {
-    padding: 14px 16px !important;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-    border-right: none !important;
-    color: var(--color-text-medium);
-    font-size: 12px;
-  }
-  .actioned-extension-review .ant-table-thead > tr > th::before,
-  .actioned-extension-review .ant-table-cell::before,
-  .actioned-extension-review .ant-table-cell::after {
-    display: none !important;
-  }
-  .actioned-extension-review__empty {
-    padding: 24px;
-  }
-  @media (max-width: 1023px) {
-    .actioned-extension-review__layout {
-      grid-template-columns: 1fr;
-    }
-  }
-`;
+const reviewShellClassName = "border-t border-[rgba(214,189,152,0.2)] bg-[rgba(245,247,244,0.85)] p-4 [&_.ant-descriptions-item-label]:text-[11px] [&_.ant-descriptions-item-label]:font-normal [&_.ant-descriptions-item-label]:uppercase [&_.ant-descriptions-item-label]:text-(--color-text-dark) [&_.ant-descriptions-item-content]:text-[13px] [&_.ant-descriptions-item-content]:font-normal [&_.ant-descriptions-item-content]:text-(--color-text-dark) [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:bg-transparent [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-normal [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-thead>tr>th::before]:hidden [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+
+const tableShellClassName = "overflow-hidden rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
+
+const loadingStateClassName = "flex min-h-[220px] items-center justify-center rounded-lg border border-[rgba(214,189,152,0.2)] bg-white";
 
 const ExtensionApplicationsTab = ({
   extensions = [],
@@ -227,7 +103,7 @@ const ExtensionApplicationsTab = ({
       key: "deferralNumber",
       width: 120,
       render: (text, record) => (
-        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
+        <span className="font-normal text-(--color-text-dark)">
           {text || record.deferralNumber || record.deferralId || "N/A"}
         </span>
       ),
@@ -238,7 +114,7 @@ const ExtensionApplicationsTab = ({
       key: "customerName",
       width: 200,
       render: (text, record) => (
-        <span style={{ color: "var(--color-text-dark)", fontWeight: 400 }}>
+        <span className="font-normal text-(--color-text-dark)">
           {text || record.customerName || "Unknown Customer"}
         </span>
       ),
@@ -250,17 +126,7 @@ const ExtensionApplicationsTab = ({
       width: 120,
       render: (status) => (
         <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "4px 10px",
-            borderRadius: 999,
-            background: "rgba(214, 189, 152, 0.18)",
-            color: "var(--color-text-dark)",
-            fontSize: 12,
-            fontWeight: 400,
-            textTransform: "capitalize",
-          }}
+          className="inline-flex items-center rounded-full bg-[rgba(214,189,152,0.18)] px-2.5 py-1 text-xs font-normal capitalize text-(--color-text-dark)"
         >
           {(status || "pending").replace(/_/g, " ")}
         </span>
@@ -309,7 +175,7 @@ const ExtensionApplicationsTab = ({
         dataIndex: "name",
         key: "name",
         render: (value, record) => (
-          <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+          <span className="font-bold text-(--color-text-dark)">
             {value || record.originalName || "Document"}
           </span>
         ),
@@ -319,7 +185,7 @@ const ExtensionApplicationsTab = ({
         key: "actions",
         width: 160,
         render: (_, record) => (
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="flex gap-2">
             <Button
               size="small"
               icon={<EyeOutlined />}
@@ -352,7 +218,7 @@ const ExtensionApplicationsTab = ({
         dataIndex: "name",
         key: "name",
         render: (value) => (
-          <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+          <span className="font-bold text-(--color-text-dark)">
             {value || "Untitled document"}
           </span>
         ),
@@ -387,7 +253,7 @@ const ExtensionApplicationsTab = ({
         title: "Approver",
         key: "approver",
         render: (_, record, index) => (
-          <span style={{ fontWeight: 700, color: "var(--color-text-dark)" }}>
+          <span className="font-bold text-(--color-text-dark)">
             {resolveDisplayName(
               record?.user?.name,
               record?.user?.fullName,
@@ -414,7 +280,7 @@ const ExtensionApplicationsTab = ({
             record.approved === true ||
             String(record.approvalStatus || record.status || "").toLowerCase() === "approved";
           return (
-            <span style={{ fontWeight: 700, color: approved ? SUCCESS_GREEN : PRIMARY_BLUE }}>
+            <span className={`font-bold ${approved ? "text-[#52c41a]" : "text-[#164679]"}`}>
               {approved ? "Approved" : "Pending Approval"}
             </span>
           );
@@ -456,20 +322,19 @@ const ExtensionApplicationsTab = ({
     const detailsLoading = loadingDetailsByKey[rowKey] === true;
 
     return (
-      <div className="actioned-extension-review">
-        <style>{EXTENSION_REVIEW_STYLES}</style>
+      <div className={reviewShellClassName}>
         {detailsLoading ? (
-          <div className="creator-tab-loading" style={{ padding: 24 }}>
+          <div className={`${loadingStateClassName} p-6`}>
             <Spin />
           </div>
         ) : null}
 
-        <div className="actioned-extension-review__tabs">
+        <div className="mb-4 flex gap-1 overflow-x-auto border-b border-[rgba(214,189,152,0.2)]">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
-              className={`actioned-extension-review__tab ${activeTab === tab.key ? "actioned-extension-review__tab--active" : ""}`}
+              className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2.5 text-xs font-medium ${activeTab === tab.key ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
               onClick={() => setActiveTab(rowKey, tab.key)}
             >
               {tab.label}
@@ -478,13 +343,13 @@ const ExtensionApplicationsTab = ({
         </div>
 
         {activeTab === "details" ? (
-          <div className="actioned-extension-review__layout">
-            <div className="actioned-extension-review__main">
-              <section className="actioned-extension-review__section">
-                <div className="actioned-extension-review__section-head">
-                  <h3 className="actioned-extension-review__section-title">Customer Information</h3>
+          <div className="grid items-start gap-4 min-[1024px]:grid-cols-[minmax(0,7fr)_minmax(280px,3fr)]">
+            <div className="flex min-w-0 flex-col gap-4">
+              <section className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Customer Information</h3>
                 </div>
-                <div className="actioned-extension-review__section-body">
+                <div className="p-4">
                   <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
                     <Descriptions.Item label="Customer Name">
                       {detailRecord.customerName || linkedDeferral.customerName || linkedDeferral.CustomerName || "-"}
@@ -499,11 +364,11 @@ const ExtensionApplicationsTab = ({
                 </div>
               </section>
 
-              <section className="actioned-extension-review__section">
-                <div className="actioned-extension-review__section-head">
-                  <h3 className="actioned-extension-review__section-title">Extension Summary</h3>
+              <section className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Extension Summary</h3>
                 </div>
-                <div className="actioned-extension-review__section-body">
+                <div className="p-4">
                   <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
                     <Descriptions.Item label="Extension Number">
                       {detailRecord.extensionNumber
@@ -534,28 +399,28 @@ const ExtensionApplicationsTab = ({
                 </div>
               </section>
 
-              <section className="actioned-extension-review__section">
-                <div className="actioned-extension-review__section-head">
-                  <h3 className="actioned-extension-review__section-title">Extension Reason</h3>
+              <section className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Extension Reason</h3>
                 </div>
-                <div className="actioned-extension-review__section-body">
-                  <Typography.Paragraph style={{ marginBottom: 0, whiteSpace: "pre-wrap", color: "var(--color-text-medium)" }}>
+                <div className="p-4">
+                  <Typography.Paragraph className="mb-0 whitespace-pre-wrap text-(--color-text-medium)">
                     {detailRecord.extensionReason || detailRecord.ExtensionReason || detailRecord.reason || detailRecord.Reason || "-"}
                   </Typography.Paragraph>
                 </div>
               </section>
             </div>
 
-            <aside className="actioned-extension-review__comments">
+            <aside className="flex flex-col gap-3 rounded-lg border border-[rgba(214,189,152,0.2)] bg-white p-3 shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
               <div className="creator-caption">History</div>
               <CommentTrail history={extensionHistory} isLoading={false} />
             </aside>
           </div>
         ) : (
-          <div>
-            <div className="actioned-extension-review__table-shell">
-              <div className="actioned-extension-review__section-head">
-                <h3 className="actioned-extension-review__section-title">Documents To Be Deferred</h3>
+          <div className="space-y-4">
+            <div className={tableShellClassName}>
+              <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Documents To Be Deferred</h3>
               </div>
               {documentsToBeDeferred.length > 0 ? (
                 <Table
@@ -566,13 +431,13 @@ const ExtensionApplicationsTab = ({
                   scroll={{ x: 640 }}
                 />
               ) : (
-                <div className="actioned-extension-review__empty"><Empty description="No deferred documents" /></div>
+                <div className="p-6"><Empty description="No deferred documents" /></div>
               )}
             </div>
 
-            <div className="actioned-extension-review__table-shell" style={{ marginTop: 16 }}>
-              <div className="actioned-extension-review__section-head">
-                <h3 className="actioned-extension-review__section-title">Facility Details</h3>
+            <div className={tableShellClassName}>
+              <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Facility Details</h3>
               </div>
               {facilities.length > 0 ? (
                 <Table
@@ -583,13 +448,13 @@ const ExtensionApplicationsTab = ({
                   scroll={{ x: 720 }}
                 />
               ) : (
-                <div className="actioned-extension-review__empty"><Empty description="No facilities available" /></div>
+                <div className="p-6"><Empty description="No facilities available" /></div>
               )}
             </div>
 
-            <div className="actioned-extension-review__table-shell" style={{ marginTop: 16 }}>
-              <div className="actioned-extension-review__section-head">
-                <h3 className="actioned-extension-review__section-title">Mandatory DCL Upload</h3>
+            <div className={tableShellClassName}>
+              <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Mandatory DCL Upload</h3>
               </div>
               {dclDocs.length > 0 ? (
                 <Table
@@ -600,13 +465,13 @@ const ExtensionApplicationsTab = ({
                   scroll={{ x: 640 }}
                 />
               ) : (
-                <div className="actioned-extension-review__empty"><Empty description="No DCL document uploaded" /></div>
+                <div className="p-6"><Empty description="No DCL document uploaded" /></div>
               )}
             </div>
 
-            <div className="actioned-extension-review__table-shell" style={{ marginTop: 16 }}>
-              <div className="actioned-extension-review__section-head">
-                <h3 className="actioned-extension-review__section-title">Additional Documents</h3>
+            <div className={tableShellClassName}>
+              <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Additional Documents</h3>
               </div>
               {additionalDocuments.length > 0 ? (
                 <Table
@@ -617,13 +482,13 @@ const ExtensionApplicationsTab = ({
                   scroll={{ x: 640 }}
                 />
               ) : (
-                <div className="actioned-extension-review__empty"><Empty description="No additional documents" /></div>
+                <div className="p-6"><Empty description="No additional documents" /></div>
               )}
             </div>
 
-            <div className="actioned-extension-review__table-shell" style={{ marginTop: 16 }}>
-              <div className="actioned-extension-review__section-head">
-                <h3 className="actioned-extension-review__section-title">Approval Flow</h3>
+            <div className={tableShellClassName}>
+              <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Approval Flow</h3>
               </div>
               {approvalFlow.length > 0 ? (
                 <Table
@@ -634,7 +499,7 @@ const ExtensionApplicationsTab = ({
                   scroll={{ x: 540 }}
                 />
               ) : (
-                <div className="actioned-extension-review__empty"><Empty description="No approval flow recorded" /></div>
+                <div className="p-6"><Empty description="No approval flow recorded" /></div>
               )}
             </div>
           </div>
@@ -645,7 +510,7 @@ const ExtensionApplicationsTab = ({
 
   if (loading) {
     return (
-      <div className="creator-tab-loading">
+      <div className={loadingStateClassName}>
         <Spin />
       </div>
     );
@@ -653,7 +518,7 @@ const ExtensionApplicationsTab = ({
 
   if (extensions.length === 0) {
     return (
-      <div className="creator-tab-empty">
+      <div className={loadingStateClassName}>
         <Empty description="No extension applications" />
       </div>
     );
@@ -683,7 +548,7 @@ const ExtensionApplicationsTab = ({
           onClick: () => {
             toggleExpanded(record);
           },
-          style: { cursor: "pointer" },
+          className: "cursor-pointer",
         })}
       />
     </div>

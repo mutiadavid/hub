@@ -4,6 +4,9 @@ import { Table, Button, Drawer, Space, message, Input } from "antd";
 // import axios from "axios";
 import api from "./api"
 
+const pageClassName =
+  "min-h-full w-full bg-white font-['Century_Gothic','CenturyGothic','AppleGothic',sans-serif] [&_.ant-table-wrapper]:bg-white [&_.ant-spin-nested-loading]:bg-white [&_.ant-spin-container]:bg-white [&_.ant-table]:bg-white [&_.ant-table-container]:bg-white [&_.ant-table-content]:bg-white [&_table]:bg-white [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-tbody>tr>td]:bg-white";
+
 // ==========================
 // Active DCLs (Checker View)
 // ==========================
@@ -78,7 +81,7 @@ const ActiveDCLs = () => {
     {
       title: "Action",
       render: (_, record) => (
-        <Button type="primary" onClick={() => openDrawer(record)}>
+        <Button className="rounded-lg border-0 bg-(--ncb-primary-500) text-white shadow-none hover:bg-(--ncb-primary-700) hover:text-white" type="primary" onClick={() => openDrawer(record)}>
           Open
         </Button>
       ),
@@ -86,32 +89,7 @@ const ActiveDCLs = () => {
   ];
 
   return (
-    <div className="checker-active-dcls-page">
-      <style>{`
-        .checker-active-dcls-page {
-          min-height: 100%;
-          width: 100%;
-          background: var(--color-white);
-          font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-        }
-        .checker-active-dcls-page .ant-table-wrapper,
-        .checker-active-dcls-page .ant-spin-nested-loading,
-        .checker-active-dcls-page .ant-spin-container,
-        .checker-active-dcls-page .ant-table,
-        .checker-active-dcls-page .ant-table-container,
-        .checker-active-dcls-page .ant-table-content,
-        .checker-active-dcls-page table {
-          background: var(--color-white) !important;
-          box-shadow: none !important;
-        }
-        .checker-active-dcls-page .ant-table-thead > tr > th {
-          background: var(--color-white) !important;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-        }
-        .checker-active-dcls-page .ant-table-tbody > tr > td {
-          background: var(--color-white) !important;
-        }
-      `}</style>
+    <div className={pageClassName}>
       <Table
         columns={columns}
         dataSource={dcls}
@@ -130,7 +108,7 @@ const ActiveDCLs = () => {
           <>
             <h3>Documents</h3>
             {selectedDCL.documents?.map((doc, index) => (
-              <div key={index} style={{ marginBottom: 10 }}>
+              <div key={index} className="mb-2.5">
                 <a href={doc.url} target="_blank" rel="noreferrer">
                   {doc.name}
                 </a>
@@ -140,9 +118,8 @@ const ActiveDCLs = () => {
             <h3>CO Review Notes</h3>
             <p>{selectedDCL.coComment || "No comments"}</p>
 
-            <br />
-            <Space>
-              <Button type="primary" onClick={approveDCL}>
+            <Space className="mt-4">
+              <Button className="rounded-lg border-0 bg-(--ncb-primary-500) text-white shadow-none hover:bg-(--ncb-primary-700) hover:text-white" type="primary" onClick={approveDCL}>
                 Approve
               </Button>
 
@@ -151,8 +128,8 @@ const ActiveDCLs = () => {
               </Button>
             </Space>
 
-            <br /><br />
             <Input.TextArea
+              className="mt-4"
               rows={4}
               placeholder="Reason for rejection (required if rejecting)"
               value={rejectComment}

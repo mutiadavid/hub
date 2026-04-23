@@ -1,0 +1,27 @@
+/* Creator Table Header Border Removal Overrides */
+/* Remove table header bottom borders for a cleaner look */
+
+.creator-table-header-clean .ant-table-thead > tr > th {
+  border-bottom: none !important;
+}
+
+.creator-table-header-clean .ant-table-thead {
+  border-bottom: none !important;
+}
+
+.creator-table-header-clean .ant-table-header {
+  border-bottom: none !important;
+}
+
+.creator-table-header-clean .ant-table-thead > tr:after {
+  display: none !important;
+}
+
+.creator-table-header-clean .ant-table-thead > tr:before {
+  display: none !important;
+}
+
+/* Ensure table body remains properly styled */
+.creator-table-header-clean .ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
+}

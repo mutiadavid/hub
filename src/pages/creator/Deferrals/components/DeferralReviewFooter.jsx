@@ -6,6 +6,11 @@ import {
   FilePdfOutlined,
 } from "@ant-design/icons";
 
+const actionBarClassName = "mb-3.5 flex flex-wrap justify-between gap-3 rounded-xl border border-[rgba(214,189,152,0.2)] bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(26,54,54,0.06)] max-md:flex-col max-md:items-stretch";
+const actionGroupClassName = "flex flex-wrap gap-2";
+const actionGroupEndClassName = "ml-auto flex flex-wrap gap-2 max-md:ml-0";
+const actionButtonClassName = "h-[34px]! rounded-md! border-0! bg-(--ncb-primary-500)! px-3.5! text-xs! font-semibold! text-white! shadow-none! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! disabled:bg-[var(--color-disabled)]! disabled:border-[var(--color-disabled)]! disabled:text-white! [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1.5 [&>span]:text-white! max-md:w-full";
+
 const DeferralReviewFooter = ({
   canApprove,
   canReturnForRework,
@@ -17,10 +22,10 @@ const DeferralReviewFooter = ({
   sourceTab,
 }) => {
   return (
-    <div className="deferral-review-actionbar">
-      <div className="deferral-review-actionbar__group">
+    <div className={actionBarClassName}>
+      <div className={actionGroupClassName}>
         <Button
-          className="deferral-review-actionbar__button"
+          className={actionButtonClassName}
           disabled={!canApprove || isLoading}
           onClick={onApprove}
           icon={<CheckCircleOutlined />}
@@ -28,7 +33,7 @@ const DeferralReviewFooter = ({
           {sourceTab === "closeRequests" ? "Submit Review" : "Accept"}
         </Button>
         <Button
-          className="deferral-review-actionbar__button"
+          className={actionButtonClassName}
           disabled={!canReturnForRework || isLoading}
           onClick={onReturnForRework}
           icon={<ExclamationCircleOutlined />}
@@ -36,9 +41,9 @@ const DeferralReviewFooter = ({
           Return for Rework
         </Button>
       </div>
-      <div className="deferral-review-actionbar__group deferral-review-actionbar__group--end">
+      <div className={actionGroupEndClassName}>
         <Button
-          className="deferral-review-actionbar__button"
+          className={actionButtonClassName}
           icon={<FilePdfOutlined />}
           onClick={onDownloadPDF}
           disabled={isLoading}
@@ -46,7 +51,7 @@ const DeferralReviewFooter = ({
           Download PDF
         </Button>
         <Button
-          className="deferral-review-actionbar__button"
+          className={actionButtonClassName}
           onClick={onClose}
         >
           Close

@@ -4,9 +4,12 @@ import { Skeleton } from "antd";
 const DeferralStats = ({ stats, loading }) => {
   if (loading) {
     return (
-      <div className="checker-stats-grid">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="checker-stats-card">
+          <div
+            key={i}
+            className="rounded-2xl border border-[rgba(214,189,152,0.18)] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
+          >
             <Skeleton active paragraph={{ rows: 1 }} />
           </div>
         ))}
@@ -22,11 +25,18 @@ const DeferralStats = ({ stats, loading }) => {
   ];
 
   return (
-    <div className="checker-stats-grid">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => (
-        <div key={card.key} className="checker-stats-card">
-          <div className="checker-stats-card__label">{card.label}</div>
-          <div className="checker-stats-card__value">{card.value}</div>
+        <div
+          key={card.key}
+          className="rounded-2xl border border-[rgba(214,189,152,0.18)] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
+        >
+          <div className="text-[11px] font-semibold tracking-[0.08em] text-(--color-text-light) uppercase">
+            {card.label}
+          </div>
+          <div className="mt-2 text-[28px] leading-none font-semibold tracking-[-0.03em] text-(--color-text-dark)">
+            {card.value}
+          </div>
         </div>
       ))}
     </div>

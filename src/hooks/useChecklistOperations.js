@@ -145,7 +145,6 @@ export const useChecklistOperations = (
 
       // Build document structure matching backend DocumentCategoryDto
       // Filter out supporting documents - they're stored in Uploads table, not Checklist.Documents
-      const supportingDocsCount = docs.filter(d => d.category === "Supporting Documents").length;
       const nestedDocuments = docs
         .filter(doc => doc.category !== "Supporting Documents")
         .reduce((acc, doc) => {
@@ -178,14 +177,6 @@ export const useChecklistOperations = (
         creatorComment: creatorComment || "", // ✅ CRITICAL: Include comment from user
       };
 
-      console.log("📤 RM SUBMISSION:");
-      console.log("   Checklist ID:", checklistId);
-      console.log("   Total docs in state:", docs.length);
-      console.log("   Supporting docs (filtered out):", supportingDocsCount);
-      console.log("   Main docs being submitted:", nestedDocuments.reduce((sum, cat) => sum + cat.docList.length, 0));
-      console.log("   Creator Comment:", creatorComment ? `"${creatorComment.substring(0, 50)}..."` : "(empty)");
-      console.log("   Payload:", JSON.stringify(payload, null, 2));
-
       const result = await submitRmChecklist({
         id: checklistId,
         body: payload,
@@ -206,7 +197,6 @@ export const useChecklistOperations = (
 
       // ✅ NEW: Trigger refetch to ensure frontend has latest data from backend
       if (onRefetchNeeded) {
-        console.log("🔄 Triggering refetch after successful RM submission");
         onRefetchNeeded();
       }
 
@@ -250,7 +240,6 @@ export const useChecklistOperations = (
       // Backend expects: { id, category, name, status, creatorStatus, ... }
       // NOT: { category, docList: [...] }
       // Filter out supporting documents - they're stored in Uploads table, not Checklist.Documents
-      const supportingDocsCount = docs.filter(d => d.category === "Supporting Documents").length;
       const flatDocuments = [];
       docs.forEach((doc) => {
         // Skip supporting documents - they're in Uploads table
@@ -279,24 +268,7 @@ export const useChecklistOperations = (
         finalComment: creatorComment || "", // ✅ CRITICAL: Include comment from user
       };
 
-      console.log("📤 BEFORE SUBMISSION:");
-      console.log("   Payload:", JSON.stringify(payload, null, 2));
-      console.log("   Total docs in state:", docs.length);
-      console.log("   Supporting docs (filtered out):", supportingDocsCount);
-      console.log("   Main docs being submitted:", flatDocuments.length);
-      console.log("   Creator Comment:", creatorComment ? `"${creatorComment.substring(0, 50)}..."` : "(empty)");
-
       const result = await updateChecklistStatus(payload).unwrap();
-
-      console.log("📥 AFTER SUBMISSION RESPONSE:");
-      console.log("   Response:", JSON.stringify(result, null, 2));
-      console.log("   Returned documents:", result?.checklist?.documents?.length);
-      
-      if (result?.checklist?.documents) {
-        result.checklist.documents.forEach((cat) => {
-          console.log(`   Category: ${cat.category}, Docs: ${cat.docList?.length}`);
-        });
-      }
 
       showSuccessToast("Checklist submitted to Co-Checker!");
 
@@ -309,14 +281,12 @@ export const useChecklistOperations = (
           documents: flatDocuments,
           message: "Checklist submitted to Co-Checker",
         };
-        
-        console.log("🔄 Calling onChecklistUpdate with:", updatedChecklistData);
+
         onChecklistUpdate(updatedChecklistData);
       }
 
       // ✅ NEW: Trigger refetch to ensure frontend has latest data from backend
       if (onRefetchNeeded) {
-        console.log("🔄 Triggering refetch after successful submission");
         onRefetchNeeded();
       }
 
@@ -400,13 +370,6 @@ export const useChecklistOperations = (
 
       const checklistId = checklist?.id || checklist?._id;
 
-      console.log("📤 UploadSupportingDoc - Checklist object:", {
-        checklistId: checklistId,
-        checklistIdDirect: checklist?.id,
-        checklistIdUnderscore: checklist?._id,
-        fullChecklist: checklist
-      });
-
       if (!checklistId) {
         throw new Error("Checklist ID missing");
       }
@@ -417,14 +380,6 @@ export const useChecklistOperations = (
       formData.append("checklistId", checklistId);
       formData.append("category", "Supporting Documents");
       formData.append("documentName", file.name);
-
-      console.log("📤 Uploading supporting document:", {
-        checklistId,
-        checklistIdType: typeof checklistId,
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type
-      });
 
       const response = await fetch(
         `${API_BASE_URL}/api/uploads`,
@@ -444,7 +399,6 @@ export const useChecklistOperations = (
       }
 
       const result = await response.json();
-      console.log("✅ Upload response:", result);
 
       // Handle different response structures
       const uploadedDoc = result.data || result.uploadedDoc || result;
@@ -479,12 +433,10 @@ export const useChecklistOperations = (
         }
       };
 
-      console.log("✅ Supporting doc normalized:", newSupportingDoc);
-
       return newSupportingDoc;
     } catch (error) {
       console.error("Upload error:", error);
-      message.error(`Upload failed: ${error.message}`);
+      showErrorToast(error?.message || "Failed to upload supporting document");
       throw error;
     } finally {
       setUploadingSupportingDoc(false);

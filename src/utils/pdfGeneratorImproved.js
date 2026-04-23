@@ -60,13 +60,6 @@ export const generateChecklistPDF = async ({
           message: cleanMessageText(comment.message || comment.comment)
         }));
      
-      console.log('📄 Starting PDF generation...');
-      console.log('📝 Raw activity logs:', rawComments.length, 'total');
-      console.log('📝 User-typed comments (filtered):', normalizedComments.length);
-      if (normalizedComments.length > 0) {
-        console.log('📝 First user comment:', normalizedComments[0]);
-      }
-     
       // Create PDF document with better quality settings
       const doc = new jsPDF({
         orientation: 'portrait',
@@ -75,8 +68,6 @@ export const generateChecklistPDF = async ({
         putOnlyUsedFonts: true,
         compress: true,
       });
-
-      console.log('✅ PDF document created');
 
       // Set default font to helvetica (clean modern style)
       doc.setFont('helvetica', 'normal');
@@ -105,7 +96,6 @@ export const generateChecklistPDF = async ({
             const logoHeight = 10;
             // 8mm from right edge
             doc.addImage(ncbaLogoPNG, 'PNG', PAGE_WIDTH - 8 - logoWidth, 10, logoWidth, logoHeight);
-            console.log('✅ Logo added successfully');
           } catch (imgError) {
             console.warn('⚠️ Could not add logo directly, continuing without it:', imgError);
           }
@@ -149,7 +139,6 @@ export const generateChecklistPDF = async ({
 
       // Create info table with better styling
       if (typeof doc.autoTable === 'function') {
-        console.log('Using autoTable for table generation');
         doc.autoTable({
           startY: yPos,
           head: [],
@@ -336,8 +325,6 @@ export const generateChecklistPDF = async ({
 
       // Comments Section - Simplified with necessary info only
       if (normalizedComments && normalizedComments.length > 0) {
-        console.log('✅ Rendering Comment Trail with', normalizedComments.length, 'comments');
-       
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(22, 70, 121); // PRIMARY_BLUE
@@ -365,7 +352,7 @@ export const generateChecklistPDF = async ({
             const msg = (c.message || c.text || c.comment || '');
             return !isSystemMessage(msg);
           })
-          .map((comment, idx) => {
+          .map((comment) => {
           const dateStr = comment.createdAt ? format(new Date(comment.createdAt), 'dd/MM/yyyy HH:mm') : 'N/A';
           const userName = comment.user?.name || comment.userName || 'N/A';
          
@@ -376,9 +363,7 @@ export const generateChecklistPDF = async ({
           if (role === 'rm') formattedRole = 'RM';
 
           const message = comment.message || comment.text || comment.comment || '-';
-         
-          console.log(`  📝 Comment ${idx + 1}: [${dateStr}] ${userName} (${formattedRole}): ${message?.substring(0, 30)}...`);
-         
+
           return [userName, formattedRole, dateStr, message];
         });
 
@@ -466,8 +451,6 @@ export const generateChecklistPDF = async ({
 
       // Save the PDF
       doc.save(fileName);
-
-      console.log(`✅ PDF generated successfully: ${fileName}`);
      
       resolve({
         success: true,

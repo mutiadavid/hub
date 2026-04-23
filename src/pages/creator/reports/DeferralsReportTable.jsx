@@ -68,7 +68,7 @@ const getReportStatusMeta = (deferral) => {
   }
 
   return {
-    label: String(status || "In Progress")
+    label: String(deferral?.status || "In Progress")
       .replace(/_/g, " ")
       .replace(/\b\w/g, (char) => char.toUpperCase()),
     variant: "qs-review",
@@ -316,6 +316,7 @@ export default function DeferralsReportTable({ rows }) {
           deferral={selectedDeferral}
           open
           onClose={handleCloseModal}
+          readOnly={true}
         />
       );
     }

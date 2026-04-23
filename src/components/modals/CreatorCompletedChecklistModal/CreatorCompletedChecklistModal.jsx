@@ -6,6 +6,7 @@ const CreatorCompletedChecklistModal = ({
 	open,
 	embedded = false,
 	onClose,
+	readOnly = false,
 }) => {
 	if (!embedded && !open) {
 		return null;
@@ -16,6 +17,7 @@ const CreatorCompletedChecklistModal = ({
 			checklistId={checklist?.id || checklist?._id}
 			initialChecklist={checklist}
 			onClose={onClose}
+			readOnly={readOnly}
 		/>
 	);
 };

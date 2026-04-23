@@ -22,7 +22,7 @@ const ActionedTable = ({
 
   if (loading) {
     return (
-      <div className="creator-tab-loading">
+      <div className="flex min-h-[220px] items-center justify-center rounded-lg border border-[rgba(214,189,152,0.2)] bg-white">
         <Spin />
       </div>
     );
@@ -30,14 +30,14 @@ const ActionedTable = ({
 
   if (deferrals.length === 0) {
     return (
-      <div className="creator-tab-empty">
+      <div className="flex min-h-[220px] items-center justify-center rounded-lg border border-[rgba(214,189,152,0.2)] bg-white">
         <Empty
           description={
             <div>
-              <p style={{ fontSize: 16, marginBottom: 8 }}>
+              <p className="mb-2 text-base">
                 No completed deferrals
               </p>
-              <p style={{ color: "#999" }}>All actioned items are shown here</p>
+              <p className="text-[#999]">All actioned items are shown here</p>
             </div>
           }
         />
@@ -46,15 +46,7 @@ const ActionedTable = ({
   }
 
   return (
-    <div
-      className={tableClassName}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        flex: 1,
-        background: "var(--color-white)",
-      }}
-    >
+    <div className={`${tableClassName} flex flex-1 flex-col bg-white`}>
       <Table
         columns={columns}
         dataSource={deferrals}
@@ -70,9 +62,9 @@ const ActionedTable = ({
         scroll={{ x: 1200 }}
         onRow={(record) => ({
           onClick: () => onRowClick(record),
-          style: { cursor: "pointer" },
+          className: "cursor-pointer",
         })}
-        style={{ flex: 1, background: "transparent" }}
+        className="flex-1 bg-transparent"
       />
     </div>
   );

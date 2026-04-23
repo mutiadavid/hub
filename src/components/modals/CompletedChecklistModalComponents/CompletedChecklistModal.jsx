@@ -97,30 +97,6 @@ const CompletedChecklistModal = ({
     });
   }, [comments]);
 
-  React.useEffect(() => {
-    console.log("🔍 CompletedChecklistModal - Checklist data:", checklist);
-    console.log("👤 RM Assigned:", checklist?.assignedToRM);
-    console.log("👤 RM ID:", checklist?.assignedToRMId);
-    console.log("👤 RM Name:", checklist?.assignedToRM?.name || "Not found");
-    console.log("📋 Documents from hook:", docs);
-    console.log("📊 Document counts:", documentCounts);
-
-    const checklistId = checklist?.id || checklist?._id;
-    console.log("✅ CompletedChecklistModal - Checklist ID for comments:", checklistId);
-    console.log("✅ Comments Loading:", commentsLoading);
-    console.log("✅ Total raw comments:", comments?.length || 0);
-    console.log("✅ User comments (filtered):", userComments.length);
-    console.log("✅ Raw comments data:", comments);
-    console.log("✅ Filtered user comments:", userComments);
-  }, [
-    checklist,
-    docs,
-    documentCounts,
-    comments,
-    commentsLoading,
-    userComments,
-  ]);
-
   const preparedDocs = React.useMemo(
     () =>
       docs.map((doc, index) => ({

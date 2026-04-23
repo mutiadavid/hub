@@ -18,13 +18,6 @@ export const useDeferralData = (userId) => {
       const token = stored?.token;
       const userId = stored?.user?._id || stored?.id;
 
-      console.log("[DEFERRAL_LOAD] ========== STARTING LOAD DEFERRALS ==========");
-      console.log("[DEFERRAL_LOAD] User data from localStorage:", {
-        userId,
-        hasToken: !!token,
-        username: stored?.user?.name || stored?.name,
-      });
-
       if (!token) {
         console.error("[DEFERRAL_LOAD] ERROR: No authentication token found!");
         showErrorToast("Not authenticated. Please login again.");
@@ -41,19 +34,12 @@ export const useDeferralData = (userId) => {
         return;
       }
 
-      console.log("[DEFERRAL_LOAD] Calling deferralApi.getMyDeferrals(token)...");
-
       // Get my deferrals
       const myData = await deferralApi.getMyDeferrals(token);
-      console.log("[DEFERRAL_LOAD] SUCCESS: Fetched myData:", myData);
-      console.log("[DEFERRAL_LOAD] myData count:", myData?.length || 0, "deferrals");
 
       let approvedAssigned = [];
       try {
-        console.log("[DEFERRAL_LOAD] Calling deferralApi.getApprovedDeferrals(token)...");
         const approvedData = await deferralApi.getApprovedDeferrals(token);
-        console.log("[DEFERRAL_LOAD] SUCCESS: Fetched approvedData:", approvedData);
-        console.log("[DEFERRAL_LOAD] approvedData count:", approvedData?.length || 0, "deferrals");
 
         if (Array.isArray(approvedData)) {
           approvedAssigned = approvedData.filter(
@@ -61,10 +47,6 @@ export const useDeferralData = (userId) => {
               d.assignedRM &&
               (String(d.assignedRM._id) === String(userId) ||
                 String(d.assignedRM) === String(userId)),
-          );
-          console.log(
-            "[DEFERRAL_LOAD] Filtered approved deferrals for RM:",
-            approvedAssigned.length,
           );
         }
       } catch (e) {
@@ -81,9 +63,6 @@ export const useDeferralData = (userId) => {
         if (!existingIds.has(a._id)) combined.push(a);
       }
 
-      console.log("[DEFERRAL_LOAD] Final combined deferrals count:", combined.length);
-      console.log("[DEFERRAL_LOAD] ========== LOAD DEFERRALS COMPLETE ==========");
-
       setDeferrals(combined);
     } catch (err) {
       console.error("[DEFERRAL_LOAD] ========== ERROR LOADING DEFERRALS ==========");
@@ -93,7 +72,6 @@ export const useDeferralData = (userId) => {
       setDeferrals([]);
 
       if (err.message.includes("Failed to fetch") || err.message.includes("401")) {
-        console.log("[DEFERRAL_LOAD] Session might have expired or token is invalid");
         showErrorToast("Session expired. Please login again.");
       } else if (
         err.message.includes("networkerror") ||

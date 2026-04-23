@@ -13,7 +13,22 @@ import { useNavigate } from "react-router-dom";
 
 import { useGetCompletedDCLsForCheckerQuery } from "../../api/checklistApi";
 import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
-import "../../styles/creatorDesignSystem.css";
+
+const pageRootClassName = "min-h-full w-full bg-white";
+const queueCardClassName = "overflow-hidden rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
+const toolbarClassName = "flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] bg-white p-4 max-md:flex-col max-md:items-stretch";
+const titleClassName = "m-0 text-[15px] leading-tight font-bold tracking-[-0.02em] text-(--color-text-dark)";
+const toolbarActionsClassName = "inline-flex w-full flex-wrap items-center justify-end gap-2 min-[769px]:max-w-[520px]";
+const searchClassName = "w-full min-[769px]:max-w-[360px] [&_.ant-input-affix-wrapper]:rounded-md [&_.ant-input-affix-wrapper]:border-[rgba(214,189,152,0.2)] [&_.ant-input-affix-wrapper]:bg-white [&_.ant-input-affix-wrapper]:px-3 [&_.ant-input-affix-wrapper]:py-2 [&_.ant-input-affix-wrapper]:shadow-none [&_.ant-input-affix-wrapper:hover]:border-(--color-primary-dark) [&_.ant-input-affix-wrapper-focused]:border-(--color-primary-dark) [&_.ant-input]:bg-transparent [&_.ant-input]:text-xs [&_.ant-input]:text-(--color-text-medium) [&_.anticon]:text-(--color-text-light)";
+const clearButtonClassName = "h-[38px]! rounded-md! border-[rgba(214,189,152,0.2)]! bg-white! px-[18px]! text-(--color-text-medium)! font-semibold! shadow-none! hover:border-(--color-primary-dark)! hover:bg-[rgba(214,189,152,0.08)]! hover:text-(--color-primary-dark)!";
+const tableShellClassName = "bg-white px-4 pb-4 [&_.ant-table]:w-full [&_.ant-table]:table-fixed [&_.ant-table-wrapper]:bg-white [&_.ant-spin-nested-loading]:bg-white [&_.ant-spin-container]:bg-white [&_.ant-table-container]:bg-white [&_.ant-table-content]:overflow-x-auto [&_.ant-table-header]:bg-inherit [&_.ant-table-body]:bg-inherit [&_.ant-empty]:bg-inherit [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3.5 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-(--color-text-medium) [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr:hover>td]:bg-[rgba(245,247,244,0.9)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination]:mb-0 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-bold [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark) [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+const loadingClassName = "bg-white px-4 py-6";
+const generatedAtClassName = "mt-4 text-right text-xs text-(--color-text-light)";
+
+const getStatusBadgeClassName = (variant) => {
+  if (variant === "approved") return "border-[rgba(82,196,26,0.2)] bg-[rgba(82,196,26,0.12)] text-[var(--color-status-success)]";
+  return "border-[rgba(22,70,121,0.18)] bg-[rgba(22,70,121,0.1)] text-(--color-primary-dark)";
+};
 
 const getCompletedStatusMeta = (status) => {
   const normalizedStatus = (status || "").toLowerCase();
@@ -116,34 +131,27 @@ const Completed = ({ userId }) => {
     isLoading,
   } = useGetCompletedDCLsForCheckerQuery(userId);
 
-  console.log("🔍 All Completed Checklists for Checker:", checklists);
-
   // ✅ No filtering needed - backend already filters by checker and approved status
   const filteredData = useMemo(() => {
     if (!checklists || !userId) return [];
 
     return checklists.filter((c) => {
       if (!searchText) return true;
-      const q = searchText.toLowerCase();
+
+      const query = searchText.toLowerCase();
 
       return (
-        c.dclNo?.toLowerCase().includes(q) ||
-        c.customerNumber?.toLowerCase().includes(q) ||
-        c.customerName?.toLowerCase().includes(q) ||
-        c.loanType?.toLowerCase().includes(q) ||
-        c.createdBy?.name?.toLowerCase().includes(q)
+        c.dclNo?.toLowerCase().includes(query) ||
+        c.customerNumber?.toLowerCase().includes(query) ||
+        c.customerName?.toLowerCase().includes(query) ||
+        c.loanType?.toLowerCase().includes(query) ||
+        c.createdBy?.name?.toLowerCase().includes(query)
       );
     });
   }, [checklists, userId, searchText]);
 
-  console.log("user:", userId);
-  console.log("Completed Checklists for Checker:", filteredData);
-
   const clearFilters = () => setSearchText("");
 
-  console.log("🔎 Filtered Completed Data:", filteredData);
-
-  /* ================= TABLE COLUMNS ================= */
   const columns = [
     {
       title: "DCL NO",
@@ -151,8 +159,8 @@ const Completed = ({ userId }) => {
       width: 124,
       ellipsis: true,
       render: (text) => (
-        <div className="creator-table-primary-cell">
-          <span className="creator-table-primary-value">{text || "-"}</span>
+        <div className="flex min-w-0 flex-col gap-[3px]">
+          <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{text || "-"}</span>
         </div>
       ),
     },
@@ -161,25 +169,21 @@ const Completed = ({ userId }) => {
       dataIndex: "customerNumber",
       width: 134,
       ellipsis: true,
-      render: (text) => (
-        <span className="creator-table-muted">{text || "-"}</span>
-      ),
+      render: (text) => <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{text || "-"}</span>,
     },
     {
       title: "CUSTOMER NAME",
       dataIndex: "customerName",
       width: 146,
       ellipsis: true,
-      render: (text) => (
-        <span className="creator-table-primary-value">{text || "-"}</span>
-      ),
+      render: (text) => <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{text || "-"}</span>,
     },
     {
       title: "LOAN TYPE",
       dataIndex: "loanType",
       width: 118,
       ellipsis: true,
-      render: (text) => <span className="creator-table-muted">{text || "-"}</span>,
+      render: (text) => <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{text || "-"}</span>,
     },
     {
       title: "CHECKER",
@@ -188,7 +192,7 @@ const Completed = ({ userId }) => {
       ellipsis: true,
       render: (checker) => {
         const checkerName = checker?.name || checker || "-";
-        return <span className="creator-table-muted">{checkerName}</span>;
+        return <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{checkerName}</span>;
       },
     },
     {
@@ -196,10 +200,14 @@ const Completed = ({ userId }) => {
       dataIndex: "documents",
       width: 74,
       align: "center",
-      render: (docs = []) => {
-        const total =
-          docs.reduce((sum, cat) => sum + (cat.docList?.length || 0), 0) || 0;
-        return <span className="creator-table-primary-value">{total}</span>;
+      render: (documents = []) => {
+        const totalDocs =
+          documents.reduce(
+            (total, category) => total + (category.docList?.length || 0),
+            0,
+          ) || 0;
+
+        return <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{totalDocs}</span>;
       },
     },
     {
@@ -207,9 +215,9 @@ const Completed = ({ userId }) => {
       dataIndex: "completionDate",
       width: 142,
       ellipsis: true,
-      render: (date, record) => (
-        <span className="creator-table-muted">
-          {dayjs(date || record.updatedAt || record.createdAt).format("DD/MM/YYYY HH:mm")}
+      render: (completionDate, record) => (
+        <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">
+          {dayjs(completionDate || record.updatedAt || record.createdAt).format("DD/MM/YYYY HH:mm")}
         </span>
       ),
     },
@@ -218,11 +226,11 @@ const Completed = ({ userId }) => {
       dataIndex: "slaExpiry",
       width: 116,
       ellipsis: true,
-      sorter: (a, b) => getTatSortValue(a) - getTatSortValue(b),
+      sorter: (first, second) => getTatSortValue(first) - getTatSortValue(second),
       defaultSortOrder: "descend",
-      render: (date, record) => (
+      render: (slaExpiry, record) => (
         <RealTimeSlaTag
-          slaExpiry={date}
+          slaExpiry={slaExpiry}
           startedAt={record?.createdAt}
           emptyLabel="N/A"
           minWidth={60}
@@ -240,7 +248,7 @@ const Completed = ({ userId }) => {
       render: (status) => {
         const statusMeta = getCompletedStatusMeta(status);
         return (
-          <span className={`creator-badge creator-badge--${statusMeta.variant}`}>
+          <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold ${getStatusBadgeClassName(statusMeta.variant)}`}>
             {statusMeta.label}
           </span>
         );
@@ -248,284 +256,37 @@ const Completed = ({ userId }) => {
     },
   ];
 
-  /* ================= UI ================= */
-  const customTableStyles = `
-    .creator-queue-page {
-      min-height: 100%;
-      width: 100%;
-      background: var(--color-white);
-      font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-    }
-    .creator-queue-shell {
-      width: 100%;
-    }
-    .creator-queue-card {
-      background: var(--color-white);
-      border: 1px solid rgba(214, 189, 152, 0.2);
-      border-radius: 8px;
-      box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-      overflow: hidden;
-    }
-    .creator-queue-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      padding: 16px;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-      background: var(--color-white);
-    }
-    .creator-queue-title {
-      color: var(--color-text-dark);
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      margin: 0;
-    }
-    .creator-queue-search {
-      width: min(360px, 100%);
-    }
-    .creator-queue-search.ant-input-affix-wrapper {
-      border: 1px solid rgba(214, 189, 152, 0.2) !important;
-      background: var(--color-white) !important;
-      border-radius: 6px !important;
-      padding: 8px 12px !important;
-      box-shadow: none !important;
-    }
-    .creator-queue-search.ant-input-affix-wrapper:hover,
-    .creator-queue-search.ant-input-affix-wrapper:focus,
-    .creator-queue-search.ant-input-affix-wrapper-focused {
-      border-color: var(--color-primary-dark) !important;
-      box-shadow: none !important;
-    }
-    .creator-queue-search input {
-      background: transparent !important;
-      font-size: 12px !important;
-      color: var(--color-text-medium) !important;
-    }
-    .creator-queue-search .anticon {
-      color: var(--color-text-light);
-    }
-    .creator-queue-toolbar-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      width: min(520px, 100%);
-      justify-content: flex-end;
-      flex-wrap: wrap;
-    }
-    .creator-queue-clear.ant-btn {
-      min-height: 38px !important;
-      height: 38px !important;
-      padding: 0 18px !important;
-      border-radius: 6px !important;
-      border: 1px solid rgba(214, 189, 152, 0.2) !important;
-      color: var(--color-text-medium) !important;
-      font-weight: 600 !important;
-      box-shadow: none !important;
-      background: var(--color-white) !important;
-    }
-    .creator-queue-clear.ant-btn:hover,
-    .creator-queue-clear.ant-btn:focus {
-      color: var(--color-primary-dark) !important;
-      border-color: var(--color-primary-dark) !important;
-      background: rgba(214, 189, 152, 0.08) !important;
-    }
-    .creator-tab-empty,
-    .creator-tab-loading {
-      padding: 24px 16px;
-      background: var(--color-white);
-    }
-    .myqueue-table {
-      background: var(--color-white);
-      border-radius: 8px;
-      padding: 0 16px 16px;
-    }
-    .myqueue-table .ant-table,
-    .myqueue-table .ant-table-wrapper,
-    .myqueue-table .ant-spin-nested-loading,
-    .myqueue-table .ant-spin-container,
-    .myqueue-table .ant-table-container,
-    .myqueue-table .ant-table-content,
-    .myqueue-table table,
-    .myqueue-table thead,
-    .myqueue-table tbody,
-    .myqueue-table tr {
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
-      background: var(--color-white) !important;
-    }
-    .myqueue-table .ant-table {
-      table-layout: fixed;
-      width: 100%;
-    }
-    .myqueue-table .ant-table-container {
-      background: inherit !important;
-    }
-    .myqueue-table .ant-table-content {
-      overflow-x: auto;
-    }
-    .myqueue-table .ant-table-header,
-    .myqueue-table .ant-table-body,
-    .myqueue-table .ant-table-placeholder,
-    .myqueue-table .ant-empty,
-    .myqueue-table .ant-empty-normal {
-      background: inherit !important;
-    }
-    .myqueue-table .ant-table-thead > tr > th {
-      background: var(--color-white) !important;
-      color: var(--color-text-medium) !important;
-      font-weight: 600;
-      font-size: 11px;
-      padding: 14px 12px !important;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-      border-right: none !important;
-      line-height: 1.2;
-      text-transform: uppercase;
-    }
-    .myqueue-table .ant-table-tbody > tr > td {
-      background: var(--color-white) !important;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-      border-top: none !important;
-      border-right: none !important;
-      padding: 16px 12px !important;
-      font-size: 12px;
-      color: var(--color-text-medium);
-      line-height: 1.25;
-    }
-    .myqueue-table .ant-table-thead > tr > th::before,
-    .myqueue-table .ant-table-cell::before,
-    .myqueue-table .ant-table-cell::after,
-    .myqueue-table .ant-table-wrapper::before,
-    .myqueue-table .ant-table-wrapper::after,
-    .myqueue-table .ant-table-container::before,
-    .myqueue-table .ant-table-container::after,
-    .myqueue-table .ant-table-thead > tr::after,
-    .myqueue-table .ant-table-tbody > tr::after {
-      display: none !important;
-    }
-    .myqueue-table .ant-table-tbody > tr:hover > td {
-      background-color: rgba(245, 247, 244, 0.9) !important;
-      cursor: pointer;
-    }
-    .myqueue-table .ant-table-tbody > tr > td:first-child,
-    .myqueue-table .ant-table-thead > tr > th:first-child {
-      padding-left: 0 !important;
-    }
-    .myqueue-table .ant-table-tbody > tr > td:last-child,
-    .myqueue-table .ant-table-thead > tr > th:last-child {
-      padding-right: 0 !important;
-    }
-    .myqueue-table .ant-pagination {
-      margin-top: 18px !important;
-      margin-bottom: 0 !important;
-    }
-    .myqueue-table .ant-pagination .ant-pagination-item,
-    .myqueue-table .ant-pagination .ant-pagination-prev,
-    .myqueue-table .ant-pagination .ant-pagination-next {
-      border-radius: 999px !important;
-      border-color: transparent !important;
-      background: transparent !important;
-      min-width: 34px;
-    }
-    .myqueue-table .ant-pagination .ant-pagination-item-active {
-      background: rgba(214, 189, 152, 0.18) !important;
-      border-color: rgba(214, 189, 152, 0.18) !important;
-    }
-    .myqueue-table .ant-pagination .ant-pagination-item-active a {
-      color: var(--color-text-dark) !important;
-      font-weight: 700;
-    }
-    .creator-table-primary-cell {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      min-width: 0;
-    }
-    .creator-table-primary-value {
-      color: var(--color-text-dark);
-      font-size: 13px;
-      font-weight: 400;
-      letter-spacing: -0.01em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .creator-table-secondary-value {
-      color: var(--color-text-light);
-      font-size: 8px;
-      line-height: 1.3;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .creator-table-muted {
-      color: var(--color-text-medium);
-      font-size: 12px;
-      font-weight: 400;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    @media (max-width: 768px) {
-      .creator-queue-shell {
-        padding: 0;
-      }
-      .creator-queue-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .creator-queue-toolbar-actions {
-        width: 100%;
-        justify-content: stretch;
-      }
-      .creator-queue-search,
-      .creator-queue-clear {
-        width: 100%;
-      }
-      .myqueue-table .ant-table-thead > tr > th,
-      .myqueue-table .ant-table-tbody > tr > td {
-        padding-top: 12px !important;
-        padding-bottom: 12px !important;
-      }
-    }
-  `;
-
   return (
-    <div className="creator-queue-page creator-theme" style={{ boxSizing: "border-box" }}>
-      <style>{customTableStyles}</style>
-      <div className="creator-queue-shell">
-        <div className="creator-queue-card">
-          <div className="creator-queue-toolbar">
-            <h2 className="creator-queue-title">Completed Checklists</h2>
-            <div className="creator-queue-toolbar-actions">
+    <div className={pageRootClassName}>
+      <div className="w-full">
+        <div className={queueCardClassName}>
+          <div className={toolbarClassName}>
+            <h2 className={titleClassName}>Completed Checklists</h2>
+            <div className={toolbarActionsClassName}>
               <Input
                 prefix={<SearchOutlined />}
                 placeholder="Search DCL / Customer / Loan"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 allowClear
-                className="creator-queue-search"
+                className={searchClassName}
               />
-              <Button onClick={clearFilters} className="creator-queue-clear">
+              <Button onClick={clearFilters} className={clearButtonClassName}>
                 Clear
               </Button>
             </div>
           </div>
 
           {isLoading ? (
-            <div className="creator-tab-loading">
-              <Spin style={{ display: "block", margin: 40 }} tip="Loading completed checklists..." />
+            <div className={loadingClassName}>
+              <Spin tip="Loading completed checklists..." />
             </div>
           ) : filteredData.length === 0 ? (
-            <div className="creator-tab-empty">
+            <div className={loadingClassName}>
               <Empty description="No completed checklists found" />
             </div>
           ) : (
-            <div className="myqueue-table">
+            <div className={tableShellClassName}>
               <Table
                 columns={columns}
                 dataSource={filteredData}
@@ -540,12 +301,12 @@ const Completed = ({ userId }) => {
                 }}
                 onRow={(record) => ({
                   onClick: () => {
-                    console.log("🖱️ Clicked on checklist:", record.dclNo, record);
                     const checklistId = record?.id || record?._id;
                     if (checklistId) {
                       navigate(`/cochecker/completed/${checklistId}`);
                     }
                   },
+                  className: "cursor-pointer",
                 })}
               />
             </div>
@@ -553,7 +314,7 @@ const Completed = ({ userId }) => {
         </div>
       </div>
 
-      <div style={{ marginTop: 12, fontSize: 12, color: "var(--color-text-light)" }}>
+      <div className={generatedAtClassName}>
         Generated: {dayjs().format("DD/MM/YYYY HH:mm")}
       </div>
     </div>

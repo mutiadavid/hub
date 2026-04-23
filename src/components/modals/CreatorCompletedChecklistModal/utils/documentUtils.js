@@ -2,27 +2,13 @@ import { API_BASE_URL, STATUS_COLORS } from "./constants";
 import dayjs from "dayjs";
 
 export const prepareDocuments = (checklist) => {
-  console.log("🔍 prepareDocuments - checklist:", checklist);
-
   if (!checklist || !checklist.documents) {
-    console.log("❌ No checklist or documents");
     return [];
   }
 
-  console.log("📄 checklist.documents:", checklist.documents);
-  console.log("📄 Type:", typeof checklist.documents);
-  console.log("📄 Is array?", Array.isArray(checklist.documents));
-  console.log("📄 Length:", checklist.documents?.length);
-
-  const flatDocs = checklist.documents.reduce((acc, item, itemIndex) => {
-    console.log(`📄 Item ${itemIndex}:`, item);
-
+  const flatDocs = checklist.documents.reduce((acc, item) => {
     if (item.docList && Array.isArray(item.docList) && item.docList.length) {
-      console.log(
-        `📄 Item ${itemIndex} has docList with ${item.docList.length} docs`,
-      );
-      const nestedDocs = item.docList.map((doc, docIndex) => {
-        console.log(`📄   Nested doc ${docIndex}:`, doc);
+      const nestedDocs = item.docList.map((doc) => {
         return {
           ...doc,
           category: item.category,
@@ -37,9 +23,6 @@ export const prepareDocuments = (checklist) => {
     }
 
     if (item.category) {
-      console.log(
-        `📄 Item ${itemIndex} is direct document with category: ${item.category}`,
-      );
       return acc.concat({
         ...item,
         checkerStatus:
@@ -50,12 +33,8 @@ export const prepareDocuments = (checklist) => {
       });
     }
 
-    console.log(`📄 Item ${itemIndex} has no category or docList`);
     return acc;
   }, []);
-
-  console.log("📄 Flat docs after processing:", flatDocs);
-  console.log("📄 Flat docs length:", flatDocs.length);
 
   const result = flatDocs.map((doc, idx) => {
     let finalCheckerStatus = doc.checkerStatus || null;
@@ -82,11 +61,9 @@ export const prepareDocuments = (checklist) => {
       name: doc.name || doc.documentName || `Document ${idx + 1}`,
     };
 
-    console.log(`📄 Transformed doc ${idx}:`, transformed);
     return transformed;
   });
 
-  console.log("✅ Final prepared documents:", result);
   return result;
 };
 

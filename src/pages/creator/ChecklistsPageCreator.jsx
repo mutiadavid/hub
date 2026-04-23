@@ -13,6 +13,33 @@ import { saveDraft, getDraftRoute, getDrafts, deleteDraft } from "../../utils/dr
 import { showErrorToast, showSuccessToast, showWarningToast } from "../../utils/authToast";
 import "../../styles/creatorDesignSystem.css";
 
+const normalizeDocumentEntry = (doc = {}) => ({
+  ...doc,
+  name: doc.name || "",
+  action: doc.action || "",
+  status: doc.status || doc.action || "pendingrm",
+  comment: doc.comment || "",
+  deferralNo: doc.deferralNo || doc.deferralNumber || "",
+  deferralNumber: doc.deferralNumber || doc.deferralNo || "",
+});
+
+const normalizeDocumentCategories = (sourceDocuments = []) =>
+  (Array.isArray(sourceDocuments) ? sourceDocuments : []).map((category) => ({
+    ...category,
+    docList: Array.isArray(category?.docList)
+      ? category.docList.map((doc) => normalizeDocumentEntry(doc))
+      : [],
+  }));
+
+const hasMissingDeferredNumbers = (sourceDocuments = []) =>
+  (Array.isArray(sourceDocuments) ? sourceDocuments : []).some((category) =>
+    (Array.isArray(category?.docList) ? category.docList : []).some(
+      (doc) =>
+        String(doc?.action || "").toLowerCase() === "deferred" &&
+        !String(doc?.deferralNo || doc?.deferralNumber || "").trim(),
+    ),
+  );
+
 const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
   const navigate = useNavigate();
   const [loanType, setLoanType] = useState("");
@@ -96,6 +123,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
               action: doc.action || doc.status || "pendingrm",
               status: doc.status || doc.action || "pendingrm",
               comment: doc.comment || "",
+              deferralNo: doc.deferralNo || doc.deferralNumber || "",
               fileUrl: doc.fileUrl,
             });
           });
@@ -107,7 +135,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           }));
         }
 
-        setDocuments(docsToLoad);
+        setDocuments(normalizeDocumentCategories(docsToLoad));
         setCurrentDraftId(draft.id);
         message.success("Draft restored successfully!");
       }
@@ -190,6 +218,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
             status: "pendingrm",
             action: "",
             comment: "",
+            deferralNo: "",
           })),
         })),
       );
@@ -225,6 +254,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           status: "pendingrm",
           action: "",
           comment: "",
+          deferralNo: "",
         })),
       }));
 
@@ -245,6 +275,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         status: "pendingrm",
         action: "",
         comment: "",
+        deferralNo: "",
       };
 
       if (categoryIdx > -1) {
@@ -289,6 +320,12 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
       return;
     }
 
+    if (hasMissingDeferredNumbers(documents)) {
+      showWarningToast("Enter a deferral number for every deferred document before creating the DCL.");
+      setActiveTab("documents");
+      return;
+    }
+
     const payload = {
       loanType: actualLoanType,
       assignedToRMId: assignedToRM,
@@ -297,7 +334,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
       customerNumber,
       customerEmail,
       ibpsNo,
-      documents: documents,
+      documents: normalizeDocumentCategories(documents),
     };
 
     try {
@@ -311,7 +348,12 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
       onClose();
     } catch (err) {
       console.error(err);
-      showErrorToast("Error creating checklist.");
+      const errorMessage =
+        err?.data?.message ||
+        err?.data?.title ||
+        err?.error ||
+        "Error creating checklist.";
+      showErrorToast(errorMessage);
     }
   };
 
@@ -321,7 +363,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
     (loanType === "Multiple Loan Type"
       ? selectedMultipleLoanTypes.length > 0
       : loanType) &&
-    ibpsNo;
+    ibpsNo &&
+    !hasMissingDeferredNumbers(documents);
 
   const totalDocumentCount = documents.reduce(
     (sum, category) => sum + (Array.isArray(category?.docList) ? category.docList.length : 0),
@@ -755,7 +798,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
                 </Button>
                 {!isFormValid && (
                   <div className="creator-create-validation">
-                    Fill Assigned RM, Loan Type{loanType === "Multiple Loan Type" ? ", Actual Loan Types" : ""} and IBPS NO.
+                    Fill Assigned RM, Loan Type{loanType === "Multiple Loan Type" ? ", Actual Loan Types" : ""}, IBPS NO, and every deferral number for deferred documents.
                   </div>
                 )}
               </div>

@@ -6,19 +6,9 @@ import { formatStatusText } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
 
 const DocumentsTable = ({ docs, checklist }) => {
-  console.log("📋 DocumentsTable received:", {
-    docs,
-    isArray: Array.isArray(docs),
-    length: docs?.length || 0,
-    checklistId: checklist?._id,
-    checklistStatus: checklist?.status,
-  });
-
   // FIX: Ensure docs is always an array
   const safeDocs = Array.isArray(docs) ? docs : [];
   const pageSize = 6;
-
-  console.log("📋 safeDocs:", safeDocs);
 
   // Show debug info if no documents
   if (safeDocs.length === 0) {
@@ -142,12 +132,7 @@ const DocumentsTable = ({ docs, checklist }) => {
       return {
         ...col,
         width: 112,
-        render: (finalCheckerStatus, record) => {
-          console.log("🔍 checkerStatus render:", {
-            finalCheckerStatus,
-            record,
-          });
-
+        render: (finalCheckerStatus) => {
           const checklistStatus = checklist?.status;
           let displayStatus = finalCheckerStatus;
 
@@ -266,8 +251,6 @@ const DocumentsTable = ({ docs, checklist }) => {
 
     return col;
   });
-
-  console.log("📋 Rendering table with", safeDocs.length, "documents");
 
   return (
     <div

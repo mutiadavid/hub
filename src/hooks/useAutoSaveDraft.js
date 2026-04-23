@@ -58,10 +58,7 @@ export const useAutoSaveDraft = ({
     }
 
     const intervalId = setInterval(() => {
-      const saved = saveCurrentDraft();
-      if (saved) {
-        console.log('📝 Auto-saved draft:', saved.id);
-      }
+      saveCurrentDraft();
     }, interval);
 
     return () => {

@@ -8,22 +8,11 @@ import "../../../styles/creatorDesignSystem.css";
 const { Text } = Typography;
 
 const ReviveConfirmationModal = ({ open, onCancel, onConfirm, loading }) => {
-  React.useEffect(() => {
-    console.log("🎯 [ReviveConfirmationModal] Modal state changed");
-    console.log("   open:", open);
-    console.log("   loading:", loading);
-    console.log("   onConfirm exists:", !!onConfirm);
-    console.log("   onCancel exists:", !!onCancel);
-  }, [open, loading, onConfirm, onCancel]);
-
   const handleConfirmClick = () => {
-    console.log("✅ [ReviveConfirmationModal] Confirm button clicked!");
-    console.log("   Calling onConfirm...");
     onConfirm?.();
   };
 
   const handleCancelClick = () => {
-    console.log("🚫 [ReviveConfirmationModal] Cancel button clicked");
     onCancel?.();
   };
 

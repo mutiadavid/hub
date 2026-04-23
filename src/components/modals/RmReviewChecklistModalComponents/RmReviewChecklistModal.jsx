@@ -228,16 +228,6 @@ const RmReviewChecklistModal = ({
         [],
     };
 
-    console.log("🔄 RM handleChecklistUpdate called:");
-    console.log(
-      "   Updated checklist supportingDocs:",
-      updatedChecklist?.supportingDocs?.length || 0,
-    );
-    console.log(
-      "   Merged checklist supportingDocs:",
-      mergedChecklist.supportingDocs?.length || 0,
-    );
-
     setLocalChecklist(mergedChecklist);
     if (onChecklistUpdate) {
       onChecklistUpdate(mergedChecklist);
@@ -505,11 +495,6 @@ const RmReviewChecklistModal = ({
     if (isFlatFormat) {
       // Flat format from draft - use directly
       docsToProcess = activeChecklist.documents;
-      console.log(
-        "📋 RM Modal - Processing flat document format from draft:",
-        docsToProcess.length,
-        "docs",
-      );
     } else {
       // Nested format from backend - flatten it
       let docIdxCounter = 0;
@@ -523,11 +508,6 @@ const RmReviewChecklistModal = ({
           }));
         return [...acc, ...filteredDocs];
       }, []);
-      console.log(
-        "📋 RM Modal - Processing nested document format from backend:",
-        docsToProcess.length,
-        "docs",
-      );
     }
 
     // Process all documents
@@ -543,18 +523,10 @@ const RmReviewChecklistModal = ({
 
     // Store supporting docs separately - they should NOT appear in DocumentTable
     const supportingDocsData = activeChecklist.supportingDocs || [];
-    console.log(
-      "📎 RM Modal - Supporting docs from backend:",
-      supportingDocsData.length,
-    );
 
     // Set main docs WITHOUT supporting docs
     setDocs(processedDocs);
     setDeferralValidationByDoc({});
-    console.log(
-      "📋 RM Modal - Main documents (no supporting docs):",
-      processedDocs.length,
-    );
 
     // Set supporting docs separately for DocumentSidebar
     setSupportingDocs(supportingDocsData);
@@ -1045,11 +1017,6 @@ const RmReviewChecklistModal = ({
         rmGeneralComment: rmGeneralComment || "",
       };
 
-      console.log("📤 RM SUBMISSION TO CO-CREATOR:");
-      console.log("   Total docs in state:", docs.length);
-      console.log("   Supporting docs:", payload.supportingDocs.length);
-      console.log("   Main docs being submitted:", payload.documents.length);
-
       await submitRmChecklistToCoCreator(payload).unwrap();
       submittedRef.current = true;
       deleteDraft(checklistId);
@@ -1478,21 +1445,23 @@ const RmReviewChecklistModal = ({
                     </Button>
                   </Upload>
                 )}
-                <SaveDraftButton
-                  key="save"
-                  checklist={{
-                    ...activeChecklist,
-                    dclNo: activeChecklist?.dclNo || activeChecklist?._id,
-                  }}
-                  docs={docs}
-                  rmGeneralComment={rmGeneralComment}
-                  supportingDocs={supportingDocs || []}
-                  comments={displayComments}
-                  currentUserName={currentUserName}
-                  className="rm-review-save-draft"
-                  icon={<SaveOutlined />}
-                  onSaved={handleDraftSaved}
-                />
+                {!readOnly && (
+                  <SaveDraftButton
+                    key="save"
+                    checklist={{
+                      ...activeChecklist,
+                      dclNo: activeChecklist?.dclNo || activeChecklist?._id,
+                    }}
+                    docs={docs}
+                    rmGeneralComment={rmGeneralComment}
+                    supportingDocs={supportingDocs || []}
+                    comments={displayComments}
+                    currentUserName={currentUserName}
+                    className="rm-review-save-draft"
+                    icon={<SaveOutlined />}
+                    onSaved={handleDraftSaved}
+                  />
+                )}
               </Space>
 
               <Space wrap className="rm-review-actionbar-right">

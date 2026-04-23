@@ -47,6 +47,30 @@ export const consumeAuthStatusMessage = () => {
   return message;
 };
 
+const normalizeHttpStatus = (value) => {
+  const numericValue = Number(value);
+  if (Number.isInteger(numericValue) && numericValue >= 400 && numericValue <= 599) {
+    return numericValue;
+  }
+
+  return 500;
+};
+
+export const sanitizeApiError = (error) => {
+  if (!error) {
+    return error;
+  }
+
+  const status = normalizeHttpStatus(error.status ?? error.data?.status);
+  return {
+    ...error,
+    status,
+    originalStatus: null,
+    error: null,
+    data: { status },
+  };
+};
+
 export const createBaseQueryWithSession = ({ baseUrl }) => {
   const rawBaseQuery = fetchBaseQuery({
     baseUrl,
@@ -66,9 +90,12 @@ export const createBaseQueryWithSession = ({ baseUrl }) => {
 
     if (result?.error?.status === 401 && hasActiveToken) {
       const statusCode = result.error?.data?.code;
-      const fallbackMessage = result.error?.data?.message;
-      persistAuthStatusMessage(resolveAuthStatusMessage(statusCode, fallbackMessage));
+      persistAuthStatusMessage(resolveAuthStatusMessage(statusCode));
       api.dispatch(logout());
+    }
+
+    if (result?.error) {
+      result.error = sanitizeApiError(result.error);
     }
 
     return result;

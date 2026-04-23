@@ -28,6 +28,7 @@ const CreatorCompletedChecklistPage = ({
   checklistId: checklistIdProp,
   initialChecklist = null,
   onClose,
+  readOnly = false,
 }) => {
   const { id: routeId } = useParams();
   const navigate = useNavigate();
@@ -396,14 +397,16 @@ const CreatorCompletedChecklistPage = ({
             >
               Close
             </Button>
-            <Button
-              className="creator-completed-page-button"
-              icon={<RedoOutlined />}
-              loading={isReviving}
-              onClick={handleReviveChecklist}
-            >
-              Revive Checklist
-            </Button>
+            {!readOnly && (
+              <Button
+                className="creator-completed-page-button"
+                icon={<RedoOutlined />}
+                loading={isReviving}
+                onClick={handleReviveChecklist}
+              >
+                Revive Checklist
+              </Button>
+            )}
             <PDFGenerator
               checklist={preparedChecklist}
               docs={safeDocs}

@@ -13,38 +13,31 @@ import {
   WARNING_ORANGE,
 } from "../utils/constants";
 import { getReturnedForReworkReason } from "../utils/helpers.jsx";
-import "../../../../styles/creatorDesignSystem.css";
 
 const alertToneStyles = {
   success: {
-    backgroundColor: `${SUCCESS_GREEN}10`,
-    borderColor: `${SUCCESS_GREEN}36`,
-    accentColor: SUCCESS_GREEN,
+    wrapperClassName: `border-[${SUCCESS_GREEN}36] bg-[${SUCCESS_GREEN}10]`,
+    accentClassName: `text-[${SUCCESS_GREEN}]`,
   },
   error: {
-    backgroundColor: `${ERROR_RED}10`,
-    borderColor: `${ERROR_RED}36`,
-    accentColor: ERROR_RED,
+    wrapperClassName: `border-[${ERROR_RED}36] bg-[${ERROR_RED}10]`,
+    accentClassName: `text-[${ERROR_RED}]`,
   },
   warning: {
-    backgroundColor: `${WARNING_ORANGE}10`,
-    borderColor: `${WARNING_ORANGE}36`,
-    accentColor: WARNING_ORANGE,
+    wrapperClassName: `border-[${WARNING_ORANGE}36] bg-[${WARNING_ORANGE}10]`,
+    accentClassName: `text-[${WARNING_ORANGE}]`,
   },
   info: {
-    backgroundColor: `${PRIMARY_BLUE}10`,
-    borderColor: `${PRIMARY_BLUE}28`,
-    accentColor: PRIMARY_BLUE,
+    wrapperClassName: `border-[${PRIMARY_BLUE}28] bg-[${PRIMARY_BLUE}10]`,
+    accentClassName: `text-[${PRIMARY_BLUE}]`,
   },
   accent: {
-    backgroundColor: `rgba(214, 189, 152, 0.12)`,
-    borderColor: `rgba(214, 189, 152, 0.32)`,
-    accentColor: "var(--color-primary-dark)",
+    wrapperClassName: "border-[rgba(214,189,152,0.32)] bg-[rgba(214,189,152,0.12)]",
+    accentClassName: "text-(--color-primary-dark)",
   },
   lime: {
-    backgroundColor: `${ACCENT_LIME}10`,
-    borderColor: `${ACCENT_LIME}30`,
-    accentColor: ACCENT_LIME,
+    wrapperClassName: `border-[${ACCENT_LIME}30] bg-[${ACCENT_LIME}10]`,
+    accentClassName: `text-[${ACCENT_LIME}]`,
   },
 };
 
@@ -110,49 +103,30 @@ const DeferralStatusAlert = ({ deferral }) => {
 
     return (
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          padding: 18,
-          background: palette.backgroundColor,
-          border: `1px solid ${palette.borderColor}`,
-          borderRadius: 8,
-        }}
+        className={`flex flex-col gap-3.5 rounded-lg border p-[18px] ${palette.wrapperClassName}`}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-          <div style={{ color: palette.accentColor, fontSize: 20, lineHeight: 1 }}>
+        <div className="flex items-start gap-3">
+          <div className={`text-[20px] leading-none ${palette.accentClassName}`}>
             {icon}
           </div>
-          <div style={{ minWidth: 0 }}>
-            <h3 style={{ margin: 0, color: palette.accentColor, fontWeight: 700, fontSize: 18 }}>
+          <div className="min-w-0">
+            <h3 className={`m-0 text-lg font-bold ${palette.accentClassName}`}>
               {title}
             </h3>
-            <p style={{ margin: "6px 0 0", color: "var(--color-text-light)", fontSize: 13, lineHeight: 1.6 }}>
+            <p className="mt-1.5 mb-0 text-[13px] leading-6 text-(--color-text-light)">
               {description}
             </p>
           </div>
         </div>
 
         {metadata ? (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <div className="flex flex-wrap gap-2">
             {metadata.map((item) => (
               <span
                 key={item.label}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255, 255, 255, 0.4)",
-                  background: "rgba(255, 255, 255, 0.72)",
-                  color: "var(--color-text-dark)",
-                  fontSize: 12,
-                  fontWeight: 600,
-                }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.4)] bg-[rgba(255,255,255,0.72)] px-2.5 py-1.5 text-xs font-semibold text-(--color-text-dark)"
               >
-                <span style={{ color: "#64748b", fontWeight: 500 }}>{item.label}:</span>
+                <span className="font-medium text-[#64748b]">{item.label}:</span>
                 <span>{item.value}</span>
               </span>
             ))}

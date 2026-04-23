@@ -104,19 +104,6 @@ const isSystemGeneratedMessage = (text = "") => {
    Component
 ---------------------------- */
 const CommentHistory = ({ comments = [], isLoading }) => {
-  // Debug logging
-  React.useEffect(() => {
-    console.log("📝 CommentHistory - Raw comments received:", comments);
-    console.log("📝 CommentHistory - Is Loading:", isLoading);
-    if (comments && comments.length > 0) {
-      comments.forEach((c, idx) => {
-        console.log(
-          `   [${idx}] Message: "${c.message || c.comment}" | Role: ${c.userId?.role || c.role} | ID: ${c._id || c.id}`,
-        );
-      });
-    }
-  }, [comments, isLoading]);
-
   if (isLoading) {
     return (
       <div style={{ padding: 16, display: "flex", justifyContent: "center" }}>
@@ -134,17 +121,6 @@ const CommentHistory = ({ comments = [], isLoading }) => {
     const message = item.message || item.comment || "";
     const isSystem = isSystemGeneratedMessage(message);
     const isEmpty = !message.trim();
-
-    // Debug each comment
-    if (!isSystem && !isEmpty && role !== "system") {
-      console.log(`   ✅ KEEPING: "${message.substring(0, 50)}..." (${role})`);
-    } else if (isSystem) {
-      console.log(`   ❌ FILTERING (SYSTEM): "${message.substring(0, 50)}..."`);
-    } else if (isEmpty) {
-      console.log(`   ❌ FILTERING (EMPTY)`);
-    } else if (role === "system") {
-      console.log(`   ❌ FILTERING (SYSTEM ROLE)`);
-    }
 
     // 1. Remove system role completely
     if (role === "system") return false;

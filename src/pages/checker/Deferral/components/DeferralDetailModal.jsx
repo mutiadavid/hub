@@ -26,8 +26,6 @@ import { openFileInNewTab, downloadFile } from "../../../../utils/fileUtils";
 import downloadDeferralPdf from "../../../../utils/deferralPdfGenerator";
 import DeferralReviewHeader from "../../../creator/Deferrals/components/DeferralReviewHeader";
 import DeferralStatusAlert from "./DeferralStatusAlert";
-import "./DeferralDetailModal.css";
-import "../../../../styles/creatorDesignSystem.css";
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -161,6 +159,51 @@ const formatHistoryTimestamp = (value) => {
   }
 
   return parsed.format("DD MMM YYYY HH:mm");
+};
+
+const reviewShellClassName =
+  "border-t border-[rgba(214,189,152)] bg-(--color-bg) [&_.ant-card]:overflow-hidden [&_.ant-card]:rounded-xl [&_.ant-card]:border-[rgba(214,189,152,0.18)] [&_.ant-card]:shadow-[0_8px_24px_rgba(15,23,42,0.04)] [&_.ant-card-head]:min-h-0 [&_.ant-card-head]:border-b [&_.ant-card-head]:border-[rgba(214,189,152,0.18)] [&_.ant-card-head]:bg-white [&_.ant-card-head]:px-4 [&_.ant-card-head]:py-3.5 [&_.ant-card-head-title]:p-0 [&_.ant-card-body]:bg-white [&_.ant-card-body]:p-4 [&_.ant-descriptions-item-label]:text-[11px] [&_.ant-descriptions-item-label]:font-semibold [&_.ant-descriptions-item-label]:uppercase [&_.ant-descriptions-item-label]:tracking-[0.04em] [&_.ant-descriptions-item-label]:text-(--color-text-light) [&_.ant-descriptions-item-content]:overflow-wrap-anywhere [&_.ant-descriptions-item-content]:text-[13px] [&_.ant-descriptions-item-content]:font-medium [&_.ant-descriptions-item-content]:text-(--color-text-dark) [&_.ant-input]:rounded-[10px] [&_.ant-input]:border-[rgba(214,189,152,0.22)] [&_.ant-input]:bg-white [&_.ant-input]:shadow-none [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-header]:border-b-0 [&_.ant-table-header]:shadow-none [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr]:border-b-0 [&_.ant-table-thead>tr>th]:!border-b-0 [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:bg-[#fbfaf6] [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.04em] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-tbody>tr:first-child>td]:!border-t-0 [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.1)] [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr:last-child>td]:border-b-0 [&_.ant-table-row:hover>td]:bg-[#fcfbf8] [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+
+const sectionCardClassName = "mb-[18px]";
+const infoCardClassName =
+  "mb-[18px] [&_.ant-card-head]:border-b-2 [&_.ant-card-head]:border-[var(--color-success-soft-border)] [&_.ant-descriptions-view]:overflow-hidden [&_.ant-descriptions-view]:rounded-lg [&_.ant-descriptions-view]:border [&_.ant-descriptions-view]:border-[rgba(214,189,152,0.2)] [&_.ant-descriptions-row>th]:border-b [&_.ant-descriptions-row>td]:border-b [&_.ant-descriptions-row>th]:border-[rgba(214,189,152,0.14)] [&_.ant-descriptions-row>td]:border-[rgba(214,189,152,0.14)] [&_.ant-descriptions-row:last-child>th]:border-b-0 [&_.ant-descriptions-row:last-child>td]:border-b-0 [&_.ant-descriptions-item-label]:min-w-[140px] [&_.ant-descriptions-item-label]:bg-(--color-bg) [&_.ant-descriptions-item-label]:px-[14px] [&_.ant-descriptions-item-label]:py-3 [&_.ant-descriptions-item-content]:bg-white [&_.ant-descriptions-item-content]:px-[14px] [&_.ant-descriptions-item-content]:py-3";
+const cardTitleClassName = "font-semibold text-(--color-primary-dark)";
+const actionBarClassName =
+  "mb-3.5 flex flex-wrap justify-between gap-3 rounded-xl border border-[rgba(214,189,152,0.2)] bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(26,54,54,0.06)] max-md:flex-col max-md:items-stretch";
+const actionGroupClassName = "flex flex-wrap gap-2";
+const actionGroupEndClassName = "ml-auto flex flex-wrap gap-2 max-md:ml-0";
+const primaryButtonClassName =
+  "h-[34px]! rounded-md! border-0! bg-(--ncb-primary-500)! px-3.5! text-xs! font-semibold! text-white! shadow-none! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! disabled:bg-[var(--color-disabled)]! disabled:border-[var(--color-disabled)]! disabled:text-white! [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1.5 [&>span]:text-white!";
+const secondaryButtonClassName =
+  "h-[34px]! rounded-md! border-[rgba(214,189,152,0.28)]! bg-white! px-3.5! text-xs! font-semibold! text-(--color-text-medium)! shadow-none! hover:border-[rgba(214,189,152,0.35)]! hover:bg-[#faf7f2]! hover:text-(--color-text-dark)! focus:border-[rgba(214,189,152,0.35)]! focus:bg-[#faf7f2]! focus:text-(--color-text-dark)! active:border-[rgba(214,189,152,0.35)]! active:bg-[#faf7f2]! active:text-(--color-text-dark)! [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1.5";
+const tabListClassName = "mb-4 flex gap-1 overflow-x-auto border-b border-[rgba(214,189,152,0.2)] max-md:mb-3 max-md:gap-2 max-md:pb-1";
+const workspaceClassName = "grid items-start gap-4 min-[1101px]:grid-cols-[minmax(0,7fr)_minmax(300px,3fr)] max-md:gap-3";
+const sidebarClassName = "flex flex-col gap-4 rounded-xl border border-[rgba(214,189,152,0.2)] bg-white p-3.5 shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
+const tableShellClassName = "mb-[18px] overflow-x-auto rounded-xl border border-[rgba(214,189,152,0.2)] bg-white";
+const statsGridClassName = "grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))] max-md:grid-cols-1";
+const statCardClassName = "rounded-[10px] border border-[rgba(214,189,152,0.16)] bg-[linear-gradient(180deg,rgba(245,240,231,0.58)_0%,#fff_100%)] p-3";
+const actionSetClassName = "inline-flex flex-nowrap items-center gap-1.5 whitespace-nowrap [&_.ant-btn]:h-[27px] [&_.ant-btn]:min-w-0 [&_.ant-btn]:rounded-[7px] [&_.ant-btn]:px-2 [&_.ant-btn]:text-xs [&_.ant-btn>span]:inline-flex [&_.ant-btn>span]:items-center [&_.ant-btn>span]:gap-1";
+const confirmOverlayClassName = "fixed inset-0 z-[1400] flex items-center justify-center bg-[rgba(15,23,42,0.28)] p-6 backdrop-blur-[2px] max-md:items-end max-md:p-3";
+const confirmDialogClassName = "w-[min(550px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-[rgba(214,189,152,0.28)] bg-[var(--gradient-surface-soft)] shadow-[0_24px_64px_rgba(26,54,54,0.14)] max-md:w-full max-md:max-w-full";
+const confirmHeroClassName = "relative bg-[var(--gradient-primary)] px-6 pb-5 pt-6 text-white max-md:px-4 max-md:pr-[52px]";
+const confirmHeroIconClassName = "mb-3.5 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.18)] text-[22px] text-white";
+const confirmCloseClassName = "absolute right-5 top-[18px] inline-flex h-8 w-8 items-center justify-center rounded-full border-0 bg-[rgba(255,255,255,0.08)] p-0 text-2xl leading-none text-white hover:bg-[rgba(255,255,255,0.14)] max-md:right-4 max-md:top-[14px]";
+const confirmBodyClassName = "bg-[var(--gradient-surface-soft)] px-6 pb-6 pt-5 max-md:px-4";
+const confirmBodyCardClassName = "rounded-xl border border-[rgba(214,189,152,0.22)] bg-white p-3.5";
+const confirmSummaryClassName = "mb-3 rounded-[10px] bg-[rgba(214,189,152,0.12)] p-3";
+const confirmLabelClassName = "mb-1.5 block text-[11px] font-bold tracking-[0.04em] text-(--color-text-light) uppercase";
+const confirmTextareaClassName = "rounded-[10px] border-[rgba(214,189,152,0.22)]";
+const modalFooterClassName = "mt-[18px] flex justify-end gap-2";
+const modalPrimaryButtonClassName =
+  "rounded-lg! border-0! bg-(--ncb-primary-500)! text-white! shadow-none! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white!";
+const modalSecondaryButtonClassName =
+  "rounded-lg! border-[rgba(214,189,152,0.28)]! bg-white! text-(--color-text-medium)! shadow-none! hover:border-[rgba(214,189,152,0.35)]! hover:bg-[#faf7f2]! hover:text-(--color-text-dark)!";
+
+const getStatusToneClassName = (tone) => {
+  if (tone === "success") return "text-[var(--color-status-success)]";
+  if (tone === "danger") return "text-[var(--color-status-danger)]";
+  if (tone === "muted") return "text-[var(--color-text-muted)]";
+  return "text-(--color-primary-dark)";
 };
 
 const DeferralDetailModal = ({
@@ -369,7 +412,7 @@ const DeferralDetailModal = ({
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>{value || "-"}</span>
+        <span className="font-semibold text-(--color-primary-dark)">{value || "-"}</span>
       ),
     },
     {
@@ -396,11 +439,11 @@ const DeferralDetailModal = ({
       key: "document",
       render: (_, doc) => (
         <div>
-          <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+          <div className="font-semibold text-(--color-primary-dark)">
             {doc.name || "Uploaded Document"}
           </div>
           {doc.uploadDate ? (
-            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+            <div className="text-xs text-(--color-text-muted)">
               {`Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`}
             </div>
           ) : null}
@@ -412,7 +455,7 @@ const DeferralDetailModal = ({
       key: "actions",
       width: 168,
       render: (_, doc) => (
-        <div className="deferral-review-actionset">
+        <div className={actionSetClassName}>
           <Button
             size="small"
             icon={<EyeOutlined />}
@@ -440,11 +483,11 @@ const DeferralDetailModal = ({
       key: "file",
       render: (_, upload) => (
         <div>
-          <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+          <div className="font-semibold text-(--color-primary-dark)">
             {upload.name || "Evidence Document"}
           </div>
           {upload.uploadDate ? (
-            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+            <div className="text-xs text-(--color-text-muted)">
               {`Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`}
             </div>
           ) : null}
@@ -456,7 +499,7 @@ const DeferralDetailModal = ({
       key: "actions",
       width: 168,
       render: (_, upload) => (
-        <div className="deferral-review-actionset">
+        <div className={actionSetClassName}>
           <Button
             size="small"
             icon={<EyeOutlined />}
@@ -484,7 +527,7 @@ const DeferralDetailModal = ({
       dataIndex: "documentName",
       key: "documentName",
       render: (value) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>{value || "-"}</span>
+        <span className="font-semibold text-(--color-primary-dark)">{value || "-"}</span>
       ),
     },
     {
@@ -507,17 +550,7 @@ const DeferralDetailModal = ({
 
         return (
           <div>
-            <div
-              className="deferral-review-status-pill"
-              style={{
-                color:
-                  reviewState === "approved"
-                    ? SUCCESS_GREEN
-                    : reviewState === "rejected"
-                      ? ERROR_RED
-                      : PRIMARY_BLUE,
-              }}
-            >
+            <div className={`inline-flex items-center text-xs font-semibold ${getStatusToneClassName(reviewState === "approved" ? "success" : reviewState === "rejected" ? "danger" : "primary")}`}>
               {label}
             </div>
           </div>
@@ -540,17 +573,7 @@ const DeferralDetailModal = ({
 
         return (
           <div>
-            <div
-              className="deferral-review-status-pill"
-              style={{
-                color:
-                  reviewState === "approved"
-                    ? SUCCESS_GREEN
-                    : reviewState === "rejected"
-                      ? ERROR_RED
-                      : PRIMARY_BLUE,
-              }}
-            >
+            <div className={`inline-flex items-center text-xs font-semibold ${getStatusToneClassName(reviewState === "approved" ? "success" : reviewState === "rejected" ? "danger" : "primary")}`}>
               {label}
             </div>
           </div>
@@ -571,7 +594,7 @@ const DeferralDetailModal = ({
 
         if (!isCloseRequestAction || !canAccept) {
           return (
-            <span className="deferral-review-status-pill" style={{ color: PRIMARY_BLUE }}>
+            <span className="inline-flex items-center text-xs font-semibold text-(--color-primary-dark)">
               {decision.status === "approved"
                 ? "Approved"
                 : decision.status === "rejected"
@@ -582,8 +605,8 @@ const DeferralDetailModal = ({
         }
 
         return (
-          <div style={{ display: "grid", gap: 8 }}>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="grid gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 size="small"
                 type={decision.status === "approved" ? "primary" : "default"}
@@ -645,16 +668,7 @@ const DeferralDetailModal = ({
             );
 
         return (
-          <span
-            className="deferral-review-status-pill"
-            style={{
-              color: approved
-                ? SUCCESS_GREEN
-                : isCurrent
-                  ? PRIMARY_BLUE
-                  : "var(--color-text-muted)",
-            }}
-          >
+          <span className={`inline-flex items-center text-xs font-semibold ${getStatusToneClassName(approved ? "success" : isCurrent ? "primary" : "muted")}`}>
             {approved ? "Approved" : isCurrent ? "Current" : "Pending Approval"}
           </span>
         );
@@ -664,8 +678,8 @@ const DeferralDetailModal = ({
 
   return (
     <>
-      <div className="deferral-review-panel">
-        <div className="deferral-review-container">
+      <div className={reviewShellClassName}>
+        <div className="w-full max-w-full">
           <DeferralReviewHeader
             deferral={deferral}
             onClose={onClose}
@@ -673,11 +687,11 @@ const DeferralDetailModal = ({
             documentCount={uploadedDocumentCount}
           />
 
-          <div className="deferral-review-actionbar">
-            <div className="deferral-review-actionbar__group">
+          <div className={actionBarClassName}>
+            <div className={actionGroupClassName}>
               {canAccept ? (
                 <Button
-                  className="deferral-review-actionbar__button"
+                  className={primaryButtonClassName}
                   disabled={Boolean(actionLoading)}
                   onClick={onApprove}
                   icon={<CheckCircleOutlined />}
@@ -688,7 +702,7 @@ const DeferralDetailModal = ({
 
               {canReturnForRework ? (
                 <Button
-                  className="deferral-review-actionbar__button"
+                  className={primaryButtonClassName}
                   disabled={Boolean(actionLoading)}
                   onClick={onReturnForRework}
                   icon={<ExclamationCircleOutlined />}
@@ -698,9 +712,9 @@ const DeferralDetailModal = ({
               ) : null}
             </div>
 
-            <div className="deferral-review-actionbar__group deferral-review-actionbar__group--end">
+            <div className={actionGroupEndClassName}>
               <Button
-                className="deferral-review-actionbar__button"
+                className={primaryButtonClassName}
                 icon={<DownloadOutlined />}
                 loading={downloadLoading || Boolean(actionLoading)}
                 onClick={onDownloadPDF || downloadDeferralAsPDF}
@@ -708,7 +722,7 @@ const DeferralDetailModal = ({
                 Download PDF
               </Button>
               <Button
-                className="deferral-review-actionbar__button ant-btn--secondary"
+                className={secondaryButtonClassName}
                 onClick={onClose}
               >
                 Close
@@ -716,12 +730,12 @@ const DeferralDetailModal = ({
             </div>
           </div>
 
-          <div className="deferral-review-tabs">
+          <div className={tabListClassName}>
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
-                className={`deferral-review-tab${activeTab === tab.key ? " deferral-review-tab--active" : ""}`}
+                className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2 text-[11px] font-semibold ${activeTab === tab.key ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
                 onClick={() => setActiveTab(tab.key)}
               >
                 {tab.label}
@@ -729,129 +743,115 @@ const DeferralDetailModal = ({
             ))}
           </div>
 
-          <div className="deferral-review-workspace">
-            <div className="deferral-review-main">
-              <div className="deferral-review-body">
+          <div className={workspaceClassName}>
+            <div className="min-w-0">
+              <div>
                 <Spin spinning={Boolean(actionLoading)}>
                   {activeTab === "details" ? (
                     <>
                       <Card
-                        className="deferral-review-section"
+                        className={sectionCardClassName}
                         size="small"
-                        title={<span style={{ color: PRIMARY_BLUE }}>Workflow Status</span>}
-                        style={{ marginBottom: 18 }}
+                        title={<span className={cardTitleClassName}>Workflow Status</span>}
                       >
                         <DeferralStatusAlert deferral={deferral} />
                       </Card>
 
                       <Card
-                        className="deferral-info-card deferral-review-section"
+                        className={infoCardClassName}
                         size="small"
-                        title={<span style={{ color: PRIMARY_BLUE }}>Deferral Details</span>}
-                        style={{ marginBottom: 18 }}
+                        title={<span className={cardTitleClassName}>Deferral Details</span>}
                       >
-                        <Descriptions className="deferral-review-summary" size="middle" column={{ xs: 1, sm: 2, lg: 3 }}>
+                        <Descriptions size="middle" column={{ xs: 1, sm: 2, lg: 3 }}>
                           <Descriptions.Item label="Customer Name">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>{deferral.customerName || "-"}</Text>
+                            <span className="font-semibold text-(--color-primary-dark)">{deferral.customerName || "-"}</span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Customer Number">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>{deferral.customerNumber || "-"}</Text>
+                            <span className="font-semibold text-(--color-primary-dark)">{deferral.customerNumber || "-"}</span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Deferral No">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>{deferral.deferralNumber || "-"}</Text>
+                            <span className="font-semibold text-(--color-primary-dark)">{deferral.deferralNumber || "-"}</span>
                           </Descriptions.Item>
                           <Descriptions.Item label="DCL No">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>{deferral.dclNo || deferral.dclNumber || "-"}</Text>
+                            <span className="font-semibold text-(--color-primary-dark)">{deferral.dclNo || deferral.dclNumber || "-"}</span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Loan Type">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>{deferral.loanType || "-"}</Text>
+                            <span className="font-semibold text-(--color-primary-dark)">{deferral.loanType || "-"}</span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Created At">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>
+                            <span className="font-semibold text-(--color-primary-dark)">
                               {deferral.createdAt ? dayjs(deferral.createdAt).format("DD MMM YYYY") : "-"}
-                            </Text>
+                            </span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Status">
-                            <Text
-                              strong
-                              style={{
-                                color: checkerApproved
-                                  ? SUCCESS_GREEN
-                                  : isRejected
-                                    ? ERROR_RED
-                                    : PRIMARY_BLUE,
-                              }}
-                            >
+                            <span className={`font-semibold ${getStatusToneClassName(checkerApproved ? "success" : isRejected ? "danger" : "primary")}`}>
                               {deferral.status
                                 ? deferral.status.replace(/_/g, " ")
                                 : "-"}
-                            </Text>
+                            </span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Creator Status">
-                            <Text style={{ color: creatorApproved ? SUCCESS_GREEN : PRIMARY_BLUE }}>
+                            <span className={creatorApproved ? "text-[#52c41a]" : "text-(--color-primary-dark)"}>
                               {creatorApproved ? "Approved" : "Pending"}
-                            </Text>
+                            </span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Checker Status">
-                            <Text style={{ color: checkerApproved ? SUCCESS_GREEN : PRIMARY_BLUE }}>
+                            <span className={checkerApproved ? "text-[#52c41a]" : "text-(--color-primary-dark)"}>
                               {checkerApproved ? "Approved" : "Pending"}
-                            </Text>
+                            </span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Approvers Status">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>
+                            <span className="font-semibold text-(--color-primary-dark)">
                               {approvedApproversCount} of {approvalFlow.length} Approved
-                            </Text>
+                            </span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Loan Amount">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>{deferral.loanAmountCategory || deferral.loanAmount || "Below 75 million"}</Text>
+                            <span className="font-semibold text-(--color-primary-dark)">{deferral.loanAmountCategory || deferral.loanAmount || "Below 75 million"}</span>
                           </Descriptions.Item>
                           <Descriptions.Item label="Requested Documents">
-                            <Text strong style={{ color: PRIMARY_BLUE }}>{requestedDocsWithDates.length}</Text>
+                            <span className="font-semibold text-(--color-primary-dark)">{requestedDocsWithDates.length}</span>
                           </Descriptions.Item>
                         </Descriptions>
                       </Card>
 
                       <Card
-                        className="deferral-review-section"
+                        className={sectionCardClassName}
                         size="small"
-                        title={<span style={{ color: PRIMARY_BLUE }}>Review Summary</span>}
-                        style={{ marginBottom: 18 }}
+                        title={<span className={cardTitleClassName}>Review Summary</span>}
                       >
-                        <div className="deferral-review-stats">
-                          <div className="deferral-review-stat">
-                            <div className="deferral-review-stat__label">Requested Docs</div>
-                            <div className="deferral-review-stat__value">{requestedDocsWithDates.length}</div>
+                        <div className={statsGridClassName}>
+                          <div className={statCardClassName}>
+                            <div className="text-[10px] font-bold tracking-[0.08em] text-(--color-text-muted) uppercase">Requested Docs</div>
+                            <div className="mt-2 text-[22px] font-bold text-(--color-text-dark)">{requestedDocsWithDates.length}</div>
                           </div>
-                          <div className="deferral-review-stat">
-                            <div className="deferral-review-stat__label">Uploaded Docs</div>
-                            <div className="deferral-review-stat__value">{dclDocs.length + generalUploadedDocs.length}</div>
+                          <div className={statCardClassName}>
+                            <div className="text-[10px] font-bold tracking-[0.08em] text-(--color-text-muted) uppercase">Uploaded Docs</div>
+                            <div className="mt-2 text-[22px] font-bold text-(--color-text-dark)">{dclDocs.length + generalUploadedDocs.length}</div>
                           </div>
-                          <div className="deferral-review-stat">
-                            <div className="deferral-review-stat__label">Approvals</div>
-                            <div className="deferral-review-stat__value">{approvedApproversCount}</div>
+                          <div className={statCardClassName}>
+                            <div className="text-[10px] font-bold tracking-[0.08em] text-(--color-text-muted) uppercase">Approvals</div>
+                            <div className="mt-2 text-[22px] font-bold text-(--color-text-dark)">{approvedApproversCount}</div>
                           </div>
                         </div>
                       </Card>
 
                       <Card
-                        className="deferral-review-section"
+                        className={sectionCardClassName}
                         size="small"
-                        title={<span style={{ color: PRIMARY_BLUE }}>Deferral Description</span>}
-                        style={{ marginBottom: 18 }}
+                        title={<span className={cardTitleClassName}>Deferral Description</span>}
                       >
-                        <div className="deferral-review-text-block">
+                        <div className="overflow-wrap-anywhere whitespace-pre-wrap break-word rounded-lg border border-[rgba(214,189,152,0.2)] bg-white px-4 py-3.5 text-[13px] leading-6 text-(--color-text-body-soft)">
                           {deferral.deferralDescription || "No description provided."}
                         </div>
                       </Card>
 
                       {deferral.facilities?.length > 0 ? (
                         <Card
-                          className="deferral-review-section"
+                          className={sectionCardClassName}
                           size="small"
-                          title={<span style={{ color: PRIMARY_BLUE }}>Facility Details ({deferral.facilities.length})</span>}
-                          style={{ marginBottom: 18 }}
+                          title={<span className={cardTitleClassName}>Facility Details ({deferral.facilities.length})</span>}
                         >
-                          <div className="deferral-review-table-shell">
+                          <div className={tableShellClassName}>
                             <Table
                               dataSource={deferral.facilities}
                               columns={getFacilityColumns()}
@@ -866,12 +866,11 @@ const DeferralDetailModal = ({
 
                       {approvalFlow.length > 0 ? (
                         <Card
-                          className="deferral-review-section"
+                          className={sectionCardClassName}
                           size="small"
-                          title={<span style={{ color: PRIMARY_BLUE }}>Approval Flow</span>}
-                          style={{ marginBottom: 18 }}
+                          title={<span className={cardTitleClassName}>Approval Flow</span>}
                         >
-                          <div className="deferral-review-table-shell">
+                          <div className={tableShellClassName}>
                             <Table
                               dataSource={approvalFlow}
                               columns={approvalFlowColumns}
@@ -888,12 +887,11 @@ const DeferralDetailModal = ({
                     <>
                       {requestedDocsWithDates.length > 0 ? (
                         <Card
-                          className="deferral-review-section"
+                          className={sectionCardClassName}
                           size="small"
-                          title={<span style={{ color: PRIMARY_BLUE }}>Document(s) to be Deferred ({requestedDocsWithDates.length})</span>}
-                          style={{ marginBottom: 18 }}
+                          title={<span className={cardTitleClassName}>Document(s) to be Deferred ({requestedDocsWithDates.length})</span>}
                         >
-                          <div className="deferral-review-table-shell">
+                          <div className={tableShellClassName}>
                             <Table
                               dataSource={requestedDocsWithDates}
                               columns={requestedDocsColumns}
@@ -907,12 +905,11 @@ const DeferralDetailModal = ({
                       ) : null}
 
                       <Card
-                        className="deferral-review-section"
+                        className={sectionCardClassName}
                         size="small"
-                        title={<span style={{ color: PRIMARY_BLUE }}>Mandatory: DCL Upload</span>}
-                        style={{ marginBottom: 18 }}
+                        title={<span className={cardTitleClassName}>Mandatory: DCL Upload</span>}
                       >
-                        <div className="deferral-review-table-shell">
+                        <div className={tableShellClassName}>
                           <Table
                             dataSource={dclDocs}
                             columns={uploadedDocumentColumns}
@@ -925,12 +922,11 @@ const DeferralDetailModal = ({
                       </Card>
 
                       <Card
-                        className="deferral-review-section"
+                        className={sectionCardClassName}
                         size="small"
-                        title={<span style={{ color: PRIMARY_BLUE }}>Additional Documents ({generalUploadedDocs.length})</span>}
-                        style={{ marginBottom: 18 }}
+                        title={<span className={cardTitleClassName}>Additional Documents ({generalUploadedDocs.length})</span>}
                       >
-                        <div className="deferral-review-table-shell">
+                        <div className={tableShellClassName}>
                           <Table
                             dataSource={generalUploadedDocs}
                             columns={uploadedDocumentColumns}
@@ -944,12 +940,11 @@ const DeferralDetailModal = ({
 
                       {isCloseRequestContext && closeRequestDocuments.length > 0 ? (
                         <Card
-                          className="deferral-review-section"
+                          className={sectionCardClassName}
                           size="small"
-                          title={<span style={{ color: PRIMARY_BLUE }}>Close Request Documents ({closeRequestDocuments.length})</span>}
-                          style={{ marginBottom: 18 }}
+                          title={<span className={cardTitleClassName}>Close Request Documents ({closeRequestDocuments.length})</span>}
                         >
-                          <div className="deferral-review-table-shell">
+                          <div className={tableShellClassName}>
                             <Table
                               dataSource={closeRequestDocuments}
                               columns={closeRequestColumns}
@@ -979,27 +974,27 @@ const DeferralDetailModal = ({
               </div>
             </div>
 
-            <aside className="deferral-review-sidebar">
-              <div className="deferral-review-sidebar__section">
-                <div className="deferral-review-sidebar__title">Recent Comments</div>
+            <aside className={sidebarClassName}>
+              <div className="flex flex-col gap-2">
+                <div className="text-xs font-bold tracking-[0.08em] text-(--color-text-medium) uppercase">Recent Comments</div>
                 {history.length === 0 ? (
-                  <div className="deferral-review-sidebar__empty">No user comments yet.</div>
+                  <div className="text-xs leading-5 text-(--color-text-medium)">No user comments yet.</div>
                 ) : (
-                  <div className="deferral-review-sidebar__history">
+                  <div className="flex flex-col gap-2.5">
                     {history.map((item, index) => (
                       <div
                         key={`${item.date || item.createdAt || "comment"}-${index}`}
-                        className="deferral-review-sidebar__history-item"
+                        className={`${index === 0 ? "" : "border-t border-[rgba(214,189,152,0.14)] pt-2.5"}`}
                       >
-                        <div className="deferral-review-sidebar__history-meta">
-                          <span className="deferral-review-sidebar__history-user">
+                        <div className="mb-1 flex justify-between gap-2">
+                          <span className="overflow-wrap-anywhere break-word text-xs font-semibold text-(--color-primary-dark)">
                             {item.user || "User"}
                           </span>
-                          <span className="deferral-review-sidebar__history-time">
+                          <span className="shrink-0 text-[11px] text-[#94a3b8]">
                             {formatHistoryTimestamp(item.date || item.createdAt || item.timestamp)}
                           </span>
                         </div>
-                        <div className="deferral-review-sidebar__history-text">
+                        <div className="overflow-wrap-anywhere break-word text-xs leading-5 text-(--color-text-medium)">
                           {item.comment || item.notes || item.message || item.text || "No comment provided."}
                         </div>
                       </div>
@@ -1013,27 +1008,27 @@ const DeferralDetailModal = ({
       </div>
 
       {approvalConfirmVisible ? (
-        <div className="deferral-review-confirm-overlay" role="presentation">
+        <div className={confirmOverlayClassName} role="presentation">
           <div
-            className="deferral-review-confirm-dialog admin-page__modal deferral-review-confirm deferral-review-confirm--acceptance"
+            className={confirmDialogClassName}
             role="dialog"
             aria-modal="true"
             aria-labelledby="checker-approval-dialog-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="admin-page__modal-header deferral-review-confirm__hero">
-              <div className="deferral-review-confirm__hero-icon"><CheckCircleOutlined /></div>
-              <h2 className="admin-page__modal-title" id="checker-approval-dialog-title">
+            <div className={confirmHeroClassName}>
+              <div className={confirmHeroIconClassName}><CheckCircleOutlined /></div>
+              <h2 className="m-0 text-xl font-semibold" id="checker-approval-dialog-title">
                 {isCloseRequestAction ? "Submit Close Request Review" : "Confirm Acceptance"}
               </h2>
-              <p className="admin-page__modal-subtitle">
+              <p className="mt-2 mb-0 text-sm leading-6 text-white/80">
                 {isCloseRequestAction
                   ? "Review the checker decisions and submit this close request using the same admin modal layout used elsewhere in the workspace."
                   : "Confirm this deferral decision using the same admin modal layout used across the application."}
               </p>
               <button
                 type="button"
-                className="deferral-review-confirm__close"
+                className={confirmCloseClassName}
                 onClick={onApprovalCancel}
                 aria-label="Close approval dialog"
               >
@@ -1041,18 +1036,18 @@ const DeferralDetailModal = ({
               </button>
             </div>
 
-            <div className="deferral-review-confirm__body admin-page__modal-body">
-              <div className="deferral-review-confirm__body-card">
-                <div className="deferral-review-confirm__summary">
-                  <div className="deferral-review-confirm__summary-title">
+            <div className={confirmBodyClassName}>
+              <div className={confirmBodyCardClassName}>
+                <div className={confirmSummaryClassName}>
+                  <div className="text-sm font-bold text-(--color-text-dark)">
                     {deferral.deferralNumber || (isCloseRequestAction ? "Close request review" : "Deferral acceptance")}
                   </div>
-                  <div className="deferral-review-confirm__summary-copy">
+                  <div className="mt-1 text-xs leading-6 text-(--color-text-medium)">
                     {isCloseRequestAction
                       ? "Review and submit the close-request decision for this deferral."
                       : "Accept this deferral using the same controlled review flow as the other system modals."}
                   </div>
-                  <div className="deferral-review-confirm__summary-copy">
+                  <div className="mt-1 text-xs leading-6 text-(--color-text-medium)">
                     {isCloseRequestAction
                       ? pendingCheckerDecisions > 0
                         ? `Review ${pendingCheckerDecisions} remaining close-request document${pendingCheckerDecisions === 1 ? "" : "s"} before you submit.`
@@ -1061,7 +1056,7 @@ const DeferralDetailModal = ({
                   </div>
                 </div>
 
-                <label className="deferral-review-confirm__label" htmlFor="checker-approval-comment">
+                <label className={confirmLabelClassName} htmlFor="checker-approval-comment">
                   {isCloseRequestAction ? "Review comment" : "Approval comments"}
                 </label>
                 <TextArea
@@ -1070,15 +1065,15 @@ const DeferralDetailModal = ({
                   placeholder="Enter any additional comments..."
                   value={creatorComment}
                   onChange={(event) => onCreatorCommentChange?.(event.target.value)}
-                  className="deferral-review-confirm__textarea"
+                  className={confirmTextareaClassName}
                 />
               </div>
 
-              <div className="admin-page__modal-footer">
+              <div className={modalFooterClassName}>
                 <Button
                   onClick={onApprovalCancel}
                   disabled={Boolean(actionLoading)}
-                  className="admin-page__action-button admin-page__action-button--secondary"
+                  className={modalSecondaryButtonClassName}
                 >
                   Cancel
                 </Button>
@@ -1097,7 +1092,7 @@ const DeferralDetailModal = ({
                   })}
                   loading={Boolean(actionLoading)}
                   disabled={Boolean(actionLoading) || (isCloseRequestAction && pendingCheckerDecisions > 0)}
-                  className="admin-page__action-button deferral-review-confirm__confirm"
+                  className={modalPrimaryButtonClassName}
                 >
                   {isCloseRequestAction ? "Yes, Submit Review" : "Yes, Approve"}
                 </Button>
@@ -1108,25 +1103,25 @@ const DeferralDetailModal = ({
       ) : null}
 
       {reworkConfirmVisible ? (
-        <div className="deferral-review-confirm-overlay" role="presentation">
+        <div className={confirmOverlayClassName} role="presentation">
           <div
-            className="deferral-review-confirm-dialog admin-page__modal deferral-review-confirm deferral-review-confirm--rework"
+            className={confirmDialogClassName}
             role="dialog"
             aria-modal="true"
             aria-labelledby="checker-rework-dialog-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="admin-page__modal-header deferral-review-confirm__hero">
-              <div className="deferral-review-confirm__hero-icon"><RedoOutlined /></div>
-              <h2 className="admin-page__modal-title" id="checker-rework-dialog-title">
+            <div className={confirmHeroClassName}>
+              <div className={confirmHeroIconClassName}><RedoOutlined /></div>
+              <h2 className="m-0 text-xl font-semibold" id="checker-rework-dialog-title">
                 Return for Rework
               </h2>
-              <p className="admin-page__modal-subtitle">
+              <p className="mt-2 mb-0 text-sm leading-6 text-white/80">
                 Send the request back with corrective guidance using the same admin modal layout as the other system dialogs.
               </p>
               <button
                 type="button"
-                className="deferral-review-confirm__close"
+                className={confirmCloseClassName}
                 onClick={onReworkCancel}
                 aria-label="Close rework dialog"
               >
@@ -1134,21 +1129,21 @@ const DeferralDetailModal = ({
               </button>
             </div>
 
-            <div className="deferral-review-confirm__body admin-page__modal-body">
-              <div className="deferral-review-confirm__body-card">
-                <div className="deferral-review-confirm__summary">
-                  <div className="deferral-review-confirm__summary-title">
+            <div className={confirmBodyClassName}>
+              <div className={confirmBodyCardClassName}>
+                <div className={confirmSummaryClassName}>
+                  <div className="text-sm font-bold text-(--color-text-dark)">
                     {deferral.deferralNumber || "Return for rework"}
                   </div>
-                  <div className="deferral-review-confirm__summary-copy">
+                  <div className="mt-1 text-xs leading-6 text-(--color-text-medium)">
                     Send the request back with clear corrective instructions.
                   </div>
-                  <div className="deferral-review-confirm__summary-copy">
+                  <div className="mt-1 text-xs leading-6 text-(--color-text-medium)">
                     Returning this request will send it back with your instructions so the originating team can correct it.
                   </div>
                 </div>
 
-                <label className="deferral-review-confirm__label" htmlFor="checker-rework-comment">
+                <label className={confirmLabelClassName} htmlFor="checker-rework-comment">
                   Rework instructions (Required)
                 </label>
                 <TextArea
@@ -1157,15 +1152,15 @@ const DeferralDetailModal = ({
                   placeholder="Enter rework instructions..."
                   value={reworkComment}
                   onChange={(event) => onReworkCommentChange?.(event.target.value)}
-                  className="deferral-review-confirm__textarea"
+                  className={confirmTextareaClassName}
                 />
               </div>
 
-              <div className="admin-page__modal-footer">
+              <div className={modalFooterClassName}>
                 <Button
                   onClick={onReworkCancel}
                   disabled={Boolean(actionLoading)}
-                  className="admin-page__action-button admin-page__action-button--secondary"
+                  className={modalSecondaryButtonClassName}
                 >
                   Cancel
                 </Button>
@@ -1173,7 +1168,7 @@ const DeferralDetailModal = ({
                   onClick={onReworkConfirm}
                   loading={Boolean(actionLoading)}
                   disabled={!String(reworkComment || "").trim()}
-                  className="admin-page__action-button deferral-review-confirm__confirm"
+                  className={modalPrimaryButtonClassName}
                 >
                   Yes, Return for Rework
                 </Button>

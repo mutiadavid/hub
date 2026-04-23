@@ -11,17 +11,6 @@ const socket = io(SOCKET_URL, {
   reconnectionDelay: 1000,
 });
 
-/* ===========================
-   DEBUG LOGS
-=========================== */
-socket.on("connect", () => {
-  console.log("🟢 WebSocket connected:", socket.id);
-});
-
-socket.on("disconnect", (reason) => {
-  console.log("🔴 WebSocket disconnected:", reason);
-});
-
 socket.on("connect_error", (err) => {
   console.error("⚠️ WebSocket error:", err.message);
 });

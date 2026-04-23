@@ -2,13 +2,10 @@ import React from "react";
 import { Table, Tabs, Tag, Empty, Spin } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import {
-  PRIMARY_BLUE,
-  ACCENT_LIME,
-  WARNING_ORANGE,
-  SUCCESS_GREEN,
-  ERROR_RED,
-} from "../utils/constants";
+import { PRIMARY_BLUE } from "../utils/constants";
+
+const tableShellClassName =
+  "rounded-2xl border border-[rgba(214,189,152,0.18)] bg-white shadow-[0_12px_32px_rgba(15,23,42,0.05)] [&_.ant-tabs-nav]:mb-0 [&_.ant-tabs-nav]:border-b [&_.ant-tabs-nav]:border-[rgba(214,189,152,0.18)] [&_.ant-tabs-nav]:bg-[#f8f5ee] [&_.ant-tabs-nav]:px-4 [&_.ant-tabs-nav]:pt-3 [&_.ant-tabs-nav]:rounded-t-2xl [&_.ant-tabs-tab]:px-0 [&_.ant-tabs-tab]:pb-3 [&_.ant-tabs-tab]:pt-0 [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-(--color-text-light) [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-(--color-primary-dark)! [&_.ant-tabs-ink-bar]:bg-(--color-primary-dark) [&_.ant-table-wrapper]:rounded-b-2xl [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-thead>tr>th]:bg-[#fbfaf6] [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.04em] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.16)] [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-sm [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.1)] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-row:hover>td]:bg-[#fcfbf8] [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden [&_.ant-pagination]:px-4 [&_.ant-pagination]:py-4";
 
 const DeferralTable = ({
   activeTab,
@@ -24,8 +21,8 @@ const DeferralTable = ({
       dataIndex: "deferralNumber",
       key: "deferralNumber",
       render: (text) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 700 }}>
-          <FileTextOutlined style={{ marginRight: 6 }} />
+        <span className="font-bold text-(--color-primary-dark)">
+          <FileTextOutlined className="mr-1.5" />
           {text || "N/A"}
         </span>
       ),
@@ -40,12 +37,12 @@ const DeferralTable = ({
         return !text && !record.dclNumber ? (
           <span>
             {dclNo}
-            <Tag color="warning" style={{ marginLeft: 8 }}>
+            <Tag color="warning" className="ml-2">
               Missing
             </Tag>
           </span>
         ) : (
-          <span style={{ color: PRIMARY_BLUE, fontWeight: 700 }}>{dclNo}</span>
+          <span className="font-bold text-(--color-primary-dark)">{dclNo}</span>
         );
       },
       width: 130,
@@ -55,7 +52,7 @@ const DeferralTable = ({
       dataIndex: "customerName",
       key: "customerName",
       render: (text) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>{text || "N/A"}</span>
+        <span className="font-semibold text-(--color-primary-dark)">{text || "N/A"}</span>
       ),
       ellipsis: true,
     },
@@ -64,13 +61,7 @@ const DeferralTable = ({
       dataIndex: "loanType",
       key: "loanType",
       render: (text) => (
-        <span
-          style={{
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
+        <span className="block truncate whitespace-nowrap">
           {text || "N/A"}
         </span>
       ),
@@ -138,7 +129,7 @@ const DeferralTable = ({
 
   if (isLoading) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
+      <div className="flex justify-center rounded-2xl border border-[rgba(214,189,152,0.18)] bg-white p-12 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
         <Spin />
       </div>
     );
@@ -146,30 +137,18 @@ const DeferralTable = ({
 
   if (!currentData || currentData.length === 0) {
     return (
-      <Tabs
-        activeKey={activeTab}
-        onChange={onTabChange}
-        items={tabItems}
-        tabBarStyle={{
-          backgroundColor: "#f5f5f5",
-          padding: "16px 24px",
-          borderRadius: "8px 8px 0 0",
-        }}
-      >
-        <div style={{ padding: "50px", backgroundColor: "white" }}>
+      <div className={tableShellClassName}>
+        <Tabs activeKey={activeTab} onChange={onTabChange} items={tabItems} />
+        <div className="bg-white p-12">
           <Empty description="No deferrals found" />
         </div>
-      </Tabs>
+      </div>
     );
   }
 
   return (
-    <div className="defer-table-wrapper checker-deferrals-table-card">
-      <Tabs
-        activeKey={activeTab}
-        onChange={onTabChange}
-        items={tabItems}
-      />
+    <div className={tableShellClassName}>
+      <Tabs activeKey={activeTab} onChange={onTabChange} items={tabItems} />
       <Table
         columns={columns}
         dataSource={currentData}
@@ -179,12 +158,11 @@ const DeferralTable = ({
           pageSizeOptions: [10, 20, 50],
           showSizeChanger: true,
           position: ["bottomCenter"],
-          style: { padding: "16px 0" },
         }}
         loading={isLoading}
         onRow={(record) => ({
           onClick: () => onRowClick(record),
-          style: { cursor: "pointer" },
+          className: "cursor-pointer",
         })}
         size="middle"
         scroll={{ x: 1200 }}

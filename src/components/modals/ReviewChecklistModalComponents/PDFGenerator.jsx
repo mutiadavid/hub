@@ -25,12 +25,6 @@ const PDFGenerator = ({
         return;
       }
 
-      console.log("📄 PDFGenerator button clicked", {
-        checklistId: checklist?._id || checklist?.id,
-        docsCount: docs?.length,
-        supportingDocsCount: supportingDocs?.length,
-      });
-
       await generatePDF({
         checklist,
         documents: docs || [],

@@ -435,9 +435,6 @@ export function buildDeferralsAnalytics(rows) {
 // TAT (Turnaround Time) Utilities
 // Business hours: 8am-5pm (9 hours per day), Monday-Friday only
 
-// Track which checklists have been debug logged to avoid mutating frozen objects
-const LOGGED_CHECKLISTS = new Set();
-
 // EXACT LOG MESSAGES FROM CONTROLLERS - DO NOT CHANGE THESE PATTERNS
 // See CoCreatorController.cs, RMController.cs, CheckerController.cs for source
 
@@ -681,14 +678,58 @@ const findFirstLogTimestamp = (logs, patterns) => {
   return match?.timestamp || null;
 };
 
-const getChecklistCurrentStage = (checklist) => {
+const getChecklistCurrentStage = (checklist, logs = getChecklistLogs(checklist)) => {
   const status = safeLower(checklist?.status);
+
   // Match against exact enum values in various formats: PascalCase, camelCase, lowercase, snake_case
   if (["approved", "rejected", "completed"].includes(status)) return "done";
   if (["cocheckerreview", "cochecker_review", "co_checker_review"].includes(status)) return "coChecker";
+  if (["pending", "active", "", null, undefined].includes(checklist?.status) || ["pending", "active"].includes(status)) {
+    const hasCoCheckerBoundary = Boolean(
+      resolveFirstMoment(
+        checklist?.coCheckerCompletedAt,
+        checklist?.CoCheckerCompletedAt,
+        checklist?.completedAt,
+        checklist?.CompletedAt,
+      ) || findFirstLogTimestamp(logs, CHECKLIST_CO_CHECKER_EXIT_PATTERNS),
+    );
+    const hasCoCreatorRevisionBoundary = Boolean(
+      resolveFirstMoment(
+        checklist?.coCreatorCompletedAt,
+        checklist?.CoCreatorCompletedAt,
+        checklist?.sentToCheckerAt,
+        checklist?.SentToCheckerAt,
+        checklist?.submittedToCoCheckerAt,
+        checklist?.SubmittedToCoCheckerAt,
+      ) || findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_EXIT_PATTERNS),
+    );
+    const hasRmBoundary = Boolean(
+      resolveFirstMoment(
+        checklist?.rmCompletedAt,
+        checklist?.RmCompletedAt,
+        checklist?.returnedByRMAt,
+        checklist?.ReturnedByRMAt,
+      ) || findFirstLogTimestamp(logs, CHECKLIST_RM_EXIT_PATTERNS),
+    );
+    const hasRmEntryBoundary = Boolean(
+      resolveFirstMoment(
+        checklist?.sentToRMAt,
+        checklist?.SentToRMAt,
+        checklist?.submittedToRMAt,
+        checklist?.SubmittedToRMAt,
+      ) || findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_INITIAL_SUBMIT_PATTERNS),
+    );
+
+    if (hasCoCheckerBoundary) return "done";
+    if (hasCoCreatorRevisionBoundary) return "coChecker";
+    if (hasRmBoundary) return "coCreator";
+    if (hasRmEntryBoundary) return "rm";
+    return "coCreator";
+  }
+
   if (["cocreatorreview", "cocreator_review", "co_creator_review", "active"].includes(status)) return "coCreator";
   if (["rmreview", "rm_review"].includes(status)) return "rm";
-  return "rm"; // Default to rm for Pending and other states
+  return "coCreator";
 };
 
 const getChecklistTerminalTimestamp = (checklist, logs) => {
@@ -709,42 +750,10 @@ const buildChecklistTatBreakdown = (checklist, nowAt = dayjs()) => {
     checklist?.created_at ||
     checklist?.timestamp
   );
-  const updatedAt = toMoment(checklist?.updatedAt || checklist?.UpdatedAt);
   const logs = getChecklistLogs(checklist);
   const terminalAt = getChecklistTerminalTimestamp(checklist, logs) || nowAt;
-  const currentStageKey = getChecklistCurrentStage(checklist);
+  const currentStageKey = getChecklistCurrentStage(checklist, logs);
   const checklistStatus = safeLower(checklist?.status);
-
-  // ENHANCED DEBUG LOGGING - Show ALL logs and pattern matching results
-  const checklistId = checklist?.dclNo || checklist?.id;
-  if (checklistId && !LOGGED_CHECKLISTS.has(checklistId)) {
-    LOGGED_CHECKLISTS.add(checklistId);
-    console.log(`\n========== [TAT DEBUG] Checklist ${checklistId} ==========`);
-    console.log(`Status: ${checklistStatus} | Created: ${createdAt?.format('YYYY-MM-DD HH:mm:ss')} | Updated: ${updatedAt?.format('YYYY-MM-DD HH:mm:ss')}`);
-    console.log(`Total Logs: ${logs.length}`);
-    
-    if (logs.length > 0) {
-      console.log(`\n📋 Log Messages:`);
-      logs.forEach((log, idx) => {
-        console.log(`  [${idx}] ${log.timestamp?.format('HH:mm:ss')}: "${log.message}"`);
-      });
-    } else {
-      console.warn(`❌ NO LOGS FOUND - Using status fallbacks only`);
-    }
-    
-    // Test pattern matches
-    const coCreatorInitialSubmitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_INITIAL_SUBMIT_PATTERNS);
-    const rmExitLog = findFirstLogTimestamp(logs, CHECKLIST_RM_EXIT_PATTERNS);
-    const coCreatorExitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_EXIT_PATTERNS);
-    const coCheckerExitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CHECKER_EXIT_PATTERNS);
-    
-    console.log(`\n🔍 Pattern Matches:`);
-    console.log(`  Stage 1 Submit: ${coCreatorInitialSubmitLog ? '✅ ' + coCreatorInitialSubmitLog.format('HH:mm:ss') : '❌'}`);
-    console.log(`  RM Exit: ${rmExitLog ? '✅ ' + rmExitLog.format('HH:mm:ss') : '❌'}`);
-    console.log(`  Creator Exit: ${coCreatorExitLog ? '✅ ' + coCreatorExitLog.format('HH:mm:ss') : '❌'}`);
-    console.log(`  Checker Exit: ${coCheckerExitLog ? '✅ ' + coCheckerExitLog.format('HH:mm:ss') : '❌'}`);
-    console.log(`==========================================\n`);
-  }
 
   // DCL workflow source of truth: createdAt -> sentToRMAt -> rmCompletedAt -> coCreatorCompletedAt -> coCheckerCompletedAt
   const coCreatorInitialSubmitLog = findFirstLogTimestamp(logs, CHECKLIST_CO_CREATOR_INITIAL_SUBMIT_PATTERNS);
@@ -834,16 +843,6 @@ const buildChecklistTatBreakdown = (checklist, nowAt = dayjs()) => {
 
   if (currentStageKey === "coChecker" && !coCreatorRevisionCompletedAt) {
     coCreatorRevisionCompletedAt = rmReviewCompletedAt || coCreatorInitialCompletedAt || createdAt;
-  }
-
-  // Log stage completion times
-  if (checklistId && LOGGED_CHECKLISTS.has(checklistId)) {
-    console.log(`\n⏱️ STAGE COMPLETION TIMES (Business Hours Only - 8am-5pm):`);
-    console.log(`  Stage 1 (CO Creator Initial): ${coCreatorInitialCompletedAt ? coCreatorInitialCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
-    console.log(`  Stage 2 (RM Review): ${rmReviewCompletedAt ? rmReviewCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
-    console.log(`  Stage 3 (CO Creator Revision): ${coCreatorRevisionCompletedAt ? coCreatorRevisionCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
-    console.log(`  Stage 4 (CO Checker): ${coCheckerCompletedAt ? coCheckerCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
-    console.log(`\n`);
   }
 
   const coCreatorInitialTat = createStageMetric({
@@ -1052,18 +1051,6 @@ const buildDeferralTatBreakdown = (deferral, nowAt = dayjs()) => {
   const normalizedSentToCoCreatorAt = sentToCoCreatorAt || approvingCompletedAt || rmCompletedAt || createdAt;
   const normalizedCoCreatorCompletedAt = coCreatorCompletedAt || (currentStageKey === "creator" ? normalizedSentToCoCreatorAt : null);
 
-  // Log stage completion times
-  const deferralId = deferral?.deferralNumber || deferral?.id || deferral?._id;
-  if (deferralId) {
-    console.log(`\n⏱️ DEFERRAL STAGE COMPLETION TIMES (Business Hours Only - 8am-5pm):`);
-    console.log(`  Deferral ID: ${deferralId}`);
-    console.log(`  Stage 1 (RM): ${rmCompletedAt ? rmCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
-    console.log(`  Stage 2 (Approvers - ${approverDates.length} approvers): ${approvingCompletedAt ? approvingCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
-    console.log(`  Stage 3 (CO Creator): ${coCreatorCompletedAt ? coCreatorCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
-    console.log(`  Stage 4 (Creator/Requester): ${creatorCompletedAt ? creatorCompletedAt.format('DD/MM/YYYY HH:mm:ss') : 'Pending'}`);
-    console.log(`\n`);
-  }
-
   const rmTat = createStageMetric({
     startAt: createdAt,
     completedAt: rmCompletedAt,
@@ -1171,6 +1158,7 @@ export const buildTATTableRows = (deferralRows = [], dclRows = [], nowAt = dayjs
       key: `dcl-${item?._id || item?.id || index}`,
       itemId: item?.dclNo || item?.dclNumber || item?.id || item?._id || `DCL-${index + 1}`,
       workflowType: "DCL",
+      currentStageKey: breakdown.currentStageKey,
       status: item?.status || "pending",
       createdAt: breakdown.createdAt?.toISOString() || item?.createdAt || null,
       customerName: item?.customerName || "Unknown Customer",

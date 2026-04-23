@@ -5,6 +5,7 @@ import {
   Empty,
   Input,
 } from "antd";
+import "../../styles/creatorTableOverrides.css";
 import {
   SearchOutlined,
 } from "@ant-design/icons";
@@ -17,7 +18,17 @@ import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 // import CreatorCompletedChecklistModal from "../../components/modals/CreatorCompletedChecklistModal";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import "../../styles/creatorDesignSystem.css";
+
+const pageRootClassName = "min-h-full w-full bg-white";
+const queueCardClassName = "overflow-hidden rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
+const toolbarClassName = "flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] bg-white p-4 max-md:flex-col max-md:items-stretch";
+const titleClassName = "m-0 text-xs font-bold leading-tight tracking-[-0.02em] text-[#374151]";
+const toolbarActionsClassName = "flex flex-wrap items-center gap-2 max-md:w-full";
+const countPillClassName = "inline-flex items-center gap-2 rounded-full border border-[rgba(214,189,152,0.2)] bg-white px-3.5 py-2 text-xs font-medium text-[#374151]";
+const searchClassName = "w-full min-[769px]:max-w-[380px] [&_.ant-input-affix-wrapper]:rounded-md [&_.ant-input-affix-wrapper]:border-[rgba(214,189,152,0.2)] [&_.ant-input-affix-wrapper]:bg-white [&_.ant-input-affix-wrapper]:px-2.5 [&_.ant-input-affix-wrapper]:py-1.5 [&_.ant-input-affix-wrapper]:shadow-none [&_.ant-input-affix-wrapper:hover]:border-(--color-primary-dark) [&_.ant-input-affix-wrapper-focused]:border-(--color-primary-dark) [&_.ant-input]:bg-transparent [&_.ant-input]:text-xs [&_.ant-input]:text-[#374151] [&_.anticon]:text-(--color-text-light)";
+const tableShellClassName = "bg-white px-4 pb-4 [&_.ant-table]:w-full [&_.ant-table]:table-fixed [&_.ant-table-wrapper]:bg-white [&_.ant-spin-nested-loading]:bg-white [&_.ant-spin-container]:bg-white [&_.ant-table-container]:bg-white [&_.ant-table-content]:overflow-x-auto [&_.ant-table-header]:bg-inherit [&_.ant-table-body]:bg-inherit [&_.ant-empty]:bg-inherit [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-[#374151] [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-3 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-[#374151] [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr:hover>td]:bg-[rgba(245,247,244,0.9)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination]:mb-0 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-medium [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark) [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+const stateClassName = "bg-white px-4 py-6";
+const approvedBadgeClassName = "inline-flex items-center rounded-full border border-[rgba(82,196,26,0.24)] bg-[rgba(82,196,26,0.12)] px-2.5 py-1 text-[11px] font-semibold text-[#365314]";
 
 const Completed = () => {
   const [searchText, setSearchText] = useState("");
@@ -41,13 +52,6 @@ const Completed = () => {
   } = useGetChecklistsByCreatorQuery(creatorId, {
     skip: !creatorId,
   });
-
-  console.log("Creator ID:", creatorId);
-  console.log("Redux user:", user);
-  console.log("Creator ID:", user?._id);
-  console.log("User token:", user?.token);
-  console.log("Is authenticated:", !!user?.token);
-  console.log("All Checklists in MyQueue:", allChecklists);
 
   /* ---------------- FILTER APPROVED ---------------- */
   const filteredData = useMemo(() => {
@@ -98,8 +102,8 @@ const Completed = () => {
       width: 124,
       ellipsis: true,
       render: (text) => (
-        <div className="creator-completed-primary-cell">
-          <span className="creator-completed-primary-value">{text || "-"}</span>
+        <div className="flex min-w-0 flex-col gap-[3px]">
+          <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-[#374151]">{text || "-"}</span>
         </div>
       ),
     },
@@ -108,14 +112,14 @@ const Completed = () => {
       dataIndex: "customerName",
       width: 146,
       ellipsis: true,
-      render: (text) => <div className="creator-completed-primary-value">{text || "-"}</div>,
+      render: (text) => <div className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-[#374151]">{text || "-"}</div>,
     },
     {
       title: "CUSTOMER NUMBER",
       dataIndex: "customerNumber",
       width: 132,
       ellipsis: true,
-      render: (text) => <div className="creator-completed-muted">{text || "-"}</div>,
+      render: (text) => <div className="truncate whitespace-nowrap text-[13px] font-normal text-[#374151]">{text || "-"}</div>,
     },
     {
       title: "IBPS NO",
@@ -123,7 +127,7 @@ const Completed = () => {
       width: 98,
       ellipsis: true,
       render: (text) => (
-        <span className="creator-completed-muted" style={{ fontFamily: "monospace" }}>
+        <span className="truncate whitespace-nowrap font-mono text-[13px] font-normal text-[#374151]">
           {text || "Not set"}
         </span>
       ),
@@ -133,7 +137,7 @@ const Completed = () => {
       dataIndex: "loanType",
       width: 118,
       ellipsis: true,
-      render: (text) => <div className="creator-completed-muted">{text || "-"}</div>,
+      render: (text) => <div className="truncate whitespace-nowrap text-[13px] font-normal text-[#374151]">{text || "-"}</div>,
     },
     {
       title: "CHECKER/APPROVER",
@@ -141,17 +145,6 @@ const Completed = () => {
       width: 138,
       ellipsis: true,
       render: (checkerValue, record) => {
-        // 🔍 Debug: Log what we're getting
-        console.log("🔍 Checker Column Debug:", {
-          checkerValue,
-          record_assignedToCoChecker: record?.assignedToCoChecker,
-          record_assignedChecker: record?.assignedChecker,
-          record_approvedBy: record?.approvedBy,
-          record_checkerAssigned: record?.checkerAssigned,
-          record_checker: record?.checker,
-          allKeys: Object.keys(record || {}),
-        });
-
         // ✅ Use helper to get assigned checker info from various field names
         const approver = getCheckerInfo(record);
 
@@ -164,7 +157,7 @@ const Completed = () => {
           "Not Assigned";
 
         return (
-          <div className="creator-completed-muted" style={{ color: "var(--color-text-medium)", fontWeight: 500 }}>
+          <div className="truncate whitespace-nowrap text-[13px] font-medium text-(--color-text-medium)">
             {checkerName}
           </div>
         );
@@ -181,7 +174,7 @@ const Completed = () => {
             (total, category) => total + (category.docList?.length || 0),
             0,
           ) || 0;
-        return <span className="creator-completed-primary-value">{totalDocs}</span>;
+        return <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-[#374151]">{totalDocs}</span>;
       },
     },
     {
@@ -190,7 +183,7 @@ const Completed = () => {
       width: 118,
       ellipsis: true,
       render: (date) => (
-        <div className="creator-completed-muted" style={{ color: "var(--color-text-medium)", fontWeight: 500 }}>
+        <div className="truncate whitespace-nowrap text-[13px] font-medium text-(--color-text-medium)">
           {date ? formatDate(date) : "—"}
         </div>
       ),
@@ -217,257 +210,21 @@ const Completed = () => {
       width: 92,
       ellipsis: true,
       render: () => (
-        <span className="creator-badge creator-badge--approved">
+        <span className={approvedBadgeClassName}>
           Approved
         </span>
       ),
     },
   ];
 
-  const customTableStyles = `
-    .creator-completed-page {
-      min-height: 100%;
-      width: 100%;
-      background: var(--color-white);
-      font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-    }
-    .creator-completed-shell {
-      width: 100%;
-    }
-    .creator-completed-card {
-      background: var(--color-white);
-      border: 1px solid rgba(214, 189, 152, 0.2);
-      border-radius: 8px;
-      box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-      overflow: hidden;
-    }
-    .creator-completed-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      padding: 16px;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-      background: var(--color-white);
-    }
-    .creator-completed-title {
-      color: #374151;
-      font-size: 12px;
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      margin: 0;
-    }
-    .creator-completed-search {
-      width: min(380px, 100%);
-    }
-    .creator-completed-search.ant-input-affix-wrapper {
-      border: 1px solid rgba(214, 189, 152, 0.2) !important;
-      background: var(--color-white) !important;
-      border-radius: 6px !important;
-      padding: 6px 10px !important;
-      box-shadow: none !important;
-    }
-    .creator-completed-search.ant-input-affix-wrapper:hover,
-    .creator-completed-search.ant-input-affix-wrapper:focus,
-    .creator-completed-search.ant-input-affix-wrapper-focused {
-      border-color: var(--color-primary-dark) !important;
-      box-shadow: none !important;
-    }
-    .creator-completed-search input {
-      background: transparent !important;
-      font-size: 12px !important;
-      color: #374151 !important;
-    }
-    .creator-completed-search .anticon {
-      color: var(--color-text-light);
-    }
-    .creator-completed-count {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid rgba(214, 189, 152, 0.2);
-      background: var(--color-white);
-      border-radius: 999px;
-      padding: 9px 14px;
-      color: #374151;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .creator-completed-count strong {
-      color: #374151;
-      font-weight: 700;
-    }
-    .creator-completed-table {
-      background: var(--color-white);
-      border-radius: 8px;
-      padding: 0 16px 16px;
-    }
-    .creator-completed-table .ant-table,
-    .creator-completed-table .ant-table-wrapper,
-    .creator-completed-table .ant-spin-nested-loading,
-    .creator-completed-table .ant-spin-container,
-    .creator-completed-table .ant-table-container,
-    .creator-completed-table .ant-table-content,
-    .creator-completed-table table,
-    .creator-completed-table thead,
-    .creator-completed-table tbody,
-    .creator-completed-table tr {
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
-      background: var(--color-white) !important;
-    }
-    .creator-completed-table .ant-table {
-      table-layout: fixed;
-      width: 100%;
-    }
-    .creator-completed-table .ant-table-container {
-      background: inherit !important;
-    }
-    .creator-completed-table .ant-table-content {
-      overflow-x: hidden;
-    }
-    .creator-completed-table .ant-table-header,
-    .creator-completed-table .ant-table-body,
-    .creator-completed-table .ant-table-placeholder,
-    .creator-completed-table .ant-empty,
-    .creator-completed-table .ant-empty-normal {
-      background: inherit !important;
-    }
-    .creator-completed-table .ant-table-thead > tr > th {
-      background: var(--color-white) !important;
-      color: #374151 !important;
-      font-weight: 600;
-      font-size: 12px;
-      padding: 12px 12px !important;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-      border-right: none !important;
-      line-height: 1.2;
-      text-transform: uppercase;
-    }
-    .creator-completed-table .ant-table-tbody > tr > td {
-      background: var(--color-white) !important;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-      border-top: none !important;
-      border-right: none !important;
-      padding: 12px 12px !important;
-      font-size: 12px;
-      color: #374151;
-    }
-    .creator-completed-table .ant-table-thead > tr > th::before,
-    .creator-completed-table .ant-table-cell::before,
-    .creator-completed-table .ant-table-cell::after,
-    .creator-completed-table .ant-table-wrapper::before,
-    .creator-completed-table .ant-table-wrapper::after,
-    .creator-completed-table .ant-table-container::before,
-    .creator-completed-table .ant-table-container::after,
-    .creator-completed-table .ant-table-thead > tr::after,
-    .creator-completed-table .ant-table-tbody > tr::after {
-      display: none !important;
-    }
-    .creator-completed-table .ant-table-tbody > tr.ant-table-row:hover > td {
-      background-color: rgba(245, 247, 244, 0.9) !important;
-      cursor: pointer;
-    }
-    .creator-completed-table .ant-table-tbody > tr > td:first-child,
-    .creator-completed-table .ant-table-thead > tr > th:first-child {
-      padding-left: 0 !important;
-    }
-    .creator-completed-table .ant-table-tbody > tr > td:last-child,
-    .creator-completed-table .ant-table-thead > tr > th:last-child {
-      padding-right: 0 !important;
-    }
-    .creator-completed-table .ant-pagination {
-      margin-top: 18px !important;
-      margin-bottom: 0 !important;
-    }
-    .creator-completed-table .ant-pagination .ant-pagination-item,
-    .creator-completed-table .ant-pagination .ant-pagination-prev,
-    .creator-completed-table .ant-pagination .ant-pagination-next {
-      border-radius: 999px !important;
-      border-color: transparent !important;
-      background: transparent !important;
-      min-width: 34px;
-    }
-    .creator-completed-table .ant-pagination .ant-pagination-item-active {
-      background: rgba(214, 189, 152, 0.18) !important;
-      border-color: rgba(214, 189, 152, 0.18) !important;
-    }
-    .creator-completed-table .ant-pagination .ant-pagination-item-active a {
-      color: var(--color-text-dark) !important;
-      font-weight: 500;
-    }
-    .creator-completed-primary-cell {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      min-width: 0;
-    }
-    .creator-completed-primary-value {
-      color: #374151;
-      font-size: 13px;
-      font-weight: 400;
-      letter-spacing: -0.01em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .creator-completed-secondary-value {
-      color: #374151;
-      font-size: 12px;
-      line-height: 1.3;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .creator-completed-muted {
-      color: #374151;
-      font-size: 13px;
-      font-weight: 400;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .creator-completed-table .creator-badge {
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 500;
-      line-height: 1.2;
-    }
-    .creator-completed-state {
-      padding: 24px 16px;
-      background: var(--color-white);
-    }
-    @media (max-width: 768px) {
-      .creator-completed-shell {
-        padding: 0;
-      }
-      .creator-completed-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .creator-completed-search {
-        width: 100%;
-      }
-      .creator-completed-table .ant-table-thead > tr > th,
-      .creator-completed-table .ant-table-tbody > tr > td {
-        padding-top: 12px !important;
-        padding-bottom: 12px !important;
-      }
-    }
-  `;
-
   return (
-    <div className="creator-completed-page creator-theme" style={{ boxSizing: "border-box" }}>
-      <style>{customTableStyles}</style>
-      <div className="creator-completed-shell">
-        <div className="creator-completed-card">
-          <div className="creator-completed-toolbar">
-            <h2 className="creator-completed-title">Approved Checklists</h2>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <span className="creator-completed-count">
+    <div className={pageRootClassName}>
+      <div className="w-full">
+        <div className={queueCardClassName}>
+          <div className={toolbarClassName}>
+            <h2 className={titleClassName}>Approved Checklists</h2>
+            <div className={toolbarActionsClassName}>
+              <span className={countPillClassName}>
                 Total
                 <strong>{filteredData.length}</strong>
               </span>
@@ -477,21 +234,21 @@ const Completed = () => {
                 allowClear
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                className="creator-completed-search"
+                className={searchClassName}
               />
             </div>
           </div>
 
           {isLoading ? (
-            <div className="creator-completed-state">
-              <Spin style={{ display: "block", margin: "40px auto" }} />
+            <div className={stateClassName}>
+              <Spin />
             </div>
           ) : filteredData.length === 0 ? (
-            <div className="creator-completed-state">
+            <div className={stateClassName}>
               <Empty description="No approved checklists found" />
             </div>
           ) : (
-            <div className="creator-completed-table">
+            <div className={tableShellClassName}>
               <Table
                 rowKey={(record) => record.id || record._id || record.dclNo}
                 columns={columns}
@@ -511,6 +268,7 @@ const Completed = () => {
                       navigate(`/cocreator/completed/${checklistId}`);
                     }
                   },
+                  className: "cursor-pointer",
                 })}
               />
             </div>

@@ -4,6 +4,10 @@ import ChecklistTable from "./ChecklistTable";
 import ReviewChecklistPage from "../../components/modals/ReviewChecklistModalComponents/ReviewChecklistPage";
 import { useGetAllCoCreatorChecklistsQuery } from "../../api/checklistApi";
 
+const pageClassName = "bg-white p-4";
+const titleClassName = "mb-4 text-[15px] font-bold tracking-[-0.02em] text-(--color-text-dark)";
+const modalRootClassName = "[&_.ant-modal]:top-6 [&_.ant-modal]:max-w-[1400px] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:rounded-2xl [&_.ant-modal-content]:p-0 [&_.ant-modal-body]:max-h-[calc(100vh-80px)] [&_.ant-modal-body]:overflow-auto [&_.ant-modal-body]:p-0 [&_.ant-modal-mask]:bg-[rgba(15,23,42,0.45)]";
+
 const CompletedQueue = ({ userId }) => {
   const [selectedChecklist, setSelectedChecklist] = useState(null);
   const { data: checklists = [] } = useGetAllCoCreatorChecklistsQuery();
@@ -26,15 +30,10 @@ const CompletedQueue = ({ userId }) => {
 
     return isMatch && isStatusValid;
   });
-  console.log(completedQueue);
-  console.log(
-    "Status Values:",
-    (checklists || []).map((c) => c.status)
-  );
 
   return (
-    <div style={{ padding: 16 }}>
-      <h2>Completed Checklists</h2>
+    <div className={pageClassName}>
+      <h2 className={titleClassName}>Completed Checklists</h2>
       <ChecklistTable data={completedQueue} onView={setSelectedChecklist} showTat />
 
       {selectedChecklist && (
@@ -44,12 +43,7 @@ const CompletedQueue = ({ userId }) => {
           footer={null}
           closable={false}
           width="92vw"
-          style={{ top: 24, maxWidth: 1400 }}
-          styles={{
-            body: { padding: 0, maxHeight: "calc(100vh - 80px)", overflow: "auto" },
-            content: { padding: 0, borderRadius: 16, overflow: "hidden" },
-            mask: { backgroundColor: "rgba(15, 23, 42, 0.45)" },
-          }}
+          rootClassName={modalRootClassName}
           destroyOnHidden
         >
           <ReviewChecklistPage

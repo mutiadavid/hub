@@ -1,9 +1,21 @@
 import React from "react";
-import { Card, Descriptions, Table, Typography } from "antd";
+import { Card, Descriptions, Table } from "antd";
 import dayjs from "dayjs";
 import getFacilityColumns from "../../../../utils/facilityColumns";
 
-const PRIMARY_BLUE = "var(--color-primary-dark)";
+const sectionCardClassName = "mb-[18px] overflow-hidden rounded-xl border border-[rgba(214,189,152,0.18)] shadow-[0_8px_24px_rgba(15,23,42,0.04)] [&_.ant-card-head]:min-h-0 [&_.ant-card-head]:border-b [&_.ant-card-head]:border-[rgba(214,189,152,0.18)] [&_.ant-card-head]:bg-white [&_.ant-card-head]:px-4 [&_.ant-card-head]:py-3.5 [&_.ant-card-head-title]:p-0 [&_.ant-card-body]:bg-white [&_.ant-card-body]:p-4";
+const infoCardClassName = `${sectionCardClassName} [&_.ant-card-head]:border-b-2 [&_.ant-card-head]:border-[var(--color-success-soft-border)] [&_.ant-descriptions-view]:overflow-hidden [&_.ant-descriptions-view]:rounded-lg [&_.ant-descriptions-view]:border [&_.ant-descriptions-view]:border-[rgba(214,189,152,0.2)] [&_.ant-descriptions-row>th]:border-b [&_.ant-descriptions-row>td]:border-b [&_.ant-descriptions-row>th]:border-[rgba(214,189,152,0.14)] [&_.ant-descriptions-row>td]:border-[rgba(214,189,152,0.14)] [&_.ant-descriptions-row:last-child>th]:border-b-0 [&_.ant-descriptions-row:last-child>td]:border-b-0 [&_.ant-descriptions-item-label]:min-w-[140px] [&_.ant-descriptions-item-label]:bg-white [&_.ant-descriptions-item-label]:px-[14px] [&_.ant-descriptions-item-label]:py-3 [&_.ant-descriptions-item-content]:bg-white [&_.ant-descriptions-item-content]:px-[14px] [&_.ant-descriptions-item-content]:py-3`;
+const cardTitleClassName = "font-semibold text-(--color-primary-dark)";
+const statsGridClassName = "grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))] max-md:grid-cols-1";
+const statCardClassName = "rounded-[10px] border border-[rgba(214,189,152,0.16)] bg-white p-3";
+const tableShellClassName = "mb-[18px] overflow-x-auto rounded-xl border border-[rgba(214,189,152,0.2)] bg-white [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.08em] [&_.ant-table-thead>tr>th]:text-(--color-text-muted) [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-body) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.14)] [&_.ant-table-tbody>tr:last-child>td]:border-b-0 [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+const textBlockClassName = "rounded-lg border border-[rgba(214,189,152,0.2)] bg-white px-4 py-3.5 text-[13px] leading-6 text-(--color-text-body-soft) whitespace-pre-wrap";
+
+const getStatusToneClassName = (tone) => {
+  if (tone === "success") return "text-green-600";
+  if (tone === "danger") return "text-red-600";
+  return "text-(--color-primary-dark)";
+};
 
 const DeferralReviewContent = ({
   deferral,
@@ -34,95 +46,83 @@ const DeferralReviewContent = ({
       {showDetailsTab && (
         <>
           <Card
-            className="deferral-info-card deferral-review-section"
+            className={infoCardClassName}
             size="small"
-            title={<span style={{ color: PRIMARY_BLUE }}>Deferral Details</span>}
-            style={{ marginBottom: 18 }}
+            title={<span className={cardTitleClassName}>Deferral Details</span>}
           >
-            <Descriptions className="deferral-review-summary" size="middle" column={{ xs: 1, sm: 2, lg: 3 }}>
+            <Descriptions size="middle" column={{ xs: 1, sm: 2, lg: 3 }}>
               <Descriptions.Item label="Customer Name">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.customerName}</Typography.Text>
+                <span className="font-semibold text-(--color-primary-dark)">{deferral.customerName}</span>
               </Descriptions.Item>
               <Descriptions.Item label="Customer Number">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.customerNumber}</Typography.Text>
+                <span className="font-semibold text-(--color-primary-dark)">{deferral.customerNumber}</span>
               </Descriptions.Item>
               <Descriptions.Item label="Deferral No">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.deferralNumber}</Typography.Text>
+                <span className="font-semibold text-(--color-primary-dark)">{deferral.deferralNumber}</span>
               </Descriptions.Item>
               <Descriptions.Item label="DCL No">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.dclNo || deferral.dclNumber}</Typography.Text>
+                <span className="font-semibold text-(--color-primary-dark)">{deferral.dclNo || deferral.dclNumber}</span>
               </Descriptions.Item>
               <Descriptions.Item label="Loan Type">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.loanType}</Typography.Text>
+                <span className="font-semibold text-(--color-primary-dark)">{deferral.loanType}</span>
               </Descriptions.Item>
               <Descriptions.Item label="Created At">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{dayjs(deferral.createdAt).format("DD MMM YYYY")}</Typography.Text>
+                <span className="font-semibold text-(--color-primary-dark)">{dayjs(deferral.createdAt).format("DD MMM YYYY")}</span>
               </Descriptions.Item>
               <Descriptions.Item label="Status">
-                <Typography.Text
-                  strong
-                  style={{
-                    color:
-                      isApprovedTabContext || deferral.status === "approved"
-                        ? "green"
-                        : deferral.status === "rejected"
-                          ? "red"
-                          : PRIMARY_BLUE,
-                  }}
-                >
+                <span className={`font-semibold ${getStatusToneClassName(isApprovedTabContext || deferral.status === "approved" ? "success" : deferral.status === "rejected" ? "danger" : "primary")}`}>
                   {isApprovedTabContext
                     ? "Approved"
                     : deferral.status
                       ? deferral.status.replace(/_/g, " ").charAt(0).toUpperCase() + deferral.status.slice(1).replace(/_/g, " ")
                       : "-"}
-                </Typography.Text>
+                </span>
               </Descriptions.Item>
               <Descriptions.Item label="Creator Status">
-                <Typography.Text style={{ color: creatorApproved ? "green" : PRIMARY_BLUE }}>{creatorStatusLabel}</Typography.Text>
+                <span className={creatorApproved ? "text-green-600" : "text-(--color-primary-dark)"}>{creatorStatusLabel}</span>
               </Descriptions.Item>
               <Descriptions.Item label="Checker Status">
-                <Typography.Text style={{ color: checkerApproved ? "green" : PRIMARY_BLUE }}>{checkerStatusLabel}</Typography.Text>
+                <span className={checkerApproved ? "text-green-600" : "text-(--color-primary-dark)"}>{checkerStatusLabel}</span>
               </Descriptions.Item>
               <Descriptions.Item label="Approvers Status">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>
+                <span className="font-semibold text-(--color-primary-dark)">
                   {approvedApproversCount} of {(deferral.approverFlow || []).length} Approved
-                </Typography.Text>
+                </span>
               </Descriptions.Item>
               <Descriptions.Item label="Loan Amount">
-                <Typography.Text>{deferral.loanAmount || "Below 75 million"}</Typography.Text>
+                <span>{deferral.loanAmount || "Below 75 million"}</span>
               </Descriptions.Item>
             </Descriptions>
           </Card>
 
           <Card
-            className="deferral-review-section"
+            className={sectionCardClassName}
             size="small"
-            title={<span style={{ color: PRIMARY_BLUE }}>Review Summary</span>}
-            style={{ marginBottom: 18 }}
+            title={<span className={cardTitleClassName}>Review Summary</span>}
           >
-            <div className="deferral-review-stats">
-              <div className="deferral-review-stat">
-                <div className="deferral-review-stat__label">Requested Docs</div>
-                <div className="deferral-review-stat__value">{requestedDocsWithDates.length}</div>
+            <div className={statsGridClassName}>
+              <div className={statCardClassName}>
+                <div className="text-[10px] font-bold tracking-[0.08em] text-(--color-text-muted) uppercase">Requested Docs</div>
+                <div className="mt-2 text-[22px] font-bold text-(--color-text-dark)">{requestedDocsWithDates.length}</div>
               </div>
-              <div className="deferral-review-stat">
-                <div className="deferral-review-stat__label">Uploaded Docs</div>
-                <div className="deferral-review-stat__value">{dclDocs.length + generalUploadedDocs.length}</div>
+              <div className={statCardClassName}>
+                <div className="text-[10px] font-bold tracking-[0.08em] text-(--color-text-muted) uppercase">Uploaded Docs</div>
+                <div className="mt-2 text-[22px] font-bold text-(--color-text-dark)">{dclDocs.length + generalUploadedDocs.length}</div>
               </div>
-              <div className="deferral-review-stat">
-                <div className="deferral-review-stat__label">Approvals</div>
-                <div className="deferral-review-stat__value">{approvedApproversCount}</div>
+              <div className={statCardClassName}>
+                <div className="text-[10px] font-bold tracking-[0.08em] text-(--color-text-muted) uppercase">Approvals</div>
+                <div className="mt-2 text-[22px] font-bold text-(--color-text-dark)">{approvedApproversCount}</div>
               </div>
             </div>
           </Card>
 
-          <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Deferral Description</span>} style={{ marginBottom: 18 }}>
-            <div className="deferral-review-text-block">{deferral.deferralDescription || "-"}</div>
+          <Card className={sectionCardClassName} size="small" title={<span className={cardTitleClassName}>Deferral Description</span>}>
+            <div className={textBlockClassName}>{deferral.deferralDescription || "-"}</div>
           </Card>
 
           {deferral.facilities && deferral.facilities.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Facility Details ({deferral.facilities.length})</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card className={sectionCardClassName} size="small" title={<span className={cardTitleClassName}>Facility Details ({deferral.facilities.length})</span>}>
+              <div className={tableShellClassName}>
                 <Table
                   dataSource={deferral.facilities}
                   columns={getFacilityColumns()}
@@ -136,8 +136,8 @@ const DeferralReviewContent = ({
           )}
 
           {deferral.approverFlow && deferral.approverFlow.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Approval Flow</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card className={sectionCardClassName} size="small" title={<span className={cardTitleClassName}>Approval Flow</span>}>
+              <div className={tableShellClassName}>
                 <Table
                   dataSource={deferral.approverFlow}
                   columns={approvalFlowColumns}
@@ -155,8 +155,8 @@ const DeferralReviewContent = ({
       {showDocumentsTab && (
         <>
           {requestedDocsWithDates.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Document(s) to be deferred ({requestedDocsWithDates.length})</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card className={sectionCardClassName} size="small" title={<span className={cardTitleClassName}>Document(s) to be deferred ({requestedDocsWithDates.length})</span>}>
+              <div className={tableShellClassName}>
                 <Table
                   dataSource={requestedDocsWithDates}
                   columns={requestedDocsColumns}
@@ -170,8 +170,8 @@ const DeferralReviewContent = ({
           )}
 
           {dclDocs.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Mandatory: DCL Upload ✓</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card className={sectionCardClassName} size="small" title={<span className={cardTitleClassName}>Mandatory: DCL Upload ✓</span>}>
+              <div className={tableShellClassName}>
                 <Table
                   dataSource={dclDocs}
                   columns={uploadedDocumentColumns}
@@ -185,8 +185,8 @@ const DeferralReviewContent = ({
           )}
 
           {generalUploadedDocs.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Additional Documents ({generalUploadedDocs.length})</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card className={sectionCardClassName} size="small" title={<span className={cardTitleClassName}>Additional Documents ({generalUploadedDocs.length})</span>}>
+              <div className={tableShellClassName}>
                 <Table
                   dataSource={generalUploadedDocs}
                   columns={uploadedDocumentColumns}
@@ -200,8 +200,8 @@ const DeferralReviewContent = ({
           )}
 
           {isCloseRequestContext && closeRequestDocuments.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Close Request Documents ({closeRequestDocuments.length})</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card className={sectionCardClassName} size="small" title={<span className={cardTitleClassName}>Close Request Documents ({closeRequestDocuments.length})</span>}>
+              <div className={tableShellClassName}>
                 <Table
                   dataSource={closeRequestColumns}
                   columns={closeRequestDocumentColumns}
@@ -219,7 +219,7 @@ const DeferralReviewContent = ({
                           rowKey={(upload, index) => upload.id || upload._id || `${document.key}-upload-${index}`}
                         />
                       ) : (
-                        <div style={{ color: "#94a3b8", fontSize: 12, padding: "4px 0" }}>
+                        <div className="py-1 text-xs text-[#94a3b8]">
                           No uploaded close-request evidence found for this document.
                         </div>
                       ),

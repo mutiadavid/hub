@@ -138,7 +138,7 @@ const renderChecklistStatus = (status) => {
   const statusMeta = getReportStatusMeta(status);
 
   return (
-    <span className={`creator-badge creator-badge--${statusMeta.variant}`}>
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusBadgeClassName(statusMeta.variant)}`}>
       {statusMeta.label}
     </span>
   );
@@ -165,6 +165,16 @@ const SUCCESS_GREEN = "#52c41a";
 
 const BUSINESS_START_HOUR = 8;
 const BUSINESS_END_HOUR = 17;
+
+const reviewSurfaceClassName = "w-full";
+const tableShellClassName = "bg-white [&_.ant-table]:w-full [&_.ant-table]:table-fixed [&_.ant-table-wrapper]:bg-white [&_.ant-spin-nested-loading]:bg-white [&_.ant-spin-container]:bg-white [&_.ant-table-container]:bg-white [&_.ant-table-content]:overflow-x-auto [&_.ant-table-header]:bg-inherit [&_.ant-table-body]:bg-inherit [&_.ant-empty]:bg-inherit [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3.5 [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-(--color-text-medium) [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr:hover>td]:bg-[rgba(245,247,244,0.9)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination]:mb-0 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-medium [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark) [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+
+const getStatusBadgeClassName = (variant) => {
+  if (variant === "approved") return "border-[rgba(82,196,26,0.24)] bg-[rgba(82,196,26,0.12)] text-[#365314]";
+  if (variant === "rework") return "border-[rgba(245,158,11,0.24)] bg-[rgba(245,158,11,0.12)] text-[#b45309]";
+  if (variant === "pending") return "border-[rgba(214,189,152,0.24)] bg-[rgba(214,189,152,0.14)] text-(--color-primary-dark)";
+  return "border-[rgba(22,70,121,0.18)] bg-[rgba(22,70,121,0.1)] text-(--color-primary-dark)";
+};
 
 const parseServerDate = (value) => {
   if (!value) {
@@ -246,19 +256,6 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
   // 🔍 Debug logging to identify data structure from API
   useEffect(() => {
     if (data?.length > 0) {
-      const firstItem = data[0];
-      console.log("📊 AllDCLsTable API Response (First Item):", {
-        keys: Object.keys(firstItem),
-        data: firstItem,
-        checkerFields: {
-          approvedBy: firstItem?.approvedBy,
-          assignedChecker: firstItem?.assignedChecker,
-          checkerAssigned: firstItem?.checkerAssigned,
-          checker: firstItem?.checker,
-        },
-        status: firstItem?.status,
-        statusType: typeof firstItem?.status,
-      });
       // Notify parent of loaded data
       if (onDataLoaded) {
         onDataLoaded(data);
@@ -326,7 +323,7 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
       dataIndex: "ibpsNo",
       width: 140,
       render: (text) => (
-        <span className="creator-table-muted" style={{ fontFamily: "monospace" }}>
+        <span className="truncate whitespace-nowrap font-mono text-xs font-normal text-(--color-text-medium)">
           {text || "Not set"}
         </span>
       ),
@@ -342,17 +339,6 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
       dataIndex: "assignedToCoChecker", // primary field to check for checker info
       width: 160,
       render: (checkerValue, record) => {
-        // 🔍 Debug: Log what we're getting
-        console.log("🔍 Checker Column Debug:", {
-          checkerValue,
-          record_assignedToCoChecker: record?.assignedToCoChecker,
-          record_assignedChecker: record?.assignedChecker,
-          record_approvedBy: record?.approvedBy,
-          record_checkerAssigned: record?.checkerAssigned,
-          record_checker: record?.checker,
-          allKeys: Object.keys(record || {}),
-        });
-
         // ✅ Use helper to get assigned checker info from various field names
         const approver = getCheckerInfo(record);
 
@@ -457,6 +443,7 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
           embedded
           checklist={selectedChecklist}
           onClose={handleCloseModal}
+          readOnly={true}
         />
       );
     }
@@ -486,190 +473,30 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
 
   return (
     <>
-      {/* Custom styles */}
-      <style>{customTableStyles}</style>
-
       {selectedChecklist ? (
-        <div className="reports-review-surface creator-theme">
+        <div className={reviewSurfaceClassName}>
           {renderSelectedChecklist()}
         </div>
       ) : (
-        <Table
-          className="creator-completed-table"
-          rowKey="_id"
-          dataSource={filtered}
-          columns={columns}
-          pagination={{
-            pageSize: 5,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20", "50"],
-            position: ["bottomCenter"],
-          }}
-          scroll={{ x: 1400 }}
-          onRow={(record) => ({
-            onClick: () => handleRowClick(record),
-          })}
-        />
+        <div className={tableShellClassName}>
+          <Table
+            rowKey="_id"
+            dataSource={filtered}
+            columns={columns}
+            pagination={{
+              pageSize: 5,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20", "50"],
+              position: ["bottomCenter"],
+            }}
+            scroll={{ x: 1400 }}
+            onRow={(record) => ({
+              onClick: () => handleRowClick(record),
+              className: "cursor-pointer",
+            })}
+          />
+        </div>
       )}
     </>
   );
 }
-
-const customTableStyles = `
-.reports-review-surface {
-  width: 100%;
-}
-.creator-completed-table,
-.creator-completed-table .ant-table-wrapper,
-.creator-completed-table .ant-spin-nested-loading,
-.creator-completed-table .ant-spin-container,
-.creator-completed-table .ant-table-container,
-.creator-completed-table .ant-table-content,
-.creator-completed-table table,
-.creator-completed-table thead,
-.creator-completed-table tbody,
-.creator-completed-table tr {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  background: var(--color-white) !important;
-}
-.creator-completed-table .ant-table {
-  table-layout: fixed;
-  width: 100%;
-}
-.creator-completed-table .ant-table-content {
-  overflow-x: auto;
-}
-.creator-completed-table .ant-table-header,
-.creator-completed-table .ant-table-body,
-.creator-completed-table .ant-table-placeholder,
-.creator-completed-table .ant-empty,
-.creator-completed-table .ant-empty-normal {
-  background: inherit !important;
-}
-.creator-completed-table .ant-table-thead > tr > th {
-  background: var(--color-white) !important;
-  color: var(--color-text-medium) !important;
-  font-weight: 600;
-  font-size: 12px;
-  padding: 14px 12px !important;
-  border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-  border-right: none !important;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-.creator-completed-table .ant-table-tbody > tr > td {
-  background: var(--color-white) !important;
-  border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-  border-top: none !important;
-  border-right: none !important;
-  padding: 16px 12px !important;
-  font-size: 12px;
-  color: var(--color-text-medium);
-  line-height: 1.25;
-  vertical-align: middle;
-}
-.creator-completed-table .ant-table-thead > tr > th::before,
-.creator-completed-table .ant-table-cell::before,
-.creator-completed-table .ant-table-cell::after,
-.creator-completed-table .ant-table-wrapper::before,
-.creator-completed-table .ant-table-wrapper::after,
-.creator-completed-table .ant-table-container::before,
-.creator-completed-table .ant-table-container::after,
-.creator-completed-table .ant-table-thead > tr::after,
-.creator-completed-table .ant-table-tbody > tr::after {
-  display: none !important;
-}
-.creator-completed-table .ant-table-tbody > tr:hover > td {
-  background-color: rgba(245, 247, 244, 0.9) !important;
-  cursor: pointer;
-}
-.creator-completed-table .ant-table-tbody > tr > td:first-child,
-.creator-completed-table .ant-table-thead > tr > th:first-child {
-  padding-left: 0 !important;
-}
-.creator-completed-table .ant-table-tbody > tr > td:last-child,
-.creator-completed-table .ant-table-thead > tr > th:last-child {
-  padding-right: 0 !important;
-}
-.creator-completed-table .ant-pagination {
-  margin-top: 18px !important;
-  margin-bottom: 0 !important;
-}
-.creator-completed-table .ant-pagination .ant-pagination-item,
-.creator-completed-table .ant-pagination .ant-pagination-prev,
-.creator-completed-table .ant-pagination .ant-pagination-next {
-  border-radius: 999px !important;
-  border-color: transparent !important;
-  background: transparent !important;
-  min-width: 34px;
-}
-.creator-completed-table .ant-pagination .ant-pagination-item-active {
-  background: rgba(214, 189, 152, 0.18) !important;
-  border-color: rgba(214, 189, 152, 0.18) !important;
-}
-.creator-completed-table .ant-pagination .ant-pagination-item-active a {
-  color: var(--color-text-dark) !important;
-  font-weight: 500;
-}
-.creator-table-primary-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-.creator-table-primary-value {
-  color: var(--color-text-dark);
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.creator-table-secondary-value {
-  color: var(--color-text-light);
-  font-size: 12px;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.creator-table-muted {
-  color: var(--color-text-medium);
-  font-size: 12px;
-  font-weight: 400;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.creator-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 22px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-.creator-badge--approved {
-  background: rgba(21, 128, 61, 0.12);
-  color: #166534;
-}
-.creator-badge--rework {
-  background: rgba(220, 38, 38, 0.1);
-  color: #b91c1c;
-}
-.creator-badge--pending {
-  background: rgba(180, 83, 9, 0.12);
-  color: #b45309;
-}
-.creator-badge--qs-review {
-  background: rgba(22, 70, 121, 0.1);
-  color: var(--color-primary-dark);
-}
-`;

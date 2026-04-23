@@ -60,7 +60,6 @@ export const createAuditLog = async (logData) => {
       },
     });
 
-    console.log("✅ Audit log created:", response.data);
     return response.data;
   } catch (error) {
     console.error("❌ Failed to create audit log:", error.message);

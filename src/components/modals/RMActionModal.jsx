@@ -103,14 +103,10 @@ const RMActionModal = ({ checklist, open, onClose, actionType }) => {
     message.success(`File removed: ${file.name}`);
   };
 
-  const handleSubmit = async (values) => {
-    console.log('Submitted values:', values);
-    console.log('Uploaded files:', uploadedFiles);
-    console.log('Additional files:', additionalFiles);
-   
+  const handleSubmit = async () => {
     try {
       setUploading(true);
-     
+
       // Upload supporting documents if any
       if (additionalFiles && additionalFiles.length > 0) {
         const formData = new FormData();
@@ -134,8 +130,7 @@ const RMActionModal = ({ checklist, open, onClose, actionType }) => {
           throw new Error('Failed to upload supporting documents');
         }
 
-        const result = await response.json();
-        console.log('Supporting docs uploaded:', result);
+        await response.json();
         message.success('Supporting documents uploaded successfully');
       }
 
@@ -152,6 +147,7 @@ const RMActionModal = ({ checklist, open, onClose, actionType }) => {
       message.error(error.message || 'Failed to process your request');
       setUploading(false);
     }
+  };
 
   const getModalTitle = () => {
     if (actionType === 'upload') {
@@ -298,7 +294,7 @@ const RMActionModal = ({ checklist, open, onClose, actionType }) => {
                   {category.category}
                 </div>
                
-                {category.docList.map((doc, docIndex) => {
+                {category.docList.map((doc) => {
                   const isUploaded = uploadedFiles[doc.id || doc._id] || doc.status === 'uploaded';
                   const isDeferred = doc.status === 'deferred';
                  

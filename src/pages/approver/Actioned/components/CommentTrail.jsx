@@ -6,7 +6,6 @@
 import React from "react";
 import { List, Avatar, Spin } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import "../../../../styles/creatorDesignSystem.css";
 import { formatUsername } from "../utils";
 import UniformTag from "../../../../components/common/UniformTag";
 import { getRoleTone } from "../../../../components/common/tagStyleUtils";
@@ -24,27 +23,18 @@ const CommentTrail = ({ history = [], isLoading = false }) => {
 
   if (!history || history.length === 0) {
     return (
-      <div style={{ padding: 12, fontSize: 12, color: "var(--color-text-light)" }}>
+      <div className="p-3 text-xs text-(--color-text-light)">
         No historical comments yet.
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-        maxHeight: 420,
-        overflowY: "auto",
-        paddingRight: 2,
-      }}
-    >
+    <div className="flex max-h-[420px] flex-col gap-1.5 overflow-y-auto pr-0.5">
       <List
         dataSource={history}
         itemLayout="horizontal"
-        style={{ padding: 0, margin: 0 }}
+        className="m-0 p-0"
         renderItem={(item, idx) => {
           const roleLabel = item.userRole || item.role;
           const name = formatUsername(item.user || "System");
@@ -57,53 +47,28 @@ const CommentTrail = ({ history = [], isLoading = false }) => {
           const timestamp = item.date || item.createdAt || item.timestamp;
 
           return (
-            <List.Item key={idx} style={{ padding: "3px 0" }}>
+            <List.Item key={idx} className="py-[3px]">
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  width: "100%",
-                  alignItems: "flex-start",
-                  gap: 10,
-                  padding: 10,
-                  borderRadius: 12,
-                  background: "var(--color-white)",
-                  border: "1px solid rgba(214, 189, 152, 0.24)",
-                  boxShadow: "0 10px 25px rgba(64, 83, 76, 0.06)",
-                }}
+                className="flex w-full items-start justify-between gap-2.5 rounded-xl border border-[rgba(214,189,152,0.24)] bg-white p-2.5 shadow-[0_10px_25px_rgba(64,83,76,0.06)]"
                 title={`${name}: ${text}`}
               >
                 <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    flex: 1,
-                    minWidth: 0,
-                  }}
+                  className="flex min-w-0 flex-1 items-center gap-2"
                 >
                   <Avatar
                     icon={<UserOutlined />}
-                    style={{ backgroundColor: "#40534C", flexShrink: 0 }}
+                    className="shrink-0 bg-[#40534C]"
                     size={24}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flexWrap: "wrap" }}>
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                       <span
-                        style={{
-                          fontSize: 12,
-                          color: "var(--color-text-dark)",
-                          fontWeight: 400,
-                          minWidth: 0,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
+                        className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-xs font-normal text-(--color-text-dark)"
                       >
                         {name}
                       </span>
                       {roleLabel && (
-                        <div style={{ flex: "0 0 auto" }}>
+                        <div className="shrink-0">
                           <UniformTag
                             color={getRoleTone(roleLabel)}
                             text={roleLabel}
@@ -113,12 +78,12 @@ const CommentTrail = ({ history = [], isLoading = false }) => {
                         </div>
                       )}
                     </div>
-                    <span style={{ fontSize: 12, color: "var(--color-text-dark)", lineHeight: 1.4 }}>
+                    <span className="text-xs leading-[1.4] text-(--color-text-dark)">
                       {text}
                     </span>
                   </div>
                 </div>
-                <span style={{ fontSize: 10, color: "var(--color-text-dark)", flexShrink: 0, whiteSpace: "nowrap" }}>
+                <span className="shrink-0 whitespace-nowrap text-[10px] text-(--color-text-dark)">
                   {timestamp ? formatCommentTimestamp(timestamp) : "No date"}
                 </span>
               </div>

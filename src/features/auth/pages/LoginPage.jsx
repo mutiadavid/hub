@@ -5,8 +5,7 @@ import { useLoginMutation } from "../../../api/authApi";
 import { consumeAuthStatusMessage } from "../../../api/baseQueryWithSession";
 import { setCredentials } from "../../../api/authSlice";
 import { redirectUserByRole } from "../utils/authRedirect";
-import { getAuthErrorMessage, toLoggableAuthError } from "../utils/authError";
-import ncbaLogo from "../../../assets/ncbabanklogo.png";
+import { getAuthErrorMessage } from "../utils/authError";
 import "../../../styles/microsoftLogin.css";
 
 const LoginPage = () => {
@@ -32,17 +31,21 @@ const LoginPage = () => {
         successMessage: "Login successful.",
       });
     } catch (err) {
-      console.error("❌ [LOGIN ERROR]", toLoggableAuthError(err));
-      console.error("Error Details:", getAuthErrorMessage(err));
       setLoginError(getAuthErrorMessage(err));
     }
   };
 
   return (
     <div className="ms-login-page">
-      <div className="ms-login-card" role="main" aria-label="NCBA sign in">
-        <div className="ms-login-brand" aria-label="NCBA">
-          <img src={ncbaLogo} alt="NCBA" className="ms-login-brand__logo" />
+      <div className="ms-login-card" role="main" aria-label="Microsoft sign in">
+        <div className="ms-login-brand" aria-label="Microsoft">
+          <span className="ms-login-brand__mark" aria-hidden="true">
+            <span className="ms-login-brand__tile ms-login-brand__tile--red" />
+            <span className="ms-login-brand__tile ms-login-brand__tile--green" />
+            <span className="ms-login-brand__tile ms-login-brand__tile--blue" />
+            <span className="ms-login-brand__tile ms-login-brand__tile--yellow" />
+          </span>
+          <span className="ms-login-brand__name">Microsoft</span>
         </div>
 
         <h1 className="ms-login-card__title">Sign in</h1>

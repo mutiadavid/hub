@@ -196,7 +196,23 @@ const getDclCurrentStageKey = (record) => {
     return "coCreator";
   }
 
-  return "rm";
+  if (record?.coCheckerCompletedAt || record?.finalApprovedAt) {
+    return "done";
+  }
+
+  if (record?.coCreatorRevisionCompletedAt && !record?.coCheckerCompletedAt) {
+    return "coChecker";
+  }
+
+  if (record?.rmReviewCompletedAt && !record?.coCreatorRevisionCompletedAt) {
+    return "coCreator";
+  }
+
+  if (record?.coCreatorInitialCompletedAt && !record?.rmReviewCompletedAt) {
+    return "rm";
+  }
+
+  return "coCreator";
 };
 
 const stripInProgressSuffix = (label) => String(label || "0m").replace(/\s*\(in progress\)$/i, "");

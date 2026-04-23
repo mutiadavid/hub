@@ -36,7 +36,6 @@ import {
   WARNING_ORANGE,
 } from "../utils/constants";
 import CommentTrail from "./CommentTrail";
-import "../../../../styles/creatorDesignSystem.css";
 
 const TABS = [
   { key: "details", label: "Deferral Details" },
@@ -145,697 +144,19 @@ const dedupeHistoryEntries = (entries) => {
     });
 };
 
-const REVIEW_STYLES = `
-  .approver-deferral-review {
-    border-top: 1px solid rgba(214, 189, 152, 0.2);
-    background: var(--color-bg);
-  }
+const reviewShellClassName = "border-t border-[rgba(214,189,152)] bg-(--color-bg) [&_.ant-descriptions-item-label]:text-[11px] [&_.ant-descriptions-item-label]:font-normal [&_.ant-descriptions-item-label]:uppercase [&_.ant-descriptions-item-label]:tracking-[0.04em] [&_.ant-descriptions-item-label]:text-(--color-text-dark) [&_.ant-descriptions-item-content]:overflow-wrap-anywhere [&_.ant-descriptions-item-content]:text-[13px] [&_.ant-descriptions-item-content]:font-normal [&_.ant-descriptions-item-content]:text-(--color-text-dark) max-md:[&_.ant-descriptions-view]:block max-md:[&_.ant-descriptions-view_table]:block max-md:[&_.ant-descriptions-view_tbody]:block max-md:[&_.ant-descriptions-row]:block max-md:[&_.ant-descriptions-item]:block max-md:[&_.ant-descriptions-item]:w-full max-md:[&_.ant-descriptions-item]:border-b max-md:[&_.ant-descriptions-item]:border-[rgba(214,189,152,0.14)] max-md:[&_.ant-descriptions-item:last-child]:border-b-0 max-md:[&_.ant-descriptions-item-label]:block max-md:[&_.ant-descriptions-item-content]:block max-md:[&_.ant-descriptions-item-label]:w-full max-md:[&_.ant-descriptions-item-content]:w-full max-md:[&_.ant-descriptions-item-label]:whitespace-normal max-md:[&_.ant-descriptions-item-content]:whitespace-normal max-md:[&_.ant-descriptions-item-label]:px-0 max-md:[&_.ant-descriptions-item-content]:px-0 max-md:[&_.ant-descriptions-item-label]:pb-1.5 max-md:[&_.ant-descriptions-item-content]:pt-0 max-md:[&_.ant-descriptions-item-content]:min-w-0 [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-header]:border-b-0 [&_.ant-table-header]:shadow-none [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr]:border-b-0 [&_.ant-table-thead>tr]:shadow-none [&_.ant-table-thead>tr>th]:!border-b-0 [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:bg-[rgba(247,244,239,0.55)] [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-medium [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.04em] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-thead>tr>th]:shadow-none [&_.ant-table-tbody>tr:first-child>td]:!border-t-0 [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.1)] [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr:last-child>td]:border-b-0 [&_.ant-table-row:hover>td]:bg-[rgba(247,244,239,0.35)] [&_.ant-table-thead>tr>th::before]:hidden [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
 
-  .approver-deferral-review__page {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
-  }
+const tableShellClassName = "overflow-hidden rounded-xl border border-[rgba(214,189,152,0.16)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]";
 
-  .approver-deferral-review__topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
+const primaryButtonClassName = "rounded-lg! border-0! bg-(--ncb-primary-500)! text-white! shadow-none! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! [&>span]:text-white! disabled:[&>span]:text-[#6b7280]!";
 
-  .approver-deferral-review__title-wrap {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
+const secondaryButtonClassName = "rounded-lg! border-(--color-primary-soft)! bg-transparent! text-(--color-primary-medium)! shadow-none! hover:border-(--color-primary-soft)! hover:bg-[rgba(214,189,152,0.1)]! hover:text-(--color-primary-dark)! focus:border-(--color-primary-soft)! focus:bg-[rgba(214,189,152,0.1)]! focus:text-(--color-primary-dark)! active:border-(--color-primary-soft)! active:bg-[rgba(214,189,152,0.1)]! active:text-(--color-primary-dark)! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! disabled:[&>span]:text-[#6b7280]!";
 
-  .approver-deferral-review__title-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(26, 54, 54, 0.08);
-    color: var(--color-primary-dark);
-    flex-shrink: 0;
-  }
+const decisionSecondaryButtonClassName = "min-w-[92px]! h-11! rounded-[10px]! border-[#d0d5dd]! bg-white! text-(--color-text-medium)! shadow-none! font-semibold! hover:border-[#d0d5dd]! hover:bg-[#f8fafc]! hover:text-(--color-text-dark)! focus:border-[#d0d5dd]! focus:bg-[#f8fafc]! focus:text-(--color-text-dark)! active:border-[#d0d5dd]! active:bg-[#f8fafc]! active:text-(--color-text-dark)! max-sm:w-full";
 
-  .approver-deferral-review__title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    color: var(--color-text-dark);
-  }
+const decisionPrimaryButtonClassName = "min-w-[156px]! h-11! rounded-[10px]! border-0! bg-(--ncb-primary-500)! text-white! shadow-[0_10px_20px_rgba(58,179,229,0.18)]! font-bold! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white! max-sm:w-full";
 
-  .approver-deferral-review__subtitle {
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--color-text-light);
-  }
-
-  .approver-deferral-review__close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    background: var(--color-white);
-    color: var(--color-text-medium);
-  }
-
-  .approver-deferral-review__banner,
-  .approver-deferral-review__section,
-  .approver-deferral-review__comments,
-  .approver-deferral-review__decision-card {
-    background: var(--color-white);
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-  }
-
-  .approver-deferral-review__banner {
-    padding: 12px 14px;
-  }
-
-  .approver-deferral-review__banner-title {
-    color: var(--color-text-dark);
-    font-weight: 400;
-    font-size: 13px;
-  }
-
-  .approver-deferral-review__banner-copy {
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--color-text-medium);
-  }
-
-  .approver-deferral-review__tabs {
-    display: flex;
-    gap: 4px;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-    overflow-x: auto;
-  }
-
-  .approver-deferral-review__tab {
-    padding: 10px 12px;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: var(--color-text-light);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
-  }
-
-  .approver-deferral-review__tab--active {
-    color: var(--color-primary-dark);
-    border-bottom-color: var(--color-primary-dark);
-  }
-
-  .approver-deferral-review__details-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
-    gap: 16px;
-    align-items: start;
-  }
-
-  .approver-deferral-review__details-main {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 0;
-  }
-
-  .approver-deferral-review__section-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2);
-  }
-
-  .approver-deferral-review__section-title {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--color-text-dark);
-  }
-
-  .approver-deferral-review__section-body {
-    padding: 16px;
-  }
-
-  .approver-deferral-review__comments {
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .approver-decision-modal .ant-modal-content {
-    border-radius: 0 !important;
-    overflow: hidden;
-    padding: 0 !important;
-    background: var(--color-white) !important;
-    border: none !important;
-    box-shadow: 0 32px 72px rgba(18, 36, 36, 0.24) !important;
-  }
-
-  .approver-decision-modal .ant-modal-header {
-    margin: 0 !important;
-    padding: 22px 26px 18px !important;
-    background: linear-gradient(180deg, #34504c 0%, #2b4541 100%) !important;
-    border-bottom: none !important;
-  }
-
-  .approver-decision-modal .ant-modal-title {
-    color: var(--color-white) !important;
-  }
-
-  .approver-decision-modal .ant-modal-close {
-    top: 20px !important;
-    inset-inline-end: 20px !important;
-    color: rgba(255, 255, 255, 0.88) !important;
-    width: 32px !important;
-    height: 32px !important;
-  }
-
-  .approver-decision-modal .ant-modal-close:hover {
-    color: var(--color-white) !important;
-    background: rgba(255, 255, 255, 0.12) !important;
-  }
-
-  .approver-decision-modal .ant-modal-body {
-    padding: 28px 26px 24px !important;
-    background: #f7f6f2 !important;
-  }
-
-  .approver-decision-modal .ant-modal-footer {
-    margin: 0 !important;
-    padding: 0 26px 24px !important;
-    background: #f7f6f2 !important;
-  }
-
-  .approver-deferral-review__decision-title {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding-right: 36px;
-  }
-
-  .approver-deferral-review__decision-title-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.92);
-    flex-shrink: 0;
-  }
-
-  .approver-deferral-review__decision-title-icon .anticon {
-    font-size: 22px;
-  }
-
-  .approver-deferral-review__decision-title-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .approver-deferral-review__decision-title-copy strong {
-    color: var(--color-white);
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .approver-deferral-review__decision-title-copy span {
-    color: rgba(255, 255, 255, 0.82);
-    font-size: 13px;
-    line-height: 1.45;
-  }
-
-  .approver-deferral-review__decision-card {
-    padding: 20px;
-    border: 1px solid rgba(214, 189, 152, 0.18);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 10px 28px rgba(26, 54, 54, 0.06);
-  }
-
-  .approver-deferral-review__decision-summary {
-    margin-bottom: 20px;
-    padding: 18px;
-    border-radius: 14px;
-    background: #f4efe7;
-  }
-
-  .approver-deferral-review__decision-summary-title {
-    color: var(--color-text-dark);
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .approver-deferral-review__decision-summary-subtitle {
-    margin-top: 8px;
-    color: var(--color-text-medium);
-    font-size: 18px;
-    line-height: 1.35;
-  }
-
-  .approver-deferral-review__decision-summary-copy {
-    margin-top: 16px;
-    color: var(--color-text-medium);
-    font-size: 15px;
-    line-height: 1.65;
-  }
-
-  .approver-deferral-review__decision-field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .approver-deferral-review__decision-label {
-    display: block;
-    color: var(--color-text-medium);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .approver-deferral-review__decision-card .ant-input {
-    border: 1px solid #eaecf0 !important;
-    border-radius: 10px !important;
-    box-shadow: none !important;
-    min-height: 132px !important;
-    background: var(--color-white) !important;
-    color: var(--color-text-dark) !important;
-    font-size: 15px !important;
-    padding: 14px !important;
-    resize: vertical !important;
-  }
-
-  .approver-deferral-review__decision-card .ant-input::placeholder {
-    color: #98a2b3 !important;
-  }
-
-  .approver-deferral-review__decision-card .ant-input:hover,
-  .approver-deferral-review__decision-card .ant-input:focus {
-    border-color: var(--color-primary-dark) !important;
-    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
-  }
-
-  .approver-deferral-review__decision-secondary.ant-btn {
-    min-width: 92px;
-    height: 44px;
-    border-radius: 10px !important;
-    border: 1px solid #d0d5dd !important;
-    background: var(--color-white) !important;
-    color: var(--color-text-medium) !important;
-    box-shadow: none !important;
-    font-weight: 600 !important;
-  }
-
-  .approver-deferral-review__decision-secondary.ant-btn:hover,
-  .approver-deferral-review__decision-secondary.ant-btn:focus,
-  .approver-deferral-review__decision-secondary.ant-btn:active {
-    border-color: #d0d5dd !important;
-    background: #f8fafc !important;
-    color: var(--color-text-dark) !important;
-    box-shadow: none !important;
-  }
-
-  .approver-deferral-review__decision-primary.ant-btn {
-    min-width: 156px;
-    height: 44px;
-    border-radius: 10px !important;
-    border: none !important;
-    background: var(--ncb-primary-500) !important;
-    color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
-    font-weight: 700 !important;
-  }
-
-  .approver-deferral-review__decision-primary.ant-btn:hover,
-  .approver-deferral-review__decision-primary.ant-btn:focus,
-  .approver-deferral-review__decision-primary.ant-btn:active {
-    background: var(--ncb-primary-700) !important;
-    color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
-  }
-
-  .approver-deferral-review__warning-btn.ant-btn,
-  .approver-deferral-review__warning-btn.ant-btn:hover,
-  .approver-deferral-review__warning-btn.ant-btn:focus,
-  .approver-deferral-review__warning-btn.ant-btn:active,
-  .approver-deferral-review__warning-btn.ant-btn:disabled,
-  .approver-deferral-review__warning-btn.ant-btn[disabled],
-  .approver-deferral-review__warning-btn.ant-btn > span,
-  .approver-deferral-review__warning-btn.ant-btn > span > span,
-  .approver-deferral-review__warning-btn.ant-btn:disabled > span,
-  .approver-deferral-review__warning-btn.ant-btn[disabled] > span,
-  .approver-deferral-review__warning-btn.ant-btn:disabled > span > span,
-  .approver-deferral-review__warning-btn.ant-btn[disabled] > span > span {
-    color: var(--color-white) !important;
-  }
-
-  .approver-deferral-review__decision-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-  }
-
-  @media (max-width: 640px) {
-    .approver-decision-modal .ant-modal {
-      max-width: calc(100vw - 24px) !important;
-      margin: 12px auto !important;
-    }
-
-    .approver-decision-modal .ant-modal-header {
-      padding: 18px 18px 16px !important;
-    }
-
-    .approver-decision-modal .ant-modal-body,
-    .approver-decision-modal .ant-modal-footer {
-      padding-left: 18px !important;
-      padding-right: 18px !important;
-    }
-
-    .approver-decision-modal .ant-modal-body {
-      padding-top: 20px !important;
-      padding-bottom: 18px !important;
-    }
-
-    .approver-decision-modal .ant-modal-footer {
-      padding-bottom: 20px !important;
-    }
-
-    .approver-deferral-review__decision-title {
-      gap: 12px;
-      padding-right: 24px;
-    }
-
-    .approver-deferral-review__decision-title-icon {
-      width: 44px;
-      height: 44px;
-    }
-
-    .approver-deferral-review__decision-title-copy strong {
-      font-size: 18px;
-    }
-
-    .approver-deferral-review__decision-summary-title {
-      font-size: 22px;
-    }
-
-    .approver-deferral-review__decision-summary-subtitle {
-      font-size: 16px;
-    }
-
-    .approver-deferral-review__decision-summary-copy {
-      font-size: 14px;
-    }
-
-    .approver-deferral-review__decision-actions {
-      flex-direction: column-reverse;
-    }
-
-    .approver-deferral-review__decision-secondary.ant-btn,
-    .approver-deferral-review__decision-primary.ant-btn {
-      width: 100%;
-    }
-  }
-
-  .approver-deferral-review__primary-btn.ant-btn {
-    border: none !important;
-    background: var(--ncb-primary-500) !important;
-    color: var(--color-white) !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-    border-radius: 8px !important;
-  }
-
-  .approver-deferral-review__primary-btn.ant-btn:hover,
-  .approver-deferral-review__primary-btn.ant-btn:focus,
-  .approver-deferral-review__primary-btn.ant-btn:active {
-    border: none !important;
-    background: var(--ncb-primary-700) !important;
-    color: var(--color-white) !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-  }
-
-  .approver-deferral-review__secondary-btn.ant-btn {
-    border: 1px solid var(--color-primary-soft) !important;
-    background: transparent !important;
-    color: var(--color-primary-medium) !important;
-    box-shadow: none !important;
-    border-radius: 8px !important;
-  }
-
-  .approver-deferral-review__secondary-btn.ant-btn:hover,
-  .approver-deferral-review__secondary-btn.ant-btn:focus,
-  .approver-deferral-review__secondary-btn.ant-btn:active {
-    border-color: var(--color-primary-soft) !important;
-    background: rgba(214, 189, 152, 0.1) !important;
-    color: var(--color-primary-dark) !important;
-    box-shadow: none !important;
-  }
-
-  .approver-deferral-review__primary-btn.ant-btn:disabled,
-  .approver-deferral-review__primary-btn.ant-btn[disabled],
-  .approver-deferral-review__secondary-btn.ant-btn:disabled,
-  .approver-deferral-review__secondary-btn.ant-btn[disabled],
-  .approver-deferral-review__decision-primary.ant-btn:disabled,
-  .approver-deferral-review__decision-primary.ant-btn[disabled],
-  .approver-deferral-review__decision-secondary.ant-btn:disabled,
-  .approver-deferral-review__decision-secondary.ant-btn[disabled] {
-    background: #D1D5DB !important;
-    border-color: #D1D5DB !important;
-    color: #6b7280 !important;
-    box-shadow: none !important;
-  }
-
-  .approver-deferral-review__primary-btn.ant-btn:disabled span,
-  .approver-deferral-review__primary-btn.ant-btn[disabled] span,
-  .approver-deferral-review__secondary-btn.ant-btn:disabled span,
-  .approver-deferral-review__secondary-btn.ant-btn[disabled] span,
-  .approver-deferral-review__decision-primary.ant-btn:disabled span,
-  .approver-deferral-review__decision-primary.ant-btn[disabled] span,
-  .approver-deferral-review__decision-secondary.ant-btn:disabled span,
-  .approver-deferral-review__decision-secondary.ant-btn[disabled] span {
-    color: #6b7280 !important;
-  }
-
-  .approver-deferral-review__table-shell {
-    background: var(--color-white);
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .approver-deferral-review__table-shell + .approver-deferral-review__table-shell {
-    margin-top: 16px;
-  }
-
-  .approver-deferral-review .ant-descriptions-item-label {
-    font-weight: 400 !important;
-    color: var(--color-text-dark) !important;
-    font-size: 11px !important;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .approver-deferral-review .ant-descriptions-item-content {
-    color: var(--color-text-dark) !important;
-    font-weight: 400 !important;
-    font-size: 13px !important;
-    overflow-wrap: anywhere;
-    word-break: normal;
-  }
-
-  .approver-deferral-review .ant-table,
-  .approver-deferral-review .ant-table-wrapper,
-  .approver-deferral-review .ant-spin-nested-loading,
-  .approver-deferral-review .ant-spin-container,
-  .approver-deferral-review .ant-table-container,
-  .approver-deferral-review .ant-table-content,
-  .approver-deferral-review table,
-  .approver-deferral-review thead,
-  .approver-deferral-review tbody,
-  .approver-deferral-review tr {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-
-  .approver-deferral-review .ant-table-thead > tr > th {
-    background: transparent !important;
-    color: var(--color-text-dark) !important;
-    font-size: 11px;
-    font-weight: 400;
-    padding: 12px 16px !important;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-    text-transform: uppercase;
-    border-right: none !important;
-  }
-
-  .approver-deferral-review .ant-table-tbody > tr > td {
-    padding: 14px 16px !important;
-    border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-    border-right: none !important;
-    color: var(--color-text-medium);
-    font-size: 12px;
-  }
-
-  .approver-deferral-review .ant-table-thead > tr > th::before,
-  .approver-deferral-review .ant-table-cell::before,
-  .approver-deferral-review .ant-table-cell::after {
-    display: none !important;
-  }
-
-  .approver-deferral-review__actionbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 12px 16px;
-    background: var(--color-white);
-    border: 1px solid rgba(214, 189, 152, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-  }
-
-  .approver-deferral-review__actionbar-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .approver-deferral-review__empty {
-    padding: 24px;
-  }
-
-  .approver-decision-modal .ant-modal-content {
-    border-radius: 16px !important;
-    border: 1px solid rgba(214, 189, 152, 0.28) !important;
-    box-shadow: 0 24px 64px rgba(26, 54, 54, 0.14) !important;
-    overflow: hidden;
-    padding: 0 !important;
-  }
-
-  .approver-decision-modal .ant-modal-header {
-    margin: 0 !important;
-    padding: 16px 20px 0 !important;
-    border-bottom: none !important;
-  }
-
-  .approver-decision-modal .ant-modal-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--color-text-dark);
-  }
-
-  .approver-decision-modal .ant-modal-body {
-    padding: 16px 20px 20px !important;
-  }
-
-  .approver-decision-modal .ant-modal-footer {
-    margin: 0 !important;
-    padding: 0 20px 20px !important;
-  }
-
-  .approver-deferral-review__decision-card {
-    padding: 14px;
-  }
-
-  .approver-deferral-review__decision-summary {
-    margin-bottom: 12px;
-    padding: 12px;
-    border-radius: 10px;
-    background: rgba(214, 189, 152, 0.12);
-  }
-
-  .approver-deferral-review__decision-label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-text-light);
-  }
-
-  @media (max-width: 1100px) {
-    .approver-deferral-review__details-layout {
-      grid-template-columns: 1fr;
-    }
-
-    .approver-deferral-review__actionbar,
-    .approver-deferral-review__actionbar-actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-  }
-
-  @media (max-width: 767px) {
-    .approver-deferral-review .ant-descriptions-view,
-    .approver-deferral-review .ant-descriptions-view table,
-    .approver-deferral-review .ant-descriptions-view tbody,
-    .approver-deferral-review .ant-descriptions-row,
-    .approver-deferral-review .ant-descriptions-item,
-    .approver-deferral-review .ant-descriptions-item-label,
-    .approver-deferral-review .ant-descriptions-item-content {
-      display: block;
-      width: 100%;
-    }
-
-    .approver-deferral-review .ant-descriptions-item {
-      padding: 0;
-      border-bottom: 1px solid rgba(214, 189, 152, 0.14);
-    }
-
-    .approver-deferral-review .ant-descriptions-item:last-child {
-      border-bottom: none;
-    }
-
-    .approver-deferral-review .ant-descriptions-item-label,
-    .approver-deferral-review .ant-descriptions-item-content {
-      padding-left: 0 !important;
-      padding-right: 0 !important;
-      white-space: normal;
-    }
-
-    .approver-deferral-review .ant-descriptions-item-label {
-      padding-bottom: 6px !important;
-    }
-
-    .approver-deferral-review .ant-descriptions-item-content {
-      padding-top: 0 !important;
-      min-width: 0;
-    }
-  }
-`;
+const decisionModalWrapClassName = "approver-decision-modal [&_.ant-modal]:max-sm:mx-auto [&_.ant-modal]:max-sm:my-3 [&_.ant-modal]:max-sm:max-w-[calc(100vw-24px)] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[rgba(214,189,152,0.18)] [&_.ant-modal-header]:bg-white [&_.ant-modal-header]:px-[26px] [&_.ant-modal-header]:pb-[18px] [&_.ant-modal-header]:pt-[22px] max-sm:[&_.ant-modal-header]:px-[18px] max-sm:[&_.ant-modal-header]:pb-4 max-sm:[&_.ant-modal-header]:pt-[18px] [&_.ant-modal-title]:text-(--color-text-dark) [&_.ant-modal-close]:top-5 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-(--color-text-medium) hover:[&_.ant-modal-close]:bg-[rgba(214,189,152,0.12)] hover:[&_.ant-modal-close]:text-(--color-text-dark) [&_.ant-modal-body]:bg-white [&_.ant-modal-body]:px-[26px] [&_.ant-modal-body]:pb-6 [&_.ant-modal-body]:pt-7 max-sm:[&_.ant-modal-body]:px-[18px] max-sm:[&_.ant-modal-body]:pb-[18px] max-sm:[&_.ant-modal-body]:pt-5 [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-white [&_.ant-modal-footer]:px-[26px] [&_.ant-modal-footer]:pb-6 [&_.ant-modal-footer]:pt-0 max-sm:[&_.ant-modal-footer]:px-[18px] max-sm:[&_.ant-modal-footer]:pb-5";
 
 const renderStatusLabel = (status) =>
   String(status || "pending")
@@ -1039,7 +360,7 @@ const DeferralDetailsModal = ({
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
+        <span className="font-normal text-(--color-text-dark)">
           {value || "Untitled document"}
         </span>
       ),
@@ -1072,7 +393,7 @@ const DeferralDetailsModal = ({
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
+        <span className="font-normal text-(--color-text-dark)">
           {value || "Document"}
         </span>
       ),
@@ -1082,7 +403,7 @@ const DeferralDetailsModal = ({
       key: "actions",
       width: 180,
       render: (_, record) => (
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="flex gap-2">
           <Button
             size="small"
             icon={<EyeOutlined />}
@@ -1109,7 +430,7 @@ const DeferralDetailsModal = ({
       title: "Approver",
       key: "approver",
       render: (_, record) => (
-        <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
+        <span className="font-normal text-(--color-text-dark)">
           {record.name || record.approverName || "User"}
         </span>
       ),
@@ -1127,7 +448,7 @@ const DeferralDetailsModal = ({
       render: (_, record) => {
         const approved = record.approved || record.approvalStatus === "approved";
         return (
-          <span style={{ fontWeight: 400, color: "var(--color-text-dark)" }}>
+          <span className="font-normal text-(--color-text-dark)">
             {approved ? "Approved" : record.current ? "Current Reviewer" : "Pending Approval"}
           </span>
         );
@@ -1178,37 +499,32 @@ const DeferralDetailsModal = ({
   }) => (
     <Modal
       title={(
-        <div className="approver-deferral-review__decision-title">
+        <div className="flex items-start gap-4 pr-9 max-sm:gap-3 max-sm:pr-6">
           {titleIcon ? (
-            <span className="approver-deferral-review__decision-title-icon">{titleIcon}</span>
+            <span className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(58,179,229,0.2)] bg-[rgba(58,179,229,0.08)] text-(--ncb-primary-700) [&_.anticon]:text-[22px] max-sm:h-11 max-sm:w-11">{titleIcon}</span>
           ) : null}
-          <span className="approver-deferral-review__decision-title-copy">
-            <strong>{title}</strong>
-            <span>{subtitle}</span>
+          <span className="flex flex-col gap-1.5">
+            <strong className="text-[20px] font-bold leading-[1.2] text-(--color-text-dark) max-sm:text-[18px]">{title}</strong>
+            <span className="text-[13px] leading-[1.45] text-(--color-text-medium)">{subtitle}</span>
           </span>
         </div>
       )}
       open={modalOpen}
       onCancel={onCancel}
       maskClosable={false}
-      wrapClassName="approver-decision-modal"
+      wrapClassName={decisionModalWrapClassName}
       width={760}
       footer={[
-        <div key="actions" className="approver-deferral-review__decision-actions">
+        <div key="actions" className="flex justify-end gap-3 max-sm:flex-col-reverse">
           <Button
-            className="approver-deferral-review__decision-secondary"
+            className={decisionSecondaryButtonClassName}
             onClick={onCancel}
             disabled={confirmLoading}
           >
             Cancel
           </Button>,
           <Button
-            className={`approver-deferral-review__decision-primary ${confirmClassName || ""}`.trim()}
-            style={
-              confirmClassName?.includes("approver-deferral-review__warning-btn")
-                ? { color: "#fff" }
-                : undefined
-            }
+            className={`${decisionPrimaryButtonClassName} ${confirmClassName || ""}`.trim()}
             loading={confirmLoading}
             onClick={onConfirm}
             disabled={confirmDisabled}
@@ -1218,21 +534,21 @@ const DeferralDetailsModal = ({
         </div>,
       ]}
     >
-      <div className="approver-deferral-review__decision-card">
-        <div className="approver-deferral-review__decision-summary">
-          <div className="approver-deferral-review__decision-summary-title">
+      <div className="rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-[rgba(255,255,255,0.98)] p-5 shadow-[0_10px_28px_rgba(26,54,54,0.06)] max-sm:p-3.5 [&_.ant-input]:min-h-[132px] [&_.ant-input]:rounded-[10px] [&_.ant-input]:border-[#eaecf0] [&_.ant-input]:bg-white [&_.ant-input]:p-3.5 [&_.ant-input]:text-[15px] [&_.ant-input]:text-(--color-text-dark) [&_.ant-input]:shadow-none [&_.ant-input]:placeholder:text-[#98a2b3] hover:[&_.ant-input]:border-(--ncb-primary-500) focus-within:[&_.ant-input]:border-(--ncb-primary-500) focus-within:[&_.ant-input]:shadow-[0_0_0_2px_rgba(58,179,229,0.12)]">
+        <div className="mb-5 rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-white p-[18px] max-sm:mb-3 max-sm:rounded-[10px] max-sm:p-3">
+          <div className="text-[28px] font-bold leading-[1.2] text-(--color-text-dark) max-sm:text-[22px]">
             {safeDeferral.deferralNumber || "Deferral request"}
           </div>
-          <div className="approver-deferral-review__decision-summary-subtitle">
+          <div className="mt-2 text-[18px] leading-[1.35] text-(--color-text-medium) max-sm:text-base">
             {safeDeferral.customerName || "Customer"}
           </div>
-          <div className="approver-deferral-review__decision-summary-copy">
+          <div className="mt-4 text-[15px] leading-[1.65] text-(--color-text-medium) max-sm:text-sm">
             {summaryCopy}
           </div>
         </div>
 
-        <div className="approver-deferral-review__decision-field">
-          <label className="approver-deferral-review__decision-label">
+        <div className="flex flex-col gap-2">
+          <label className="block text-[11px] font-bold uppercase tracking-[0.16em] text-(--color-text-medium)">
             {inputLabel}
             {inputRequired ? " (Required)" : ""}
           </label>
@@ -1241,6 +557,7 @@ const DeferralDetailsModal = ({
             value={inputValue}
             onChange={(event) => onInputChange(event.target.value)}
             placeholder={inputPlaceholder}
+            className="resize-y"
           />
         </div>
       </div>
@@ -1249,42 +566,40 @@ const DeferralDetailsModal = ({
 
   return (
     <>
-      <style>{REVIEW_STYLES}</style>
-
-      <div className="approver-deferral-review">
-        <div className="approver-deferral-review__page">
-          <div className="approver-deferral-review__topbar">
-            <div className="approver-deferral-review__title-wrap">
-              <span className="approver-deferral-review__title-icon">
+      <div className={reviewShellClassName}>
+        <div className="flex flex-col gap-4 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-3 max-md:flex-col max-md:items-stretch">
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[rgba(26,54,54,0.08)] text-(--color-primary-dark)">
                 <BankOutlined />
               </span>
               <div>
-                <h2 className="approver-deferral-review__title">
+                <h2 className="m-0 text-base font-normal tracking-[-0.02em] text-(--color-text-dark)">
                   {headerTag
                     ? `${headerTag}: ${safeDeferral.deferralNumber}`
                     : `Deferral Request: ${safeDeferral.deferralNumber}`}
                 </h2>
-                <div className="approver-deferral-review__subtitle">{detailsSubtitle}</div>
+                <div className="mt-1 text-xs text-(--color-text-light)">{detailsSubtitle}</div>
               </div>
             </div>
 
             <Button
-              className="approver-deferral-review__close"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[rgba(214,189,152,0.2)] bg-white text-(--color-text-medium) shadow-none hover:border-[rgba(214,189,152,0.2)] hover:bg-white hover:text-(--color-text-dark)"
               icon={<CloseOutlined />}
               onClick={onClose}
             />
           </div>
 
-          <div className="approver-deferral-review__banner">
-            <div className="approver-deferral-review__banner-title">Under Review by Approvers</div>
-            <div className="approver-deferral-review__banner-copy">
+          <div className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+            <div className="text-[13px] font-normal text-(--color-text-dark)">Under Review by Approvers</div>
+            <div className="mt-1 text-xs text-(--color-text-medium)">
               This deferral request is currently undergoing approval from the designated approvers.
             </div>
           </div>
 
-          <div className="approver-deferral-review__actionbar">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[rgba(214,189,152,0.2)] bg-white px-4 py-3 shadow-[0_1px_2px_rgba(26,54,54,0.06)] max-[1100px]:flex-col max-[1100px]:items-stretch">
             <Button
-              className="approver-deferral-review__primary-btn"
+              className={primaryButtonClassName}
               icon={<FilePdfOutlined />}
               onClick={downloadDeferralAsPDF}
               loading={downloadLoading}
@@ -1292,10 +607,10 @@ const DeferralDetailsModal = ({
               Download PDF
             </Button>
 
-            <div className="approver-deferral-review__actionbar-actions">
+            <div className="flex flex-wrap justify-end gap-2 max-[1100px]:flex-col max-[1100px]:items-stretch">
               {!readOnly ? (
                 <Button
-                  className="approver-deferral-review__primary-btn approver-deferral-review__warning-btn"
+                  className={primaryButtonClassName}
                   onClick={() => setReturnReworkModalVisible(true)}
                   loading={returnReworkLoading}
                 >
@@ -1306,7 +621,7 @@ const DeferralDetailsModal = ({
               {showApprovalActions ? (
                 <>
                   <Button
-                    className="approver-deferral-review__primary-btn approver-deferral-review__danger-btn"
+                    className={primaryButtonClassName}
                     icon={<CloseOutlined />}
                     onClick={() => setRejectModalVisible(true)}
                     loading={rejecting}
@@ -1314,7 +629,7 @@ const DeferralDetailsModal = ({
                     Reject
                   </Button>
                   <Button
-                    className="approver-deferral-review__primary-btn"
+                    className={primaryButtonClassName}
                     icon={<CheckOutlined />}
                     onClick={() => setApproveModalVisible(true)}
                     loading={approveLoading}
@@ -1324,18 +639,18 @@ const DeferralDetailsModal = ({
                 </>
               ) : null}
 
-              <Button className="approver-deferral-review__secondary-btn" onClick={onClose}>
+              <Button className={secondaryButtonClassName} onClick={onClose}>
                 Close
               </Button>
             </div>
           </div>
 
-          <div className="approver-deferral-review__tabs">
+          <div className="flex gap-1 overflow-x-auto border-b border-[rgba(214,189,152,0.2)]">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
-                className={`approver-deferral-review__tab ${activeTab === tab.key ? "approver-deferral-review__tab--active" : ""}`}
+                className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2.5 text-xs font-medium ${activeTab === tab.key ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
                 onClick={() => setActiveTab(tab.key)}
               >
                 {tab.label}
@@ -1344,13 +659,13 @@ const DeferralDetailsModal = ({
           </div>
 
           {activeTab === "details" ? (
-            <div className="approver-deferral-review__details-layout">
-              <div className="approver-deferral-review__details-main">
-                <section className="approver-deferral-review__section">
-                  <div className="approver-deferral-review__section-head">
-                    <h3 className="approver-deferral-review__section-title">Customer Information</h3>
+            <div className="grid items-start gap-4 min-[1101px]:grid-cols-[minmax(0,7fr)_minmax(280px,3fr)]">
+              <div className="flex min-w-0 flex-col gap-4">
+                <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Customer Information</h3>
                   </div>
-                  <div className="approver-deferral-review__section-body">
+                  <div className="p-4">
                     <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
                       <Descriptions.Item label="Customer Name">{safeDeferral.customerName || "-"}</Descriptions.Item>
                       <Descriptions.Item label="Customer Number">{safeDeferral.customerNumber || "-"}</Descriptions.Item>
@@ -1359,11 +674,11 @@ const DeferralDetailsModal = ({
                   </div>
                 </section>
 
-                <section className="approver-deferral-review__section">
-                  <div className="approver-deferral-review__section-head">
-                    <h3 className="approver-deferral-review__section-title">Deferral Summary</h3>
+                <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Deferral Summary</h3>
                   </div>
-                  <div className="approver-deferral-review__section-body">
+                  <div className="p-4">
                     <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
                       <Descriptions.Item label="Deferral Number">{safeDeferral.deferralNumber || "-"}</Descriptions.Item>
                       <Descriptions.Item label="DCL No">{safeDeferral.dclNumber || safeDeferral.dclNo || "-"}</Descriptions.Item>
@@ -1381,13 +696,13 @@ const DeferralDetailsModal = ({
                   </div>
                 </section>
 
-                <section className="approver-deferral-review__section">
-                  <div className="approver-deferral-review__section-head">
-                    <h3 className="approver-deferral-review__section-title">Deferral Description</h3>
+                <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Deferral Description</h3>
                   </div>
-                  <div className="approver-deferral-review__section-body">
+                  <div className="p-4">
                     <Typography.Paragraph
-                      style={{ marginBottom: 0, whiteSpace: "pre-wrap", color: "var(--color-text-medium)" }}
+                      className="mb-0 whitespace-pre-wrap text-(--color-text-medium)"
                     >
                       {safeDeferral.deferralDescription || "-"}
                     </Typography.Paragraph>
@@ -1395,16 +710,16 @@ const DeferralDetailsModal = ({
                 </section>
               </div>
 
-              <aside className="approver-deferral-review__comments">
+              <aside className="flex flex-col gap-2 rounded-lg border border-[rgba(214,189,152,0.2)] bg-white p-2.5 shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
                 <div className="creator-caption">Comments</div>
                 <CommentTrail history={history} isLoading={loadingComments} />
               </aside>
             </div>
           ) : (
-            <div>
-              <div className="approver-deferral-review__table-shell">
-                <div className="approver-deferral-review__section-head">
-                  <h3 className="approver-deferral-review__section-title">Documents To Be Deferred</h3>
+            <div className="space-y-4">
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Documents To Be Deferred</h3>
                 </div>
                 {requestedDocsWithDates.length > 0 ? (
                   <Table
@@ -1415,13 +730,13 @@ const DeferralDetailsModal = ({
                     scroll={{ x: 640 }}
                   />
                 ) : (
-                  <div className="approver-deferral-review__empty"><Empty description="No deferred documents" /></div>
+                  <div className="p-6"><Empty description="No deferred documents" /></div>
                 )}
               </div>
 
-              <div className="approver-deferral-review__table-shell">
-                <div className="approver-deferral-review__section-head">
-                  <h3 className="approver-deferral-review__section-title">Facility Details</h3>
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Facility Details</h3>
                 </div>
                 {safeDeferral.facilities?.length > 0 ? (
                   <Table
@@ -1432,13 +747,13 @@ const DeferralDetailsModal = ({
                     scroll={{ x: 720 }}
                   />
                 ) : (
-                  <div className="approver-deferral-review__empty"><Empty description="No facilities available" /></div>
+                  <div className="p-6"><Empty description="No facilities available" /></div>
                 )}
               </div>
 
-              <div className="approver-deferral-review__table-shell">
-                <div className="approver-deferral-review__section-head">
-                  <h3 className="approver-deferral-review__section-title">Mandatory DCL Upload</h3>
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Mandatory DCL Upload</h3>
                 </div>
                 {dclDocs.length > 0 ? (
                   <Table
@@ -1449,13 +764,13 @@ const DeferralDetailsModal = ({
                     scroll={{ x: 640 }}
                   />
                 ) : (
-                  <div className="approver-deferral-review__empty"><Empty description="No DCL document uploaded" /></div>
+                  <div className="p-6"><Empty description="No DCL document uploaded" /></div>
                 )}
               </div>
 
-              <div className="approver-deferral-review__table-shell">
-                <div className="approver-deferral-review__section-head">
-                  <h3 className="approver-deferral-review__section-title">Additional Documents</h3>
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Additional Documents</h3>
                 </div>
                 {uploadedDocs.length > 0 ? (
                   <Table
@@ -1466,13 +781,13 @@ const DeferralDetailsModal = ({
                     scroll={{ x: 640 }}
                   />
                 ) : (
-                  <div className="approver-deferral-review__empty"><Empty description="No additional documents" /></div>
+                  <div className="p-6"><Empty description="No additional documents" /></div>
                 )}
               </div>
 
-              <div className="approver-deferral-review__table-shell">
-                <div className="approver-deferral-review__section-head">
-                  <h3 className="approver-deferral-review__section-title">Approval Flow</h3>
+              <div className={tableShellClassName}>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
+                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Approval Flow</h3>
                 </div>
                 {approvalFlowWithCurrent.length > 0 ? (
                   <Table
@@ -1483,7 +798,7 @@ const DeferralDetailsModal = ({
                     scroll={{ x: 540 }}
                   />
                 ) : (
-                  <div className="approver-deferral-review__empty"><Empty description="No approval flow recorded" /></div>
+                  <div className="p-6"><Empty description="No approval flow recorded" /></div>
                 )}
               </div>
             </div>
@@ -1505,7 +820,7 @@ const DeferralDetailsModal = ({
         confirmText: "Yes, Reject",
         confirmLoading: rejecting,
         confirmDisabled: !rejectComment.trim(),
-        confirmClassName: "approver-deferral-review__danger-btn",
+        confirmClassName: "",
         summaryCopy: "Rejecting this request will close the approval path and record your reason in the audit trail.",
         inputLabel: "Rejection reason",
         inputRequired: true,
@@ -1527,7 +842,7 @@ const DeferralDetailsModal = ({
         confirmText: "Yes, Return for Rework",
         confirmLoading: returnReworkLoading,
         confirmDisabled: !reworkComment.trim(),
-        confirmClassName: "approver-deferral-review__warning-btn",
+        confirmClassName: "",
         summaryCopy: "Returning this request will send it back with your instructions so the originating team can correct it.",
         inputLabel: "Rework instructions",
         inputRequired: true,

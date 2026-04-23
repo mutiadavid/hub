@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Routes, Route, useLocation } from "react-router-dom";
-import { InboxOutlined, FileDoneOutlined, SnippetsOutlined } from "@ant-design/icons";
+import { InboxOutlined, FileDoneOutlined } from "@ant-design/icons";
 import "../../styles/creatorDesignSystem.css";
 import SharedSidebar from "../common/SharedSidebar";
 
 // Import available Approver page components
 import { MyQueue } from "../../pages/approver/MyQueue";
 import Actioned from "../../pages/approver/Actioned/Actioned";
-import DraftsPage from "../shared/DraftsPage";
 // import Reports from "../../pages/approver/Reports"; // TODO: Create Reports page
 import Navbar from "../Navbar";
 import { getSidebarWidth } from "../../utils/sidebarUtils";
 
 const getSelectedKeyFromPath = (pathname) => {
-  if (pathname.includes("/approver/drafts")) return "drafts";
   if (pathname.includes("/approver/actioned")) return "actioned";
   return "queue";
 };
@@ -42,28 +40,11 @@ const ApproverLayout = ({ userId }) => {
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
 
-  const handleRestoreDraft = (draft) => {
-    if (!draft) {
-      return;
-    }
-
-    navigate(`/rm/deferrals/request?draftId=${encodeURIComponent(draft.id)}`);
-
-    if (isMobile) {
-      setSidebarCollapsed(true);
-    }
-  };
-
   const menuItems = [
     {
       key: "queue",
       label: "My Queue",
       icon: <InboxOutlined />,
-    },
-    {
-      key: "drafts",
-      label: "Drafts",
-      icon: <SnippetsOutlined />,
     },
     {
       key: "actioned",
@@ -123,10 +104,6 @@ const ApproverLayout = ({ userId }) => {
             <Route
               path="/queue/*"
               element={<MyQueue userId={userId || "approver_current"} />}
-            />
-            <Route
-              path="/drafts"
-              element={<DraftsPage type="deferral" onSelectDraft={handleRestoreDraft} />}
             />
             <Route
               path="/actioned"

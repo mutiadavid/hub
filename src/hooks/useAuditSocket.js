@@ -10,38 +10,30 @@ export const useAuditSocket = (currentUser) => {
 
   useEffect(() => {
     if (!socket) {
-      console.log("⚠️ Socket not available in useAuditSocket");
       return;
     }
 
-    console.log("🔌 useAuditSocket: Socket available, setting up listeners...");
-
     // Listen for connection status
     const handleConnect = () => {
-      console.log("✅ useAuditSocket: Socket connected");
       setSocketConnected(true);
 
       // Join admin room if admin
       if (currentUser?.role === "admin") {
-        console.log(`👑 Admin ${currentUser.name} joining admin room`);
         socket.emit("joinAdminRoom", currentUser._id);
       }
     };
 
     const handleDisconnect = () => {
-      console.log("🔴 useAuditSocket: Socket disconnected");
       setSocketConnected(false);
     };
 
     // Listen for online users
     const handleOnlineUsers = (users) => {
-      console.log("👥 Online users update:", users?.length || 0);
       setOnlineUsers(users || []);
     };
 
     // Listen for new audit logs
     const handleNewAuditLog = (log) => {
-      console.log("📋 New audit log received:", log.action);
       setLiveLogs((prev) => {
         // Keep only last 100 logs to prevent memory issues
         const newLogs = [log, ...prev];
@@ -57,14 +49,12 @@ export const useAuditSocket = (currentUser) => {
 
     // Request initial online users if connected
     if (socket.connected) {
-      console.log("📡 useAuditSocket: Requesting online users...");
       socket.emit("getOnlineUsers");
       handleConnect(); // Manually trigger connection handler
     }
 
     // Cleanup function
     return () => {
-      console.log("🧹 useAuditSocket: Cleaning up event listeners");
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("online-users", handleOnlineUsers);
@@ -84,7 +74,6 @@ export const useAuditSocket = (currentUser) => {
         timestamp: new Date().toISOString(),
       };
 
-      console.log("📤 Emitting activity:", activityData);
       socket.emit("userActivity", activityData);
     } else {
       console.warn(

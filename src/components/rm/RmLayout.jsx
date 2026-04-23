@@ -111,8 +111,6 @@ const RmLayout = ({ userId }) => {
   ];
 
   const handleClick = (e) => {
-    console.log("Menu clicked:", e.key);
-
     // Handle special routes
     if (e.key === "deferral") {
       navigate("/rm/deferrals/pending");

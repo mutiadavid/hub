@@ -610,8 +610,6 @@ const UserAuditTrailPage = ({ currentUser }) => {
     refetch: refetchUsers,
   } = useGetUsersQuery();
 
-  console.log("Users Data:", usersData);
-
   // Extract users from response - handle different response structures
   const users = useMemo(() => {
     if (!usersData) return [];
@@ -665,9 +663,6 @@ const UserAuditTrailPage = ({ currentUser }) => {
     }
   );
 
-  console.log("Audit Data:", auditData);
-  console.log("Selected User ID:", selectedUserId);
-
   // Removed auto-select user effect to allow global view
   // useEffect(() => {
   //   if (users.length > 0 && !selectedUserId) {
@@ -700,11 +695,6 @@ const UserAuditTrailPage = ({ currentUser }) => {
 
   // Stats - handle gracefully if endpoint doesn't exist
   const { data: statsData, error: statsError } = useGetAuditLogStatsQuery();
-
-  console.log("Stats Data:", statsData);
-  console.log("Audit loading:", isLoadingAudit);
-  console.log("Audit error:", auditError);
-  console.log("Audit raw data:", auditData);
 
   // Filter users based on search and filters
   const filteredUsers = useMemo(() => {
@@ -776,15 +766,7 @@ const UserAuditTrailPage = ({ currentUser }) => {
 
   // Debug function
   const handleDebug = () => {
-    console.log("=== DEBUG INFORMATION ===");
-    console.log("Users from API:", users);
-    console.log("Filtered Users:", filteredUsers);
-    console.log("Selected User:", selectedUser);
-    console.log("Audit Logs:", auditLogs);
-    console.log("Online Users:", onlineUsers);
-    console.log("Current User:", currentUser);
-    console.log("API Errors:", { usersError, auditError, statsError });
-    message.info("Debug information logged to console");
+    message.info("Debug information is unavailable in production");
   };
 
   // User columns

@@ -25,7 +25,7 @@ import {
   deleteDraft,
   getDraftRoute,
 } from "../../../utils/draftsUtils";
-import { showErrorToast, showWarningToast } from "../../../utils/authToast";
+import { showErrorToast, showSuccessToast, showWarningToast } from "../../../utils/authToast";
 import { loanTypeDocuments } from "../../../pages/docTypes";
 import { message } from "antd";
 import "../../../styles/creatorDesignSystem.css";
@@ -931,10 +931,10 @@ const ReviewChecklistPage = ({
       };
 
       setSupportingDocs((prevDocs) => [...prevDocs, newSupportingDoc]);
-      message.success(`"${file.name}" uploaded successfully`);
+      showSuccessToast(`"${file.name}" uploaded successfully.`);
     } catch (error) {
       console.error("Error uploading supporting document:", error);
-      message.error(error.message || "Failed to upload supporting document");
+      showErrorToast(error?.message || "Failed to upload supporting document");
       throw error;
     } finally {
       setIsUploadingSupportingDoc(false);

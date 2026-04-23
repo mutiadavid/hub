@@ -186,11 +186,6 @@ export const checklistApi = createApi({
 
     updateCheckerStatus: builder.mutation({
       query: (payload) => {
-        console.log(
-          "RTK Query: Sending payload to updateCheckerStatus:",
-          payload,
-        );
-
         return {
           url: "checkerChecklist/update-status",
           method: "PATCH",

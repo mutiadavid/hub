@@ -5,12 +5,18 @@ import ReviewChecklistModal from "../../components/modals/ReviewChecklistModal";
 import { useGetChecklistsQuery } from "../../api/checklistApi";
 import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewChecklistModalComponents/CheckerReviewChecklistModal";
 
-// Theme Colors
-const PRIMARY_BLUE = "#164679";
-const ACCENT_LIME = "#b5d334";
-const HIGHLIGHT_GOLD = "#fcb116";
-const LIGHT_YELLOW = "#fcd716";
-const SECONDARY_PURPLE = "#7e6496";
+const tableShellClassName =
+  "overflow-hidden rounded-xl border border-[#e0e0e0] bg-white shadow-[0_10px_30px_rgba(22,70,121,0.08)] [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-thead>tr>th]:bg-[#f7f7f7] [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-4 [&_.ant-table-thead>tr>th]:text-[15px] [&_.ant-table-thead>tr>th]:font-bold [&_.ant-table-thead>tr>th]:text-(--color-heading) [&_.ant-table-thead>tr>th]:border-b-[3px] [&_.ant-table-thead>tr>th]:border-[rgba(57,32,48,0.18)] [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-sm [&_.ant-table-tbody>tr>td]:text-(--color-heading-light) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[#f0f0f0] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-row:hover>td]:bg-[rgba(181,211,52,0.1)] [&_.ant-table-row:hover>td]:cursor-pointer [&_.ant-pagination_.ant-pagination-item-active]:border-[#b5d334] [&_.ant-pagination_.ant-pagination-item-active]:bg-[#b5d334] [&_.ant-pagination_.ant-pagination-item-active_a]:font-semibold [&_.ant-pagination_.ant-pagination-item-active_a]:text-[#164679] [&_.ant-pagination_.ant-pagination-item:hover]:border-[#b5d334] [&_.ant-pagination_.ant-pagination-prev:hover_.ant-pagination-item-link]:text-[#b5d334] [&_.ant-pagination_.ant-pagination-next:hover_.ant-pagination-item-link]:text-[#b5d334] [&_.ant-pagination_.ant-pagination-options_.ant-select-selector]:rounded-lg [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+
+const getStatusClassName = (statusClassName) => {
+  if (statusClassName === "checker-cochecklist-status--approved") {
+    return "border-[#b5d334] bg-[rgba(181,211,52,0.25)]";
+  }
+  if (statusClassName === "checker-cochecklist-status--rejected") {
+    return "border-[#fcb116] bg-[rgba(252,177,22,0.25)]";
+  }
+  return "border-[#fcd716] bg-[rgba(252,215,22,0.25)]";
+};
 
 const Myqueue = ({ userId }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -49,33 +55,20 @@ const Myqueue = ({ userId }) => {
     });
   }, [checklists, userId]);
 
-  const customTableStyles = `
-    .ant-table-wrapper { border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(22, 70, 121, 0.08); border: 1px solid #e0e0e0; }
-    .ant-table-thead > tr > th { background-color: #f7f7f7 !important; color: var(--color-heading) !important; font-weight: 700; font-size: 15px; padding: 16px 16px !important; border-bottom: 3px solid rgba(57, 32, 48, 0.18) !important; border-right: none !important; }
-    .ant-table-tbody > tr > td { border-bottom: 1px solid #f0f0f0 !important; border-right: none !important; padding: 14px 16px !important; font-size: 14px; color: var(--color-heading-light); }
-    .ant-table-tbody > tr.ant-table-row:hover > td { background-color: rgba(181, 211, 52, 0.1) !important; cursor: pointer; }
-    .ant-table-bordered .ant-table-container, .ant-table-bordered .ant-table-tbody > tr > td, .ant-table-bordered .ant-table-thead > tr > th { border: none !important; }
-    .ant-pagination .ant-pagination-item-active { background-color: ${ACCENT_LIME} !important; border-color: ${ACCENT_LIME} !important; }
-    .ant-pagination .ant-pagination-item-active a { color: ${PRIMARY_BLUE} !important; font-weight: 600; }
-    .ant-pagination .ant-pagination-item:hover { border-color: ${ACCENT_LIME} !important; }
-    .ant-pagination .ant-pagination-prev:hover .ant-pagination-item-link, .ant-pagination .ant-pagination-next:hover .ant-pagination-item-link { color: ${ACCENT_LIME} !important; }
-    .ant-pagination .ant-pagination-options .ant-select-selector { border-radius: 8px !important; }
-  `;
-
   const columns = [
     {
       title: "DCL No",
       dataIndex: "dclNo",
       width: 200,
       render: (text) => (
-        <span style={{ fontWeight: "bold", color: PRIMARY_BLUE }}>{text}</span>
+        <span className="checker-cochecklist-cell-primary">{text}</span>
       ),
     },
     {
       title: "Customer Number",
       dataIndex: "customerNumber",
       width: 180,
-      render: (text) => <span style={{ color: SECONDARY_PURPLE }}>{text}</span>,
+      render: (text) => <span className="checker-cochecklist-cell-secondary">{text}</span>,
     },
 
     { title: "Loan Type", dataIndex: "loanType", width: 140 },
@@ -84,7 +77,7 @@ const Myqueue = ({ userId }) => {
       dataIndex: "assignedToRM",
       width: 120,
       render: (rm) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 500 }}>
+        <span className="checker-cochecklist-cell-strong">
           {rm?.name || "Not Assigned"}
         </span>
       ),
@@ -95,7 +88,7 @@ const Myqueue = ({ userId }) => {
       width: 80,
       align: "center",
       render: (docs) => (
-        <span style={{ fontWeight: "bold", color: PRIMARY_BLUE }}>
+        <span className="checker-cochecklist-cell-primary">
           {Array.isArray(docs) ? docs.length : 0}
         </span>
       ),
@@ -105,36 +98,20 @@ const Myqueue = ({ userId }) => {
       dataIndex: "status",
       width: 120,
       render: (status) => {
-        let tagColor, tagText, bgColor;
+        let tagText;
+        let statusClassName;
+
         if (status === "approved") {
           tagText = "Approved";
-          tagColor = ACCENT_LIME;
-          bgColor = ACCENT_LIME;
+          statusClassName = "checker-cochecklist-status--approved";
         } else if (status === "rejected") {
           tagText = "Rejected";
-          tagColor = HIGHLIGHT_GOLD;
-          bgColor = HIGHLIGHT_GOLD;
+          statusClassName = "checker-cochecklist-status--rejected";
         } else {
           tagText = "In Progress";
-          tagColor = SECONDARY_PURPLE;
-          bgColor = LIGHT_YELLOW;
+          statusClassName = "checker-cochecklist-status--inprogress";
         }
-        return (
-          <Tag
-            color={tagColor}
-            style={{
-              fontSize: 12,
-              borderRadius: 999,
-              fontWeight: "bold",
-              padding: "2px 6px",
-              color: PRIMARY_BLUE,
-              backgroundColor: bgColor + "40",
-              borderColor: bgColor,
-            }}
-          >
-            {tagText}
-          </Tag>
-        );
+        return <Tag className={`checker-cochecklist-status ${statusClassName}`}>{tagText}</Tag>;
       },
     },
     {
@@ -145,13 +122,7 @@ const Myqueue = ({ userId }) => {
           size="small"
           type="link"
           onClick={() => setSelectedChecklist(record)}
-          style={{
-            color: SECONDARY_PURPLE,
-            fontWeight: "bold",
-            fontSize: 13,
-            borderRadius: 6,
-            "--antd-wave-shadow-color": ACCENT_LIME,
-          }}
+          className="checker-cochecklist-action"
         >
           View
         </Button>
@@ -162,23 +133,10 @@ const Myqueue = ({ userId }) => {
   const dataSource = Array.isArray(myChecklists) ? myChecklists : [];
 
   return (
-    <div style={{ padding: 16 }}>
-      <style>{customTableStyles}</style>
-      <style>{`
-        .checker-cochecklist-inline-review {
-          width: 100%;
-          min-height: 100%;
-          padding: 0;
-          margin: 0;
-          background: transparent;
-          border: none;
-          border-radius: 0;
-          box-shadow: none;
-        }
-      `}</style>
+    <div className="p-4">
 
       {selectedChecklist ? (
-        <section className="checker-cochecklist-inline-review">
+        <section className="w-full min-h-full border-0 bg-transparent p-0 shadow-none">
           <CheckerReviewChecklistModal
             checklist={selectedChecklist}
             embedded
@@ -202,47 +160,121 @@ const Myqueue = ({ userId }) => {
             />
           )}
 
-          <Divider style={{ margin: "12px 0" }}>Assigned Checklists</Divider>
+          <Divider className="my-3">Assigned Checklists</Divider>
 
           {isLoading || isFetching ? (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 24,
-              }}
-            >
+            <div className="flex items-center justify-center p-6">
               <Spin tip="Loading checklists...">
-                <div style={{ height: 40 }} />
+                <div className="h-10" />
               </Spin>
             </div>
           ) : error ? (
             <Empty
               description="Failed to load checklists. Check console for details."
-              style={{ padding: 24 }}
+              className="p-6"
             />
           ) : dataSource.length === 0 ? (
             <Empty
               description="No active checklists assigned."
-              style={{ padding: 24 }}
+              className="p-6"
             />
           ) : (
-            <Table
-              columns={columns}
-              dataSource={dataSource}
-              rowKey={(record) => record._id || record.id}
-              size="large"
-              pagination={{
-                pageSize: 5,
-                showSizeChanger: true,
-                pageSizeOptions: ["5", "10", "20", "50"],
-                position: ["bottomCenter"],
-              }}
-              rowClassName={(record, index) =>
-                index % 2 === 0 ? "bg-white" : "bg-gray-50"
-              }
-            />
+            <div className={tableShellClassName}>
+              <Table
+                columns={columns.map((column) => {
+                  if (column.dataIndex === "dclNo") {
+                    return {
+                      ...column,
+                      render: (text) => (
+                        <span className="font-bold text-[#164679]">{text}</span>
+                      ),
+                    };
+                  }
+                  if (column.dataIndex === "customerNumber") {
+                    return {
+                      ...column,
+                      render: (text) => (
+                        <span className="text-[#7e6496]">{text}</span>
+                      ),
+                    };
+                  }
+                  if (column.dataIndex === "assignedToRM") {
+                    return {
+                      ...column,
+                      render: (rm) => (
+                        <span className="font-medium text-[#164679]">
+                          {rm?.name || "Not Assigned"}
+                        </span>
+                      ),
+                    };
+                  }
+                  if (column.dataIndex === "documents") {
+                    return {
+                      ...column,
+                      render: (docs) => (
+                        <span className="font-bold text-[#164679]">
+                          {Array.isArray(docs) ? docs.length : 0}
+                        </span>
+                      ),
+                    };
+                  }
+                  if (column.dataIndex === "status") {
+                    return {
+                      ...column,
+                      render: (status) => {
+                        let tagText;
+                        let statusClassName;
+
+                        if (status === "approved") {
+                          tagText = "Approved";
+                          statusClassName = "checker-cochecklist-status--approved";
+                        } else if (status === "rejected") {
+                          tagText = "Rejected";
+                          statusClassName = "checker-cochecklist-status--rejected";
+                        } else {
+                          tagText = "In Progress";
+                          statusClassName = "checker-cochecklist-status--inprogress";
+                        }
+
+                        return (
+                          <Tag className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-xs font-bold text-[#164679] ${getStatusClassName(statusClassName)}`}>
+                            {tagText}
+                          </Tag>
+                        );
+                      },
+                    };
+                  }
+                  if (column.title === "Actions") {
+                    return {
+                      ...column,
+                      render: (_, record) => (
+                        <Button
+                          size="small"
+                          type="link"
+                          onClick={() => setSelectedChecklist(record)}
+                          className="rounded-md px-0 text-[13px] font-bold text-[#7e6496]"
+                        >
+                          View
+                        </Button>
+                      ),
+                    };
+                  }
+                  return column;
+                })}
+                dataSource={dataSource}
+                rowKey={(record) => record._id || record.id}
+                size="large"
+                pagination={{
+                  pageSize: 5,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["5", "10", "20", "50"],
+                  position: ["bottomCenter"],
+                }}
+                rowClassName={(_, index) =>
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                }
+              />
+            </div>
           )}
         </>
       )}

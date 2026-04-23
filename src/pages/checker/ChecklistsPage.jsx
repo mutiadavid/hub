@@ -1,192 +1,23 @@
-// import React, { useState, useMemo } from "react";
-// import { Modal, Button, Space } from "antd";
-// // Import the new components
-// import ChecklistFormFields from "../../components/checker/ChecklistFormFields";
-// import DocumentInputSection from '../../components/checker/DocumentInputSection';
-// import DocumentAccordion from '../../components/checker/DocumentAccordion';
-
-// import { useGetUsersQuery } from '../../api/userApi';
-// import { loanTypes, loanTypeDocuments } from '../docTypes';
-// import { useCreateChecklistMutation } from '../../api/checklistApi';
-
-// const ChecklistsPage = ({ open, onClose }) => {
-//   // State remains centralized here
-//   const [loanType, setLoanType] = useState("");
-//   const [title, setTitle] = useState("");
-//   const [assignedToRM, setAssignedToRM] = useState("");
-//   const [customerId, setCustomerId] = useState("");
-
-//   // customerName and customerNumber states are REMOVED
-
-//   const [documents, setDocuments] = useState([]);
-//   const [selectedCategory, setSelectedCategory] = useState(null);
-//   const [newDocName, setNewDocName] = useState("");
-
-//   // API Hooks and Data Filtering
-//   const { data: users = [] } = useGetUsersQuery();
-// //   const {
-// //   data: users = [],
-// //   isLoading,
-// //   isFetching,
-// //   isError,
-// //   error
-// // } = useGetUsersQuery();
-
-// // console.log(users, "users");
-// // console.log({ isLoading, isFetching, isError, error });
-//   const rms = users.filter((u) => u.role?.toLowerCase() === "rm");
-//   const customers = users.filter((u) => u.role?.toLowerCase() === "customer");
-//   const [createChecklist] = useCreateChecklistMutation();
-
-//   // FIX: Use useMemo to DERIVE customer info instead of using useEffect and setState
-//   const customerInfo = useMemo(() => {
-//     const selected = customers.find((c) => c._id === customerId);
-//     return {
-//       name: selected?.name || "",
-//       number: selected?.customerNumber || "",
-//     };
-//   }, [customerId, customers]); // Recalculates only when customerId or customers change
-
-//   const customerName = customerInfo.name;
-//   const customerNumber = customerInfo.number;
-
-//   // Logic: Handle loan type selection and load default documents
-//   const handleLoanTypeChange = (value) => {
-//     setLoanType(value);
-//     const categories = loanTypeDocuments[value] || [];
-
-//     setDocuments(
-//       categories.map((cat) => ({
-//         category: cat.title,
-//         docList: cat.documents.map((d) => ({
-//           name: d,
-//           status: "pending",
-//           action: "",
-//           comment: "",
-//         })),
-//       }))
-//     );
-//   };
-
-//   // Logic: Add custom document into selected category
-//   const handleAddNewDocument = () => {
-//     if (!newDocName.trim() || selectedCategory === null || selectedCategory >= documents.length) return;
-
-//     const updated = [...documents];
-//     updated[selectedCategory].docList.push({
-//       name: newDocName.trim(),
-//       status: "pending",
-//       action: "",
-//       comment: "",
-//     });
-
-//     setDocuments(updated);
-//     setNewDocName("");
-//   };
-
-//   // Logic: Submit checklist
-//   const handleSubmit = async () => {
-//     if (!assignedToRM || !loanType || !title) {
-//       alert("Please fill all required fields.");
-//       return;
-//     }
-
-//     // Payload construction logic remains here
-//     const payload = {
-//       title,
-//       loanType,
-//       assignedToRM,
-//       customerId,
-//       // Use the DERIVED values directly in the payload
-//       customerName: customerName,
-//       customerNumber: customerNumber,
-//       documents: documents.flatMap((cat) =>
-//         cat.docList.map((doc) => ({
-//           name: doc.name,
-//           category: cat.category,
-//           action: doc.action,
-//           status: doc.status,
-//           comment: doc.comment,
-//         }))
-//       ),
-//     };
-
-//     try {
-//       await createChecklist(payload).unwrap();
-//       alert("Checklist created successfully!");
-//       onClose();
-//     } catch (err) {
-//       console.error(err);
-//       alert("Error creating checklist.");
-//     }
-//   };
-
-//   return (
-//     <Modal title="Create DCL Checklist" open={open} onCancel={onClose} width={1100} footer={null}>
-//       <Space direction="vertical" style={{ width: "100%" }} size="large">
-
-//         {/* Render Form Fields Component */}
-//         <ChecklistFormFields
-//           rms={rms}
-//           customers={customers}
-//           assignedToRM={assignedToRM}
-//           setAssignedToRM={setAssignedToRM}
-//           customerId={customerId}
-//           setCustomerId={setCustomerId}
-//           // Pass derived values as props
-//           customerName={customerName}
-//           customerNumber={customerNumber}
-//           title={title}
-//           setTitle={setTitle}
-//           loanType={loanType}
-//           loanTypes={loanTypes}
-//           handleLoanTypeChange={handleLoanTypeChange}
-//         />
-
-//         {/* Document Section */}
-//         {loanType && (
-//           <>
-//             {/* Render Document Input Section Component */}
-//             <DocumentInputSection
-//               documents={documents}
-//               selectedCategory={selectedCategory}
-//               setSelectedCategory={setSelectedCategory}
-//               newDocName={newDocName}
-//               setNewDocName={setNewDocName}
-//               handleAddNewDocument={handleAddNewDocument}
-//             />
-
-//             {/* Render Document Accordion Component */}
-//             <DocumentAccordion
-//               documents={documents}
-//               setDocuments={setDocuments}
-//             />
-//           </>
-//         )}
-
-//         {/* Submit */}
-//         <Button type="primary" block onClick={handleSubmit}>
-//           Submit Checklist
-//         </Button>
-//       </Space>
-//     </Modal>
-//   );
-// };
-
-// export default ChecklistsPage;
-
 import React, { useMemo, useState } from "react";
 import { Button, Divider, Modal, Table, Tag, Spin, Empty } from "antd";
 import ChecklistsPage from "./ChecklistsPage";
 import ReviewChecklistPage from "../../components/modals/ReviewChecklistModalComponents/ReviewChecklistPage";
 import { useGetAllCoCreatorChecklistsQuery } from "../../api/checklistApi";
 
-// Theme Colors
-const PRIMARY_BLUE = "#164679";
-const ACCENT_LIME = "#b5d334";
-const HIGHLIGHT_GOLD = "#fcb116";
-const LIGHT_YELLOW = "#fcd716";
-const SECONDARY_PURPLE = "#7e6496";
+const tableShellClassName =
+  "overflow-hidden rounded-xl border border-[#e0e0e0] bg-white shadow-[0_10px_30px_rgba(22,70,121,0.08)] [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-thead>tr>th]:bg-[#f7f7f7] [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-4 [&_.ant-table-thead>tr>th]:text-[15px] [&_.ant-table-thead>tr>th]:font-bold [&_.ant-table-thead>tr>th]:text-(--color-heading) [&_.ant-table-thead>tr>th]:border-b-[3px] [&_.ant-table-thead>tr>th]:border-[rgba(57,32,48,0.18)] [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-sm [&_.ant-table-tbody>tr>td]:text-(--color-heading-light) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[#f0f0f0] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-row:hover>td]:bg-[rgba(181,211,52,0.1)] [&_.ant-table-row:hover>td]:cursor-pointer [&_.ant-pagination_.ant-pagination-item-active]:border-[#b5d334] [&_.ant-pagination_.ant-pagination-item-active]:bg-[#b5d334] [&_.ant-pagination_.ant-pagination-item-active_a]:font-semibold [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-heading) [&_.ant-pagination_.ant-pagination-item:hover]:border-[#b5d334] [&_.ant-pagination_.ant-pagination-prev:hover_.ant-pagination-item-link]:text-[#b5d334] [&_.ant-pagination_.ant-pagination-next:hover_.ant-pagination-item-link]:text-[#b5d334] [&_.ant-pagination_.ant-pagination-options_.ant-select-selector]:rounded-lg [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+const modalRootClassName =
+  "[&_.ant-modal]:top-6 [&_.ant-modal]:max-w-[1400px] [&_.ant-modal]:pb-0 [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:rounded-2xl [&_.ant-modal-content]:p-0 [&_.ant-modal-body]:max-h-[calc(100vh-80px)] [&_.ant-modal-body]:overflow-auto [&_.ant-modal-body]:p-0 [&_.ant-modal-mask]:bg-[rgba(15,23,42,0.45)]";
+
+const getStatusClassName = (statusClassName) => {
+  if (statusClassName === "checker-checklistspage-status--approved") {
+    return "border-[#b5d334] bg-[rgba(181,211,52,0.25)]";
+  }
+  if (statusClassName === "checker-checklistspage-status--rejected") {
+    return "border-[#fcb116] bg-[rgba(252,177,22,0.25)]";
+  }
+  return "border-[#fcd716] bg-[rgba(252,215,22,0.25)]";
+};
 
 const CoChecklistPage = ({ userId }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -225,33 +56,20 @@ const CoChecklistPage = ({ userId }) => {
     });
   }, [checklists, userId]);
 
-  const customTableStyles = `
-    .ant-table-wrapper { border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(22, 70, 121, 0.08); border: 1px solid #e0e0e0; }
-    .ant-table-thead > tr > th { background-color: #f7f7f7 !important; color: var(--color-heading) !important; font-weight: 700; font-size: 15px; padding: 16px 16px !important; border-bottom: 3px solid rgba(57, 32, 48, 0.18) !important; border-right: none !important; }
-    .ant-table-tbody > tr > td { border-bottom: 1px solid #f0f0f0 !important; border-right: none !important; padding: 14px 16px !important; font-size: 14px; color: var(--color-heading-light); }
-    .ant-table-tbody > tr.ant-table-row:hover > td { background-color: rgba(181, 211, 52, 0.1) !important; cursor: pointer; }
-    .ant-table-bordered .ant-table-container, .ant-table-bordered .ant-table-tbody > tr > td, .ant-table-bordered .ant-table-thead > tr > th { border: none !important; }
-    .ant-pagination .ant-pagination-item-active { background-color: ${ACCENT_LIME} !important; border-color: ${ACCENT_LIME} !important; }
-    .ant-pagination .ant-pagination-item-active a { color: var(--color-heading) !important; font-weight: 600; }
-    .ant-pagination .ant-pagination-item:hover { border-color: ${ACCENT_LIME} !important; }
-    .ant-pagination .ant-pagination-prev:hover .ant-pagination-item-link, .ant-pagination .ant-pagination-next:hover .ant-pagination-item-link { color: ${ACCENT_LIME} !important; }
-    .ant-pagination .ant-pagination-options .ant-select-selector { border-radius: 8px !important; }
-  `;
-
   const columns = [
     {
       title: "DCL No",
       dataIndex: "dclNo",
       width: 200,
       render: (text) => (
-        <span style={{ fontWeight: "bold", color: PRIMARY_BLUE }}>{text}</span>
+        <span className="checker-checklistspage-cell-primary">{text}</span>
       ),
     },
     {
       title: "Customer Number",
       dataIndex: "customerNumber",
       width: 180,
-      render: (text) => <span style={{ color: SECONDARY_PURPLE }}>{text}</span>,
+      render: (text) => <span className="checker-checklistspage-cell-secondary">{text}</span>,
     },
 
     {
@@ -259,7 +77,7 @@ const CoChecklistPage = ({ userId }) => {
       dataIndex: "ibpsNo",
       width: 140,
       render: (text) => (
-        <span style={{ color: SECONDARY_PURPLE, fontWeight: 500 }}>
+        <span className="checker-checklistspage-cell-secondary">
           {text || "N/A"}
         </span>
       ),
@@ -271,7 +89,7 @@ const CoChecklistPage = ({ userId }) => {
       dataIndex: "assignedToRM",
       width: 120,
       render: (rm) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 500 }}>
+        <span className="checker-checklistspage-cell-strong">
           {rm?.name || "Not Assigned"}
         </span>
       ),
@@ -282,7 +100,7 @@ const CoChecklistPage = ({ userId }) => {
       width: 80,
       align: "center",
       render: (docs) => (
-        <span style={{ fontWeight: "bold", color: PRIMARY_BLUE }}>
+        <span className="checker-checklistspage-cell-primary">
           {Array.isArray(docs) ? docs.length : 0}
         </span>
       ),
@@ -292,36 +110,20 @@ const CoChecklistPage = ({ userId }) => {
       dataIndex: "status",
       width: 120,
       render: (status) => {
-        let tagColor, tagText, bgColor;
+        let tagText;
+        let statusClassName;
+
         if (status === "approved") {
           tagText = "Approved";
-          tagColor = ACCENT_LIME;
-          bgColor = ACCENT_LIME;
+          statusClassName = "checker-checklistspage-status--approved";
         } else if (status === "rejected") {
           tagText = "Rejected";
-          tagColor = HIGHLIGHT_GOLD;
-          bgColor = HIGHLIGHT_GOLD;
+          statusClassName = "checker-checklistspage-status--rejected";
         } else {
           tagText = "In Progress";
-          tagColor = SECONDARY_PURPLE;
-          bgColor = LIGHT_YELLOW;
+          statusClassName = "checker-checklistspage-status--inprogress";
         }
-        return (
-          <Tag
-            color={tagColor}
-            style={{
-              fontSize: 12,
-              borderRadius: 999,
-              fontWeight: "bold",
-              padding: "2px 6px",
-              color: PRIMARY_BLUE,
-              backgroundColor: bgColor + "40",
-              borderColor: bgColor,
-            }}
-          >
-            {tagText}
-          </Tag>
-        );
+        return <Tag className={`checker-checklistspage-status ${statusClassName}`}>{tagText}</Tag>;
       },
     },
     {
@@ -332,13 +134,7 @@ const CoChecklistPage = ({ userId }) => {
           size="small"
           type="link"
           onClick={() => setSelectedChecklist(record)}
-          style={{
-            color: SECONDARY_PURPLE,
-            fontWeight: "bold",
-            fontSize: 13,
-            borderRadius: 6,
-            "--antd-wave-shadow-color": ACCENT_LIME,
-          }}
+          className="checker-checklistspage-action"
         >
           View
         </Button>
@@ -349,8 +145,7 @@ const CoChecklistPage = ({ userId }) => {
   const dataSource = Array.isArray(myChecklists) ? myChecklists : [];
 
   return (
-    <div style={{ padding: 16 }}>
-      <style>{customTableStyles}</style>
+    <div className="p-4">
 
       {drawerOpen && (
         <ChecklistsPage
@@ -363,47 +158,129 @@ const CoChecklistPage = ({ userId }) => {
         />
       )}
 
-      <Divider style={{ margin: "12px 0" }}>Assigned Checklists</Divider>
+      <Divider className="my-3">Assigned Checklists</Divider>
 
       {isLoading || isFetching ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 24,
-          }}
-        >
+        <div className="flex items-center justify-center p-6">
           <Spin tip="Loading checklists...">
-            <div style={{ height: 40 }} />
+            <div className="h-10" />
           </Spin>
         </div>
       ) : error ? (
         <Empty
           description="Failed to load checklists. Check console for details."
-          style={{ padding: 24 }}
+          className="p-6"
         />
       ) : dataSource.length === 0 ? (
         <Empty
           description="No active checklists assigned."
-          style={{ padding: 24 }}
+          className="p-6"
         />
       ) : (
-        <Table
-          columns={columns}
-          dataSource={dataSource}
-          rowKey={(record) => record._id || record.id}
-          size="large"
-          pagination={{
-            pageSize: 5,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20", "50"],
-            position: ["bottomCenter"],
-          }}
-          rowClassName={(record, index) =>
-            index % 2 === 0 ? "bg-white" : "bg-gray-50"
-          }
-        />
+        <div className={tableShellClassName}>
+          <Table
+            columns={columns.map((column) => {
+              if (column.dataIndex === "dclNo") {
+                return {
+                  ...column,
+                  render: (text) => (
+                    <span className="font-bold text-[#164679]">{text}</span>
+                  ),
+                };
+              }
+              if (column.dataIndex === "customerNumber") {
+                return {
+                  ...column,
+                  render: (text) => (
+                    <span className="text-[#7e6496]">{text}</span>
+                  ),
+                };
+              }
+              if (column.dataIndex === "ibpsNo") {
+                return {
+                  ...column,
+                  render: (text) => (
+                    <span className="text-[#7e6496]">{text || "N/A"}</span>
+                  ),
+                };
+              }
+              if (column.dataIndex === "assignedToRM") {
+                return {
+                  ...column,
+                  render: (rm) => (
+                    <span className="font-medium text-[#164679]">
+                      {rm?.name || "Not Assigned"}
+                    </span>
+                  ),
+                };
+              }
+              if (column.dataIndex === "documents") {
+                return {
+                  ...column,
+                  render: (docs) => (
+                    <span className="font-bold text-[#164679]">
+                      {Array.isArray(docs) ? docs.length : 0}
+                    </span>
+                  ),
+                };
+              }
+              if (column.dataIndex === "status") {
+                return {
+                  ...column,
+                  render: (status) => {
+                    let tagText;
+                    let statusClassName;
+
+                    if (status === "approved") {
+                      tagText = "Approved";
+                      statusClassName = "checker-checklistspage-status--approved";
+                    } else if (status === "rejected") {
+                      tagText = "Rejected";
+                      statusClassName = "checker-checklistspage-status--rejected";
+                    } else {
+                      tagText = "In Progress";
+                      statusClassName = "checker-checklistspage-status--inprogress";
+                    }
+
+                    return (
+                      <Tag className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-xs font-bold text-[#164679] ${getStatusClassName(statusClassName)}`}>
+                        {tagText}
+                      </Tag>
+                    );
+                  },
+                };
+              }
+              if (column.title === "Actions") {
+                return {
+                  ...column,
+                  render: (_, record) => (
+                    <Button
+                      size="small"
+                      type="link"
+                      onClick={() => setSelectedChecklist(record)}
+                      className="rounded-md px-0 text-[13px] font-bold text-[#7e6496]"
+                    >
+                      View
+                    </Button>
+                  ),
+                };
+              }
+              return column;
+            })}
+            dataSource={dataSource}
+            rowKey={(record) => record._id || record.id}
+            size="large"
+            pagination={{
+              pageSize: 5,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20", "50"],
+              position: ["bottomCenter"],
+            }}
+            rowClassName={(_, index) =>
+              index % 2 === 0 ? "bg-white" : "bg-gray-50"
+            }
+          />
+        </div>
       )}
 
       {selectedChecklist && (
@@ -415,13 +292,8 @@ const CoChecklistPage = ({ userId }) => {
           }}
           footer={null}
           closable={false}
+          rootClassName={modalRootClassName}
           width="92vw"
-          style={{ top: 24, maxWidth: 1400 }}
-          styles={{
-            body: { padding: 0, maxHeight: "calc(100vh - 80px)", overflow: "auto" },
-            content: { padding: 0, borderRadius: 16, overflow: "hidden" },
-            mask: { backgroundColor: "rgba(15, 23, 42, 0.45)" },
-          }}
           destroyOnHidden
         >
           <ReviewChecklistPage

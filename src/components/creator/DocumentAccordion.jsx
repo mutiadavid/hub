@@ -34,6 +34,7 @@ const createEmptyDoc = () => ({
   action: "",
   status: "",
   comment: "",
+  deferralNo: "",
 });
 
 const DocumentAccordion = ({ documents, setDocuments }) => {
@@ -92,6 +93,9 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
 
         if (field === "action") {
           updatedDoc.status = actionToStatus[value] || "";
+          if (value !== "deferred") {
+            updatedDoc.deferralNo = "";
+          }
         }
 
         docList[docIdx] = updatedDoc;
@@ -150,22 +154,40 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
     {
       title: "Status From Co",
       dataIndex: "status",
-      width: 150,
-      render: (s) => {
+      width: 220,
+      render: (s, record) => {
         if (!s) return <span style={{ color: "#999" }}>—</span>;
         const colors = getStatusColor(s);
         return (
-          <span
-            className="creator-document-status-text"
-            style={{
-              color: colors.text,
-              fontWeight: 600,
-              fontSize: 12,
-              textTransform: "lowercase",
-            }}
-          >
-            {s}
-          </span>
+          <div className="creator-document-status-cell">
+            <span
+              className="creator-document-status-text"
+              style={{
+                color: colors.text,
+                fontWeight: 600,
+                fontSize: 12,
+                textTransform: "lowercase",
+              }}
+            >
+              {s}
+            </span>
+            {record.action === "deferred" && (
+              <Input
+                value={record.deferralNo || ""}
+                placeholder="Enter deferral number"
+                size="small"
+                style={{ marginTop: 8 }}
+                onChange={(e) =>
+                  handleDocumentChange(
+                    catIdx,
+                    record.docIdx,
+                    "deferralNo",
+                    e.target.value,
+                  )
+                }
+              />
+            )}
+          </div>
         );
       },
     },
@@ -329,6 +351,11 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
           display: inline-block;
           line-height: 1.25;
           white-space: nowrap;
+        }
+        .creator-document-status-cell {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
         }
         .creator-document-category-meta {
           display: inline-flex;

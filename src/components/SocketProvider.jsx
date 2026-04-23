@@ -30,7 +30,6 @@ export const SocketProvider = ({ children }) => {
     const initializeSocket = () => {
       // Check if user exists in Redux store
       if (!user || (!user.id && !user._id)) {
-        console.log("No user logged in, skipping socket connection");
         return null;
       }
 
@@ -52,13 +51,7 @@ export const SocketProvider = ({ children }) => {
           },
         );
 
-        // ✅ ADDED: Socket connection debugging
-        console.log("🔄 Initializing socket connection...");
-
         socketInstance.on("connect", () => {
-          console.log("✅ Socket connected for user:", user.name);
-          console.log("Socket ID:", socketInstance.id);
-          console.log("Ready State:", socketInstance.readyState);
           setIsConnected(true);
 
           // Emit userOnline event with user data
@@ -72,12 +65,10 @@ export const SocketProvider = ({ children }) => {
           // Join admin room if admin
           if (user.role === "admin") {
             socketInstance.emit("joinAdminRoom", user.id || user._id);
-            console.log(`👑 Admin ${user.name} joined admin room`);
           }
         });
 
-        socketInstance.on("disconnect", (reason) => {
-          console.log("🔴 Socket disconnected:", reason);
+        socketInstance.on("disconnect", () => {
           setIsConnected(false);
         });
 
@@ -137,7 +128,6 @@ export const SocketProvider = ({ children }) => {
     // Cleanup
     return () => {
       if (socketInstance) {
-        console.log("🧹 Cleaning up socket connection...");
         if (socketInstance.activityInterval) {
           clearInterval(socketInstance.activityInterval);
         }
@@ -151,18 +141,6 @@ export const SocketProvider = ({ children }) => {
       }
     };
   }, [user]); // Re-run when user changes
-
-  // ✅ ADDED: Debug socket connection status
-  useEffect(() => {
-    if (socket) {
-      console.log("🔌 Socket connection status:", {
-        connected: socket.connected,
-        id: socket.id,
-        readyState: socket.readyState,
-        isConnected: isConnected,
-      });
-    }
-  }, [socket, isConnected]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

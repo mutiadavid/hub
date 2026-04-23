@@ -37,7 +37,6 @@ const App = () => {
   // Connect socket when user is logged in
   useEffect(() => {
     if (user) {
-      console.log("👤 User logged in, connecting socket:", user);
       socketService.connect(user);
 
       const sendHeartbeat = async (force = false) => {
@@ -76,14 +75,12 @@ const App = () => {
       });
 
       return () => {
-        console.log("🔌 Cleaning up socket connection");
         activityEvents.forEach((eventName) => {
           window.removeEventListener(eventName, handleActivity);
         });
         socketService.disconnect();
       };
     } else {
-      console.log("👤 No user, disconnecting socket");
       lastHeartbeatAtRef.current = 0;
       socketService.disconnect();
     }

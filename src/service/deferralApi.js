@@ -86,25 +86,6 @@ function deriveWorkflowStatus(deferral, normalizedStatus, allApproversApproved) 
   return normalizedStatus;
 }
 
-function getApproverIdentityKey(approver) {
-  if (!approver) return "";
-  if (typeof approver === "string") return approver.toLowerCase();
-  const raw =
-    approver?.userId?._id ||
-    approver?.userId?.id ||
-    approver?.userId ||
-    approver?.user?._id ||
-    approver?.user?.id ||
-    approver?._id ||
-    approver?.id ||
-    approver?.email ||
-    approver?.user?.email ||
-    approver?.name ||
-    approver?.user?.name ||
-    "";
-  return String(raw).toLowerCase();
-}
-
 function orderApprovers(approvers) {
   if (!Array.isArray(approvers)) return approvers;
 
@@ -243,6 +224,30 @@ function normalizeDeferralList(payload) {
 const EMAIL_SERVER_BASE =
   (import.meta.env.VITE_EMAIL_SERVER_URL || "http://localhost:4001").replace(/\/$/, "");
 
+const parseStatusCode = (value) => {
+  const directStatus = Number(value);
+  if (Number.isInteger(directStatus) && directStatus >= 400 && directStatus <= 599) {
+    return directStatus;
+  }
+
+  const matchedStatus = String(value || "").match(/\b([45]\d{2})\b/);
+  if (matchedStatus) {
+    return Number(matchedStatus[1]);
+  }
+
+  return 500;
+};
+
+const createSanitizedApiError = (status) => {
+  const normalizedStatus = parseStatusCode(status);
+  const error = new Error(String(normalizedStatus));
+  error.status = normalizedStatus;
+  return error;
+};
+
+const sanitizeThrownApiError = (error) =>
+  createSanitizedApiError(error?.status || error?.data?.status || error?.message);
+
 async function sendViaLocalEmailServer(payload) {
   const res = await fetch(`${EMAIL_SERVER_BASE}/api/send-deferral`, {
     method: "POST",
@@ -342,26 +347,19 @@ const deferralApi = {
 
   getMyDeferrals: async (token) => {
     try {
-      console.log("[API] Fetching GET " + API_BASE + "/my with token:", !!token);
       const res = await fetch(`${API_BASE}/my`, {
         headers: getAuthHeaders(token),
       });
-      console.log("[API] Response status:", res.status, res.statusText);
      
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error("[API] Error response:", errorText);
-        throw new Error(`Failed to fetch deferrals (${res.status}): ${errorText}`);
+        throw createSanitizedApiError(res.status);
       }
      
       const data = await res.json();
-      console.log("[API] getMyDeferrals returned:", data?.length || 0, "items");
       const normalized = normalizeDeferralList(data);
-      console.log("[API] After normalization:", normalized?.length || 0, "items");
       return normalized;
     } catch (err) {
-      console.error("[API] getMyDeferrals ERROR:", err);
-      throw err;
+      throw sanitizeThrownApiError(err);
     }
   },
 
@@ -567,47 +565,29 @@ const deferralApi = {
 
   getApprovedDeferrals: async (token) => {
     try {
-      // Try authenticated endpoint first
-      console.log("[API] Fetching GET " + API_BASE + "/approved with token:", !!token);
       const res = await fetch(`${API_BASE}/approved`, {
         headers: getAuthHeaders(token),
       });
-      console.log("[API] Response status:", res.status, res.statusText);
      
       if (res.ok) {
         const data = await res.json();
-        console.log("[API] getApprovedDeferrals returned:", data?.length || 0, "items");
         const normalized = normalizeDeferralList(data);
-        console.log("[API] After normalization:", normalized?.length || 0, "items");
         return normalized;
       }
 
-      // If unauthorized, fall back to public debug endpoint (development only)
       if (res.status === 401 || res.status === 403) {
-        console.debug(
-          "[API] getApprovedDeferrals: authenticated request unauthorized, falling back to public debug endpoint",
-        );
         const pub = await fetch(`${API_BASE}/debug/public/approved`);
-        console.log("[API] Public endpoint response status:", pub.status);
         if (!pub.ok) {
-          const errorText = await pub.text();
-          console.error("[API] Public endpoint error:", errorText);
-          throw new Error(
-            "Failed to fetch approved deferrals (public fallback failed)",
-          );
+          throw createSanitizedApiError(res.status);
         }
         const data = await pub.json();
-        console.log("[API] Public endpoint returned:", data?.length || 0, "items");
         const normalized = normalizeDeferralList(data);
-        console.log("[API] After normalization:", normalized?.length || 0, "items");
         return normalized;
       }
 
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || "Failed to fetch approved deferrals");
+      throw createSanitizedApiError(res.status);
     } catch (err) {
-      console.error("[API] getApprovedDeferrals ERROR:", err);
-      throw err;
+      throw sanitizeThrownApiError(err);
     }
   },
 
@@ -720,21 +700,6 @@ const deferralApi = {
       throw new Error(err.message || "Failed to reject deferral");
     }
     return res.json();
-  },
-
-  // Send a reminder email to the current approver for the given deferral
-  sendReminder: async (id, token) => {
-    try {
-      const res = await fetch(`${API_BASE}/${id}/reminder`, {
-        method: "POST",
-        headers: getAuthHeaders(token),
-      });
-      if (res.ok) return res.json();
-    } catch (_) {
-      // fallback handled below
-    }
-
-    return await deferralApi.sendEmailNotification(id, "reminder", {}, token);
   },
 
   // Delete/withdraw deferral
@@ -1089,7 +1054,7 @@ const deferralApi = {
         }),
       });
       if (res.ok) return res.json();
-    } catch (_) {
+    } catch {
       // fallback to local email server below
     }
 
@@ -1237,14 +1202,7 @@ const deferralApi = {
       additionalFiles,
     };
 
-    console.log("🚀 Submitting extension:", {
-      deferralId,
-      payload,
-      extensionDaysObj,
-    });
-
     const jsonBody = JSON.stringify(payload);
-    console.log("📦 JSON body:", jsonBody);
 
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions`, {
       method: "POST",
@@ -1252,37 +1210,8 @@ const deferralApi = {
       body: jsonBody,
     });
 
-    console.log("📨 Response status:", res.status);
-
     if (!res.ok) {
-      let errorObj;
-      const responseText = await res.text();
-      console.log("📄 Response text:", responseText);
-     
-      try {
-        errorObj = JSON.parse(responseText);
-      } catch (e) {
-        errorObj = { error: `HTTP ${res.status}: ${res.statusText}` };
-      }
-
-      // Extract validation errors if present
-      let errorMsg = errorObj?.error || errorObj?.message || "Failed to submit extension";
-      if (errorObj?.errors) {
-        const validationErrors = Object.entries(errorObj.errors)
-          .map(([key, messages]) => `${key}: ${Array.isArray(messages) ? messages.join(", ") : messages}`)
-          .join("; ");
-        errorMsg = validationErrors || errorMsg;
-      }
-
-      console.error("❌ Extension submission error:", {
-        status: res.status,
-        statusText: res.statusText,
-        error: errorMsg,
-        fullResponse: errorObj,
-        payload: payload,
-        deferralId
-      });
-      throw new Error(errorMsg);
+      throw createSanitizedApiError(res.status);
     }
 
     return res.json();
@@ -1530,18 +1459,35 @@ const deferralApi = {
       });
 
       if (!res.ok) {
-        console.error("Failed to fetch approvers:", res.status);
         return [];
       }
 
       const users = await res.json();
       return Array.isArray(users) ? users : [];
-    } catch (error) {
-      console.error("Error fetching approvers:", error);
+    } catch {
       return [];
     }
   },
 };
 
-export default deferralApi;
+const wrappedDeferralApi = Object.fromEntries(
+  Object.entries(deferralApi).map(([key, value]) => {
+    if (typeof value !== "function") {
+      return [key, value];
+    }
+
+    return [
+      key,
+      async (...args) => {
+        try {
+          return await value(...args);
+        } catch (error) {
+          throw sanitizeThrownApiError(error);
+        }
+      },
+    ];
+  }),
+);
+
+export default wrappedDeferralApi;
 
