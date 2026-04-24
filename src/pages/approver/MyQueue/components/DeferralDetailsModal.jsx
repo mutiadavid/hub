@@ -156,7 +156,7 @@ const decisionSecondaryButtonClassName = "min-w-[92px]! h-11! rounded-[10px]! bo
 
 const decisionPrimaryButtonClassName = "min-w-[156px]! h-11! rounded-[10px]! border-0! bg-(--ncb-primary-500)! text-white! shadow-[0_10px_20px_rgba(58,179,229,0.18)]! font-bold! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white! max-sm:w-full";
 
-const decisionModalWrapClassName = "approver-decision-modal [&_.ant-modal]:max-sm:mx-auto [&_.ant-modal]:max-sm:my-3 [&_.ant-modal]:max-sm:max-w-[calc(100vw-24px)] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[rgba(214,189,152,0.18)] [&_.ant-modal-header]:bg-white [&_.ant-modal-header]:px-[26px] [&_.ant-modal-header]:pb-[18px] [&_.ant-modal-header]:pt-[22px] max-sm:[&_.ant-modal-header]:px-[18px] max-sm:[&_.ant-modal-header]:pb-4 max-sm:[&_.ant-modal-header]:pt-[18px] [&_.ant-modal-title]:text-(--color-text-dark) [&_.ant-modal-close]:top-5 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-(--color-text-medium) hover:[&_.ant-modal-close]:bg-[rgba(214,189,152,0.12)] hover:[&_.ant-modal-close]:text-(--color-text-dark) [&_.ant-modal-body]:bg-white [&_.ant-modal-body]:px-[26px] [&_.ant-modal-body]:pb-6 [&_.ant-modal-body]:pt-7 max-sm:[&_.ant-modal-body]:px-[18px] max-sm:[&_.ant-modal-body]:pb-[18px] max-sm:[&_.ant-modal-body]:pt-5 [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-white [&_.ant-modal-footer]:px-[26px] [&_.ant-modal-footer]:pb-6 [&_.ant-modal-footer]:pt-0 max-sm:[&_.ant-modal-footer]:px-[18px] max-sm:[&_.ant-modal-footer]:pb-5";
+const decisionModalWrapClassName = "approver-decision-modal [&_.ant-modal]:max-sm:mx-auto [&_.ant-modal]:max-sm:my-3 [&_.ant-modal]:max-sm:max-w-[calc(100vw-24px)] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[rgba(214,189,152,0.18)] [&_.ant-modal-header]:bg-white! [&_.ant-modal-title]:text-(--color-text-dark) [&_.ant-modal-close]:top-5 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-(--color-text-medium) hover:[&_.ant-modal-close]:bg-[rgba(214,189,152,0.12)] hover:[&_.ant-modal-close]:text-(--color-text-dark) [&_.ant-modal-body]:bg-white [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-white [&_.ant-modal-footer]:pt-0";
 
 const renderStatusLabel = (status) =>
   String(status || "pending")
@@ -501,7 +501,7 @@ const DeferralDetailsModal = ({
       title={(
         <div className="flex items-start gap-4 pr-9 max-sm:gap-3 max-sm:pr-6">
           {titleIcon ? (
-            <span className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(58,179,229,0.2)] bg-[rgba(58,179,229,0.08)] text-(--ncb-primary-700) [&_.anticon]:text-[22px] max-sm:h-11 max-sm:w-11">{titleIcon}</span>
+            <span className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(214,189,152,0.2)] bg-[rgba(26,54,54,0.04)] text-(--color-text-dark) [&_.anticon]:text-[22px] max-sm:h-11 max-sm:w-11">{titleIcon}</span>
           ) : null}
           <span className="flex flex-col gap-1.5">
             <strong className="text-[20px] font-bold leading-[1.2] text-(--color-text-dark) max-sm:text-[18px]">{title}</strong>
@@ -513,6 +513,12 @@ const DeferralDetailsModal = ({
       onCancel={onCancel}
       maskClosable={false}
       wrapClassName={decisionModalWrapClassName}
+      styles={{
+        header: { background: "white", margin: 0, padding: "22px 26px 18px" },
+        body: { background: "white", padding: "28px 26px 24px" },
+        footer: { background: "white", padding: "0 26px 24px", margin: 0 },
+        content: { background: "white", padding: 0 }
+      }}
       width={760}
       footer={[
         <div key="actions" className="flex justify-end gap-3 max-sm:flex-col-reverse">

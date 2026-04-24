@@ -57,7 +57,7 @@ const hasAllApproversApproved = (deferral) => {
   return approvalFlow.every(isApprovalMarkedApproved);
 };
 
-const isCreatorQueueDeferral = (deferral) => {
+export const isCreatorQueueDeferral = (deferral) => {
   const status = String(deferral?.status || "").trim().toLowerCase();
   const creatorStatus = String(
     deferral?.creatorApprovalStatus || deferral?.creatorStatus || "",
@@ -78,7 +78,7 @@ const isCreatorQueueDeferral = (deferral) => {
     return false;
   }
 
-  return status === "partially_approved" || hasAllApproversApproved(deferral);
+  return hasAllApproversApproved(deferral);
 };
 
 /**
@@ -91,8 +91,8 @@ export const useDeferralData = (token) => {
   const fetchDeferrals = async () => {
     setLoading(true);
     try {
-      const pending = await deferralApi.getPendingDeferrals(token);
-      const all = Array.isArray(pending) ? pending : [];
+      const pendingData = await deferralApi.getPendingDeferrals(token);
+      const all = Array.isArray(pendingData) ? pendingData : [];
 
       const my = await deferralApi.getMyDeferrals(token);
       const myDeferrals = Array.isArray(my) ? my : [];
@@ -133,8 +133,15 @@ export const useDeferralData = (token) => {
         ).values()
       );
 
+      // Only include deferrals that have been explicitly assigned to the creator
+      // Do not include all pending deferrals that may not be assigned to this creator
+      const pending = myDeferrals.filter((d) => {
+        const status = String(d.status || "").trim().toLowerCase();
+        return !["approved", "deferral_approved", "rejected", "deferral_rejected", "closed", "deferral_closed", "closed_by_co", "closed_by_creator"].includes(status);
+      });
+
       const combined = [
-        ...all,
+        ...pending,
         ...uniqueApproved,
         ...rejected,
         ...closed,

@@ -388,6 +388,40 @@ const CheckerReviewChecklistModal = ({
     setDocs(processedDocs);
   }, [activeChecklist, effectiveReadOnly]);
 
+  // Fetch supporting docs from backend when checklist changes
+  useEffect(() => {
+    if (!resolvedChecklistId) return;
+
+    const fetchSupportingDocs = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/uploads/checklist/${resolvedChecklistId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) return;
+
+        const result = await response.json();
+        if (result.data && Array.isArray(result.data)) {
+          const docsWithCategory = result.data.map((doc) => ({
+            ...doc,
+            category: "Supporting Documents",
+            isSupporting: true,
+          }));
+          setSupportingDocs(docsWithCategory);
+        }
+      } catch (error) {
+        console.error("Error fetching supporting docs:", error);
+      }
+    };
+
+    fetchSupportingDocs();
+  }, [resolvedChecklistId, token]);
+
   const handlePdfDownload = async () => {
     setIsGeneratingPDF(true);
     try {

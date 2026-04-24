@@ -1085,6 +1085,42 @@ const ReviewChecklistPage = ({
     setDeferralValidationByDoc({});
   }, [localChecklist, checklistData]);
 
+  // Fetch supporting docs from backend when checklist changes
+  useEffect(() => {
+    if (!checklistId) return;
+
+    const fetchSupportingDocs = async () => {
+      try {
+        const response = await fetch(
+          `${API_ORIGIN}/api/uploads/checklist/${checklistId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const result = await response.json();
+        if (result.data && Array.isArray(result.data)) {
+          const docsWithCategory = result.data.map((doc) => ({
+            ...doc,
+            category: "Supporting Documents",
+            isSupporting: true,
+          }));
+          setSupportingDocs(docsWithCategory);
+        }
+      } catch (error) {
+        console.error("Error fetching supporting docs:", error);
+      }
+    };
+
+    fetchSupportingDocs();
+  }, [checklistId, token]);
+
   useEffect(() => {
     if (readOnly || !checklistId) {
       return undefined;

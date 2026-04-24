@@ -55,20 +55,20 @@ const titleClassName = "m-0 text-[15px] font-bold leading-tight tracking-[-0.02e
 const subtitleClassName = "text-xs text-[#6b7280]";
 const actionsClassName = "flex flex-1 flex-wrap items-center justify-end gap-2.5";
 const tabsClassName =
-  "min-w-0 flex-1 [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:rounded-none [&_.ant-tabs-ink-bar]:bg-[#3ab3e5] [&_.ant-tabs-nav]:m-0 [&_.ant-tabs-nav]:border-b-0 [&_.ant-tabs-nav-wrap]:overflow-auto [&_.ant-tabs-nav:before]:hidden [&_.ant-tabs-tab]:mr-6 [&_.ant-tabs-tab]:rounded-none [&_.ant-tabs-tab]:border-0 [&_.ant-tabs-tab]:bg-transparent [&_.ant-tabs-tab]:px-2 [&_.ant-tabs-tab]:pb-3 [&_.ant-tabs-tab]:pt-3.5 [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-[#6b7280] [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-[#3ab3e5] [&_.ant-tabs-tab-btn]:text-[13px] [&_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-btn]:leading-tight [&_.ant-tabs-tab-btn]:text-[#4b5563] max-md:[&_.ant-tabs-tab]:mr-[22px] max-md:[&_.ant-tabs-tab]:pb-2.5 max-md:[&_.ant-tabs-tab]:pt-3";
+  "min-w-0 flex-1 [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:rounded-none [&_.ant-tabs-ink-bar]:bg-[#164679] [&_.ant-tabs-nav]:m-0 [&_.ant-tabs-nav]:border-b-0 [&_.ant-tabs-nav-wrap]:overflow-auto [&_.ant-tabs-nav:before]:hidden [&_.ant-tabs-tab]:mr-6 [&_.ant-tabs-tab]:rounded-none [&_.ant-tabs-tab]:border-0 [&_.ant-tabs-tab]:bg-transparent [&_.ant-tabs-tab]:px-2 [&_.ant-tabs-tab]:pb-3 [&_.ant-tabs-tab]:pt-3.5 [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-[#6b7280] [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-[#164679] [&_.ant-tabs-tab-btn]:text-[13px] [&_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-btn]:leading-tight [&_.ant-tabs-tab-btn]:text-[#4b5563] max-md:[&_.ant-tabs-tab]:mr-[22px] max-md:[&_.ant-tabs-tab]:pb-2.5 max-md:[&_.ant-tabs-tab]:pt-3";
 const exportButtonClassName =
-  "h-10 min-h-10 w-10 min-w-10 shrink-0 rounded-md border border-[#d6bd9833] bg-white text-[#4b5563] shadow-none hover:border-[#3ab3e5] hover:bg-white hover:text-[#3ab3e5] focus:border-[#3ab3e5] focus:bg-white focus:text-[#3ab3e5]";
+  "h-10 min-h-10 w-10 min-w-10 shrink-0 rounded-md border border-[#d6bd9833] bg-white text-[#4b5563] shadow-none hover:border-[#164679] hover:bg-white hover:text-[#164679] focus:border-[#164679] focus:bg-white focus:text-[#164679]";
 const contentClassName =
   "overflow-hidden rounded-lg border border-[#d6bd9833] bg-white p-4 shadow-[0_1px_2px_rgba(26,54,54,0.06)] max-md:p-3 [&_.ant-card]:border-0 [&_.ant-card]:shadow-none [&_.ant-card-body]:bg-transparent [&_.ant-card-body]:shadow-none";
 const generatedClassName = "mt-[-2px] text-xs text-[#6b7280]";
 const modalRootClassName =
-  "[&_.ant-modal-body]:bg-white [&_.ant-modal-body]:p-5 [&_.ant-modal-close]:top-3.5 [&_.ant-modal-close]:end-3.5 [&_.ant-modal-close]:text-[#4b5563] hover:[&_.ant-modal-close]:bg-[#d6bd981f] hover:[&_.ant-modal-close]:text-[#1f2933] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:rounded-xl [&_.ant-modal-content]:border [&_.ant-modal-content]:border-[#d6bd9833] [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_20px_45px_rgba(17,24,39,0.16)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[#d6bd9833] [&_.ant-modal-header]:bg-white [&_.ant-modal-header]:px-5 [&_.ant-modal-header]:pb-3 [&_.ant-modal-header]:pt-[18px] [&_.ant-modal-title]:text-[15px] [&_.ant-modal-title]:font-bold [&_.ant-modal-title]:leading-tight [&_.ant-modal-title]:text-[#1f2933]";
+  "[&_.ant-modal-body]:bg-white [&_.ant-modal-body]:p-5 [&_.ant-modal-close]:top-2 [&_.ant-modal-close]:end-2 [&_.ant-modal-close]:text-[#4b5563] hover:[&_.ant-modal-close]:bg-[#f3f4f6] hover:[&_.ant-modal-close]:text-[#1f2933] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:rounded-xl [&_.ant-modal-content]:border [&_.ant-modal-content]:border-[#e5e7eb] [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_20px_45px_rgba(17,24,39,0.16)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[#e5e7eb] [&_.ant-modal-header]:bg-white [&_.ant-modal-header]:px-5 [&_.ant-modal-header]:pb-3 [&_.ant-modal-header]:pt-[18px] [&_.ant-modal-title]:text-[15px] [&_.ant-modal-title]:font-bold [&_.ant-modal-title]:leading-tight [&_.ant-modal-title]:text-[#1f2933]";
 const modalTitleClassName = "flex flex-col gap-1 pr-7";
 const modalTitleTextClassName = "text-[15px] font-bold leading-tight text-[#1f2933]";
 const modalTitleCopyClassName = "text-xs leading-[1.45] text-[#6b7280]";
 const modalOptionsClassName = "flex flex-col gap-2.5";
 const modalOptionButtonClassName =
-  "flex h-11 min-h-11 items-center justify-start gap-2.5 rounded-lg border border-[#d6bd9838] bg-white px-3.5 text-left font-semibold text-[#1f2933] shadow-none hover:border-[#1a363638] hover:bg-[#faf7f3] hover:text-[#1f2933] focus:border-[#1a363638] focus:bg-[#faf7f3] focus:text-[#1f2933] [&_.anticon]:text-[15px] [&_.anticon]:text-[#3ab3e5]";
+  "flex h-11 min-h-11 items-center justify-start gap-2.5 rounded-lg border border-[#d6bd9838] bg-white px-3.5 text-left font-semibold text-[#1f2933] shadow-none hover:border-[#1a363638] hover:bg-[#faf7f3] hover:text-[#1f2933] focus:border-[#1a363638] focus:bg-[#faf7f3] focus:text-[#1f2933] [&_.anticon]:text-[15px] [&_.anticon]:text-[#164679]";
 const modalNoteClassName = "mt-1 pl-0.5 text-xs text-[#6b7280]";
 
 export default function Reports() {
@@ -400,45 +400,33 @@ export default function Reports() {
   const renderContent = () => {
     switch (activeTab) {
       case "deferrals":
-        if (loading) {
-          return (
-            <div className={loadingStateClassName}>
-              <Spin />
-            </div>
-          );
-        }
-        return <DeferralsReportTable rows={filteredDeferrals} />;
+        return (
+          <Spin spinning={loading}>
+            <DeferralsReportTable rows={filteredDeferrals} />
+          </Spin>
+        );
       case "deferralCharts":
-        if (loading) {
-          return (
-            <div className={loadingStateClassName}>
-              <Spin />
-            </div>
-          );
-        }
-        return <DeferralsDashboard rows={filteredDeferrals} />;
+        return (
+          <Spin spinning={loading}>
+            <DeferralsDashboard rows={filteredDeferrals} />
+          </Spin>
+        );
       case "allDCLs":
         return <AllDCLsTable filters={filters} />;
       case "dclCharts":
         return <DclAnalyticsDashboard rows={filteredAllDcls} />;
       case "tatConsumed":
-        if (loading) {
-          return (
-            <div className={loadingStateClassName}>
-              <Spin />
-            </div>
-          );
-        }
-        return <TATConsumedTablesView deferralRows={filteredDeferrals} dclRows={filteredAllDcls} />;
+        return (
+          <Spin spinning={loading}>
+            <TATConsumedTablesView deferralRows={filteredDeferrals} dclRows={filteredAllDcls} />
+          </Spin>
+        );
       case "tatConsumedCharts":
-        if (loading) {
-          return (
-            <div className={loadingStateClassName}>
-              <Spin />
-            </div>
-          );
-        }
-        return <TATConsumedDashboard deferralRows={filteredDeferrals} dclRows={filteredAllDcls} />;
+        return (
+          <Spin spinning={loading}>
+            <TATConsumedDashboard deferralRows={filteredDeferrals} dclRows={filteredAllDcls} />
+          </Spin>
+        );
       default:
         return null;
     }
@@ -454,9 +442,7 @@ export default function Reports() {
               <h2 className={titleClassName}>
                 {DCL_DISPLAY_NAME} Reports & Analytics
               </h2>
-              <Text className={subtitleClassName}>
-                Simple operational reporting with export-ready views.
-              </Text>
+             
             </div>
           </div>
 
@@ -554,14 +540,7 @@ export default function Reports() {
         open={exportModalOpen}
         onCancel={() => setExportModalOpen(false)}
         footer={null}
-        title={(
-          <div className={modalTitleClassName}>
-            <span className={modalTitleTextClassName}>Download Report</span>
-            <span className={modalTitleCopyClassName}>
-              Export the current tab using the active report filters.
-            </span>
-          </div>
-        )}
+       
         width={420}
         centered
         className={modalRootClassName}

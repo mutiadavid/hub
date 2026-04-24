@@ -228,243 +228,243 @@ export default function CustomerSearch({
         }
       `}</style>
       <div className="deferral-search-page">
-      <Card
-        className="deferral-search-card"
-        style={{ minHeight: showSearchForm ? "auto" : "450px" }}
-      >
-        <div className="deferral-search-hero">
-        <BankOutlined
-          className="deferral-search-icon"
-        />
-
-        <Title level={3} className="deferral-search-title">
-          Start New Deferral Request
-        </Title>
-
-        <Typography.Text
-          className="deferral-search-subtitle"
+        <Card
+          className="deferral-search-card"
+          style={{ minHeight: showSearchForm ? "auto" : "450px" }}
         >
-          Please search for a customer to begin the deferral request process
-        </Typography.Text>
-        </div>
+          <div className="deferral-search-hero">
+            <BankOutlined
+              className="deferral-search-icon"
+            />
 
-        <div className="deferral-search-body">
-          {showSearchForm ? (
-            <>
-            <Divider className="deferral-search-divider" />
+            <Title level={3} className="deferral-search-title">
+              Start New Deferral Request
+            </Title>
 
-            {/* Search Mode Tabs */}
-            <div className="deferral-search-actions" style={{ marginBottom: 24 }}>
-              <Button
-                className={`deferral-search-tab ${searchMode === SEARCH_MODE.CUSTOMER ? "deferral-search-tab--active" : ""}`}
-                onClick={() => {
-                  setSearchMode(SEARCH_MODE.CUSTOMER);
-                  setSearchDclNumber("");
-                }}
-              >
-                Search by Customer Number
-              </Button>
-              <Button
-                className={`deferral-search-tab ${searchMode === SEARCH_MODE.DCL ? "deferral-search-tab--active" : ""}`}
-                onClick={() => {
-                  setSearchMode(SEARCH_MODE.DCL);
-                  setSearchCustomerNumber("");
-                  setSearchLoanType("");
-                }}
-              >
-                Search by DCL Number
-              </Button>
-            </div>
+            <Typography.Text
+              className="deferral-search-subtitle"
+            >
+              Please search for a customer to begin the deferral request process
+            </Typography.Text>
+          </div>
 
-            <div className="deferral-search-form">
-              {searchMode === SEARCH_MODE.CUSTOMER ? (
-                <Form layout="vertical" onFinish={onFetchCustomer}>
-                  <Form.Item
-                    label="Customer Number"
-                    name="customerNumber"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter customer number",
-                      },
-                    ]}
+          <div className="deferral-search-body">
+            {showSearchForm ? (
+              <>
+                <Divider className="deferral-search-divider" />
+
+                {/* Search Mode Tabs */}
+                <div className="deferral-search-actions" style={{ marginBottom: 24 }}>
+                  <Button
+                    className={`deferral-search-tab ${searchMode === SEARCH_MODE.CUSTOMER ? "deferral-search-tab--active" : ""}`}
+                    onClick={() => {
+                      setSearchMode(SEARCH_MODE.CUSTOMER);
+                      setSearchDclNumber("");
+                    }}
                   >
-                    <div style={{ position: "relative" }}>
-                      <Input
-                        className="deferral-search-input"
-                        type="text"
-                        size="large"
-                        value={searchCustomerNumber}
-                        onChange={(e) =>
-                          setSearchCustomerNumber(
-                            e.target.value.replace(/\D/g, "")
-                          )
-                        }
-                        placeholder="e.g. 123456"
-                        autoFocus
-                      />
+                    Search by Customer Number
+                  </Button>
+                  <Button
+                    className={`deferral-search-tab ${searchMode === SEARCH_MODE.DCL ? "deferral-search-tab--active" : ""}`}
+                    onClick={() => {
+                      setSearchMode(SEARCH_MODE.DCL);
+                      setSearchCustomerNumber("");
+                      setSearchLoanType("");
+                    }}
+                  >
+                    Search by DCL Number
+                  </Button>
+                </div>
 
-                      {/* Typeahead suggestions */}
-                      {customerSearchResults &&
-                        customerSearchResults.length > 0 && (
-                          <div className="deferral-search-dropdown">
-                            {customerSearchResults.map((c) => (
-                              <div
-                                key={c._id}
-                                onClick={() => onSelectCustomer(c)}
-                                className="deferral-search-option"
-                              >
-                                <div>
-                                  <div className="deferral-search-option-title">
-                                    {c.name}
+                <div className="deferral-search-form">
+                  {searchMode === SEARCH_MODE.CUSTOMER ? (
+                    <Form layout="vertical" onFinish={onFetchCustomer}>
+                      <Form.Item
+                        label="Customer Number"
+                        name="customerNumber"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please enter customer number",
+                          },
+                        ]}
+                      >
+                        <div style={{ position: "relative" }}>
+                          <Input
+                            className="deferral-search-input"
+                            type="text"
+                            size="large"
+                            value={searchCustomerNumber}
+                            onChange={(e) =>
+                              setSearchCustomerNumber(
+                                e.target.value.replace(/\D/g, "")
+                              )
+                            }
+                            placeholder="e.g. 123456"
+                            autoFocus
+                          />
+
+                          {/* Typeahead suggestions */}
+                          {customerSearchResults &&
+                            customerSearchResults.length > 0 && (
+                              <div className="deferral-search-dropdown">
+                                {customerSearchResults.map((c) => (
+                                  <div
+                                    key={c._id}
+                                    onClick={() => onSelectCustomer(c)}
+                                    className="deferral-search-option"
+                                  >
+                                    <div>
+                                      <div className="deferral-search-option-title">
+                                        {c.name}
+                                      </div>
+                                      <div className="deferral-search-option-meta">
+                                        {c.customerNumber}
+                                      </div>
+                                    </div>
+                                    <div className="deferral-search-option-meta">
+                                      {c.email}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                        </div>
+                      </Form.Item>
+
+                      <Form.Item
+                        label="Loan Type"
+                        name="loanType"
+                        rules={[
+                          { required: true, message: "Please select loan type" },
+                        ]}
+                      >
+                        <Select
+                          className="deferral-search-select"
+                          size="large"
+                          style={{ width: "100%" }}
+                          value={searchLoanType}
+                          onChange={setSearchLoanType}
+                          placeholder="Select loan type"
+                        >
+                          {LOAN_TYPE_OPTIONS.map((opt) => (
+                            <Option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+
+                      <div className="deferral-search-form-actions">
+                        <Button
+                          className="deferral-search-secondary"
+                          onClick={() => setShowSearchForm(false)}
+                          size="large"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          className="deferral-search-primary"
+                          htmlType="submit"
+                          loading={isFetching}
+                          size="large"
+                        >
+                          {isFetching ? "Fetching..." : "Fetch Customer"}
+                        </Button>
+                      </div>
+                    </Form>
+                  ) : (
+                    <Form layout="vertical">
+                      <Form.Item
+                        label="DCL Number"
+                        rules={[
+                          { required: true, message: "Please enter DCL number" },
+                        ]}
+                      >
+                        <div style={{ position: "relative" }}>
+                          <Input
+                            className="deferral-search-input"
+                            type="text"
+                            size="large"
+                            value={searchDclNumber}
+                            onChange={(e) => setSearchDclNumber(e.target.value)}
+                            placeholder="e.g. DCL-26-0183"
+                            autoFocus
+                          />
+
+                          {/* DCL Typeahead suggestions */}
+                          {dclSearchResults && dclSearchResults.length > 0 && (
+                            <div className="deferral-search-dropdown">
+                              {dclSearchResults.map((dcl) => (
+                                <div
+                                  key={dcl.id}
+                                  onClick={() => onSelectDcl(dcl)}
+                                  className="deferral-search-option"
+                                  style={{ flexDirection: "column", alignItems: "flex-start" }}
+                                >
+                                  <div
+                                    className="deferral-search-option-title"
+                                  >
+                                    {dcl.dclNo}
                                   </div>
                                   <div className="deferral-search-option-meta">
-                                    {c.customerNumber}
+                                    {dcl.customerName} ({dcl.customerNumber})
+                                  </div>
+                                  <div className="deferral-search-option-meta">
+                                    Loan Type: {dcl.loanType}
                                   </div>
                                 </div>
-                                <div className="deferral-search-option-meta">
-                                  {c.email}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                    </div>
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Loan Type"
-                    name="loanType"
-                    rules={[
-                      { required: true, message: "Please select loan type" },
-                    ]}
-                  >
-                    <Select
-                      className="deferral-search-select"
-                      size="large"
-                      style={{ width: "100%" }}
-                      value={searchLoanType}
-                      onChange={setSearchLoanType}
-                      placeholder="Select loan type"
-                    >
-                      {LOAN_TYPE_OPTIONS.map((opt) => (
-                        <Option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-
-                  <div className="deferral-search-form-actions">
-                    <Button
-                      className="deferral-search-secondary"
-                      onClick={() => setShowSearchForm(false)}
-                      size="large"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      className="deferral-search-primary"
-                      htmlType="submit"
-                      loading={isFetching}
-                      size="large"
-                    >
-                      {isFetching ? "Fetching..." : "Fetch Customer"}
-                    </Button>
-                  </div>
-                </Form>
-              ) : (
-                <Form layout="vertical">
-                  <Form.Item
-                    label="DCL Number"
-                    rules={[
-                      { required: true, message: "Please enter DCL number" },
-                    ]}
-                  >
-                    <div style={{ position: "relative" }}>
-                      <Input
-                        className="deferral-search-input"
-                        type="text"
-                        size="large"
-                        value={searchDclNumber}
-                        onChange={(e) => setSearchDclNumber(e.target.value)}
-                        placeholder="e.g. DCL-26-0183"
-                        autoFocus
-                      />
-
-                      {/* DCL Typeahead suggestions */}
-                      {dclSearchResults && dclSearchResults.length > 0 && (
-                        <div className="deferral-search-dropdown">
-                          {dclSearchResults.map((dcl) => (
-                            <div
-                              key={dcl.id}
-                              onClick={() => onSelectDcl(dcl)}
-                              className="deferral-search-option"
-                              style={{ flexDirection: "column", alignItems: "flex-start" }}
-                            >
-                              <div
-                                className="deferral-search-option-title"
-                              >
-                                {dcl.dclNo}
-                              </div>
-                              <div className="deferral-search-option-meta">
-                                {dcl.customerName} ({dcl.customerNumber})
-                              </div>
-                              <div className="deferral-search-option-meta">
-                                Loan Type: {dcl.loanType}
-                              </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </Form.Item>
+                      </Form.Item>
 
-                  <Typography.Text
-                    className="deferral-search-tip"
-                    style={{ marginTop: 8, display: "block" }}
-                  >
-                    Tip: Start typing a DCL number to search. Customer details
-                    will auto-populate when you select a DCL.
-                  </Typography.Text>
+                      <Typography.Text
+                        className="deferral-search-tip"
+                        style={{ marginTop: 8, display: "block" }}
+                      >
+                        Tip: Start typing a DCL number to search. Customer details
+                        will auto-populate when you select a DCL.
+                      </Typography.Text>
 
-                  <div className="deferral-search-form-actions">
-                    <Button
-                      className="deferral-search-secondary"
-                      onClick={() => setShowSearchForm(false)}
-                      size="large"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </Form>
-              )}
+                      <div className="deferral-search-form-actions">
+                        <Button
+                          className="deferral-search-secondary"
+                          onClick={() => setShowSearchForm(false)}
+                          size="large"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </Form>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="deferral-search-actions">
+                <Button
+                  className="deferral-search-trigger"
+                  size="large"
+                  icon={<SearchOutlined />}
+                  onClick={() => setShowSearchForm(true)}
+                  loading={isFetching}
+                >
+                  {isFetching ? "Searching..." : "Search Customer"}
+                </Button>
+              </div>
+            )}
+
+            <div className="deferral-search-footer">
+              <Button
+                className="deferral-search-back"
+                onClick={onBack}
+              >
+                ← Back to My Deferrals
+              </Button>
             </div>
-          </>
-        ) : (
-          <div className="deferral-search-actions">
-          <Button
-            className="deferral-search-trigger"
-            size="large"
-            icon={<SearchOutlined />}
-            onClick={() => setShowSearchForm(true)}
-            loading={isFetching}
-          >
-            {isFetching ? "Searching..." : "Search Customer"}
-          </Button>
           </div>
-        )}
-
-        <div className="deferral-search-footer">
-          <Button
-            className="deferral-search-back"
-            onClick={onBack}
-          >
-            ← Back to My Deferrals
-          </Button>
-        </div>
-        </div>
-      </Card>
+        </Card>
       </div>
     </div>
   );

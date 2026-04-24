@@ -48,9 +48,15 @@ const App = () => {
         lastHeartbeatAtRef.current = now;
 
         try {
-          await heartbeatPresence().unwrap();
+          const result = await heartbeatPresence();
+          // Check for error but don't treat 401 as fatal for heartbeat
+          if (result?.error?.status === 401) {
+            // Token might be expired, but don't logout from heartbeat
+            // Logout will be handled by actual API calls
+            return;
+          }
         } catch (error) {
-          console.warn("Presence heartbeat failed", error);
+          // Silently ignore heartbeat errors
         }
 
         const activeUserId = user.id || user._id;

@@ -6,6 +6,7 @@ import {
   normalizeFacilities,
   normalizeDocumentType,
   getDocumentCategory,
+  parseLoanAmount,
 } from "../utils/helpers";
 import { validateDeferralSubmission } from "../utils/validation";
 import { GUID_REGEX } from "../utils/constants";
@@ -84,7 +85,7 @@ export const useFormSubmission = () => {
         const loanAmountValue = 
           loanAmount === "above75" ? 100000000 : // 100M for above threshold
           loanAmount === "below75" ? 50000000 :  // 50M for below threshold
-          Number(loanAmount) || 0;
+          parseLoanAmount(loanAmount);
 
         const resolvedApprovers = approverSlots
           .filter((slot) => !!slot.userId)

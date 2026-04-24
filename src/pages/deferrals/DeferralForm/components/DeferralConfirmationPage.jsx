@@ -39,7 +39,7 @@ export default function DeferralConfirmationPage({
   loanAmount,
   selectedDocuments,
   perDocumentDays,
-  dferralDescription,
+  deferralDescription,
   approverSlots,
   approverList,
   facilities,
@@ -133,7 +133,7 @@ export default function DeferralConfirmationPage({
     { label: "DCL No", value: dclNumber || "-" },
     { label: "Loan Type", value: formatLoanType(loanType) || "-" },
     { label: "Loan Amount", value: loanAmountLabel, isBadge: true },
-    { label: "Deferral Description", value: dferralDescription || "No description added" },
+    { label: "Deferral Description", value: deferralDescription || "No description added" },
   ];
 
   const documentColumns = [

@@ -1,6 +1,7 @@
 import { Table, Tag, Spin, Empty } from "antd";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import "../../styles/creatorTableOverrides.css";
 import {
   FileTextOutlined,
   CustomerServiceOutlined,
@@ -478,7 +479,7 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
           {renderSelectedChecklist()}
         </div>
       ) : (
-        <div className={tableShellClassName}>
+        <div className={`${tableShellClassName} creator-table-header-clean`}>
           <Table
             rowKey="_id"
             dataSource={filtered}

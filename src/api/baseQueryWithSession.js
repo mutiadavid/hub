@@ -88,10 +88,14 @@ export const createBaseQueryWithSession = ({ baseUrl }) => {
     const result = await rawBaseQuery(args, api, extraOptions);
     const hasActiveToken = Boolean(api.getState()?.auth?.token || getStoredToken());
 
+    // Don't logout on 401 for heartbeat requests - just silently fail
     if (result?.error?.status === 401 && hasActiveToken) {
-      const statusCode = result.error?.data?.code;
-      persistAuthStatusMessage(resolveAuthStatusMessage(statusCode));
-      api.dispatch(logout());
+      const isHeartbeatRequest = args?.url?.includes('presence/heartbeat');
+      if (!isHeartbeatRequest) {
+        const statusCode = result.error?.data?.code;
+        persistAuthStatusMessage(resolveAuthStatusMessage(statusCode));
+        api.dispatch(logout());
+      }
     }
 
     if (result?.error) {

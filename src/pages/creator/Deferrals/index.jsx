@@ -16,6 +16,7 @@ import {
   useDeferralData,
   useDeferralFiltering,
   useDeferralModal,
+  isCreatorQueueDeferral,
 } from "./hooks";
 
 /**
@@ -63,12 +64,7 @@ const Deferrals = () => {
   }, [token, loadDeferrals]);
 
   // Count tabs by status
-  const pendingCount = deferrals.filter((d) => {
-    const status = String(d.status || "").toLowerCase();
-    return !["approved", "rejected", "closed", "deferral_closed"].includes(
-      status
-    );
-  }).length;
+  const pendingCount = deferrals.filter((d) => isCreatorQueueDeferral(d)).length;
 
   const approvedCount = deferrals.filter(
     (d) =>
@@ -178,9 +174,13 @@ const Deferrals = () => {
       <DeferralFilters filters={filters} onFiltersChange={setFilters} />
 
       {/* Main Content */}
-      <Spin spinning={loading}>
-        {filteredDeferrals.length > 0 ? (
-          <>
+      <div className="relative min-h-[200px]">
+        {loading && filteredDeferrals.length === 0 ? (
+          <div className="flex justify-center p-20">
+            <Spin size="large" tip="Loading deferrals..." />
+          </div>
+        ) : filteredDeferrals.length > 0 ? (
+          <Spin spinning={loading}>
             {/* Status Alert - Show for first item */}
             {selectedDeferral && (
               <DeferralStatusAlert deferral={selectedDeferral} />
@@ -188,15 +188,24 @@ const Deferrals = () => {
 
             {/* Table */}
             <DeferralTable
-              deferrals={filteredDeferrals}
+              data={filteredDeferrals}
               onRowClick={handleRowClick}
               loading={loading}
+              activeTab={activeTab}
             />
-          </>
+          </Spin>
         ) : (
-          <Empty description="No deferrals found for the selected filters" />
+          <Empty 
+            className="rounded-2xl border border-[#f0f0f0] bg-white p-12"
+            description={
+              <div>
+                <p className="mb-1 text-base font-medium">No deferrals found</p>
+                <p className="text-sm text-gray-400">There are no deferrals matching your current filters.</p>
+              </div>
+            } 
+          />
         )}
-      </Spin>
+      </div>
 
       {/* Modal for Details */}
       {modalVisible && selectedDeferral && (

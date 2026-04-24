@@ -210,6 +210,31 @@
     background: var(--color-white);
   }
 
+
+/* Remove blue header background */
+.modalRootClassName .ant-modal-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid #f0f0f0; /* optional: add light border instead */
+}
+
+/* Ensure header text is dark */
+.modalTitleTextClassName,
+.modalTitleCopyClassName {
+  color: #1a1a1a !important;
+}
+
+/* If the copy text is secondary, make it dark too */
+.modalTitleCopyClassName {
+  color: #2c3e50 !important;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+/* Alternative: Target all text in modal header */
+.ant-modal-header * {
+  color: #1a1a1a;
+}
+
   .teams-layout-preview .creator-layout-content {
     padding: 20px 24px 24px;
   }
@@ -895,21 +920,24 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
   color: #ffffff !important;
 }
 
-/* ✅ MODAL HEADER STYLING - White close button for blue headers */
+/* ✅ MODAL HEADER STYLING - Consistent with design system */
 .ant-modal-header {
-  background-color: #164679 !important;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid rgba(214, 189, 152, 0.18) !important;
+  padding: 22px 26px 18px !important;
 }
 
 .ant-modal-header .ant-modal-close {
-  color: #ffffff !important;
+  color: var(--color-text-medium) !important;
 }
 
 .ant-modal-header .ant-modal-close-x {
-  color: #ffffff !important;
+  color: var(--color-text-medium) !important;
 }
 
 .ant-modal-title {
-  color: var(--color-heading) !important;
+  color: var(--color-text-dark) !important;
+  font-weight: 700 !important;
 }
 
 .create-dcl-btn,
@@ -997,13 +1025,13 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 .reports-export-modal .ant-modal-header {
   margin: 0 !important;
   padding: 18px 24px !important;
-  background: var(--ncb-primary-500) !important;
+  background: #ffffff !important;
   border-radius: 16px 16px 0 0 !important;
-  border-bottom: none !important;
+  border-bottom: 1px solid rgba(214, 189, 152, 0.18) !important;
 }
 
 .reports-export-modal .ant-modal-title {
-  color: var(--color-heading) !important;
+  color: var(--color-text-dark) !important;
   font-size: 15px !important;
   font-weight: 700 !important;
 }
@@ -1011,12 +1039,12 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 .reports-export-modal .ant-modal-close {
   top: 14px !important;
   inset-inline-end: 16px !important;
-  color: #ffffff !important;
+  color: var(--color-text-medium) !important;
 }
 
 .reports-export-modal .ant-modal-close-x,
 .reports-export-modal .ant-modal-close .anticon {
-  color: #ffffff !important;
+  color: var(--color-text-medium) !important;
 }
 
 .reports-export-modal .ant-modal-body {
@@ -1495,26 +1523,26 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
   right: 0 !important;
 }
 
-/* Confirm Modal Header - Bigger height and better fit */
+/* Confirm Modal Header - Neutral styling */
 .ant-modal-wrap.confirm-modal-wrapper .ant-modal-header {
-  background-color: #164679 !important;
-  padding: 24px 24px !important;
+  background-color: #ffffff !important;
+  padding: 20px 24px !important;
   border-radius: 12px 12px 0 0 !important;
-  min-height: 70px !important;
+  border-bottom: 1px solid rgba(214, 189, 152, 0.18) !important;
+  min-height: 60px !important;
   display: flex !important;
   align-items: center !important;
   flex-shrink: 0 !important;
 }
 
 .ant-modal-wrap.confirm-modal-wrapper .ant-modal-title {
-  color: var(--color-heading) !important;
+  color: var(--color-text-dark) !important;
   font-weight: 700 !important;
-  font-size: 1.15rem !important;
-  letter-spacing: 0.5px !important;
+  font-size: 1.1rem !important;
 }
 
 .ant-modal-wrap.confirm-modal-wrapper .ant-modal-close-x {
-  color: #ffffff !important;
+  color: var(--color-text-medium) !important;
 }
 
 /* ✅ CONFIRM & SUBMIT BUTTON - Primary blue background with white text */

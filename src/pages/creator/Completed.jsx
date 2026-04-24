@@ -220,7 +220,7 @@ const Completed = () => {
   return (
     <div className={pageRootClassName}>
       <div className="w-full">
-        <div className={queueCardClassName}>
+        <div className={`${queueCardClassName} creator-table-header-clean`}>
           <div className={toolbarClassName}>
             <h2 className={titleClassName}>Approved Checklists</h2>
             <div className={toolbarActionsClassName}>

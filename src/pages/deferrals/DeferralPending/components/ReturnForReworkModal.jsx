@@ -97,28 +97,28 @@ const MODAL_STYLES = `
   .rm-resubmit-modal .ant-modal-header {
     margin-bottom: 0 !important;
     padding: 22px 26px 18px !important;
-    background: linear-gradient(180deg, #34504c 0%, #2b4541 100%) !important;
-    border-bottom: none !important;
+    background: var(--color-white) !important;
+    border-bottom: 1px solid rgba(214, 189, 152, 0.18) !important;
   }
   .rm-resubmit-modal .ant-modal-title {
-    color: var(--color-white) !important;
+    color: var(--color-text-dark) !important;
   }
   .rm-resubmit-modal .ant-modal-close {
     top: 20px !important;
     inset-inline-end: 20px !important;
-    color: rgba(255, 255, 255, 0.88) !important;
+    color: var(--color-text-medium) !important;
     width: 32px !important;
     height: 32px !important;
   }
   .rm-resubmit-modal .ant-modal-close:hover {
-    color: var(--color-white) !important;
-    background: rgba(255, 255, 255, 0.12) !important;
+    color: var(--color-text-dark) !important;
+    background: rgba(214, 189, 152, 0.12) !important;
   }
   .rm-resubmit-modal .ant-modal-body {
     max-height: 70vh;
     overflow-y: auto;
     padding: 28px 26px 24px !important;
-    background: #f7f6f2;
+    background: var(--color-white) !important;
   }
   .rm-resubmit-modal-hero {
     display: flex;
@@ -128,7 +128,7 @@ const MODAL_STYLES = `
   }
   .rm-resubmit-modal-hero-copy h2 {
     margin: 0;
-    color: var(--color-white);
+    color: var(--color-text-dark);
     font-size: 20px;
     font-weight: 700;
     line-height: 1.2;
@@ -338,7 +338,7 @@ const MODAL_STYLES = `
   .rm-resubmit-modal-edit.ant-btn {
     border: none !important;
     background: var(--ncb-primary-500) !important;
-    color: var(--color-white) !important;
+    color: #ffffff !important;
     font-weight: 600 !important;
   }
   .rm-resubmit-modal-insert {
@@ -474,6 +474,9 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       } else {
         setSelectedDocuments([]);
       }
+
+      // Initialize edited approvers
+      setEditedApprovers(deferral.approverFlow ? [...deferral.approverFlow] : []);
     }
   }, [open, deferral, form]);
 
@@ -636,6 +639,26 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     }
   };
 
+  // Automatically load approvers on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoadingApprovers(true);
+      try {
+        const stored = JSON.parse(localStorage.getItem("user") || "null");
+        const token = stored?.token;
+        const users = await deferralApi.getApprovers(token);
+        setApproversFromDb(users || []);
+      } catch (error) {
+        console.error("Error loading approvers:", error);
+      } finally {
+        setLoadingApprovers(false);
+      }
+    };
+    if (open) {
+      fetchUsers();
+    }
+  }, [open]);
+
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
@@ -778,164 +801,124 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
           <div className="rm-resubmit-modal-section">
             <div className="rm-resubmit-modal-section-head">
               <h4>Approval Flow</h4>
-              {!editingApprovers && (
-                <Button
-                  icon={<EditOutlined />}
-                  onClick={handleEditApproversClick}
-                  className="rm-resubmit-modal-edit"
-                >
-                  Edit Approvers
-                </Button>
-              )}
             </div>
 
-            {editingApprovers ? (
-              <Spin spinning={loadingApprovers}>
-                <div className="rm-resubmit-modal-flow-list">
-                  {editedApprovers.map((approver, idx) => {
+            <Spin spinning={loadingApprovers}>
+              <div className="rm-resubmit-modal-flow-list">
+                {editedApprovers.length > 0 ? (
+                  editedApprovers.map((approver, idx) => {
                     const hasApproved =
                       approver.approved || approver.approvalStatus === "approved";
 
                     return (
-                      <div
-                        key={approver._id || idx}
-                        className={`rm-resubmit-modal-flow-card ${hasApproved ? "rm-resubmit-modal-flow-card--locked" : ""}`}
-                      >
-                        <div className="rm-resubmit-modal-step-index">
-                          {idx + 1}
-                        </div>
+                      <React.Fragment key={approver._id || idx}>
+                        <div
+                          className={`rm-resubmit-modal-flow-card ${hasApproved ? "rm-resubmit-modal-flow-card--locked" : ""}`}
+                        >
+                          <div className="rm-resubmit-modal-step-index">
+                            {idx + 1}
+                          </div>
 
-                        <div className="rm-resubmit-modal-flow-fields">
-                          <div className="rm-resubmit-modal-field">
-                            <span className="rm-resubmit-modal-label">Role</span>
-                            <Input
-                              placeholder="Role/Designation"
-                              value={approver.role || ""}
-                              onChange={(e) =>
-                                handleApproverChange(idx, "role", e.target.value)
-                              }
-                              disabled={hasApproved}
+                          <div className="rm-resubmit-modal-flow-fields">
+                            <div className="rm-resubmit-modal-field">
+                              <span className="rm-resubmit-modal-label">Role</span>
+                              <Input
+                                placeholder="Role/Designation"
+                                value={approver.role || ""}
+                                onChange={(e) =>
+                                  handleApproverChange(idx, "role", e.target.value)
+                                }
+                                disabled={hasApproved}
+                              />
+                            </div>
+                            <div className="rm-resubmit-modal-field">
+                              <span className="rm-resubmit-modal-label">Approver</span>
+                              <Select
+                                labelInValue
+                                placeholder="Select Approver"
+                                value={
+                                  approver.userId
+                                    ? {
+                                        label: approver.name,
+                                        value: approver.userId,
+                                      }
+                                    : undefined
+                                }
+                                onChange={(option) => {
+                                  handleApproverSelection(idx, option);
+                                }}
+                                style={{ width: "100%" }}
+                                loading={loadingApprovers}
+                                disabled={hasApproved}
+                              >
+                                {approversFromDb.length > 0 ? (
+                                  approversFromDb
+                                    .filter((user) => {
+                                      const userId = user._id || user.id;
+                                      // Allow if it's the current user for this specific step
+                                      if (userId === approver.userId) return true;
+                                      // Otherwise, check if this user is already selected in any other step
+                                      return !editedApprovers.some((ea) => ea.userId === userId);
+                                    })
+                                    .map((user) => (
+                                      <Select.Option
+                                        key={user._id || user.id}
+                                        value={user._id || user.id}
+                                        label={user.name}
+                                      >
+                                        {user.name}
+                                      </Select.Option>
+                                    ))
+                                ) : (
+                                  <Select.Option disabled>
+                                    No approvers available
+                                  </Select.Option>
+                                )}
+                              </Select>
+                            </div>
+                          </div>
+
+                          <Button
+                            type="text"
+                            className="rm-resubmit-modal-delete"
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleRemoveApprover(idx)}
+                            disabled={hasApproved || editedApprovers.length === 1}
+                          />
+                        </div>
+                        
+                        {/* Insert button between steps */}
+                        {idx < editedApprovers.length - 1 && (
+                          <div className="rm-resubmit-modal-insert">
+                            <Button
+                              type="text"
+                              shape="circle"
+                              icon={<PlusOutlined />}
+                              className="rm-resubmit-modal-insert-btn"
+                              onClick={() => handleAddApprover(idx)}
                             />
                           </div>
-                          <div className="rm-resubmit-modal-field">
-                            <span className="rm-resubmit-modal-label">Approver</span>
-                            <Select
-                              labelInValue
-                              placeholder="Select Approver"
-                              value={
-                                approver.userId
-                                  ? {
-                                      label: approver.name,
-                                      value: approver.userId,
-                                    }
-                                  : undefined
-                              }
-                              onChange={(option) => {
-                                handleApproverSelection(idx, option);
-                              }}
-                              style={{ width: "100%" }}
-                              loading={loadingApprovers}
-                              disabled={hasApproved}
-                            >
-                              {approversFromDb.length > 0 ? (
-                                approversFromDb.map((user) => (
-                                  <Select.Option
-                                    key={user._id || user.id}
-                                    value={user._id || user.id}
-                                    label={user.name}
-                                  >
-                                    {user.name}
-                                  </Select.Option>
-                                ))
-                              ) : (
-                                <Select.Option disabled>
-                                  No approvers available
-                                </Select.Option>
-                              )}
-                            </Select>
-                          </div>
-                        </div>
-
-                        <Button
-                          type="text"
-                          className="rm-resubmit-modal-delete"
-                          icon={<DeleteOutlined />}
-                          onClick={() => handleRemoveApprover(idx)}
-                          disabled={hasApproved || editedApprovers.length === 1}
-                        />
-                      </div>
+                        )}
+                      </React.Fragment>
                     );
-                  })}
-
-                  <div className="rm-resubmit-modal-insert">
-                    <Button
-                      type="text"
-                      shape="circle"
-                      icon={<PlusOutlined />}
-                      className="rm-resubmit-modal-insert-btn"
-                      onClick={() => handleAddApprover()}
-                    />
-                  </div>
-
-                  <div className="rm-resubmit-modal-actions">
-                    <Button
-                      className="rm-resubmit-modal-cancel"
-                      onClick={() => setEditingApprovers(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="primary"
-                      className="rm-resubmit-modal-confirm"
-                      loading={confirmingApprovers}
-                      onClick={handleConfirmApprovers}
-                    >
-                      Confirm Approvers
-                    </Button>
-                  </div>
-                </div>
-              </Spin>
-            ) : (
-              <div className="rm-resubmit-modal-flow-list">
-                {deferral?.approverFlow && deferral.approverFlow.length > 0 ? (
-                  deferral.approverFlow.map((approver, idx) => (
-                    <div
-                      key={approver._id || idx}
-                      className="rm-resubmit-modal-flow-card"
-                    >
-                      <div
-                        className={`rm-resubmit-modal-step-index ${
-                          approver.approved || approver.approvalStatus === "approved"
-                            ? "rm-resubmit-modal-step-index--approved"
-                            : ""
-                        }`}
-                      >
-                        {idx + 1}
-                      </div>
-
-                      <div className="rm-resubmit-modal-flow-content">
-                        <div className="rm-resubmit-modal-flow-role">
-                          {approver.role || approver.designation || "-"}
-                        </div>
-                        <div className="rm-resubmit-modal-flow-name">
-                          {approver.name || approver.approverName || "User"}
-                        </div>
-                        <div className="rm-resubmit-modal-flow-state">
-                          {approver.approved ||
-                          approver.approvalStatus === "approved"
-                            ? "✓ Approved"
-                            : "Pending Approval"}
-                        </div>
-                      </div>
-                    </div>
-                  ))
+                  })
                 ) : (
                   <div className="rm-resubmit-modal-empty">
                     No approvers defined
                   </div>
                 )}
+
+                <div className="rm-resubmit-modal-insert">
+                  <Button
+                    type="text"
+                    shape="circle"
+                    icon={<PlusOutlined />}
+                    className="rm-resubmit-modal-insert-btn"
+                    onClick={() => handleAddApprover()}
+                  />
+                </div>
               </div>
-            )}
+            </Spin>
 
             <div className="rm-resubmit-modal-note">
               <strong>Note:</strong> Any approver who has already approved is locked,

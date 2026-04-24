@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Button } from "antd";
 import { CloseOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useGetChecklistCommentsQuery } from "../../../api/checklistApi";
+import { API_ORIGIN } from "../../../config/runtimeConfig";
 import { useChecklistDocuments } from "../../../hooks/useChecklistDocuments";
 
 import ChecklistInfoCard from "./ChecklistInfoCard";
@@ -29,13 +30,41 @@ const CompletedChecklistModal = ({
 
   const { docs, documentCounts } = useChecklistDocuments(checklist);
 
+  const checklistId = checklist?.id || checklist?._id;
+  const token = localStorage.getItem("token");
+
   React.useEffect(() => {
-    if (checklist?.supportingDocs && Array.isArray(checklist.supportingDocs)) {
-      setSupportingDocs(checklist.supportingDocs);
-    } else {
-      setSupportingDocs([]);
-    }
-  }, [checklist, checklist?.supportingDocs]);
+    if (!checklistId) return;
+
+    const fetchSupportingDocs = async () => {
+      try {
+        const response = await fetch(
+          `${API_ORIGIN}/api/uploads/checklist/${checklistId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) return;
+
+        const result = await response.json();
+        if (result.data && Array.isArray(result.data)) {
+          const docsWithCategory = result.data.map((doc) => ({
+            ...doc,
+            category: "Supporting Documents",
+            isSupporting: true,
+          }));
+          setSupportingDocs(docsWithCategory);
+        }
+      } catch (error) {
+        console.error("Error fetching supporting docs:", error);
+      }
+    };
+
+    fetchSupportingDocs();
+  }, [checklistId, token]);
 
   const { data: comments, isLoading: commentsLoading } =
     useGetChecklistCommentsQuery(checklist?.id || checklist?._id, {

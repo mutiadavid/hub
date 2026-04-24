@@ -575,7 +575,7 @@ export default function DeferralForm() {
         loanAmount={formState.loanAmount}
         selectedDocuments={documentState.selectedDocuments}
         perDocumentDays={documentState.perDocumentDays}
-        dferralDescription={formState.deferralDescription}
+        deferralDescription={formState.deferralDescription}
         approverSlots={approverState.approverSlots}
         approverList={approverList}
         facilities={formState.facilities}

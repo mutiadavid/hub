@@ -13,6 +13,7 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
+  // Remove formatNumber from here - it doesn't exist in recharts
 } from "recharts";
 
 import { buildDclAnalytics } from "./reportUtils";
@@ -28,9 +29,25 @@ const TOOLTIP_STYLE = {
   padding: "10px 12px",
 };
 
+// Create your own formatNumber function
+const formatNumber = (value) => {
+  if (value === undefined || value === null) return "0";
+  return new Intl.NumberFormat().format(value);
+};
+
 const getShareLabel = (value, total) => {
   if (!total) return "0%";
   return `${((value / total) * 100).toFixed(1)}%`;
+};
+
+// Or create a more comprehensive formatter with options
+const formatNumberWithOptions = (value, options = {}) => {
+  if (value === undefined || value === null) return "0";
+  return new Intl.NumberFormat(options.locale || "en-US", {
+    minimumFractionDigits: options.minimumFractionDigits || 0,
+    maximumFractionDigits: options.maximumFractionDigits || 0,
+    ...options,
+  }).format(value);
 };
 
 export default function DclAnalyticsDashboard({ rows }) {
@@ -58,7 +75,7 @@ export default function DclAnalyticsDashboard({ rows }) {
                 Total DCLs
               </Text>
               <Text style={{ fontSize: 28, fontWeight: 700, color: NCBA_REPORT_THEME.brandDeep }}>
-                {computed.total}
+                {formatNumber(computed.total)}
               </Text>
             </div>
           </Card>
@@ -70,7 +87,7 @@ export default function DclAnalyticsDashboard({ rows }) {
                 Status Types
               </Text>
               <Text style={{ fontSize: 28, fontWeight: 700, color: NCBA_REPORT_THEME.brandDeep }}>
-                {computed.statusRows.length}
+                {formatNumber(computed.statusRows.length)}
               </Text>
             </div>
           </Card>
@@ -82,7 +99,7 @@ export default function DclAnalyticsDashboard({ rows }) {
                 Active Loan Types
               </Text>
               <Text style={{ fontSize: 28, fontWeight: 700, color: NCBA_REPORT_THEME.brandDeep }}>
-                {computed.loanTypeRows.length}
+                {formatNumber(computed.loanTypeRows.length)}
               </Text>
             </div>
           </Card>
@@ -180,7 +197,7 @@ export default function DclAnalyticsDashboard({ rows }) {
                   item?.payload?.name || "Relationship Manager",
                 ]}
               />
-              <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={22}>
+              <Bar dataKey="value" radius={[0, 8, 8, 8]} barSize={22}>
                 {computed.rmRows.map((entry, index) => (
                   <Cell
                     key={`${entry.name}-${index}`}

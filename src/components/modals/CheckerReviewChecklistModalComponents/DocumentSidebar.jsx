@@ -226,7 +226,7 @@ const DocumentSidebar = ({
 
   return (
     <>
-      <style>{`
+       <style>{`
         .${DRAWER_CLASS}.ant-drawer {
           z-index: 2000 !important;
         }
@@ -234,12 +234,12 @@ const DocumentSidebar = ({
           z-index: 1999 !important;
         }
         .${DRAWER_CLASS} .ant-drawer-content {
-          background: linear-gradient(180deg, rgba(250, 248, 244, 0.98) 0%, #f7f4ef 100%) !important;
+          background: #ffffff !important;
         }
         .${DRAWER_CLASS} .ant-drawer-header {
           padding: 16px 18px 14px !important;
           border-bottom: 1px solid rgba(214, 189, 152, 0.28) !important;
-          background: linear-gradient(135deg, #1A3636 0%, #40534C 100%) !important;
+          background: #ffffff !important;
         }
         .${DRAWER_CLASS} .ant-drawer-body {
           padding: 12px !important;
@@ -248,16 +248,16 @@ const DocumentSidebar = ({
           width: 34px !important;
           height: 34px !important;
           border-radius: 999px !important;
-          background: rgba(255, 255, 255, 0.12) !important;
-          color: #fff !important;
+          background: rgba(64, 83, 76, 0.06) !important;
+          color: #1f2937 !important;
           display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
         }
         .${DRAWER_CLASS} .ant-drawer-close:hover,
         .${DRAWER_CLASS} .ant-drawer-close:focus {
-          background: rgba(255, 255, 255, 0.2) !important;
-          color: #fff !important;
+          background: rgba(64, 83, 76, 0.12) !important;
+          color: #1f2937 !important;
         }
         .${DRAWER_CLASS} .ant-drawer-close .anticon {
           color: inherit !important;
@@ -332,17 +332,17 @@ const DocumentSidebar = ({
 
       <Drawer
         className={DRAWER_CLASS}
-        title={
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ color: "#fff", fontWeight: 700, fontSize: 15 }}>Documents</span>
-              <span style={{ color: "rgba(255,255,255,0.78)", fontSize: 11 }}>
-                Uploaded checklist and supporting files
-              </span>
-            </div>
-            <Tag className={`${DRAWER_CLASS}__badge`}>{allDocs.length}</Tag>
-          </div>
-        }
+         title={
+                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                     <span style={{ color: "#1f2937", fontWeight: 700, fontSize: 15 }}>Documents</span>
+                     <span style={{ color: "#64748b", fontSize: 11 }}>
+                       Uploaded checklist and supporting files
+                     </span>
+                   </div>
+                   <Tag className={`${DRAWER_CLASS}__badge`}>{allDocs.length}</Tag>
+                 </div>
+               }
         placement="right"
         width={400}
         open={open}

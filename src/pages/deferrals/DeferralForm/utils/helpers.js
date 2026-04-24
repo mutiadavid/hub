@@ -140,26 +140,79 @@ export const validateApproverSequence = (selectedRoles, expectedRoles) => {
       .toLowerCase()
   );
 
+  const checkRoleMatch = (selected, expected) => {
+    if (!selected || !expected) return false;
+
+    const getWords = (str) =>
+      String(str || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, " ")
+        .split(/\s+/)
+        .filter((w) => w.length > 2);
+
+    const sWords = getWords(selected);
+    const options = expected.split("/");
+    const coreRoles = [
+      "head",
+      "director",
+      "manager",
+      "general",
+      "officer",
+      "supervisor",
+      "approver",
+      "lead",
+      "president",
+      "executive",
+    ];
+
+    return options.some((opt) => {
+      const eWords = getWords(opt);
+      if (eWords.length === 0) return false;
+
+      const matchedWords = eWords.filter((w) => sWords.includes(w));
+
+      // 1. Verify core authority level matches if specified (e.g., Head, Director, Manager)
+      const expectedCore = eWords.filter((w) => coreRoles.includes(w));
+      if (expectedCore.length > 0) {
+        const hasCoreMatch = expectedCore.some((w) => sWords.includes(w));
+        if (!hasCoreMatch) return false;
+      }
+
+      // 2. For short role names, require more exactness
+      if (eWords.length <= 2) {
+        return matchedWords.length === eWords.length;
+      }
+
+      // 3. For longer role names, allow some flexibility (at least 50% of significant words)
+      return matchedWords.length >= Math.max(2, Math.ceil(eWords.length * 0.5));
+    });
+  };
+
   if (normalizedSelectedRoles.length < normalizedExpectedRoles.length) {
     return { valid: false, message: "Not enough approvers assigned" };
   }
 
-  const firstRoleMismatch =
-    normalizedSelectedRoles[0] !== normalizedExpectedRoles[0];
-  const lastRoleMismatch =
-    normalizedSelectedRoles[normalizedSelectedRoles.length - 1] !==
-    normalizedExpectedRoles[normalizedExpectedRoles.length - 1];
+  const firstRoleMismatch = !checkRoleMatch(
+    normalizedSelectedRoles[0],
+    normalizedExpectedRoles[0]
+  );
+
+  const lastRoleMismatch = !checkRoleMatch(
+    normalizedSelectedRoles[normalizedSelectedRoles.length - 1],
+    normalizedExpectedRoles[normalizedExpectedRoles.length - 1]
+  );
 
   if (firstRoleMismatch || lastRoleMismatch) {
     return {
       valid: false,
-      message: "First and final approvers must match the required approval matrix",
+      message:
+        "First and final approvers must match the required approval matrix",
     };
   }
 
   let expectedIndex = 0;
   for (const role of normalizedSelectedRoles) {
-    if (role === normalizedExpectedRoles[expectedIndex]) {
+    if (checkRoleMatch(role, normalizedExpectedRoles[expectedIndex])) {
       expectedIndex += 1;
     }
     if (expectedIndex >= normalizedExpectedRoles.length) break;
