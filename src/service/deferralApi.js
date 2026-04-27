@@ -603,6 +603,29 @@ const deferralApi = {
     return normalizeDeferralList(data);
   },
 
+  getCreatorQueue: async (token) => {
+    try {
+      const res = await fetch(`${API_BASE}/creator-queue`, {
+        headers: getAuthHeaders(token),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to fetch creator queue");
+      }
+      const data = await res.json();
+      return normalizeDeferralList(data);
+    } catch (err) {
+      // Fallback to pending if creator-queue endpoint doesn't exist (backward compatibility)
+      console.warn("creator-queue endpoint not available, falling back to pending");
+      const res = await fetch(`${API_BASE}/pending`, {
+        headers: getAuthHeaders(token),
+      });
+      if (!res.ok) throw new Error("Failed to fetch deferrals");
+      const data = await res.json();
+      return normalizeDeferralList(data);
+    }
+  },
+
   addComment: async (id, text, token) => {
     const res = await fetch(`${API_BASE}/${id}/comments`, {
       method: "POST",
@@ -1401,8 +1424,7 @@ const deferralApi = {
   },
 
   updateApprovers: async (deferralId, approvers, token) => {
-    const guidPattern =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const guidPattern = /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$|^[0-9a-fA-F]{24}$/;
     const normalizedApprovers = Array.isArray(approvers)
       ? approvers.map((approver) => {
           const rawUserId = approver?.userId ?? approver?.user ?? null;
@@ -1415,6 +1437,8 @@ const deferralApi = {
             name: approver?.name || "",
             role: approver?.role || "",
             userId: normalizedUserId,
+            approved: approver?.approved || approver?.approvalStatus === "approved",
+            approvalStatus: approver?.approvalStatus || (approver?.approved ? "approved" : "pending"),
           };
         })
       : [];

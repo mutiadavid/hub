@@ -22,6 +22,7 @@ const TERMINAL_STATUSES = new Set([
   "deferral_approved",
   "rejected",
   "deferral_rejected",
+  "withdrawn",
   "closed",
   "deferral_closed",
   "closed_by_co",
@@ -55,8 +56,12 @@ const getReportStatusMeta = (deferral) => {
 
   const normalizedStatus = safeLower(deferral?.status);
 
-  if (normalizedStatus.includes("approved")) {
+  if (normalizedStatus === "approved" || normalizedStatus === "deferral_approved") {
     return { label: "Approved", variant: "approved" };
+  }
+
+  if (normalizedStatus === "partially_approved" || normalizedStatus === "in_review") {
+    return { label: "In Review", variant: "qs-review" };
   }
 
   if (normalizedStatus.includes("rejected") || normalizedStatus.includes("returned")) {
@@ -65,6 +70,10 @@ const getReportStatusMeta = (deferral) => {
 
   if (normalizedStatus.includes("pending") || normalizedStatus.includes("open")) {
     return { label: "Pending", variant: "pending" };
+  }
+
+  if (normalizedStatus === "withdrawn") {
+    return { label: "Withdrawn", variant: "rework" };
   }
 
   return {

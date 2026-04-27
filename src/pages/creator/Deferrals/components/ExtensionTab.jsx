@@ -6,6 +6,7 @@ import ExtensionApprovalModal from "../../../../components/modals/ExtensionAppro
  * Handles extension application reviews and approvals
  */
 const ExtensionTab = ({
+  extensionsLoading,
   extensionModalOpen,
   selectedExtension,
   onModalClose,

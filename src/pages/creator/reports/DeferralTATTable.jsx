@@ -614,17 +614,21 @@ const buildDeferralTATRows = (deferralRows = [], nowAt = dayjs()) =>
 const getStatusMeta = (status) => {
   const normalizedStatus = String(status || "").toLowerCase();
 
-  if (normalizedStatus.includes("approved") || normalizedStatus.includes("closed")) {
+  if (normalizedStatus === "approved" || normalizedStatus === "deferral_approved") {
     return { label: "Approved", className: styles.tatStatusBadgeApproved };
+  }
+
+  if (normalizedStatus.includes("closed")) {
+    return { label: "Closed", className: styles.tatStatusBadgeApproved };
   }
 
   if (normalizedStatus.includes("rejected") || normalizedStatus.includes("returned")) {
     return { label: normalizedStatus.includes("returned") ? "Returned" : "Rejected", className: styles.tatStatusBadgeRework };
   }
 
-  if (normalizedStatus.includes("review") || normalizedStatus.includes("approval")) {
+  if (normalizedStatus === "partially_approved" || normalizedStatus.includes("review") || normalizedStatus.includes("approval")) {
     return {
-      label: String(status || "In Progress").replace(/_/g, " "),
+      label: "In Review",
       className: styles.tatStatusBadgeReview,
     };
   }

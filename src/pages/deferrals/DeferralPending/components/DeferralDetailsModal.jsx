@@ -1121,11 +1121,11 @@ const DeferralDetailsModal = ({
     try {
       // Prepare approvers data for API
       const approversToSave = editedApprovers.map((a) => ({
-        userId: a.userId, // Include the user ID that was captured from the dropdown
+        userId: a.userId,
         role: a.role,
         name: a.name,
-        approved: false,
-        approvalStatus: "pending",
+        approved: a.approved || a.approvalStatus === "approved",
+        approvalStatus: a.approvalStatus || (a.approved ? "approved" : "pending"),
       }));
 
       // Get token from localStorage
@@ -1200,12 +1200,14 @@ const DeferralDetailsModal = ({
       String(displayDeferral?.deferralApprovalStatus || "").toLowerCase() ===
         "rejected",
   );
-  const isWithdrawnDeferral = Boolean(
-    displayDeferral?.closedByName ||
-      displayDeferral?.ClosedByName ||
-      displayDeferral?.closedBy ||
-      displayDeferral?.closedByUser,
-  );
+  const isWithdrawnDeferral =
+    displayDeferral?.status === "withdrawn" ||
+    Boolean(
+      displayDeferral?.closedByName ||
+        displayDeferral?.ClosedByName ||
+        displayDeferral?.closedBy ||
+        displayDeferral?.closedByUser,
+    );
   const rejectionActor =
     displayDeferral?.rejectedByName ||
     rejectedApprover?.name ||

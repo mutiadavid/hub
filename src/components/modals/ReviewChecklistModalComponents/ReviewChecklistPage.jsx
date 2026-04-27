@@ -96,6 +96,30 @@ const normalizeLookupValue = (value) =>
     .trim()
     .toLowerCase();
 
+const normalizeSupportingUpload = (doc) => ({
+  ...doc,
+  category: "Supporting Documents",
+  isSupporting: true,
+  fileUrl: doc.fileUrl || doc.uploadData?.fileUrl || doc.url || "",
+  fileName:
+    doc.fileName || doc.name || doc.uploadData?.fileName || "Supporting document",
+});
+
+const dedupeSupportingUploads = (uploads = []) => {
+  const seen = new Set();
+  return uploads.filter((doc) => {
+    const idKey = String(doc.id || doc._id || "").trim().toLowerCase();
+    const urlKey = String(doc.fileUrl || doc.url || "").trim().toLowerCase();
+    const nameKey = String(doc.fileName || doc.name || "").trim().toLowerCase();
+    const key = idKey || `${urlKey}|${nameKey}`;
+    if (!key || seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
 const isDeferredAction = (value) =>
   ["deferred", "deferralrequested", "defferalrequested"].includes(
     normalizeLookupValue(value).replace(/[^a-z]/g, ""),
@@ -930,7 +954,12 @@ const ReviewChecklistPage = ({
         },
       };
 
-      setSupportingDocs((prevDocs) => [...prevDocs, newSupportingDoc]);
+      setSupportingDocs((prevDocs) =>
+        dedupeSupportingUploads([
+          ...prevDocs.map(normalizeSupportingUpload),
+          normalizeSupportingUpload(newSupportingDoc),
+        ]),
+      );
       showSuccessToast(`"${file.name}" uploaded successfully.`);
     } catch (error) {
       console.error("Error uploading supporting document:", error);
@@ -1060,28 +1089,38 @@ const ReviewChecklistPage = ({
       : [];
 
     setDocs(
-      flatDocs.map((doc, idx) => ({
-        ...doc,
-        docIdx: idx,
-        fileName: doc.fileName || doc.uploadData?.fileName || null,
-        fileType: doc.fileType || doc.uploadData?.fileType || null,
-        fileSize: doc.fileSize || doc.uploadData?.fileSize || null,
-        status: doc.status || doc.action || "pending",
-        creatorStatus: doc.creatorStatus,
-        checkerStatus: getResolvedCheckerStatus(doc),
-        finalCheckerStatus: getResolvedCheckerStatus(doc),
-        checkerComment: doc.checkerComment || "",
-        action: doc.action || doc.status || "pending",
-        comment: doc.comment || "",
-        fileUrl: doc.fileUrl || null,
-        expiryDate: doc.expiryDate || doc.ExpiryDate || null,
-        deferralNumber: doc.deferralNumber || doc.deferralNo || "",
-        deferralNo: doc.deferralNo || doc.deferralNumber || "",
-        rmStatus: doc.rmStatus || "",
-      })),
+      flatDocs
+        .map((doc, idx) => ({
+          ...doc,
+          docIdx: idx,
+          fileName: doc.fileName || doc.uploadData?.fileName || null,
+          fileType: doc.fileType || doc.uploadData?.fileType || null,
+          fileSize: doc.fileSize || doc.uploadData?.fileSize || null,
+          status: doc.status || doc.action || "pending",
+          creatorStatus: doc.creatorStatus,
+          checkerStatus: getResolvedCheckerStatus(doc),
+          finalCheckerStatus: getResolvedCheckerStatus(doc),
+          checkerComment: doc.checkerComment || "",
+          action: doc.action || doc.status || "pending",
+          comment: doc.comment || "",
+          fileUrl: doc.fileUrl || null,
+          expiryDate: doc.expiryDate || doc.ExpiryDate || null,
+          deferralNumber: doc.deferralNumber || doc.deferralNo || "",
+          deferralNo: doc.deferralNo || doc.deferralNumber || "",
+          rmStatus: doc.rmStatus || "",
+        }))
+        .filter(
+          (doc) =>
+            normalizeLookupValue(doc.category) !==
+            normalizeLookupValue("Supporting Documents"),
+        ),
     );
 
-    setSupportingDocs(sourceChecklist.supportingDocs || []);
+    setSupportingDocs(
+      dedupeSupportingUploads(
+        (sourceChecklist.supportingDocs || []).map(normalizeSupportingUpload),
+      ),
+    );
     setDeferralValidationByDoc({});
   }, [localChecklist, checklistData]);
 
@@ -1106,11 +1145,21 @@ const ReviewChecklistPage = ({
 
         const result = await response.json();
         if (result.data && Array.isArray(result.data)) {
-          const docsWithCategory = result.data.map((doc) => ({
-            ...doc,
-            category: "Supporting Documents",
-            isSupporting: true,
-          }));
+          const docsWithCategory = dedupeSupportingUploads(
+            result.data
+              .filter((doc) => {
+                const category = normalizeLookupValue(doc.category);
+                const hasSupportingCategory =
+                  category === normalizeLookupValue("Supporting Documents");
+                const hasNoCategory = !category;
+                const isNotDeleted =
+                  normalizeLookupValue(doc.status || doc.uploadData?.status) !==
+                  "deleted";
+                // Allow RM and Co-creator supporting uploads in the same sidebar.
+                return (hasSupportingCategory || hasNoCategory) && isNotDeleted;
+              })
+              .map(normalizeSupportingUpload),
+          );
           setSupportingDocs(docsWithCategory);
         }
       } catch (error) {

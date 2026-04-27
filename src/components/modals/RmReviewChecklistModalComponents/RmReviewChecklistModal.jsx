@@ -63,6 +63,29 @@ const isNaStatus = (status) => {
   return normalized === "na";
 };
 
+const normalizeSupportingUpload = (doc) => ({
+  ...doc,
+  category: "Supporting Documents",
+  isSupporting: true,
+  fileUrl: doc.fileUrl || doc.uploadData?.fileUrl || doc.url || "",
+  fileName: doc.fileName || doc.name || doc.uploadData?.fileName || "Supporting document",
+});
+
+const dedupeSupportingUploads = (uploads = []) => {
+  const seen = new Set();
+  return uploads.filter((doc) => {
+    const idKey = String(doc.id || doc._id || "").trim().toLowerCase();
+    const urlKey = String(doc.fileUrl || doc.url || "").trim().toLowerCase();
+    const nameKey = String(doc.fileName || doc.name || "").trim().toLowerCase();
+    const key = idKey || `${urlKey}|${nameKey}`;
+    if (!key || seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
 const getDeferralRequestedDays = (deferral) => {
   const candidateDays = [Number(deferral?.daysSought || 0)];
 
@@ -510,19 +533,28 @@ const RmReviewChecklistModal = ({
       }, []);
     }
 
-    // Process all documents
-    const processedDocs = docsToProcess.map((doc, idx) => ({
-      ...doc,
-      category: doc.category || "Missing Category",
-      expiryDate: doc.expiryDate || doc.ExpiryDate || null,
-      rmStatus: getInitialRmStatus(doc),
-      rmTouched: doc.rmStatus != null,
-      uploadData: doc.uploadData || null,
-      docIdx: doc.docIdx !== undefined ? doc.docIdx : idx,
-    }));
+    // Process checklist docs but keep supporting uploads out of this list.
+    // Supporting docs are handled exclusively via `supportingDocs`.
+    const processedDocs = docsToProcess
+      .map((doc, idx) => ({
+        ...doc,
+        category: doc.category || "Missing Category",
+        expiryDate: doc.expiryDate || doc.ExpiryDate || null,
+        rmStatus: getInitialRmStatus(doc),
+        rmTouched: doc.rmStatus != null,
+        uploadData: doc.uploadData || null,
+        docIdx: doc.docIdx !== undefined ? doc.docIdx : idx,
+      }))
+      .filter(
+        (doc) =>
+          normalizeLookupValue(doc.category) !==
+          normalizeLookupValue("Supporting Documents"),
+      );
 
     // Store supporting docs separately - they should NOT appear in DocumentTable
-    const supportingDocsData = activeChecklist.supportingDocs || [];
+    const supportingDocsData = dedupeSupportingUploads(
+      (activeChecklist.supportingDocs || []).map(normalizeSupportingUpload),
+    );
 
     // Set main docs WITHOUT supporting docs
     setDocs(processedDocs);
@@ -551,11 +583,21 @@ const RmReviewChecklistModal = ({
 
         const result = await response.json();
         if (result.data && Array.isArray(result.data)) {
-          const docsWithCategory = result.data.map((doc) => ({
-            ...doc,
-            category: "Supporting Documents",
-            isSupporting: true,
-          }));
+          const docsWithCategory = dedupeSupportingUploads(
+            result.data
+              .filter((doc) => {
+                const category = normalizeLookupValue(doc.category);
+                const hasSupportingCategory =
+                  category === normalizeLookupValue("Supporting Documents");
+                const hasNoCategory = !category;
+                const isNotDeleted =
+                  normalizeLookupValue(doc.status || doc.uploadData?.status) !==
+                  "deleted";
+                // Keep supporting uploads even when role/category metadata is incomplete.
+                return (hasSupportingCategory || hasNoCategory) && isNotDeleted;
+              })
+              .map(normalizeSupportingUpload),
+          );
           setSupportingDocs(docsWithCategory);
         }
       } catch (error) {

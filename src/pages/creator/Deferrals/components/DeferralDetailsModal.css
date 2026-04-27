@@ -1,0 +1,665 @@
+.deferral-review-panel {
+  margin-top: 0;
+}
+
+.deferral-review-container {
+  background: var(--color-white);
+  border-radius: 0;
+  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: none;
+  border: none;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.deferral-review-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.deferral-review-topbar__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.deferral-review-topbar__back.ant-btn {
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(214, 189, 152, 0.35) !important;
+  color: var(--color-text-medium) !important;
+  background: var(--color-white) !important;
+  box-shadow: none !important;
+}
+
+.deferral-review-topbar__title {
+  color: var(--color-primary-dark);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.deferral-review-topbar__subtitle {
+  margin-top: 4px;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+}
+
+.deferral-review-topbar__docs.ant-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(214, 189, 152, 0.2) !important;
+  background: var(--color-white) !important;
+  color: var(--color-text-medium) !important;
+  box-shadow: none !important;
+}
+
+.deferral-review-topbar__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(214, 189, 152, 0.2);
+  color: var(--color-text-dark);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.deferral-review-actionbar {
+  background: var(--color-white);
+  border: 1px solid rgba(214, 189, 152, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.deferral-review-actionbar__group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.deferral-review-actionbar__group--end {
+  margin-left: auto;
+}
+
+.deferral-review-actionbar__button.ant-btn,
+.deferral-review-sidebar__post.ant-btn {
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 14px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  border: none !important;
+  background: var(--gradient-primary) !important;
+  border-color: transparent !important;
+  color: #6b7280 !important;
+}
+
+.deferral-review-actionbar__button.ant-btn span,
+.deferral-review-sidebar__post.ant-btn span {
+  color: #6b7280 !important;
+}
+
+.deferral-review-actionbar__button.ant-btn:disabled,
+.deferral-review-actionbar__button.ant-btn[disabled],
+.deferral-review-sidebar__post.ant-btn:disabled,
+.deferral-review-sidebar__post.ant-btn[disabled] {
+  background: var(--color-disabled) !important;
+  border-color: var(--color-disabled) !important;
+  color: var(--color-white) !important;
+  border: none !important;
+}
+
+.deferral-review-actionbar__button.ant-btn:disabled span,
+.deferral-review-actionbar__button.ant-btn[disabled] span,
+.deferral-review-sidebar__post.ant-btn:disabled span,
+.deferral-review-sidebar__post.ant-btn[disabled] span {
+  color: var(--color-white) !important;
+}
+
+.deferral-review-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid rgba(214, 189, 152, 0.2);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.deferral-review-tab {
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-text-light);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+}
+
+.deferral-review-tab--active {
+  color: var(--color-primary-dark);
+  border-bottom-color: var(--color-primary-dark);
+}
+
+.deferral-review-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.deferral-review-main {
+  min-width: 0;
+}
+
+.deferral-review-body {
+  padding: 0;
+  overflow: visible;
+}
+
+.deferral-review-sidebar {
+  background: white;
+  border: 1px solid rgba(214, 189, 152, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.deferral-review-sidebar__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deferral-review-sidebar__title,
+.deferral-review-sidebar__history-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-medium);
+}
+
+.deferral-review-sidebar__label,
+.deferral-review-sidebar__hint {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.deferral-review-sidebar__textarea.ant-input {
+  min-height: 120px;
+}
+
+.deferral-review-sidebar__post.ant-btn {
+  align-self: flex-start;
+}
+
+.deferral-review-confirm.admin-page__modal .ant-modal-content {
+  overflow: hidden;
+  padding: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(214, 189, 152, 0.28);
+  box-shadow: 0 24px 64px rgba(26, 54, 54, 0.14);
+}
+
+.deferral-review-confirm.admin-page__modal .ant-modal-header {
+  background: var(--color-white) !important;
+  padding: 18px 20px !important;
+  border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+  margin: 0 !important;
+}
+
+.deferral-review-confirm--acceptance.admin-page__modal .ant-modal-header {
+  background: var(--color-white) !important;
+  border-bottom: none !important;
+}
+
+.deferral-review-confirm.admin-page__modal .ant-modal-title,
+.deferral-review-confirm.admin-page__modal .ant-modal-close,
+.deferral-review-confirm.admin-page__modal .ant-modal-close-x,
+.deferral-review-confirm.admin-page__modal .ant-modal-close-icon {
+  color: var(--color-text-dark) !important;
+}
+
+.deferral-review-confirm--acceptance.admin-page__modal .ant-modal-title,
+.deferral-review-confirm--acceptance.admin-page__modal .ant-modal-close,
+.deferral-review-confirm--acceptance.admin-page__modal .ant-modal-close-x,
+.deferral-review-confirm--acceptance.admin-page__modal .ant-modal-close-icon {
+  color: var(--color-primary-dark) !important;
+}
+
+.deferral-review-confirm .ant-modal-body {
+  padding: 0;
+  background: var(--color-white);
+}
+
+.deferral-review-confirm .ant-modal-footer {
+  background: var(--color-white);
+}
+
+.deferral-review-confirm__icon {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 54, 54, 0.08);
+  border: 1px solid rgba(26, 54, 54, 0.12);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.deferral-review-confirm--acceptance .deferral-review-confirm__icon {
+  background: rgba(26, 54, 54, 0.08);
+  border: 1px solid rgba(26, 54, 54, 0.12);
+}
+
+.deferral-review-confirm--reject .deferral-review-confirm__icon {
+  background: rgba(196, 29, 20, 0.08);
+  border: 1px solid rgba(196, 29, 20, 0.16);
+}
+
+.deferral-review-confirm__icon .anticon {
+  color: var(--color-primary-dark);
+  font-size: 16px;
+}
+
+.deferral-review-confirm--acceptance .deferral-review-confirm__icon .anticon {
+  color: var(--color-primary-dark);
+}
+
+.deferral-review-confirm--reject .deferral-review-confirm__icon .anticon {
+  color: #c41d14;
+}
+
+.deferral-review-confirm__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-dark);
+}
+
+.deferral-review-confirm--acceptance .deferral-review-confirm__title {
+  color: var(--color-primary-dark);
+}
+
+.deferral-review-confirm--reject .deferral-review-confirm__title {
+  color: #8f1610;
+}
+
+.deferral-review-confirm__text {
+  color: var(--color-text-medium);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.deferral-review-confirm__body-card {
+  border: 1px solid rgba(214, 189, 152, 0.22);
+  border-radius: 12px;
+  background: var(--color-white);
+  padding: 14px;
+}
+
+.deferral-review-confirm__summary {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(245, 247, 244, 0.9);
+}
+
+.deferral-review-confirm__summary-title {
+  color: var(--color-text-dark);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.deferral-review-confirm__summary-copy {
+  margin-top: 4px;
+  color: var(--color-text-medium);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.deferral-review-confirm__label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-text-light);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.deferral-review-confirm__textarea.ant-input {
+  border-radius: 10px;
+}
+
+.deferral-review-confirm .admin-page__modal-footer .deferral-review-confirm__confirm.ant-btn,
+.deferral-review-confirm .admin-page__modal-footer .deferral-review-confirm__confirm.ant-btn:hover,
+.deferral-review-confirm .admin-page__modal-footer .deferral-review-confirm__confirm.ant-btn:focus,
+.deferral-review-confirm .admin-page__modal-footer .deferral-review-confirm__confirm.ant-btn:active {
+  border: none !important;
+  background: var(--gradient-primary) !important;
+  color: var(--color-white) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.deferral-review-confirm .admin-page__modal-footer .deferral-review-confirm__confirm--danger.ant-btn,
+.deferral-review-confirm .admin-page__modal-footer .deferral-review-confirm__confirm--danger.ant-btn:hover,
+.deferral-review-confirm .admin-page__modal-footer .deferral-review-confirm__confirm--danger.ant-btn:focus,
+.deferral-review-confirm .admin-page__modal-footer .deferral-review-confirm__confirm--danger.ant-btn:active {
+  border: none !important;
+  background: linear-gradient(135deg, #c41d14 0%, #8f1610 100%) !important;
+  color: var(--color-white) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.deferral-review-sidebar__history {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.deferral-review-sidebar__history-item {
+  padding-top: 10px;
+  border-top: 1px solid rgba(214, 189, 152, 0.14);
+}
+
+.deferral-review-sidebar__history-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.deferral-review-sidebar__history-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.deferral-review-sidebar__history-user {
+  color: var(--color-primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.deferral-review-sidebar__history-time {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.deferral-review-sidebar__history-text,
+.deferral-review-sidebar__empty {
+  color: var(--color-text-medium);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.deferral-review-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.deferral-review-stat {
+  padding: 12px;
+  border: 1px solid rgba(214, 189, 152, 0.16);
+  border-radius: 10px;
+  background: var(--color-white);
+}
+
+.deferral-review-stat__label {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deferral-review-stat__value {
+  margin-top: 8px;
+  color: var(--color-text-dark);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.deferral-review-table-shell {
+  margin-bottom: 18px;
+}
+
+.deferral-review-table-shell .ant-table {
+  border: 1px solid rgba(214, 189, 152, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.deferral-review-table-shell .ant-table-thead > tr > th {
+  background: var(--color-white) !important;
+  color: var(--color-text-muted) !important;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+}
+
+.deferral-review-table-shell .ant-table-tbody > tr > td {
+  color: var(--color-text-body);
+  font-size: 12px;
+  border-bottom: 1px solid rgba(214, 189, 152, 0.14) !important;
+  vertical-align: top;
+  background: var(--color-white) !important;
+}
+
+.deferral-info-card .ant-card-head {
+  border-bottom: 2px solid var(--color-success-soft-border) !important;
+}
+
+.deferral-info-card .ant-descriptions-item-label {
+  font-weight: 600 !important;
+  color: var(--color-role-accent) !important;
+  padding-bottom: 4px;
+}
+
+.deferral-info-card .ant-descriptions-item-content {
+  color: var(--color-primary-dark) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+.deferral-review-summary .ant-descriptions-view {
+  border: 1px solid rgba(214, 189, 152, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.deferral-review-summary .ant-descriptions-row > th,
+.deferral-review-summary .ant-descriptions-row > td {
+  border-bottom: 1px solid rgba(214, 189, 152, 0.14);
+}
+
+.deferral-review-summary .ant-descriptions-row:last-child > th,
+.deferral-review-summary .ant-descriptions-row:last-child > td {
+  border-bottom: none;
+}
+
+.deferral-review-summary .ant-descriptions-item-label {
+  background: var(--color-white);
+  min-width: 140px;
+  padding: 12px 14px !important;
+}
+
+.deferral-review-summary .ant-descriptions-item-content {
+  padding: 12px 14px !important;
+  background: #fff;
+}
+
+.deferral-review-text-block {
+  border: 1px solid rgba(214, 189, 152, 0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  color: var(--color-text-body-soft);
+  font-size: 13px;
+  line-height: 1.6;
+  background: #fff;
+  white-space: pre-wrap;
+}
+
+.deferral-review-actionset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.deferral-review-actionset .ant-btn {
+  min-width: 0;
+  height: 27px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.deferral-review-actionset .ant-btn > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.deferral-review-status-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.deferral-commenttrail__empty {
+  padding: 16px;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.deferral-commenttrail {
+  border: 1px solid rgba(214, 189, 152, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.deferral-commenttrail__header,
+.deferral-commenttrail__row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(120px, 0.8fr) minmax(260px, 2fr) minmax(140px, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 16px;
+}
+
+.deferral-commenttrail__header {
+  background: var(--color-bg, #f5f7f4);
+  border-bottom: 1px solid rgba(214, 189, 152, 0.2);
+  color: var(--color-text-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deferral-commenttrail__body {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.deferral-commenttrail__row {
+  border-bottom: 1px solid rgba(214, 189, 152, 0.14);
+  color: var(--color-text-body);
+  font-size: 12px;
+}
+
+.deferral-commenttrail__row:last-child {
+  border-bottom: none;
+}
+
+.deferral-commenttrail__actor {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.deferral-commenttrail__role,
+.deferral-commenttrail__time {
+  color: var(--color-text-muted);
+}
+
+.deferral-commenttrail__comment {
+  color: var(--color-text-body);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+@media (max-width: 1023px) {
+  .deferral-review-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .deferral-commenttrail__header {
+    display: none;
+  }
+
+  .deferral-commenttrail__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .deferral-review-topbar,
+  .deferral-review-topbar__main,
+  .deferral-review-actionbar,
+  .deferral-review-actionbar__group,
+  .deferral-review-actionbar__group--end {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .deferral-review-topbar__docs.ant-btn,
+  .deferral-review-topbar__back.ant-btn,
+  .deferral-review-actionbar .ant-btn,
+  .deferral-review-sidebar__post.ant-btn {
+    width: 100%;
+  }
+}

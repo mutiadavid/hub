@@ -17,38 +17,6 @@ import {
 import { getReturnedForReworkReason } from "../utils/deferralHelpers";
 import BankingSlaTimer from "../../../../components/common/BankingSlaTimer";
 
-const alertBaseClassName = "mt-6 mb-[18px] rounded-lg border p-4";
-const alertContentClassName = "mb-2 flex items-center gap-3";
-const detailsClassName = "mt-2 pl-9 text-[13px] text-[#666]";
-
-const toneClassNames = {
-  success: {
-    wrapper: "border-[#52c41a] bg-[#52c41a15]",
-    icon: "text-[#52c41a]",
-    title: "text-[#52c41a]",
-  },
-  error: {
-    wrapper: "border-[#ff4d4f] bg-[#ff4d4f15]",
-    icon: "text-[#ff4d4f]",
-    title: "text-[#ff4d4f]",
-  },
-  warning: {
-    wrapper: "border-[#faad14] bg-[#faad1415]",
-    icon: "text-[#faad14]",
-    title: "text-[#faad14]",
-  },
-  info: {
-    wrapper: "border-[#164679] bg-[#16467915]",
-    icon: "text-[#164679]",
-    title: "text-[#164679]",
-  },
-  closed: {
-    wrapper: "border-[#b5d334] bg-[#b5d33415]",
-    icon: "text-[#b5d334]",
-    title: "text-[#b5d334]",
-  },
-};
-
 /**
  * DeferralStatusAlert Component
  * Displays real-time status of deferral with contextual messages
@@ -119,41 +87,59 @@ const DeferralStatusAlert = ({ deferral }) => {
     );
   };
 
+  // Base alert styles
+  const alertBaseStyle = {
+    border: "1px solid",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 18,
+    marginTop: 24,
+  };
+
   const AlertContent = ({
-    tone,
+    bgColor,
+    borderColor,
     icon,
     title,
     message,
     details,
-  }) => {
-    const palette = toneClassNames[tone];
-
-    return (
-    <div className={`${alertBaseClassName} ${palette.wrapper}`}>
-      <div className={alertContentClassName}>
-        <div className={palette.icon}>{icon}</div>
+  }) => (
+    <div style={{ backgroundColor: bgColor, borderColor, ...alertBaseStyle }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 8,
+        }}
+      >
+        {icon}
         <div>
-          <h3 className={`m-0 font-bold ${palette.title}`}>
+          <h3 style={{ margin: 0, color: borderColor, fontWeight: 700 }}>
             {title}
           </h3>
-          <p className="m-1 text-sm text-[#666]">{message}</p>
+          <p style={{ margin: 4, color: "#666", fontSize: 14 }}>{message}</p>
         </div>
       </div>
       {details && (
-        <div className={detailsClassName}>
+        <div
+          style={{ fontSize: 13, color: "#666", marginTop: 8, paddingLeft: 36 }}
+        >
           {details}
         </div>
       )}
     </div>
   );
-  };
 
   // Fully Approved Status
   if (isFullyApproved) {
     return (
       <AlertContent
-        tone="success"
-        icon={<CheckCircleOutlined className="text-2xl" />}
+        bgColor={`${SUCCESS_GREEN}15`}
+        borderColor={SUCCESS_GREEN}
+        icon={
+          <CheckCircleOutlined style={{ color: SUCCESS_GREEN, fontSize: 24 }} />
+        }
         title="Deferral Fully Approved ✓"
         message="All approvers, Creator, and Checker have approved this deferral request. You can now submit the deferred document before or during the next due date."
       />
@@ -164,8 +150,11 @@ const DeferralStatusAlert = ({ deferral }) => {
   if (isRejected) {
     return (
       <AlertContent
-        tone="error"
-        icon={<CloseCircleOutlined className="text-2xl" />}
+        bgColor={`${ERROR_RED}15`}
+        borderColor={ERROR_RED}
+        icon={
+          <CloseCircleOutlined style={{ color: ERROR_RED, fontSize: 24 }} />
+        }
         title="Deferral Rejected ✗"
         message={`This deferral request has been rejected.${
           deferral.rejectionReason ? ` Reason: ${deferral.rejectionReason}` : ""
@@ -178,8 +167,11 @@ const DeferralStatusAlert = ({ deferral }) => {
   if (isReturned) {
     return (
       <AlertContent
-        tone="warning"
-        icon={<WarningOutlined className="text-2xl" />}
+        bgColor={`${WARNING_ORANGE}15`}
+        borderColor={WARNING_ORANGE}
+        icon={
+          <WarningOutlined style={{ color: WARNING_ORANGE, fontSize: 24 }} />
+        }
         title="Returned for Rework"
         message={`This deferral has been returned for rework.${
           returnedForReworkReason ? ` Reason: ${returnedForReworkReason}` : ""
@@ -202,7 +194,8 @@ const DeferralStatusAlert = ({ deferral }) => {
     );
     return (
       <AlertContent
-        tone="info"
+        bgColor={`${PRIMARY_BLUE}15`}
+        borderColor={PRIMARY_BLUE}
         title={
           allApproversApprovedLocal
             ? "Pending CO Creator & Checker Approval"
@@ -222,14 +215,27 @@ const DeferralStatusAlert = ({ deferral }) => {
   if (isUnderReview) {
     const details = renderSlaTimer(false);
     return (
-      <div className={`${alertBaseClassName} ${toneClassNames.info.wrapper}`}>
-        <div className={alertContentClassName}>
-          <ClockCircleOutlined className={`text-2xl ${toneClassNames.info.icon}`} />
+      <div
+        style={{
+          backgroundColor: `${PRIMARY_BLUE}15`,
+          borderColor: PRIMARY_BLUE,
+          ...alertBaseStyle,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 8,
+          }}
+        >
+          <ClockCircleOutlined style={{ color: PRIMARY_BLUE, fontSize: 24 }} />
           <div>
-            <h3 className={`m-0 font-bold ${toneClassNames.info.title}`}>
+            <h3 style={{ margin: 0, color: PRIMARY_BLUE, fontWeight: 700 }}>
               Under Review by Approvers
             </h3>
-            <p className="m-1 text-sm text-[#666]">
+            <p style={{ margin: 4, color: "#666", fontSize: 14 }}>
               This deferral request is currently awaiting approval from the
               approval chain
             </p>
@@ -244,8 +250,11 @@ const DeferralStatusAlert = ({ deferral }) => {
   if (isClosed) {
     return (
       <AlertContent
-        tone="closed"
-        icon={<CheckCircleOutlined className="text-2xl" />}
+        bgColor={`${ACCENT_LIME}15`}
+        borderColor={ACCENT_LIME}
+        icon={
+          <CheckCircleOutlined style={{ color: ACCENT_LIME, fontSize: 24 }} />
+        }
         title="Document Submitted - Awaiting Approval"
         message="The deferred document has been submitted and is awaiting final approval from the Checker."
         details={renderSlaTimer(true)}
