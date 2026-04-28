@@ -10,6 +10,8 @@ import authReducer from "../api/authSlice";
 import deferralReducer from "../api/deferralSlice"; // <-- added deferralReducer
 import { extensionApi } from "../api/extensionApi";
 import { notificationApi } from "../api/notificationApi";
+import { adSearchApi } from "../api/adSearchApi"; // <-- added adSearchApi
+
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +19,7 @@ export const store = configureStore({
     deferral: deferralReducer, // <-- added deferral reducer
     [authApi.reducerPath]: authApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
+     [adSearchApi.reducerPath]: adSearchApi.reducer,
     [checklistApi.reducerPath]: checklistApi.reducer,
     [logApi.reducerPath]: logApi.reducer, // <-- added logApi reducer
     [auditApi.reducerPath]: auditApi.reducer, // <-- added auditApi reducer
@@ -29,6 +32,7 @@ export const store = configureStore({
     getDefaultMiddleware().concat(
       authApi.middleware,
       userApi.middleware,
+      adSearchApi.middleware,
       checklistApi.middleware,
       logApi.middleware, // <-- added logApi middleware
       auditApi.middleware, // <-- added auditApi middleware

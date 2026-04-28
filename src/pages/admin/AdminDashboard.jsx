@@ -8,7 +8,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import UserTable from "./UserTable";
-import CreateUserDrawer from "./CreateUserModal";
+// import CreateUserDrawer from "./CreateUserModal";
 import {
   useGetUsersQuery,
   useCreateUserMutation,
@@ -17,20 +17,26 @@ import {
 } from "../../api/userApi";
 import { countUsersByRole } from "./adminRoleUtils";
 import "../../styles/creatorDesignSystem.css";
+import CreateUserDrawer from "./createUserDrawer";
+
+const INITIAL_FORM_DATA = {
+  name: "",
+  email: "",
+  samAccountName: "",
+  department: "",
+  title: "",
+  phone: "",
+  role: "customer",
+};
 
 const AdminDashboard = () => {
   const { data: users = [], isLoading, refetch } = useGetUsersQuery();
-  const [createUser] = useCreateUserMutation();
+  const [createUser, { isLoading: creating }] = useCreateUserMutation();
   const [changeRole] = useChangeRoleMutation();
   const [toggleActive] = useToggleActiveMutation();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "customer",
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
 
   const usersByRole = useMemo(() => countUsersByRole(users), [users]);
 
@@ -141,15 +147,44 @@ const AdminDashboard = () => {
     ],
   );
 
+  const openDrawer = () => {
+    setFormData(INITIAL_FORM_DATA);
+    setDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    setDrawerOpen(false);
+    setFormData(INITIAL_FORM_DATA);
+  };
+
   const handleCreateUser = async () => {
+    if (!formData.samAccountName) {
+      message.warning("Please select a user from the directory first");
+      return;
+    }
+
     try {
-      await createUser(formData).unwrap();
-      message.success("User created successfully!");
-      setDrawerOpen(false);
-      setFormData({ name: "", email: "", password: "", role: "customer" });
+      await createUser({
+        name: formData.name,
+        email: formData.email,
+        samAccountName: formData.samAccountName,
+        department: formData.department,
+        title: formData.title,
+        phone: formData.phone,
+        role: formData.role,
+      }).unwrap();
+
+      message.success(`${formData.name} added successfully`);
+      closeDrawer();
+      // refetch() not strictly needed because userApi.createUser
+      // invalidates the "User" tag, but kept for explicitness.
       refetch();
     } catch (err) {
-      message.error(err?.data?.message || "Failed to create user");
+      const errMsg =
+        err?.data?.message ||
+        err?.error ||
+        "Failed to add user. Please try again.";
+      message.error(errMsg);
     }
   };
 
@@ -170,7 +205,9 @@ const AdminDashboard = () => {
       refetch();
       return true;
     } catch (err) {
-      message.error(err?.data?.message || err?.data?.error || "Failed to update role");
+      message.error(
+        err?.data?.message || err?.data?.error || "Failed to update role"
+      );
       return false;
     }
   };
@@ -182,10 +219,13 @@ const AdminDashboard = () => {
           <span className="admin-page__eyebrow">Administration</span>
           <div className="admin-page__title-row">
             <h1 className="admin-page__title">Admin Dashboard</h1>
-            <span className="admin-page__count">{totalUsers} users tracked</span>
+            <span className="admin-page__count">
+              {totalUsers} users tracked
+            </span>
           </div>
           <p className="admin-page__subtitle">
-            Review account coverage, manage active users, and keep the administration workspace aligned with the newer RM page system.
+            Review account coverage, manage active users, and keep the
+            administration workspace aligned with the newer RM page system.
           </p>
         </div>
 
@@ -203,10 +243,10 @@ const AdminDashboard = () => {
           <Button
             type="primary"
             icon={<UserAddOutlined />}
-            onClick={() => setDrawerOpen(true)}
+            onClick={openDrawer}
             className="admin-page__action-button admin-page__action-button--primary"
           >
-            Create New User
+            Add User from Directory
           </Button>
         </div>
       </section>
@@ -217,7 +257,8 @@ const AdminDashboard = () => {
             <div className="admin-page__toolbar-copy">
               <h2 className="admin-page__toolbar-title">User Management</h2>
               <p className="admin-page__toolbar-subtitle">
-                View, filter, and deactivate active accounts from the same table surface.
+                View, filter, and deactivate active accounts from the same
+                table surface.
               </p>
             </div>
           </section>
@@ -253,9 +294,10 @@ const AdminDashboard = () => {
 
       <CreateUserDrawer
         visible={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={closeDrawer}
         formData={formData}
         setFormData={setFormData}
+        loading={creating}
         onCreate={handleCreateUser}
       />
     </div>
