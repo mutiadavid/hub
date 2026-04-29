@@ -147,32 +147,21 @@ export const getActionedColumns = () => [
     key: "slaExpiry",
     width: 100,
     render: (date, record) => {
-      if (!date)
-        return <div style={{ fontSize: 11, color: "#999" }}>N/A</div>;
+      const slaDate = date || record?.slaExpiry || record?.deferral?.slaExpiry || null;
+      if (!slaDate) return <div style={{ fontSize: 11, color: "#999" }}>N/A</div>;
+
+      const startedAt = record?.createdAt || record?.deferral?.createdAt || record?.deferral?.createdAt;
 
       return (
         <RealTimeSlaTag
-          slaExpiry={date}
-          startedAt={record?.createdAt}
-          emptyLabel="N/A"
-          minWidth={60}
+          slaExpiry={slaDate}
+          startedAt={startedAt}
+          emptyLabel="Not set"
+          minWidth={76}
           displayStyle="text"
           businessHoursOnly
         />
       );
     },
-  },
-  {
-    title: "Actioned At",
-    dataIndex: "updatedAt",
-    key: "updatedAt",
-    width: 160,
-    render: (d, record) => (
-      <Typography.Text>
-        {dayjs(record.updatedAt || record.approvedAt || record.actionedAt).format(
-          "DD MMM YYYY HH:mm",
-        )}
-      </Typography.Text>
-    ),
   },
 ];

@@ -28,6 +28,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 
 import deferralApi from "../../../service/deferralApi.js";
 import ExtensionApprovalModal from "../../../components/modals/ExtensionApprovalModal";
+import RealTimeSlaTag from "../../../components/common/RealTimeSlaTag";
 import { customTableStyles, customModalStyles } from "./utils/deferralStyles";
 import { getDeferralTableColumns } from "./utils/deferralColumns.jsx";
 import { DeferralDetailModal, DeferralHeader, DeferralFilters } from "./components";
@@ -234,33 +235,41 @@ const DeferralIndex = ({ userId }) => {
 
   const handleOpenExtensionReview = async (extensionRecord) => {
     try {
+      // Open modal immediately with the available record to reduce perceived latency
+      setSelectedExtension(extensionRecord || null);
+      setExtensionModalOpen(true);
       setExtensionDetailsLoading(true);
 
       const extensionId = extensionRecord?._id || extensionRecord?.id;
-      const freshExtension = extensionId
-        ? await deferralApi.getExtensionById(extensionId, token)
-        : extensionRecord;
 
-      const deferralId =
-        freshExtension?.deferralId ||
-        freshExtension?.deferral?._id ||
-        freshExtension?.deferral?.id ||
-        extensionRecord?.deferralId;
+      if (extensionId) {
+        const freshExtension = await deferralApi.getExtensionById(extensionId, token);
 
-      const fullDeferral = deferralId
-        ? await deferralApi.getDeferralById(deferralId, token)
-        : freshExtension?.deferral || null;
+        const deferralId =
+          freshExtension?.deferralId ||
+          freshExtension?.deferral?._id ||
+          freshExtension?.deferral?.id ||
+          extensionRecord?.deferralId;
 
-      setSelectedExtension({
-        ...freshExtension,
-        deferral: fullDeferral || freshExtension?.deferral || null,
-        linkedDeferral:
-          fullDeferral ||
-          freshExtension?.linkedDeferral ||
-          freshExtension?.deferral ||
-          null,
-      });
-      setExtensionModalOpen(true);
+        const fullDeferral = deferralId
+          ? await deferralApi.getDeferralById(deferralId, token)
+          : freshExtension?.deferral || null;
+
+        setSelectedExtension((prev) => ({
+          ...((prev && typeof prev === "object") ? prev : {}),
+          ...freshExtension,
+          deferral: fullDeferral || freshExtension?.deferral || null,
+          linkedDeferral:
+            fullDeferral ||
+            freshExtension?.linkedDeferral ||
+            freshExtension?.deferral ||
+            null,
+        }));
+      } else if (extensionRecord?.deferralId || extensionRecord?.deferral?._id) {
+        const deferralId = extensionRecord?.deferralId || extensionRecord?.deferral?._id;
+        const fullDeferral = await deferralApi.getDeferralById(deferralId, token);
+        setSelectedExtension((prev) => ({ ...(prev || {}), deferral: fullDeferral }));
+      }
     } catch (error) {
       console.error("Error loading checker extension details:", error);
       message.error("Failed to load extension details");
@@ -896,6 +905,9 @@ const DeferralIndex = ({ userId }) => {
                         title: "Deferral No",
                         dataIndex: "deferralNumber",
                         key: "deferralNumber",
+                        render: (text) => (
+                          <span className="deferrals-table__primary-value">{text || "-"}</span>
+                        ),
                       },
                       {
                         title: "Customer",
@@ -903,36 +915,44 @@ const DeferralIndex = ({ userId }) => {
                         key: "customerName",
                       },
                       {
-                        title: "Days Requested",
+                        title: "Requested Days",
                         dataIndex: "requestedDaysSought",
                         key: "requestedDaysSought",
-                        render: (d) => <strong>{d} days</strong>,
+                        render: (d) => <span className="deferrals-table__days">{d || 0} days</span>,
                       },
                       {
-                        title: "Action",
-                        key: "action",
+                        title: "Status",
+                        dataIndex: "status",
+                        key: "status",
                         render: (_, record) => (
-                          <Button
-                            type="primary"
-                            size="small"
-                            className="deferral-action-btn"
-                            loading={
-                              extensionDetailsLoading &&
-                              String(selectedExtension?._id || selectedExtension?.id || "") ===
-                                String(record?._id || record?.id || "")
-                            }
-                            onClick={() => {
-                              handleOpenExtensionReview(record);
-                            }}
-                          >
-                            Review
-                          </Button>
+                          <span className={`deferrals-table__status`}>
+                            {record?.status || "-"}
+                          </span>
+                        ),
+                      },
+                      {
+                        title: "TAT consumed",
+                        dataIndex: "slaExpiry",
+                        key: "slaExpiry",
+                        render: (s, record) => (
+                          <RealTimeSlaTag
+                            slaExpiry={s || record?.slaExpiry || record?.deferral?.slaExpiry}
+                            startedAt={record?.createdAt || record?.deferral?.createdAt}
+                            emptyLabel="Not set"
+                            minWidth={76}
+                            displayStyle="text"
+                            businessHoursOnly
+                          />
                         ),
                       },
                     ]}
                     dataSource={pendingExtensions}
-                    rowKey={(r) => r.id}
+                    rowKey={(r) => r._id || r.id}
                     pagination={{ pageSize: 10, showSizeChanger: true }}
+                    onRow={(record) => ({
+                      onClick: () => handleOpenExtensionReview(record),
+                      style: { cursor: "pointer" },
+                    })}
                   />
                 </div>
               )

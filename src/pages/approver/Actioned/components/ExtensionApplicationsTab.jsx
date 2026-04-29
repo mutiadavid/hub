@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import { Button, Descriptions, Empty, Spin, Table, Typography } from "antd";
 import { useSelector } from "react-redux";
 import { DownloadOutlined, EyeOutlined } from "@ant-design/icons";
+import { getActionedColumns } from "../utils";
+import RealTimeSlaTag from "../../../../components/common/RealTimeSlaTag";
 import dayjs from "dayjs";
 import deferralApi from "../../../../service/deferralApi";
 import getFacilityColumns from "../../../../utils/facilityColumns";
@@ -30,143 +32,22 @@ const ExtensionApplicationsTab = ({
   extensions = [],
   loading = false,
   tableClassName = "actioned-table",
+  onOpenExtensionDetails,
 }) => {
   const token = useSelector((state) => state.auth.token);
-  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-  const [tabState, setTabState] = useState({});
-  const [hydratedExtensions, setHydratedExtensions] = useState({});
-  const [loadingDetailsByKey, setLoadingDetailsByKey] = useState({});
-
-  const toggleExpanded = async (record) => {
-    const key = record._id || record.id;
-    const isExpanded = expandedRowKeys.includes(key);
-
-    if (isExpanded) {
-      setExpandedRowKeys((prev) => prev.filter((item) => item !== key));
-      return;
-    }
-
-    setExpandedRowKeys([key]);
-
-    if (hydratedExtensions[key] || loadingDetailsByKey[key]) {
-      return;
-    }
-
-    setLoadingDetailsByKey((prev) => ({ ...prev, [key]: true }));
-
-    try {
-      const extensionId = record?._id || record?.id;
-      const fullExtension = extensionId
-        ? await deferralApi.getExtensionById(extensionId, token)
-        : record;
-      const deferralId =
-        fullExtension?.deferralId ||
-        fullExtension?.deferral?._id ||
-        fullExtension?.deferral?.id ||
-        record?.deferralId ||
-        record?.deferral?._id ||
-        record?.deferral?.id;
-      const fullDeferral = deferralId
-        ? await deferralApi.getDeferralById(deferralId, token)
-        : fullExtension?.deferral || record?.deferral || record?.linkedDeferral || null;
-
-      setHydratedExtensions((prev) => ({
-        ...prev,
-        [key]: {
-          ...record,
-          ...fullExtension,
-          deferral: fullDeferral || fullExtension?.deferral || record?.deferral || null,
-          linkedDeferral:
-            fullDeferral ||
-            fullExtension?.linkedDeferral ||
-            fullExtension?.deferral ||
-            record?.linkedDeferral ||
-            record?.deferral ||
-            null,
-        },
-      }));
-    } catch (error) {
-      console.error("Failed to hydrate actioned extension details:", error);
-    } finally {
-      setLoadingDetailsByKey((prev) => ({ ...prev, [key]: false }));
-    }
-  };
-
+  // Use actioned deferral columns so extension list matches deferral table
   const setActiveTab = (key, tab) => {
-    setTabState((prev) => ({ ...prev, [key]: tab }));
+    // placeholder for tab state if needed in future
   };
 
-  const columns = [
-    {
-      title: "Deferral No",
-      dataIndex: ["deferral", "deferralNumber"],
-      key: "deferralNumber",
-      width: 120,
-      render: (text, record) => (
-        <span className="font-normal text-(--color-text-dark)">
-          {text || record.deferralNumber || record.deferralId || "N/A"}
-        </span>
-      ),
-    },
-    {
-      title: "Customer",
-      dataIndex: ["deferral", "customerName"],
-      key: "customerName",
-      width: 200,
-      render: (text, record) => (
-        <span className="font-normal text-(--color-text-dark)">
-          {text || record.customerName || "Unknown Customer"}
-        </span>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      width: 120,
-      render: (status) => (
-        <span
-          className="inline-flex items-center rounded-full bg-[rgba(214,189,152,0.18)] px-2.5 py-1 text-xs font-normal capitalize text-(--color-text-dark)"
-        >
-          {(status || "pending").replace(/_/g, " ")}
-        </span>
-      ),
-    },
-    {
-      title: "Requested At",
-      dataIndex: "requestedAt",
-      key: "requestedAt",
-      width: 160,
-      render: (date) =>
-        date
-          ? new Date(date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            })
-          : "N/A",
-    },
-    {
-      title: "Review",
-      key: "review",
-      width: 120,
-      render: (_, record) => {
-        const rowKey = record._id || record.id;
-        const expanded = expandedRowKeys.includes(rowKey);
-        return (
-          <Button
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              toggleExpanded(record);
-            }}
-          >
-            {expanded ? "Hide" : "Review"}
-          </Button>
-        );
-      },
-    },
-  ];
+  const columns = getActionedColumns();
+
+  // map extensions into deferral-like rows so the deferral columns render correctly
+  const tableData = (extensions || []).map((ext, idx) => ({
+    ...(ext.deferral || {}),
+    _extensionId: ext._id || ext.id || `ext-${idx}`,
+    __extension: ext,
+  }));
 
   const uploadedDocumentColumns = useMemo(
     () => [
@@ -528,8 +409,8 @@ const ExtensionApplicationsTab = ({
     <div className={tableClassName}>
       <Table
         columns={columns}
-        dataSource={extensions}
-        rowKey={(record) => record._id || record.id}
+        dataSource={tableData}
+        rowKey={(record) => record._id || record.id || record._extensionId}
         tableLayout="fixed"
         size="middle"
         pagination={{
@@ -539,14 +420,11 @@ const ExtensionApplicationsTab = ({
           position: ["bottomCenter"],
         }}
         scroll={{ x: 600 }}
-        expandable={{
-          expandedRowKeys,
-          expandedRowRender: renderExpandedRow,
-          expandIcon: () => null,
-        }}
         onRow={(record) => ({
           onClick: () => {
-            toggleExpanded(record);
+            if (typeof onOpenExtensionDetails === "function") {
+              onOpenExtensionDetails(record.__extension || record);
+            }
           },
           className: "cursor-pointer",
         })}

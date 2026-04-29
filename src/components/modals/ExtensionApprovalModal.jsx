@@ -18,6 +18,7 @@ const ExtensionApprovalModal = ({
     <MyQueueExtensionApplicationModal
       selectedExtension={extension}
       open={open}
+      noHeaderGradient
       onClose={onClose}
       onApprove={(comment) => onApprove?.(extension?._id || extension?.id, comment)}
       onReject={(reason) => onReject?.(extension?._id || extension?.id, reason)}

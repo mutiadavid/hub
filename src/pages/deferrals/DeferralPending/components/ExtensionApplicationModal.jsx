@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Button,
@@ -454,7 +454,13 @@ const ExtensionApplicationModal = ({
   onSubmit,
   onSuccessViewExtensions,
 }) => {
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState("request");
+
+  useEffect(() => {
+    if (open && selectedDeferral) {
+      setActiveTab("request");
+    }
+  }, [open, selectedDeferral?._id, selectedDeferral?.id]);
 
   if (!selectedDeferral) return null;
 

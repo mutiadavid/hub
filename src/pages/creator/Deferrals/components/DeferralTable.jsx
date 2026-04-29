@@ -74,13 +74,13 @@ const DeferralTable = ({
         }
         style={{ padding: 40 }}
       />
-    ) : (
+      ) : (
       <div className="deferrals-table creator-table-shell deferrals-table-shell">
         <style>{customTableStyles}</style>
         <Table
           columns={extensionColumns}
           dataSource={pendingExtensions}
-          rowKey={(record) => record.id}
+          rowKey={(record) => record._id || record.id}
           size="middle"
           tableLayout="fixed"
           pagination={{
@@ -91,6 +91,10 @@ const DeferralTable = ({
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} extension applications`,
           }}
+          onRow={(record) => ({
+            onClick: () => onRowClick && onRowClick(record),
+            style: { cursor: "pointer" },
+          })}
         />
       </div>
     );

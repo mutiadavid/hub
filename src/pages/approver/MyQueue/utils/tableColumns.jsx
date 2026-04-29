@@ -146,20 +146,22 @@ export const renderQueueStatusTag = (status) => {
 };
 
 export const renderQueueSla = (date, record, pendingStatuses = ["pending_approval", "in_review"]) => {
-  if (!pendingStatuses.includes(record?.status)) {
-    return <div style={{ fontSize: 11, color: "#999" }}>N/A</div>;
-  }
+  const slaDate = date || record?.slaExpiry || record?.deferral?.slaExpiry || null;
+  const startedAt = record?.createdAt || record?.deferral?.createdAt || record?.updatedAt || record?.approvedAt || null;
 
-  return (
-    <RealTimeSlaTag
-      slaExpiry={date}
-      startedAt={record?.createdAt}
-      emptyLabel="N/A"
-      minWidth={60}
-      displayStyle="text"
-      businessHoursOnly
-    />
-  );
+  // If we have neither SLA nor a sensible start timestamp, show elapsed as 0m rather than N/A
+  const fallbackStartedAt = startedAt || new Date().toISOString();
+
+    return (
+      <RealTimeSlaTag
+        slaExpiry={slaDate}
+        startedAt={fallbackStartedAt}
+        emptyLabel={startedAt ? undefined : "Not set"}
+        minWidth={76}
+        displayStyle="text"
+        businessHoursOnly
+      />
+    );
 };
 
 /**

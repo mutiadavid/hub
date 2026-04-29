@@ -125,6 +125,7 @@ const ExtensionApplicationModal = ({
   rejectLoading = false,
   reworkLoading = false,
   showActions = true,
+  noHeaderGradient = false,
 }) => {
   const [activeTab, setActiveTab] = useState("details");
   const [approveModalVisible, setApproveModalVisible] = useState(false);
@@ -174,6 +175,12 @@ const ExtensionApplicationModal = ({
       current: !approved && previousApprovalsComplete,
     };
   });
+
+  const noHeaderStyles = `
+    .no-header-gradient .ant-modal-header{ background: #ffffff !important; border-bottom: 1px solid rgba(214,189,152,0.2) !important; }
+    .no-header-gradient .ant-modal-title{ color: var(--color-text-dark) !important; }
+    .no-header-gradient .ant-modal-close{ color: var(--color-text-dark) !important; background: transparent !important; }
+  `;
 
   const handleReject = () => {
     if (!rejectReason.trim()) {
@@ -414,6 +421,7 @@ const ExtensionApplicationModal = ({
 
   return (
     <>
+      <style>{noHeaderStyles}</style>
       <div className={reviewShellClassName}>
         <div className="flex flex-col gap-4 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3 max-md:flex-col max-md:items-stretch">
@@ -453,14 +461,6 @@ const ExtensionApplicationModal = ({
             </Button>
             {showActions ? (
               <>
-                <Button
-                  className={secondaryButtonClassName}
-                  icon={<RedoOutlined />}
-                  onClick={() => setReworkModalVisible(true)}
-                  loading={reworkLoading}
-                >
-                  Return for Rework
-                </Button>
                 <Button
                   className={primaryButtonClassName}
                   icon={<CloseOutlined />}
@@ -672,8 +672,8 @@ const ExtensionApplicationModal = ({
         inputValue: approveComment,
         onInputChange: setApproveComment,
         inputPlaceholder: "Enter approval comments...",
-        modalClassName: editDecisionModalWrapClassName,
-        titleClassName: "text-white",
+        modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
+        titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
         titleIconClassName: "",
         titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
         cardClassName: "border-0 bg-transparent p-0 shadow-none",
@@ -703,8 +703,8 @@ const ExtensionApplicationModal = ({
         inputValue: reworkReason,
         onInputChange: setReworkReason,
         inputPlaceholder: "Enter rework instructions...",
-        modalClassName: editDecisionModalWrapClassName,
-        titleClassName: "text-white",
+        modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
+        titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
         titleIconClassName: "",
         titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
         cardClassName: "border-0 bg-transparent p-0 shadow-none",
@@ -734,8 +734,8 @@ const ExtensionApplicationModal = ({
         inputValue: rejectReason,
         onInputChange: setRejectReason,
         inputPlaceholder: "Enter rejection reason...",
-        modalClassName: editDecisionModalWrapClassName,
-        titleClassName: "text-white",
+        modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
+        titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
         titleIconClassName: "",
         titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
         cardClassName: "border-0 bg-transparent p-0 shadow-none",

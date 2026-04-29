@@ -1336,6 +1336,14 @@ const DeferralDetailsModal = ({
         : [];
   const { dclDocs, uploadedDocs, requestedDocs } = getDeferralDocumentBuckets(displayDeferral);
   const closeRequestDocuments = getCloseRequestDocumentGroups(displayDeferral);
+  const hasOpenCloseRequest = Boolean(
+    (displayDeferral?.closeRequestStatus && !["approved", "rejected", "withdrawn", ""].includes(String(displayDeferral.closeRequestStatus).trim().toLowerCase())) ||
+    (Array.isArray(displayDeferral?.closeRequests) && displayDeferral.closeRequests.some((cr) => {
+      const s = String(cr?.status || "").trim().toLowerCase();
+      return s && !["approved", "rejected", "withdrawn"].includes(s);
+    })) ||
+    (Array.isArray(displayDeferral?.closeRequestDocuments) && displayDeferral.closeRequestDocuments.length > 0)
+  );
   const generalUploadedDocs = uploadedDocs.filter((doc) => !doc.isCloseRequestEvidence);
   const approvedApproversCount = approvalFlow.filter(
     isApprovalMarkedApproved,
@@ -1753,6 +1761,7 @@ const DeferralDetailsModal = ({
               resubmitLoading={resubmitLoading}
               extensionSubmissionSuccess={false}
               hasOpenExtensionRequest={hasOpenExtensionRequest}
+              hasOpenCloseRequest={hasOpenCloseRequest}
               onApplyExtension={handleApplyExtensionClick}
               closeLoading={closeLoading}
               onOpenCloseRequest={() => setWorkspaceTab("close-request")}

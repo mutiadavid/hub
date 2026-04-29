@@ -776,33 +776,42 @@ const Deferrals = ({ userId }) => {
 
   const handleOpenExtensionReview = async (extensionRecord) => {
     try {
+      // Open modal immediately with available record to reduce perceived latency
+      setSelectedExtension(extensionRecord || null);
+      setExtensionModalOpen(true);
       setExtensionDetailsLoading(true);
 
       const extensionId = extensionRecord?._id || extensionRecord?.id;
-      const freshExtension = extensionId
-        ? await deferralApi.getExtensionById(extensionId, token)
-        : extensionRecord;
 
-      const deferralId =
-        freshExtension?.deferralId ||
-        freshExtension?.deferral?._id ||
-        freshExtension?.deferral?.id ||
-        extensionRecord?.deferralId;
+      if (extensionId) {
+        const freshExtension = await deferralApi.getExtensionById(extensionId, token);
 
-      const fullDeferral = deferralId
-        ? await deferralApi.getDeferralById(deferralId, token)
-        : freshExtension?.deferral || null;
+        const deferralId =
+          freshExtension?.deferralId ||
+          freshExtension?.deferral?._id ||
+          freshExtension?.deferral?.id ||
+          extensionRecord?.deferralId;
 
-      setSelectedExtension({
-        ...freshExtension,
-        deferral: fullDeferral || freshExtension?.deferral || null,
-        linkedDeferral:
-          fullDeferral ||
-          freshExtension?.linkedDeferral ||
-          freshExtension?.deferral ||
-          null,
-      });
-      setExtensionModalOpen(true);
+        const fullDeferral = deferralId
+          ? await deferralApi.getDeferralById(deferralId, token)
+          : freshExtension?.deferral || null;
+
+        setSelectedExtension((prev) => ({
+          ...((prev && typeof prev === "object") ? prev : {}),
+          ...freshExtension,
+          deferral: fullDeferral || freshExtension?.deferral || null,
+          linkedDeferral:
+            fullDeferral ||
+            freshExtension?.linkedDeferral ||
+            freshExtension?.deferral ||
+            null,
+        }));
+      } else if (extensionRecord?.deferralId || extensionRecord?.deferral?._id) {
+        // If extension record lacked an id but has a deferral reference, fetch the deferral
+        const deferralId = extensionRecord?.deferralId || extensionRecord?.deferral?._id;
+        const fullDeferral = await deferralApi.getDeferralById(deferralId, token);
+        setSelectedExtension((prev) => ({ ...(prev || {}), deferral: fullDeferral }));
+      }
     } catch (error) {
       console.error("Error loading extension review details:", error);
       message.error("Failed to load extension details");
@@ -1582,20 +1591,18 @@ const Deferrals = ({ userId }) => {
       },
     },
     {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <Button
-          type="default"
-          size="small"
-          className="deferrals-table__action-button"
-          loading={extensionDetailsLoading && String(selectedExtension?._id || selectedExtension?.id || "") === String(record?._id || record?.id || "")}
-          onClick={() => {
-            handleOpenExtensionReview(record);
-          }}
-        >
-          Review
-        </Button>
+      title: "TAT consumed",
+      dataIndex: "slaExpiry",
+      key: "slaExpiry",
+      render: (s, record) => (
+        <RealTimeSlaTag
+          slaExpiry={s || record?.slaExpiry || record?.deferral?.slaExpiry}
+          startedAt={record?.createdAt || record?.deferral?.createdAt}
+          emptyLabel="Not set"
+          minWidth={76}
+          displayStyle="text"
+          businessHoursOnly
+        />
       ),
     },
   ];
@@ -1695,7 +1702,13 @@ const Deferrals = ({ userId }) => {
               data={filteredDeferrals}
               loading={loading}
               activeTab={activeTab}
-              onRowClick={openModal}
+              onRowClick={(record) => {
+                if (activeTab === "extensions") {
+                  handleOpenExtensionReview(record);
+                } else {
+                  openModal(record);
+                }
+              }}
               customTableStyles={deferralsPageStyles}
               computeExtensionColumns={computeExtensionColumns}
               pendingExtensions={pendingExtensions}
