@@ -37,226 +37,33 @@ export default function CustomerSearch({
   onBack,
 }) {
   return (
-    <div className="creator-theme" style={{ padding: 24, minHeight: "100%", background: "var(--color-bg)" }}>
-      <style>{`
-        .deferral-search-page {
-          max-width: 760px;
-          margin: 32px auto;
-        }
-        .deferral-search-card {
-          background: var(--color-white);
-          border: 1px solid rgba(214, 189, 152, 0.2);
-          border-radius: 12px;
-          box-shadow: 0 16px 34px rgba(26, 54, 54, 0.08);
-          overflow: hidden;
-        }
-        .deferral-search-card .ant-card-body {
-          padding: 0;
-        }
-        .deferral-search-hero {
-          padding: 40px 32px 28px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          gap: 14px;
-          border-top: 4px solid var(--color-accent);
-          background:
-            radial-gradient(circle at top center, rgba(214, 189, 152, 0.18), transparent 32%),
-            linear-gradient(180deg, rgba(245, 247, 244, 0.72) 0%, rgba(255, 255, 255, 0.96) 100%);
-        }
-        .deferral-search-icon {
-          font-size: 62px;
-          color: var(--color-primary-dark);
-        }
-        .deferral-search-title {
-          margin: 0 !important;
-          color: var(--color-text-dark) !important;
-          font-size: 20px !important;
-          font-weight: 700 !important;
-          letter-spacing: -0.03em;
-        }
-        .deferral-search-subtitle {
-          display: block;
-          color: var(--color-text-light) !important;
-          font-size: 14px;
-          max-width: 520px;
-        }
-        .deferral-search-body {
-          padding: 0 28px 28px;
-        }
-        .deferral-search-divider.ant-divider {
-          margin: 0 0 28px !important;
-          border-color: rgba(214, 189, 152, 0.2) !important;
-        }
-        .deferral-search-actions {
-          display: flex;
-          justify-content: center;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-        .deferral-search-trigger.ant-btn,
-        .deferral-search-primary.ant-btn {
-          min-width: 220px;
-          height: 48px;
-          font-size: 15px;
-          padding: 0 24px !important;
-        }
-        .deferral-search-tab.ant-btn {
-          min-width: 240px;
-          height: 44px;
-        }
-        .deferral-search-form {
-          text-align: left;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        .deferral-search-form .ant-form-item {
-          margin-bottom: 22px;
-        }
-        .deferral-search-form .ant-form-item-label > label {
-          color: var(--color-text-dark) !important;
-          font-size: 13px !important;
-          font-weight: 600 !important;
-        }
-        .deferral-search-form .ant-form-item-required::before {
-          color: #dc2626 !important;
-        }
-        .deferral-search-input.ant-input,
-        .deferral-search-select .ant-select-selector {
-          min-height: 46px !important;
-          padding: 10px 14px !important;
-          border: 1px solid rgba(214, 189, 152, 0.2) !important;
-          border-radius: 8px !important;
-          background: var(--color-white) !important;
-          box-shadow: none !important;
-          font-size: 14px !important;
-          color: var(--color-text-dark) !important;
-        }
-        .deferral-search-input.ant-input:focus,
-        .deferral-search-input.ant-input:hover,
-        .deferral-search-select.ant-select-focused .ant-select-selector,
-        .deferral-search-select:hover .ant-select-selector {
-          border-color: var(--color-primary-dark) !important;
-          box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
-        }
-        .deferral-search-dropdown {
-          position: absolute;
-          top: 50px;
-          left: 0;
-          right: 0;
-          z-index: 1200;
-          background: var(--color-white);
-          border: 1px solid rgba(214, 189, 152, 0.2);
-          box-shadow: 0 12px 24px rgba(26, 54, 54, 0.08);
-          max-height: 240px;
-          overflow-y: auto;
-          border-radius: 8px;
-        }
-        .deferral-search-option {
-          padding: 12px 14px;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.12);
-          cursor: pointer;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 12px;
-          transition: background 150ms ease;
-        }
-        .deferral-search-option:hover {
-          background: rgba(214, 189, 152, 0.08);
-        }
-        .deferral-search-option:last-child {
-          border-bottom: none;
-        }
-        .deferral-search-option-title {
-          font-weight: 600;
-          color: var(--color-text-dark);
-        }
-        .deferral-search-option-meta,
-        .deferral-search-tip {
-          font-size: 12px;
-          color: var(--color-text-light);
-        }
-        .deferral-search-footer {
-          display: flex;
-          justify-content: center;
-          margin-top: 8px;
-        }
-        .deferral-search-form-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
-          margin-top: 6px;
-          flex-wrap: wrap;
-        }
-        .deferral-search-secondary.ant-btn,
-        .deferral-search-back.ant-btn {
-          height: 44px;
-          padding: 0 18px !important;
-        }
-        .deferral-search-primary.ant-btn {
-          height: 44px;
-          padding: 0 18px !important;
-        }
-        @media (max-width: 767px) {
-          .deferral-search-page {
-            margin: 12px auto;
-          }
-          .deferral-search-hero,
-          .deferral-search-body {
-            padding-left: 18px;
-            padding-right: 18px;
-          }
-          .deferral-search-actions,
-          .deferral-search-form-actions,
-          .deferral-search-footer {
-            justify-content: stretch;
-          }
-          .deferral-search-trigger.ant-btn,
-          .deferral-search-tab.ant-btn,
-          .deferral-search-primary.ant-btn,
-          .deferral-search-secondary.ant-btn,
-          .deferral-search-back.ant-btn {
-            width: 100%;
-          }
-          .deferral-search-option {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-        }
-      `}</style>
-      <div className="deferral-search-page">
+    <div className="creator-theme p-6 min-h-full bg-(--color-bg)">
+      <div className="max-w-[760px] mx-auto my-3 md:my-8">
         <Card
-          className="deferral-search-card"
+          className="bg-white border border-[rgba(214,189,152,0.2)] rounded-xl shadow-[0_16px_34px_rgba(26,54,54,0.08)] overflow-hidden [&_.ant-card-body]:p-0"
           style={{ minHeight: showSearchForm ? "auto" : "450px" }}
         >
-          <div className="deferral-search-hero">
-            <BankOutlined
-              className="deferral-search-icon"
-            />
+          <div className="pt-10 px-[18px] md:px-8 pb-7 flex flex-col items-center text-center gap-3.5 border-t-4 border-(--color-accent) bg-[radial-gradient(circle_at_top_center,rgba(214,189,152,0.18),transparent_32%),linear-gradient(180deg,rgba(245,247,244,0.72)_0%,rgba(255,255,255,0.96)_100%)]">
+            <BankOutlined className="text-[62px] text-(--color-primary-dark)" />
 
-            <Title level={3} className="deferral-search-title">
+            <Title level={3} className="m-0! text-(--color-text-dark)! text-[20px]! font-bold! tracking-[-0.03em]">
               Start New Deferral Request
             </Title>
 
-            <Typography.Text
-              className="deferral-search-subtitle"
-            >
+            <Typography.Text className="block !text-(--color-text-light) text-[14px] max-w-[520px]">
               Please search for a customer to begin the deferral request process
             </Typography.Text>
           </div>
 
-          <div className="deferral-search-body">
+          <div className="px-[18px] md:px-7 pb-7">
             {showSearchForm ? (
               <>
-                <Divider className="deferral-search-divider" />
+                <Divider className="!m-0 !mb-7 !border-[rgba(214,189,152,0.2)]" />
 
                 {/* Search Mode Tabs */}
-                <div className="deferral-search-actions" style={{ marginBottom: 24 }}>
+                <div className="flex flex-col md:flex-row justify-stretch md:justify-center gap-3 flex-wrap mb-6">
                   <Button
-                    className={`deferral-search-tab ${searchMode === SEARCH_MODE.CUSTOMER ? "deferral-search-tab--active" : ""}`}
+                    className="w-full md:w-auto min-w-[240px] h-11 !bg-(--ncb-primary-500) !text-white !border-none [&>span]:!bg-transparent !rounded-lg !shadow-none !font-semibold !font-[inherit]"
                     onClick={() => {
                       setSearchMode(SEARCH_MODE.CUSTOMER);
                       setSearchDclNumber("");
@@ -265,7 +72,7 @@ export default function CustomerSearch({
                     Search by Customer Number
                   </Button>
                   <Button
-                    className={`deferral-search-tab ${searchMode === SEARCH_MODE.DCL ? "deferral-search-tab--active" : ""}`}
+                    className="w-full md:w-auto min-w-[240px] h-11 !bg-(--ncb-primary-500) !text-white !border-none [&>span]:!bg-transparent !rounded-lg !shadow-none !font-semibold !font-[inherit]"
                     onClick={() => {
                       setSearchMode(SEARCH_MODE.DCL);
                       setSearchCustomerNumber("");
@@ -276,7 +83,7 @@ export default function CustomerSearch({
                   </Button>
                 </div>
 
-                <div className="deferral-search-form">
+                <div className="text-left flex flex-col gap-1 [&_.ant-form-item]:mb-[22px] [&_.ant-form-item-label>label]:!text-(--color-text-dark) [&_.ant-form-item-label>label]:!text-[13px] [&_.ant-form-item-label>label]:!font-bold [&_.ant-form-item-required::before]:!text-[#dc2626]">
                   {searchMode === SEARCH_MODE.CUSTOMER ? (
                     <Form layout="vertical" onFinish={onFetchCustomer}>
                       <Form.Item
@@ -289,9 +96,9 @@ export default function CustomerSearch({
                           },
                         ]}
                       >
-                        <div style={{ position: "relative" }}>
+                        <div className="relative">
                           <Input
-                            className="deferral-search-input"
+                            className="deferral-search-input !min-h-[46px] !px-[14px] !py-[10px] !border-[rgba(214,189,152,0.2)] !rounded-lg !bg-white !shadow-none !text-[14px] !text-(--color-text-dark) focus:!border-(--color-primary-dark) hover:!border-(--color-primary-dark) focus:!shadow-[0_0_0_2px_rgba(26,54,54,0.08)] hover:!shadow-[0_0_0_2px_rgba(26,54,54,0.08)]"
                             type="text"
                             size="large"
                             value={searchCustomerNumber}
@@ -307,22 +114,22 @@ export default function CustomerSearch({
                           {/* Typeahead suggestions */}
                           {customerSearchResults &&
                             customerSearchResults.length > 0 && (
-                              <div className="deferral-search-dropdown">
+                              <div className="absolute top-[50px] left-0 right-0 z-[1200] bg-white border border-[rgba(214,189,152,0.2)] shadow-[0_12px_24px_rgba(26,54,54,0.08)] max-h-[240px] overflow-y-auto rounded-lg">
                                 {customerSearchResults.map((c) => (
                                   <div
                                     key={c._id}
                                     onClick={() => onSelectCustomer(c)}
-                                    className="deferral-search-option"
+                                    className="p-3 px-3.5 border-b border-[rgba(214,189,152,0.12)] cursor-pointer flex flex-col md:flex-row justify-start md:justify-between items-start md:items-center gap-3 transition-colors duration-150 hover:bg-[rgba(214,189,152,0.08)] last:border-b-0"
                                   >
                                     <div>
-                                      <div className="deferral-search-option-title">
+                                      <div className="font-semibold text-(--color-text-dark)">
                                         {c.name}
                                       </div>
-                                      <div className="deferral-search-option-meta">
+                                      <div className="text-[12px] text-(--color-text-light)">
                                         {c.customerNumber}
                                       </div>
                                     </div>
-                                    <div className="deferral-search-option-meta">
+                                    <div className="text-[12px] text-(--color-text-light)">
                                       {c.email}
                                     </div>
                                   </div>
@@ -340,9 +147,8 @@ export default function CustomerSearch({
                         ]}
                       >
                         <Select
-                          className="deferral-search-select"
+                          className="w-full [&_.ant-select-selector]:!min-h-[46px] [&_.ant-select-selector]:!px-[14px] [&_.ant-select-selector]:!py-[10px] [&_.ant-select-selector]:!border-[rgba(214,189,152,0.2)] [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!bg-white [&_.ant-select-selector]:!shadow-none [&_.ant-select-selector]:!text-[14px] [&_.ant-select-selector]:!text-(--color-text-dark) [&.ant-select-focused_.ant-select-selector]:!border-(--color-primary-dark) hover:[&_.ant-select-selector]:!border-(--color-primary-dark) [&.ant-select-focused_.ant-select-selector]:!shadow-[0_0_0_2px_rgba(26,54,54,0.08)] hover:[&_.ant-select-selector]:!shadow-[0_0_0_2px_rgba(26,54,54,0.08)]"
                           size="large"
-                          style={{ width: "100%" }}
                           value={searchLoanType}
                           onChange={setSearchLoanType}
                           placeholder="Select loan type"
@@ -355,19 +161,17 @@ export default function CustomerSearch({
                         </Select>
                       </Form.Item>
 
-                      <div className="deferral-search-form-actions">
+                      <div className="flex flex-col md:flex-row justify-stretch md:justify-end gap-2.5 mt-1.5 flex-wrap">
                         <Button
-                          className="deferral-search-secondary"
+                          className="deferral-search-secondary w-full md:w-auto h-11 !px-[18px]"
                           onClick={() => setShowSearchForm(false)}
-                          size="large"
                         >
                           Cancel
                         </Button>
                         <Button
-                          className="deferral-search-primary"
+                          className="deferral-search-primary w-full md:w-auto min-w-[220px] h-11 text-[15px] !px-[18px]"
                           htmlType="submit"
                           loading={isFetching}
-                          size="large"
                         >
                           {isFetching ? "Fetching..." : "Fetch Customer"}
                         </Button>
@@ -381,9 +185,9 @@ export default function CustomerSearch({
                           { required: true, message: "Please enter DCL number" },
                         ]}
                       >
-                        <div style={{ position: "relative" }}>
+                        <div className="relative">
                           <Input
-                            className="deferral-search-input"
+                            className="deferral-search-input !min-h-[46px] !px-[14px] !py-[10px] !border-[rgba(214,189,152,0.2)] !rounded-lg !bg-white !shadow-none !text-[14px] !text-(--color-text-dark) focus:!border-(--color-primary-dark) hover:!border-(--color-primary-dark) focus:!shadow-[0_0_0_2px_rgba(26,54,54,0.08)] hover:!shadow-[0_0_0_2px_rgba(26,54,54,0.08)]"
                             type="text"
                             size="large"
                             value={searchDclNumber}
@@ -394,23 +198,20 @@ export default function CustomerSearch({
 
                           {/* DCL Typeahead suggestions */}
                           {dclSearchResults && dclSearchResults.length > 0 && (
-                            <div className="deferral-search-dropdown">
+                            <div className="absolute top-[50px] left-0 right-0 z-[1200] bg-white border border-[rgba(214,189,152,0.2)] shadow-[0_12px_24px_rgba(26,54,54,0.08)] max-h-[240px] overflow-y-auto rounded-lg">
                               {dclSearchResults.map((dcl) => (
                                 <div
                                   key={dcl.id}
                                   onClick={() => onSelectDcl(dcl)}
-                                  className="deferral-search-option"
-                                  style={{ flexDirection: "column", alignItems: "flex-start" }}
+                                  className="p-3 px-3.5 border-b border-[rgba(214,189,152,0.12)] cursor-pointer flex flex-col items-start gap-3 transition-colors duration-150 hover:bg-[rgba(214,189,152,0.08)] last:border-b-0"
                                 >
-                                  <div
-                                    className="deferral-search-option-title"
-                                  >
+                                  <div className="font-semibold text-(--color-text-dark)">
                                     {dcl.dclNo}
                                   </div>
-                                  <div className="deferral-search-option-meta">
+                                  <div className="text-[12px] text-(--color-text-light)">
                                     {dcl.customerName} ({dcl.customerNumber})
                                   </div>
-                                  <div className="deferral-search-option-meta">
+                                  <div className="text-[12px] text-(--color-text-light)">
                                     Loan Type: {dcl.loanType}
                                   </div>
                                 </div>
@@ -421,18 +222,16 @@ export default function CustomerSearch({
                       </Form.Item>
 
                       <Typography.Text
-                        className="deferral-search-tip"
-                        style={{ marginTop: 8, display: "block" }}
+                        className="text-[12px] text-(--color-text-light) mt-2 block"
                       >
                         Tip: Start typing a DCL number to search. Customer details
                         will auto-populate when you select a DCL.
                       </Typography.Text>
 
-                      <div className="deferral-search-form-actions">
+                      <div className="flex flex-col md:flex-row justify-stretch md:justify-end gap-2.5 mt-1.5 flex-wrap">
                         <Button
-                          className="deferral-search-secondary"
+                          className="deferral-search-secondary w-full md:w-auto h-11 !px-[18px]"
                           onClick={() => setShowSearchForm(false)}
-                          size="large"
                         >
                           Cancel
                         </Button>
@@ -442,10 +241,9 @@ export default function CustomerSearch({
                 </div>
               </>
             ) : (
-              <div className="deferral-search-actions">
+              <div className="flex flex-col md:flex-row justify-stretch md:justify-center gap-3 flex-wrap">
                 <Button
-                  className="deferral-search-trigger"
-                  size="large"
+                  className="deferral-search-trigger w-full md:w-auto min-w-[220px] h-11 text-[15px] !px-6"
                   icon={<SearchOutlined />}
                   onClick={() => setShowSearchForm(true)}
                   loading={isFetching}
@@ -455,9 +253,9 @@ export default function CustomerSearch({
               </div>
             )}
 
-            <div className="deferral-search-footer">
+            <div className="flex justify-stretch md:justify-center mt-2">
               <Button
-                className="deferral-search-back"
+                className="deferral-search-back w-full md:w-auto h-11 !px-[18px]"
                 onClick={onBack}
               >
                 ← Back to My Deferrals

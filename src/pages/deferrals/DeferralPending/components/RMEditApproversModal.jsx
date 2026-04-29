@@ -331,21 +331,29 @@ const RMEditApproversModal = ({
                         loading={loadingApprovers}
                         disabled={hasApproved}
                       >
-                        {approversFromDb.length > 0 ? (
-                          approversFromDb.map((user) => (
-                            <Select.Option
-                              key={user._id || user.id}
-                              value={user._id || user.id}
-                              label={user.name}
-                            >
-                              {user.name}
+                        {(() => {
+                          const availableApprovers = approversFromDb.filter(user => {
+                            const userId = user._id || user.id;
+                            if (userId === approver.userId) return true;
+                            return !editedApprovers.some(a => a.userId === userId);
+                          });
+
+                          return availableApprovers.length > 0 ? (
+                            availableApprovers.map((user) => (
+                              <Select.Option
+                                key={user._id || user.id}
+                                value={user._id || user.id}
+                                label={user.name}
+                              >
+                                {user.name}
+                              </Select.Option>
+                            ))
+                          ) : (
+                            <Select.Option disabled>
+                              No other approvers available
                             </Select.Option>
-                          ))
-                        ) : (
-                          <Select.Option disabled>
-                            No approvers available
-                          </Select.Option>
-                        )}
+                          );
+                        })()}
                       </Select>
                     </div>
                   </div>

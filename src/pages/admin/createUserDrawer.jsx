@@ -93,8 +93,7 @@ const handleClose = () => {
   };
  
   const renderOption = (option) => {
-    const u = option?.user;
-    if (!u) return null;
+    const u = option.user;
     return (
       <div style={{ padding: "4px 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -226,7 +225,7 @@ const handleClose = () => {
               )
             }
             options={searchOptions}
-            optionRender={(option) => renderOption(option)}
+            optionRender={(option) => renderOption(option.data)}
             suffixIcon={<SearchOutlined style={{ color: "#9ca3af" }} />}
             style={{ width: "100%" }}
           />
