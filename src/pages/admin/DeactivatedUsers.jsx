@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Table, Button, Space, Typography, message, Modal } from "antd";
+import { Table, Button, Space, Typography, Modal, message } from "antd";
 import {
   PoweroffOutlined,
   SwapOutlined,
@@ -18,11 +18,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import ReassignModal from "./ReassignModal";
-import {
-  useGetUsersQuery,
-  useReassignTasksMutation,
-  useToggleActiveMutation,
-} from "../../api/userApi";
+import { useGetUsersQuery, useReassignTasksMutation, useToggleActiveMutation } from "../../api/userApi";
+import { toast } from "react-toastify";
 import { formatRoleLabel, normalizeRoleKey } from "./adminRoleUtils";
 import "../../styles/creatorDesignSystem.css";
 
@@ -49,7 +46,8 @@ const PIE_COLORS = {
 
 const DeactivatedUsers = () => {
   const { data: users = [], isLoading, refetch } = useGetUsersQuery();
-  const [toggleActive] = useToggleActiveMutation();
+  const [toggleActive, { isLoading: isToggling }] = useToggleActiveMutation();
+  const [togglingIds, setTogglingIds] = useState([]);
   const [reassignTasks, { isLoading: isReassigning }] = useReassignTasksMutation();
   const [reassignModalOpen, setReassignModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -81,18 +79,26 @@ const DeactivatedUsers = () => {
   );
 
   const handleActivate = async (userId) => {
+    console.debug("handleActivate invoked for", userId);
     confirm({
       title: "Reactivate user?",
       content: "The selected account will be re-enabled immediately.",
       okText: "Activate",
       cancelText: "Cancel",
       onOk: async () => {
+        const idStr = String(userId);
+        setTogglingIds((s) => [...s, idStr]);
+        toast.info("Activating user...");
         try {
-          await toggleActive(userId).unwrap();
-          message.success("User activated successfully");
+          await toggleActive(idStr).unwrap();
+          toast.success("User activated successfully");
           await refetch();
         } catch (err) {
-          message.error(err?.data?.message || err?.message || "Failed to activate user");
+          const errMsg = err?.data?.message || err?.message || "Failed to activate user";
+          toast.error(errMsg);
+          console.error("Activate error:", err);
+        } finally {
+          setTogglingIds((s) => s.filter((x) => x !== idStr));
         }
       },
     });
@@ -189,6 +195,16 @@ const DeactivatedUsers = () => {
       ),
     },
     {
+      title: "Failed Attempts",
+      dataIndex: "failedLoginAttempts",
+      key: "failedLoginAttempts",
+      render: (n) => (
+        <span className="admin-page__value admin-page__value--muted">{n || 0}</span>
+      ),
+      sorter: (a, b) => (a.failedLoginAttempts || 0) - (b.failedLoginAttempts || 0),
+      width: 120,
+    },
+    {
       title: "Deactivated At",
       dataIndex: "updatedAt",
       key: "updatedAt",
@@ -220,8 +236,10 @@ const DeactivatedUsers = () => {
             <Button
               size="small"
               icon={<PoweroffOutlined />}
-              onClick={() => handleActivate(record._id)}
-              className="admin-page__action-button admin-page__action-button--secondary"
+                onClick={() => handleActivate(record._id || record.id)}
+                className="admin-page__action-button admin-page__action-button--secondary"
+                disabled={togglingIds.includes(String(record._id || record.id))}
+                style={{ cursor: togglingIds.includes(String(record._id || record.id)) ? "not-allowed" : "pointer" }}
             >
               Activate
             </Button>

@@ -232,7 +232,7 @@ Two components need JSX extraction from the original file:
 ### 1. DeferralStatusAlert.jsx (Low Effort) ⏳
    - **Lines to extract**: Original file lines 340-680
    - **Complexity**: Medium (status calculation logic)
-   - **Time estimate**: 15 minutes
+   - **Time estimate**: 
    - **Instructions**: Copy the DeferralStatusAlert component JSX from original file into the placeholder
 
 ### 2. DeferralDetailsModal.jsx (Medium Effort) ⏳

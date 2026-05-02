@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../../api/authApi";
@@ -6,6 +6,8 @@ import { consumeAuthStatusMessage } from "../../../api/baseQueryWithSession";
 import { setCredentials } from "../../../api/authSlice";
 import { redirectUserByRole } from "../utils/authRedirect";
 import { getAuthErrorMessage } from "../utils/authError";
+import { toast } from "react-toastify";
+import { useGetUsersQuery } from "../../../api/userApi";
 import "../../../styles/microsoftLogin.css";
 
 const LoginPage = () => {
@@ -17,6 +19,15 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const statusMessage = location.state?.status || persistedStatusMessage || "";
+
+  // Lazy user list fetch (skipped until needed)
+  const { refetch: refetchUsers } = useGetUsersQuery(undefined, { skip: true });
+
+  useEffect(() => {
+    if (statusMessage) {
+      toast.info(statusMessage);
+    }
+  }, [statusMessage]);
 
   const handleLoginSubmit = async (event) => {
     event.preventDefault();
@@ -31,7 +42,29 @@ const LoginPage = () => {
         successMessage: "Login successful.",
       });
     } catch (err) {
-      setLoginError(getAuthErrorMessage(err));
+      const errMsg = getAuthErrorMessage(err);
+      setLoginError(errMsg);
+      // Show toast with server message if present, otherwise generic mapped message
+      const serverMessage = err?.data?.message || err?.message;
+      toast.error(serverMessage || errMsg);
+
+      // Try to surface failed-attempts info by fetching the user list
+      try {
+        const usersResult = await refetchUsers();
+        const fetched = usersResult?.data || [];
+        const found = fetched.find(
+          (u) => String(u.email || "").toLowerCase() === String(form.email || "").toLowerCase()
+        );
+        if (found) {
+          if (!found.active) {
+            toast.error(found.disableReason || "Your account has been deactivated.");
+          } else {
+            toast.info(`Failed attempts: ${found.failedLoginAttempts || 0}`);
+          }
+        }
+      } catch (e) {
+        // ignore failures to fetch users
+      }
     }
   };
 
