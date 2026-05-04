@@ -15,19 +15,19 @@ FROM nginxinc/nginx-unprivileged:alpine AS runner
 USER root
 RUN apk update && apk upgrade --no-cache
 
-COPY --from=builder /app/build /usr/share/nginx/html/digital-ipf-portal
+COPY --from=builder /app/build /usr/share/nginx/html/ewer
 COPY nginx.conf.template /etc/nginx/conf.d/default.conf.template
 COPY env.sh /env.sh
 
-RUN chown -R nginx:nginx /usr/share/nginx/html/digital-ipf-portal && \
-    chmod -R 755 /usr/share/nginx/html/digital-ipf-portal && \
+RUN chown -R nginx:nginx /usr/share/nginx/html/ewer && \
+    chmod -R 755 /usr/share/nginx/html/ewer && \
     chmod +x /env.sh
 
 USER nginx
 
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:5173/digital-ipf-portal || exit 1
+  CMD wget -qO- http://localhost:5173/ewer || exit 1
 
 EXPOSE 5173
 

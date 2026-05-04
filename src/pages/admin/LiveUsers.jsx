@@ -194,10 +194,10 @@ const LiveUsers = () => {
           <span className="admin-page__eyebrow">Realtime Monitoring</span>
           <div className="admin-page__title-row">
             <h1 className="admin-page__title">Live Users</h1>
-            <span className="admin-page__count">{onlineCount} users active in last 10 min</span>
+              <span className="admin-page__count">{onlineCount} users currently online</span>
           </div>
           <p className="admin-page__subtitle">
-            Monitor users who have been active in the system during the last 10 minutes and see when they logged in and last interacted.
+            Monitor users who are currently online and see when they logged in and last interacted.
           </p>
         </div>
 
@@ -224,9 +224,9 @@ const LiveUsers = () => {
           <div className="admin-page__stat-icon">
             <WifiOutlined />
           </div>
-          <span className="admin-page__stat-label">Recently Active Users</span>
+          <span className="admin-page__stat-label">Currently Online</span>
           <span className="admin-page__stat-value">{onlineCount}</span>
-          <span className="admin-page__stat-note">Active in the last 10 minutes</span>
+          <span className="admin-page__stat-note">Users currently connected</span>
         </article>
       </section>
 
@@ -261,7 +261,7 @@ const LiveUsers = () => {
           <div className="admin-page__card-header">
             <div className="admin-page__card-copy">
               <h2 className="admin-page__card-title">Users by Role</h2>
-              <p className="admin-page__card-subtitle">Role distribution for users active in the last 10 minutes.</p>
+              <p className="admin-page__card-subtitle">Role distribution for users currently online.</p>
             </div>
           </div>
           <div className="admin-page__chart-body">
@@ -292,7 +292,7 @@ const LiveUsers = () => {
           <div className="admin-page__table-toolbar-copy">
             <h2 className="admin-page__table-toolbar-title">Active Sessions</h2>
             <p className="admin-page__table-toolbar-subtitle">
-              View all users active in the last 10 minutes, including when they logged in and last touched the platform.
+              View users currently online, including when they logged in and last interacted.
             </p>
           </div>
           <Space>
@@ -300,17 +300,17 @@ const LiveUsers = () => {
           </Space>
         </div>
         <div className="creator-table-shell" style={{ border: "none", borderRadius: 0, boxShadow: "none" }}>
-          <Table
-            columns={columns}
-            dataSource={onlineUsers}
-            rowKey="_id"
-            loading={isLoading}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: (total) => `Total ${total} active users in the last 10 minutes`,
-            }}
-          />
+              <Table
+                columns={columns}
+                dataSource={onlineUsers}
+                rowKey="_id"
+                loading={isLoading}
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showTotal: (total) => `Total ${total} currently online`,
+                }}
+              />
         </div>
       </section>
     </div>

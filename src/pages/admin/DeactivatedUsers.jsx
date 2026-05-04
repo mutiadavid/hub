@@ -94,9 +94,34 @@ const DeactivatedUsers = () => {
           toast.success("User activated successfully");
           await refetch();
         } catch (err) {
-          const errMsg = err?.data?.message || err?.message || "Failed to activate user";
-          toast.error(errMsg);
-          console.error("Activate error:", err);
+          // RTK mutation failed — try a fallback direct fetch to the API endpoint.
+          console.warn("toggleActive mutation failed, attempting fallback fetch", err);
+          try {
+            const token = window.localStorage.getItem("token");
+            const base = import.meta.env.VITE_API_URL || "";
+            const url = `${base}/api/users/${idStr}/active`;
+            const res = await fetch(url, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+            });
+
+            if (!res.ok) {
+              const payload = await res.json().catch(() => ({}));
+              const errMsg = payload?.message || `Failed to activate user: ${res.status}`;
+              toast.error(errMsg);
+              console.error("Fallback activate failed", res.status, payload);
+            } else {
+              toast.success("User activated successfully (fallback)");
+              await refetch();
+            }
+          } catch (fallbackErr) {
+            const errMsg = err?.data?.message || err?.message || "Failed to activate user";
+            toast.error(errMsg);
+            console.error("Activate error:", err, fallbackErr);
+          }
         } finally {
           setTogglingIds((s) => s.filter((x) => x !== idStr));
         }
@@ -236,12 +261,12 @@ const DeactivatedUsers = () => {
             <Button
               size="small"
               icon={<PoweroffOutlined />}
-                onClick={() => handleActivate(record._id || record.id)}
-                className="admin-page__action-button admin-page__action-button--secondary"
-                disabled={togglingIds.includes(String(record._id || record.id))}
-                style={{ cursor: togglingIds.includes(String(record._id || record.id)) ? "not-allowed" : "pointer" }}
+              onClick={() => handleActivate(record._id || record.id)}
+              className="admin-page__action-button admin-page__action-button--secondary"
+              loading={togglingIds.includes(String(record._id || record.id))}
+              disabled={togglingIds.includes(String(record._id || record.id))}
             >
-              Activate
+              {togglingIds.includes(String(record._id || record.id)) ? "Activating..." : "Activate"}
             </Button>
           </Space>
         );

@@ -11,6 +11,9 @@ import {
   Descriptions,
   Spin,
   Empty,
+  List,
+  Avatar,
+  Tag as AntTag,
   Divider,
 } from "antd";
 import {
@@ -21,14 +24,21 @@ import {
   EyeOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
+  BellOutlined,
+  CalendarOutlined,
+  CheckOutlined,
+  PaperClipOutlined,
+  NotificationOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 import { useGetUsersQuery, useLazyGetUserActivityQuery } from "../../api/userApi";
+import { useGetAuditLogsQuery } from "../../api/auditApi";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { countUsersByRole, formatRoleLabel, normalizeRoleKey } from "./adminRoleUtils";
-import { formatDateTimeDetailed } from "../../utils/checklistUtils";
+import { formatDateTimeDetailed, formatCommentTimestamp } from "../../utils/checklistUtils";
 import "../../styles/creatorDesignSystem.css";
 
 dayjs.extend(relativeTime);
@@ -44,6 +54,94 @@ const ROLE_TEXT_COLORS = {
   rm: "#8B5E3C",
 };
 
+const getActivityTone = (message = "", action = "") => {
+  const normalized = `${message} ${action}`.toLowerCase();
+
+  if (
+    normalized.includes("rejected") ||
+    normalized.includes("returned") ||
+    normalized.includes("action") ||
+    normalized.includes("failed") ||
+    normalized.includes("archive")
+  ) {
+    return {
+      label: "Critical",
+      tagBg: "rgba(248, 113, 113, 0.14)",
+      tagColor: "#B91C1C",
+      iconBg: "rgba(248, 113, 113, 0.12)",
+      iconColor: "#B91C1C",
+      accent: "#DC2626",
+      icon: <ClockCircleOutlined />
+    };
+  }
+
+  if (
+    normalized.includes("approved") ||
+    normalized.includes("completed") ||
+    normalized.includes("login") ||
+    normalized.includes("success") ||
+    normalized.includes("logged in")
+  ) {
+    return {
+      label: "Success",
+      tagBg: "rgba(34, 197, 94, 0.14)",
+      tagColor: "#15803D",
+      iconBg: "rgba(34, 197, 94, 0.12)",
+      iconColor: "#15803D",
+      accent: "#65A30D",
+      icon: <CheckCircleOutlined />
+    };
+  }
+
+  if (
+    normalized.includes("submitted") ||
+    normalized.includes("create") ||
+    normalized.includes("update") ||
+    normalized.includes("reassign")
+  ) {
+    return {
+      label: "Update",
+      tagBg: "rgba(59, 130, 246, 0.14)",
+      tagColor: "#2563EB",
+      iconBg: "rgba(59, 130, 246, 0.12)",
+      iconColor: "#2563EB",
+      accent: "#1A3636",
+      icon: <FileTextOutlined />
+    };
+  }
+
+  return {
+    label: "Activity",
+    tagBg: "rgba(148, 163, 184, 0.18)",
+    tagColor: "#475569",
+    iconBg: "rgba(148, 163, 184, 0.12)",
+    iconColor: "#475569",
+    accent: "#D6BD98",
+    icon: <HistoryOutlined />
+  };
+};
+
+const HumanizeGlobalAction = (action, httpMethod, resource) => {
+  const p = (resource || "").toLowerCase();
+  const a = (action || httpMethod || "").toUpperCase();
+  const map = {
+    LOGIN: "Logged in", LOGOUT: "Logged out",
+    CREATE_USER: "Created a user", TOGGLE_ACTIVE: "Toggled user status",
+    CHANGE_ROLE: "Changed a user role", REASSIGN_TASKS: "Reassigned tasks",
+    CREATE_DCL: "Created a DCL", UPDATE_DCL: "Updated a DCL", DELETE_DCL: "Deleted a DCL",
+    APPROVE: "Approved", REJECT: "Rejected", RETURN: "Returned for rework",
+    UPLOAD_DOCUMENT: "Uploaded a document", DELETE_DOCUMENT: "Deleted a document",
+    ADD_DOCUMENT: "Added a document", ADD_COMMENT: "Added a comment",
+    CREATE_DEFERRAL: "Created a deferral", UPDATE_DEFERRAL: "Updated a deferral",
+    AD_SEARCH: "Searched Active Directory", ARCHIVE_USER: "Archived a user",
+    TRANSFER_ROLE: "Transferred a role", HEARTBEAT: "Heartbeat",
+    POST: p.includes("/checklist") ? "Created a DCL" : p.includes("/deferral") ? "Created a deferral" : "Created a record",
+    PUT: p.includes("/active") ? "Toggled user status" : p.includes("/role") ? "Changed a role" : "Updated a record",
+    DELETE: "Deleted a record",
+  };
+  return map[a] || a.charAt(0) + a.slice(1).toLowerCase().replace(/_/g, " ");
+};
+
 const AuditLogsPage = () => {
   const { data: users = [], isLoading, refetch } = useGetUsersQuery();
   const [selectedRole, setSelectedRole] = useState("all");
@@ -56,8 +154,13 @@ const AuditLogsPage = () => {
 
   const usersByRole = useMemo(() => ({ all: users.length, ...countUsersByRole(users) }), [users]);
 
+  const { data: globalLogsData, isLoading: globalLogsLoading, refetch: refetchGlobalLogs } = useGetAuditLogsQuery({ page: 1, limit: 30 });
+  const globalLogs = globalLogsData?.logs || [];
+
   const loadUserActivities = async (userId) => {
-    const response = await triggerGetUserActivity(userId, true).unwrap();
+    if (!userId) return [];
+    // preferCacheValue=false: always fetch fresh data so we never show stale per-user logs
+    const response = await triggerGetUserActivity(userId, false).unwrap();
     return response?.activities || [];
   };
 
@@ -120,11 +223,11 @@ const AuditLogsPage = () => {
 
       const activityData = activities.length
         ? activities.map((activity) => [
-            formatDateTimeDetailed(activity.date),
-            activity.source || activity.type || "Activity",
-            activity.actionLabel || activity.action || "Activity",
-            activity.summary || activity.details || "-",
-          ])
+          formatDateTimeDetailed(activity.date),
+          activity.source || activity.type || "Activity",
+          activity.actionLabel || activity.action || "Activity",
+          activity.summary || activity.details || "-",
+        ])
         : [["-", "System", "No recorded activity", "No actions found for this user in the selected logs."]];
 
       autoTable(doc, {
@@ -327,12 +430,12 @@ const AuditLogsPage = () => {
         const roleKey = normalizeRoleKey(role);
 
         return (
-        <span
-          className="admin-page__status-text"
-          style={{ color: ROLE_TEXT_COLORS[roleKey] || "var(--color-text-medium)" }}
-        >
-          {formatRoleLabel(role)}
-        </span>
+          <span
+            className="admin-page__status-text"
+            style={{ color: ROLE_TEXT_COLORS[roleKey] || "var(--color-text-medium)" }}
+          >
+            {formatRoleLabel(role)}
+          </span>
         );
       },
     },
@@ -364,16 +467,19 @@ const AuditLogsPage = () => {
     },
     {
       title: "Last Activity",
-      dataIndex: "updatedAt",
+      dataIndex: "lastSeen",
       key: "lastActivity",
-      sorter: (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
-      render: (date) => (
-        <Tooltip title={formatDateTimeDetailed(date)}>
-          <span className="admin-page__value admin-page__value--muted">
-            {dayjs(date).fromNow()}
-          </span>
-        </Tooltip>
-      ),
+      sorter: (a, b) => new Date(b.lastSeen || b.updatedAt) - new Date(a.lastSeen || a.updatedAt),
+      render: (date, record) => {
+        const ts = date || record.updatedAt;
+        return (
+          <Tooltip title={formatDateTimeDetailed(ts)}>
+            <span className="admin-page__value admin-page__value--muted">
+              {dayjs(ts).fromNow()}
+            </span>
+          </Tooltip>
+        );
+      },
     },
     {
       title: "Actions",
@@ -412,31 +518,41 @@ const AuditLogsPage = () => {
       title: "Time",
       dataIndex: "date",
       key: "date",
-      width: 180,
-      render: (date) => <span className="admin-page__value admin-page__value--muted">{formatDateTimeDetailed(date)}</span>,
+      width: 170,
+      fixed: 'left',
+      render: (date) => <span className="admin-page__value admin-page__value--muted" style={{ fontSize: '11px' }}>{formatDateTimeDetailed(date)}</span>,
     },
     {
       title: "Source",
       dataIndex: "source",
       key: "source",
-      width: 120,
-      render: (value) => <span className="admin-page__status-text">{value || "Activity"}</span>,
+      width: 100,
+      render: (value) => <span className="admin-page__status-text" style={{ fontSize: '11px', opacity: 0.8 }}>{value || "Activity"}</span>,
     },
     {
       title: "Activity",
       dataIndex: "actionLabel",
       key: "actionLabel",
-      width: 160,
-      render: (value, record) => <span className="admin-page__value">{value || record.action || "Activity"}</span>,
+      width: 150,
+      render: (value, record) => (
+        <span className="admin-page__value" style={{ fontWeight: 600 }}>
+          {value || record.action || "Activity"}
+        </span>
+      ),
     },
     {
       title: "Details",
       key: "summary",
+      minWidth: 250,
       render: (_, record) => (
-        <div>
-          <div className="admin-page__value">{record.summary || record.details || "-"}</div>
-          {record.resource ? (
-            <div className="admin-page__value admin-page__value--muted">{record.resource}</div>
+        <div style={{ maxWidth: 300 }}>
+          <div className="admin-page__value" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
+            {record.summary || record.details || "-"}
+          </div>
+          {record.resource && record.resource !== record.summary ? (
+            <div className="admin-page__value admin-page__value--muted" style={{ fontSize: '10px', marginTop: 2 }}>
+              {record.resource}
+            </div>
           ) : null}
         </div>
       ),
@@ -484,6 +600,108 @@ const AuditLogsPage = () => {
             Refresh
           </Button>
         </div>
+      </section>
+
+      {/* ── Global System Activity Feed ── */}
+      <section className="admin-page__table-card admin-page__table-card--lifted" style={{ marginBottom: 24 }}>
+        <div className="admin-page__table-toolbar">
+          <div className="admin-page__table-toolbar-copy">
+            <h2 className="admin-page__table-toolbar-title">Recent System Activity</h2>
+            <p className="admin-page__table-toolbar-subtitle">
+              Live feed of the latest {globalLogs.length} audit events across the entire system.
+            </p>
+          </div>
+          <Button
+            size="small"
+            icon={<ReloadOutlined />}
+            onClick={() => refetchGlobalLogs()}
+            className="admin-page__action-button admin-page__action-button--ghost"
+          >
+            Refresh
+          </Button>
+        </div>
+
+        {globalLogsLoading ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: "24px 0" }}>
+            <Spin />
+          </div>
+        ) : globalLogs.length === 0 ? (
+          <Empty description="No system activity recorded yet" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: "24px 0" }} />
+        ) : (
+          <div style={{ maxHeight: 420, overflowY: "auto", padding: "0 4px" }}>
+            <List
+              dataSource={globalLogs}
+              pagination={false}
+              renderItem={(log) => {
+                const actor = log.performedBy?.name || log.performedByName || "System";
+                const target = log.targetUser?.name || log.targetName || log.resourceId || "—";
+                const actionLabel = HumanizeGlobalAction(log.action, log.httpMethod, log.resource);
+                const tone = getActivityTone(log.details || log.action, log.action);
+                const isSuccess = log.status === "success";
+                return (
+                  <div
+                    key={log.id}
+                    style={{
+                      marginBottom: 6,
+                      padding: "10px 14px",
+                      background: "#fff",
+                      borderRadius: 10,
+                      border: "1px solid #f0f0f0",
+                      borderLeft: `3px solid ${tone.accent}`,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 8,
+                        background: tone.iconBg,
+                        color: tone.iconColor,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        fontSize: 13,
+                      }}
+                    >
+                      {tone.icon}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#1f2937", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <span style={{ color: tone.accent }}>{actor}</span>
+                          {" "}{actionLabel.toLowerCase()}
+                          {target !== "—" && <span style={{ color: "#6b7280" }}> → {target}</span>}
+                        </span>
+                        <AntTag
+                          style={{
+                            margin: 0,
+                            fontSize: 10,
+                            borderRadius: 5,
+                            background: isSuccess ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
+                            color: isSuccess ? "#15803D" : "#B91C1C",
+                            border: "none",
+                            fontWeight: 600,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {log.status || "success"}
+                        </AntTag>
+                      </div>
+                      <span style={{ fontSize: 10, color: "#9ca3af" }}>
+                        {dayjs(log.createdAt).fromNow()}
+                        {log.ipAddress ? ` · ${log.ipAddress}` : ""}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }}
+            />
+          </div>
+        )}
       </section>
 
       <section className="admin-page__split">
@@ -545,7 +763,7 @@ const AuditLogsPage = () => {
         onCancel={() => setViewActivityModalOpen(false)}
         footer={null}
         title={null}
-        width={720}
+        width={850}
         className="admin-page__modal"
         styles={{
           body: { padding: 0 },
@@ -596,14 +814,103 @@ const AuditLogsPage = () => {
                   <Spin />
                 </div>
               ) : selectedUserActivities.length ? (
-                <div className="creator-table-shell" style={{ border: "none", borderRadius: 0, boxShadow: "none" }}>
-                  <Table
-                    columns={activityColumns}
+                <div style={{ maxHeight: 500, overflowY: "auto", padding: "0 4px" }}>
+                  <List
                     dataSource={selectedUserActivities}
-                    rowKey={(record) => record.id || `${record.date}-${record.action}`}
-                    pagination={{ pageSize: 5, showSizeChanger: false }}
-                    scroll={{ x: "max-content" }}
-                    size="small"
+                    pagination={{ pageSize: 8, size: "small", hideOnSinglePage: true }}
+                    renderItem={(item) => {
+                      const tone = getActivityTone(item.summary || item.details, item.actionLabel || item.action);
+                      const timestamp = formatCommentTimestamp(item.date);
+
+                      return (
+                        <div
+                          style={{
+                            marginBottom: 8,
+                            padding: "12px 16px",
+                            background: "#fff",
+                            borderRadius: 12,
+                            border: "1px solid #f0f0f0",
+                            borderLeft: `4px solid ${tone.accent}`,
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+                          }}
+                        >
+                          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                            <div
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 10,
+                                background: tone.iconBg,
+                                color: tone.iconColor,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                                fontSize: 16
+                              }}
+                            >
+                              {tone.icon}
+                            </div>
+
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "flex-start",
+                                marginBottom: 4
+                              }}>
+                                <span style={{
+                                  fontWeight: 700,
+                                  fontSize: 13,
+                                  color: "#1f2937",
+                                  lineHeight: 1.4,
+                                  wordBreak: "break-word",
+                                  marginRight: 8
+                                }}>
+                                  {item.summary || item.details || "Activity recorded"}
+                                </span>
+                                <AntTag style={{
+                                  margin: 0,
+                                  fontSize: 10,
+                                  borderRadius: 6,
+                                  background: tone.tagBg,
+                                  color: tone.tagColor,
+                                  border: "none",
+                                  fontWeight: 600
+                                }}>
+                                  {item.source || tone.label}
+                                </AntTag>
+                              </div>
+
+                              <div style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 12,
+                                color: "#64748b",
+                                fontSize: 11
+                              }}>
+                                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                  <CalendarOutlined style={{ fontSize: 10 }} />
+                                  {timestamp}
+                                </span>
+                                {item.actionLabel && (
+                                  <span style={{
+                                    padding: "1px 6px",
+                                    background: "#f1f5f9",
+                                    borderRadius: 4,
+                                    fontSize: 10,
+                                    color: "#475569"
+                                  }}>
+                                    {item.actionLabel}
+                                  </span>
+                                )}
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }}
                   />
                 </div>
               ) : (
