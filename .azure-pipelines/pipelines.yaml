@@ -27,7 +27,7 @@ extends:
     imageRepository: 'Dcl_deferral_frontend'
     azureSubscription: 'ncbadevtestarmsc'
     containerRegistry: 'RETAIL-INNOVATION'
-    # libraryVariable: 'Dcl_deferral_b'
+     libraryVariable: 'Dcl_deferral_frontend'
     projectName: 'RETAIL INNOVATION HUB'
 
     
