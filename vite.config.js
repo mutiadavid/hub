@@ -20,5 +20,21 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      chunkSizeWarningLimit: 1200,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-redux': ['@reduxjs/toolkit', 'react-redux'],
+            'vendor-antd': ['antd', '@ant-design/icons'],
+            'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
+            'vendor-charts': ['recharts'],
+            'vendor-socket': ['socket.io-client'],
+            'vendor-utils': ['lodash', 'date-fns', 'moment', 'xlsx'],
+          },
+        },
+      },
+    },
   };
 });

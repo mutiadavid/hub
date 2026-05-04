@@ -15,12 +15,13 @@ import Navbar from "../Navbar";
 import SharedSidebar from "../common/SharedSidebar";
 
 // Pages
-import AllChecklists from "../../pages/checker/allChecklists";
-import CompletedChecklists from "../../pages/checker/Completed";
-import Deferrals from "../../pages/checker/Deferral";
-import Reportss from "../../pages/creator/Reports";
-import DraftsPage from "../../components/shared/DraftsPage";
-import CompletedChecklistPage from "../modals/CompletedChecklistModalComponents/CompletedChecklistPage";
+import { Suspense, lazy } from "react";
+const AllChecklists = lazy(() => import("../../pages/checker/allChecklists"));
+const CompletedChecklists = lazy(() => import("../../pages/checker/Completed"));
+const Deferrals = lazy(() => import("../../pages/checker/Deferral"));
+const Reportss = lazy(() => import("../../pages/creator/Reports"));
+const DraftsPage = lazy(() => import("../../components/shared/DraftsPage"));
+const CompletedChecklistPage = lazy(() => import("../modals/CompletedChecklistModalComponents/CompletedChecklistPage"));
 
 const getSelectedKeyFromPath = (pathname) => {
   if (pathname.includes("/completed")) {
@@ -141,6 +142,7 @@ const CheckerLayout = () => {
         <Navbar toggleSidebar={toggleSidebar} />
 
         <div className="creator-layout-content">
+          <Suspense fallback={<div style={{padding:24,textAlign:"center"}}>Loading...</div>}>
           <Routes>
             <Route
               path="/"
@@ -176,6 +178,7 @@ const CheckerLayout = () => {
             />
             <Route path="/reports" element={<Reportss />} />
           </Routes>
+          </Suspense>
         </div>
       </div>
     </div>

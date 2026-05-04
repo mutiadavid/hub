@@ -10,19 +10,20 @@ import {
 } from "@ant-design/icons";
 
 // Import your RM components
-import MyQueue from "../../pages/rm/MyQueue";
-import Completed from "../../pages/rm/Completed";
-import ReportsPage from "../../pages/rm/Reports";
+import { Suspense, lazy } from "react";
+const MyQueue = lazy(() => import("../../pages/rm/MyQueue"));
+const Completed = lazy(() => import("../../pages/rm/Completed"));
+const ReportsPage = lazy(() => import("../../pages/rm/Reports"));
 import Navbar from "../Navbar";
 import SharedSidebar from "../common/SharedSidebar";
-import DraftsPage from "../shared/DraftsPage";
-import CompletedChecklistPage from "../modals/CompletedChecklistModalComponents/CompletedChecklistPage";
+const DraftsPage = lazy(() => import("../shared/DraftsPage"));
+const CompletedChecklistPage = lazy(() => import("../modals/CompletedChecklistModalComponents/CompletedChecklistPage"));
 import { getSidebarWidth } from "../../utils/sidebarUtils";
 
 // Import Deferral Components
-import DeferralForm from "../../pages/deferrals/DeferralForm";
-import DeferralPending from "../../pages/deferrals/DeferralPending";
-import Reports from "../../pages/creator/Reports";
+const DeferralForm = lazy(() => import("../../pages/deferrals/DeferralForm"));
+const DeferralPending = lazy(() => import("../../pages/deferrals/DeferralPending"));
+const Reports = lazy(() => import("../../pages/creator/Reports"));
 
 const getSelectedKeyFromPath = (pathname) => {
   if (pathname.includes("/deferrals")) {
@@ -145,8 +146,8 @@ const RmLayout = ({ userId }) => {
         <Navbar toggleSidebar={toggleSidebar} />
 
         <div className="creator-layout-content">
+          <Suspense fallback={<div style={{padding:24,textAlign:"center"}}>Loading...</div>}>
           <Routes>
-            {/* Main RM Routes */}
             <Route
               path="/"
               element={
@@ -195,6 +196,7 @@ const RmLayout = ({ userId }) => {
               />
             </Route>
           </Routes>
+          </Suspense>
         </div>
       </div>
     </div>

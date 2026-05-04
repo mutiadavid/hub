@@ -9,14 +9,15 @@ import {
 } from "@ant-design/icons";
 import "../../styles/creatorDesignSystem.css";
 
-import AdminDashboard from "../../pages/admin/AdminDashboard.jsx";
-import CreateUserDrawer from "../../pages/admin/createUserDrawer.jsx";
-import LiveUsers from "../../pages/admin/LiveUsers.jsx";
-import AuditLogsPage from "../../pages/admin/AuditLogsPage";
+import { Suspense, lazy } from "react";
+const AdminDashboard = lazy(() => import("../../pages/admin/AdminDashboard.jsx"));
+const CreateUserDrawer = lazy(() => import("../../pages/admin/createUserDrawer.jsx"));
+const LiveUsers = lazy(() => import("../../pages/admin/LiveUsers.jsx"));
+const AuditLogsPage = lazy(() => import("../../pages/admin/AuditLogsPage"));
+const DeactivatedUsers = lazy(() => import("../../pages/admin/DeactivatedUsers.jsx"));
+const DraftsPage = lazy(() => import("../../components/shared/DraftsPage"));
 import Navbar from "../Navbar.jsx";
 import SharedSidebar from "../common/SharedSidebar";
-import DeactivatedUsers from "../../pages/admin/DeactivatedUsers.jsx";
-import DraftsPage from "../../components/shared/DraftsPage";
 import { getSidebarWidth } from "../../utils/sidebarUtils";
 
 const getSelectedKeyFromPath = (pathname) => {
@@ -125,6 +126,7 @@ const AdminLayout = () => {
         <Navbar toggleSidebar={toggleSidebar} />
 
         <div className="creator-layout-content">
+          <Suspense fallback={<div style={{padding:24,textAlign:"center"}}>Loading...</div>}>
           <Routes>
             <Route path="/" element={<AdminDashboard />} />
             <Route path="/all-users" element={<AdminDashboard />} />
@@ -133,6 +135,7 @@ const AdminLayout = () => {
             <Route path="/deactivated-users" element={<DeactivatedUsers />} />
             <Route path="/drafts" element={<DraftsPage type="admin" />} />
           </Routes>
+          </Suspense>
         </div>
 
         {/* Drawer for creating users - kept from original layout */}

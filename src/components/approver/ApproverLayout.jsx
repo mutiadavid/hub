@@ -5,8 +5,9 @@ import "../../styles/creatorDesignSystem.css";
 import SharedSidebar from "../common/SharedSidebar";
 
 // Import available Approver page components
-import { MyQueue } from "../../pages/approver/MyQueue";
-import Actioned from "../../pages/approver/Actioned/Actioned";
+import { Suspense, lazy } from "react";
+const MyQueue = lazy(() => import("../../pages/approver/MyQueue").then(m => ({ default: m.MyQueue })));
+const Actioned = lazy(() => import("../../pages/approver/Actioned/Actioned"));
 // import Reports from "../../pages/approver/Reports"; // TODO: Create Reports page
 import Navbar from "../Navbar";
 import { getSidebarWidth } from "../../utils/sidebarUtils";
@@ -92,6 +93,7 @@ const ApproverLayout = ({ userId }) => {
             overflowX: isMobile ? "auto" : "hidden",
           }}
         >
+          <Suspense fallback={<div style={{padding:24,textAlign:"center"}}>Loading...</div>}>
           <Routes>
             <Route
               path="/"
@@ -118,6 +120,7 @@ const ApproverLayout = ({ userId }) => {
               element={<MyQueue userId={userId || "approver_current"} />}
             />
           </Routes>
+          </Suspense>
         </div>
       </div>
     </div>

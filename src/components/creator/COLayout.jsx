@@ -6,20 +6,25 @@ import "../../styles/creatorDesignSystem.css";
 import { getSidebarWidth } from "../../utils/sidebarUtils";
 
 // Pages
-import CoChecklistPage from "../../pages/creator/CoChecklistPage";
-import Reportss from "../../pages/creator/Reports";
-import MyQueue from "../../pages/creator/MyQueue";
+import { Suspense, lazy } from "react";
+// ✅ Lazy load ONLY pages (route-based)
+const CoChecklistPage = lazy(() => import("../../pages/creator/CoChecklistPage"));
+const Reportss = lazy(() => import("../../pages/creator/Reports"));
+const MyQueue = lazy(() => import("../../pages/creator/MyQueue"));
+const Deferrals = lazy(() => import("../../pages/creator/Deferrals/index.jsx"));
+const Queue = lazy(() => import("../../pages/creator/Queue"));
+const CompletedQueue = lazy(() => import("../../pages/creator/CompletedQueue"));
+const Completed = lazy(() => import("../../pages/creator/Completed"));
+const DraftsPage = lazy(() => import("../shared/DraftsPage"));
+
+// ❌ Remove lazy from modals → use normal import
 import ReviewChecklistPage from "../modals/ReviewChecklistModalComponents/ReviewChecklistPage";
 import CreatorCompletedChecklistPage from "../modals/CreatorCompletedChecklistModal/CreatorCompletedChecklistPage";
-import Completed from "../../pages/creator/Completed";
-// import Deferrals from "../../pages/creator/Deferrals.jsx"; // ❌ DEPRECATED: Old monolithic component
-import Deferrals from "../../pages/creator/Deferrals/index.jsx"; // ✅ REFACTORED: New modularized architecture
+
+// ✅ Layout (always static)
 import StatsReportModal from "../modals/StatsReportModal";
 import CreatorSidebar from "./CreatorSidebar";
 import Navbar from "../Navbar";
-import Queue from "../../pages/creator/Queue";
-import CompletedQueue from "../../pages/creator/CompletedQueue";
-import DraftsPage from "../shared/DraftsPage";
 // import CheckerSidebar from "./CheckerSidebar";
 // import CheckerNavbar from "./CheckerAdmin";
 
@@ -126,6 +131,7 @@ const MainLayout = () => {
         <Navbar toggleSidebar={toggleSidebar} />
 
         <div className="creator-layout-content">
+          <Suspense fallback={<div style={{padding:24,textAlign:"center"}}>Loading...</div>}>
           <Routes>
             <Route
               path="/"
@@ -172,6 +178,7 @@ const MainLayout = () => {
               }
             />
           </Routes>
+          </Suspense>
         </div>
       </div>
     </div>
