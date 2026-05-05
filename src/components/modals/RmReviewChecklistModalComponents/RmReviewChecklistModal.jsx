@@ -35,6 +35,7 @@ import {
   getDraftRoute,
 } from "../../../utils/draftsUtils";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
+import { MAX_FILE_UPLOAD_SIZE_MB } from "../../../utils/checklistUtils";
 import "../../../styles/creatorDesignSystem.css";
 
 const TABS = [
@@ -606,7 +607,7 @@ const RmReviewChecklistModal = ({
     };
 
     fetchSupportingDocs();
-  }, [resolvedChecklistId, token]);
+  }, [API_BASE_URL, resolvedChecklistId, token]);
 
   
   const isActionAllowed =
@@ -895,8 +896,8 @@ const RmReviewChecklistModal = ({
       return false;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      message.error("File size exceeds 10MB limit");
+    if (file.size > MAX_FILE_UPLOAD_SIZE_MB * 1024 * 1024) {
+      message.error(`File size exceeds ${MAX_FILE_UPLOAD_SIZE_MB}MB limit`);
       return false;
     }
 

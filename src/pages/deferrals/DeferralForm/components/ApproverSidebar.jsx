@@ -5,7 +5,6 @@ import "../../../../styles/creatorDesignSystem.css";
 
 export default function ApproverSidebar({
   approverSlots,
-  availableApprovers,
   updateApprover,
   addApprover,
   removeApprover,
@@ -36,7 +35,6 @@ export default function ApproverSidebar({
     <Card className="deferral-form-approver-card">
       <ApproverSelector
         slots={approverSlots}
-        availableApprovers={availableApprovers}
         updateApprover={updateApprover}
         addApprover={addApprover}
         removeApprover={removeApprover}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Modal,
   Form,
@@ -13,6 +13,7 @@ import {
   EditOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
+import { useLazySearchAdUsersQuery } from "../../../../api/adSearchApi";
 import deferralApi from "../../../../service/deferralApi";
 import { showErrorToast, showSuccessToast } from "../../../../utils/authToast";
 import {
@@ -80,6 +81,10 @@ const sanitizeApproverFlow = (approvers) =>
             role,
             name,
             userId,
+            email: String(approver?.email || "").trim() || null,
+            samAccountName: String(approver?.samAccountName || "").trim() || null,
+            department: String(approver?.department || "").trim() || null,
+            position: String(approver?.position || "").trim() || null,
           };
         })
         .filter(Boolean)
@@ -434,11 +439,17 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
-  const [editingApprovers, setEditingApprovers] = useState(false);
+  const [_editingApprovers, setEditingApprovers] = useState(false);
   const [editedApprovers, setEditedApprovers] = useState([]);
   const [approversFromDb, setApproversFromDb] = useState([]);
   const [loadingApprovers, setLoadingApprovers] = useState(false);
-  const [confirmingApprovers, setConfirmingApprovers] = useState(false);
+  const [_confirmingApprovers, setConfirmingApprovers] = useState(false);
+  const debounceRef = useRef(null);
+  const [directoryHint, setDirectoryHint] = useState(
+    "Open the list or type at least 2 characters to search Active Directory staff",
+  );
+  const [triggerDirectorySearch, { isFetching: isSearchingDirectory }] =
+    useLazySearchAdUsersQuery();
 
   const getDocumentDaysValidationMessage = (document) => {
     const documentName = String(document?.name || document?.label || "Document").trim() || "Document";
@@ -480,6 +491,85 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     }
   }, [open, deferral, form]);
 
+  const upsertDirectoryApprovers = useCallback((users = []) => {
+    const normalizedUsers = users
+      .map((user) => {
+        const id = String(user?._id || user?.id || user?.samAccountName || user?.email || "").trim();
+        if (!id) return null;
+
+        return {
+          id,
+          _id: id,
+          name: user?.displayName || user?.name || user?.email || user?.samAccountName || "Unknown Staff",
+          email: user?.email || "",
+          samAccountName: user?.samAccountName || "",
+          department: user?.department || "",
+          position: user?.title || user?.position || "",
+        };
+      })
+      .filter(Boolean);
+
+    setApproversFromDb((prev) => {
+      const map = new Map((prev || []).map((item) => [String(item.id || item._id), item]));
+      normalizedUsers.forEach((user) => map.set(String(user.id), user));
+      (editedApprovers || []).forEach((approver) => {
+        if (!approver?.userId) return;
+        map.set(String(approver.userId), {
+          id: String(approver.userId),
+          _id: String(approver.userId),
+          name: approver.name || approver.email || approver.samAccountName || String(approver.userId),
+          email: approver.email || "",
+          samAccountName: approver.samAccountName || "",
+          department: approver.department || "",
+          position: approver.position || "",
+        });
+      });
+      return Array.from(map.values());
+    });
+  }, [editedApprovers]);
+
+  const runDirectorySearch = useCallback(async (query, maxResults = 25) => {
+    try {
+      const users = await triggerDirectorySearch({ query, maxResults }, true).unwrap();
+      upsertDirectoryApprovers(users || []);
+      setDirectoryHint(users?.length ? "" : query ? "No matching staff found in Active Directory" : "No staff returned from Active Directory");
+    } catch {
+      setDirectoryHint("Active Directory search failed. Try again.");
+    }
+  }, [triggerDirectorySearch, upsertDirectoryApprovers]);
+
+  const handleDirectorySearch = (rawQuery) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    const query = String(rawQuery || "").trim();
+
+    if (!query) {
+      debounceRef.current = setTimeout(() => {
+        setDirectoryHint("Loading staff from Active Directory...");
+        runDirectorySearch("", 200);
+      }, 150);
+      return;
+    }
+
+    if (query.length < 2) {
+      setDirectoryHint("Type at least 2 characters to search Active Directory staff");
+      return;
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setDirectoryHint("Searching Active Directory...");
+      runDirectorySearch(query, 50);
+    }, 300);
+  };
+
+  useEffect(() => () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+  }, []);
+
   const handleDocumentDaysChange = (index, value) => {
     setSelectedDocuments((prev) =>
       prev.map((document, currentIndex) =>
@@ -493,19 +583,16 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     );
   };
 
-  const handleEditApproversClick = async () => {
+  const _handleEditApproversClick = async () => {
     setEditedApprovers(deferral.approverFlow ? [...deferral.approverFlow] : []);
     setEditingApprovers(true);
 
-    // Fetch approvers from database
     setLoadingApprovers(true);
     try {
-      const token = localStorage.getItem("token");
-      const users = await deferralApi.getApprovers(token);
-      setApproversFromDb(users || []);
+      await runDirectorySearch("", 200);
     } catch (error) {
       console.error("Error loading approvers:", error);
-      showErrorToast("Failed to load approvers from database");
+      showErrorToast("Failed to load approvers from directory");
       setApproversFromDb([]);
     } finally {
       setLoadingApprovers(false);
@@ -518,6 +605,10 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       role: "",
       name: "",
       userId: "",
+      email: "",
+      samAccountName: "",
+      department: "",
+      position: "",
       approved: false,
       approvalStatus: "pending",
     };
@@ -561,6 +652,8 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
   const handleApproverSelection = (idx, option) => {
     if (!option || editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") return;
 
+    const selectedApprover = option?.directoryApprover || null;
+
     setEditedApprovers((prev) => {
       const updated = [...prev];
       updated[idx] = {
@@ -569,12 +662,16 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
         name: typeof option.label === "string"
           ? option.label
           : updated[idx]?.name || "",
+        email: selectedApprover?.email || "",
+        samAccountName: selectedApprover?.samAccountName || "",
+        department: selectedApprover?.department || "",
+        position: selectedApprover?.position || "",
       };
       return updated;
     });
   };
 
-  const handleConfirmApprovers = async () => {
+  const _handleConfirmApprovers = async () => {
     // Validate that all approvers have role, name, and a selected user
     const allValid = editedApprovers.every(
       (approver) => approver.role && approver.name && approver.userId,
@@ -592,6 +689,10 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
         userId: approver.userId,
         role: approver.role,
         name: approver.name,
+        email: approver.email,
+        samAccountName: approver.samAccountName,
+        department: approver.department,
+        position: approver.position,
         approved: false,
         approvalStatus: "pending",
       }));
@@ -644,10 +745,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     const fetchUsers = async () => {
       setLoadingApprovers(true);
       try {
-        const stored = JSON.parse(localStorage.getItem("user") || "null");
-        const token = stored?.token;
-        const users = await deferralApi.getApprovers(token);
-        setApproversFromDb(users || []);
+        await runDirectorySearch("", 200);
       } catch (error) {
         console.error("Error loading approvers:", error);
       } finally {
@@ -657,7 +755,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     if (open) {
       fetchUsers();
     }
-  }, [open]);
+  }, [open, runDirectorySearch]);
 
   const handleSubmit = async (values) => {
     try {
@@ -847,9 +945,22 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                                 onChange={(option) => {
                                   handleApproverSelection(idx, option);
                                 }}
+                                onSearch={handleDirectorySearch}
+                                onDropdownVisibleChange={(openDropdown) => {
+                                  if (openDropdown) {
+                                    handleDirectorySearch("");
+                                  }
+                                }}
                                 style={{ width: "100%" }}
-                                loading={loadingApprovers}
+                                showSearch
+                                filterOption={false}
+                                loading={loadingApprovers || isSearchingDirectory}
                                 disabled={hasApproved}
+                                notFoundContent={
+                                  loadingApprovers || isSearchingDirectory ? (
+                                    <div style={{ textAlign: "center", padding: "10px 0" }}><Spin size="small" /></div>
+                                  ) : directoryHint ? directoryHint : "No staff available"
+                                }
                               >
                                 {approversFromDb.length > 0 ? (
                                   approversFromDb
@@ -865,8 +976,11 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                                         key={user._id || user.id}
                                         value={user._id || user.id}
                                         label={user.name}
+                                        directoryApprover={user}
                                       >
                                         {user.name}
+                                        {user.position ? ` — ${user.position}` : ""}
+                                        {user.department ? ` (${user.department})` : ""}
                                       </Select.Option>
                                     ))
                                 ) : (

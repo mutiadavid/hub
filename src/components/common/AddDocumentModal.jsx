@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { Modal, Input, Select, Button, Space, Upload, message } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
-import { THEME } from "../../utils/checklistUtils";
+import { MAX_FILE_UPLOAD_SIZE_MB, THEME } from "../../utils/checklistUtils";
 import "../../styles/creatorDesignSystem.css";
 
 const { Option } = Select;
@@ -86,9 +86,8 @@ const AddDocumentModal = ({
         message.error("You can only upload PDF, JPEG, or PNG files!");
         return Upload.LIST_IGNORE;
       }
-      // Check file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        message.error("File must be smaller than 10MB!");
+      if (file.size > MAX_FILE_UPLOAD_SIZE_MB * 1024 * 1024) {
+        message.error(`File must be smaller than ${MAX_FILE_UPLOAD_SIZE_MB}MB!`);
         return Upload.LIST_IGNORE;
       }
       return false; // Prevent auto-upload
@@ -396,7 +395,7 @@ const AddDocumentModal = ({
                   </Button>
                 </Upload>
                 <div className="checklist-add-document-modal__helper">
-                Max 10MB. Allowed: PDF, JPEG, PNG
+                Max 25MB. Allowed: PDF, JPEG, PNG
                 </div>
               </div>
             </div>

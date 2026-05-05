@@ -539,13 +539,15 @@ export const isValidFileType = (file, allowedTypes = ["application/pdf", "image/
     return allowedTypes.includes(file.type);
 };
 
+export const MAX_FILE_UPLOAD_SIZE_MB = 25;
+
 /**
  * Validate file size for upload
  * @param {File} file - File object
  * @param {number} maxSizeMB - Maximum file size in MB
  * @returns {boolean} Whether file size is valid
  */
-export const isValidFileSize = (file, maxSizeMB = 10) => {
+export const isValidFileSize = (file, maxSizeMB = MAX_FILE_UPLOAD_SIZE_MB) => {
     return file.size <= maxSizeMB * 1024 * 1024;
 };
 

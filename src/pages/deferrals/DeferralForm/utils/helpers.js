@@ -6,6 +6,8 @@ import {
   ALLOWED_FILE_TYPES,
 } from "./constants";
 
+export const MAX_DEFERRAL_UPLOAD_SIZE_MB = 25;
+
 /**
  * Parse loan amount from string or predefined dropdown values
  */
@@ -96,6 +98,10 @@ export const isValidFileType = (fileName) => {
   return ALLOWED_FILE_TYPES.includes(fileExtension);
 };
 
+export const isValidFileSize = (file, maxSizeMB = MAX_DEFERRAL_UPLOAD_SIZE_MB) => {
+  return Number(file?.size || 0) <= maxSizeMB * 1024 * 1024;
+};
+
 /**
  * Compute facilities by normalizing data
  */
@@ -120,9 +126,17 @@ export const normalizeFacilities = (facilities) => {
  * Validate approver IDs are valid GUIDs
  */
 export const areApproverIdsValid = (approvers, guidRegex) => {
-  return approvers.every((approver) =>
-    guidRegex.test(String(approver.userId || ""))
-  );
+  return approvers.every((approver) => {
+    const rawId = String(approver.userId || "").trim();
+    if (guidRegex.test(rawId)) {
+      return true;
+    }
+
+    return Boolean(
+      String(approver.email || "").trim() ||
+        String(approver.samAccountName || "").trim()
+    );
+  });
 };
 
 /**

@@ -70,14 +70,22 @@ export const adSearchApi = createApi({
   baseQuery,
   endpoints: (builder) => ({
     searchAdUsers: builder.query({
-      query: (searchTerm) => ({
+      query: (input) => {
+        const searchTerm = typeof input === "string" ? input : input?.query;
+        const maxResults =
+          typeof input === "object" && input !== null && Number(input.maxResults) > 0
+            ? Number(input.maxResults)
+            : 10;
+
+        return ({
         url: "/ad-search",
         method: "POST",
         body: {
           query: searchTerm?.trim() || "",
-          maxResults: 10,
+          maxResults,
         },
-      }),
+      });
+      },
       keepUnusedDataFor: 60,
       transformResponse: (response) => {
         if (!response?.success || !Array.isArray(response.users)) {

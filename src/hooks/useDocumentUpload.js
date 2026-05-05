@@ -4,7 +4,12 @@
  */
 import { useState, useCallback } from "react";
 import { message } from "antd";
-import { API_BASE_URL, isValidFileType, isValidFileSize } from "../utils/checklistUtils";
+import {
+    API_BASE_URL,
+    isValidFileType,
+    isValidFileSize,
+    MAX_FILE_UPLOAD_SIZE_MB,
+} from "../utils/checklistUtils";
 
 /**
  * Hook for handling document file uploads
@@ -34,9 +39,8 @@ export const useDocumentUpload = (checklistId) => {
                 return { success: false, error: "Invalid file type" };
             }
 
-            // Validate file size (max 10MB)
-            if (!isValidFileSize(file, 10)) {
-                message.error("File size exceeds 10MB limit");
+            if (!isValidFileSize(file, MAX_FILE_UPLOAD_SIZE_MB)) {
+                message.error(`File size exceeds ${MAX_FILE_UPLOAD_SIZE_MB}MB limit`);
                 return { success: false, error: "File too large" };
             }
 

@@ -1,6 +1,7 @@
-import React from "react";
-import { Button, Input, Select } from "antd";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Button, Input, Select, Spin } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { useLazySearchAdUsersQuery } from "../../../../api/adSearchApi";
 import { WARNING_ORANGE } from "../utils/constants";
 import "../../../../styles/creatorDesignSystem.css";
 
@@ -18,6 +19,118 @@ const RMEditApproversModal = ({
   onCancel,
   onConfirm,
 }) => {
+  const [directoryApprovers, setDirectoryApprovers] = useState([]);
+  const debounceRef = useRef(null);
+  const [directoryHint, setDirectoryHint] = useState(
+    "Open the list or type at least 2 characters to search Active Directory staff",
+  );
+  const [triggerDirectorySearch, { isFetching: isSearchingDirectory }] =
+    useLazySearchAdUsersQuery();
+
+  const upsertDirectoryApprovers = (users = []) => {
+    const normalizedUsers = users
+      .map((user) => {
+        const id = String(
+          user?._id || user?.id || user?.samAccountName || user?.email || "",
+        ).trim();
+
+        if (!id) return null;
+
+        return {
+          id,
+          name: user?.displayName || user?.name || user?.email || user?.samAccountName || "Unknown Staff",
+          email: user?.email || "",
+          samAccountName: user?.samAccountName || "",
+          department: user?.department || "",
+          position: user?.title || user?.position || "",
+        };
+      })
+      .filter(Boolean);
+
+    setDirectoryApprovers((prev) => {
+      const map = new Map(prev.map((item) => [String(item.id), item]));
+
+      normalizedUsers.forEach((user) => {
+        map.set(String(user.id), user);
+      });
+
+      return Array.from(map.values());
+    });
+  };
+
+  const allDirectoryApprovers = useMemo(() => {
+    const map = new Map();
+
+    [...(approversFromDb || []), ...(directoryApprovers || [])].forEach((user) => {
+      const id = String(user?.id || user?._id || "").trim();
+      if (!id) return;
+      map.set(id, {
+        id,
+        name: user?.name || user?.displayName || user?.email || user?.samAccountName || id,
+        email: user?.email || "",
+        samAccountName: user?.samAccountName || "",
+        department: user?.department || "",
+        position: user?.position || user?.title || "",
+      });
+    });
+
+    (editedApprovers || []).forEach((approver) => {
+      if (!approver?.userId) return;
+      map.set(String(approver.userId), {
+        id: String(approver.userId),
+        name: approver.name || approver.email || approver.samAccountName || String(approver.userId),
+        email: approver.email || "",
+        samAccountName: approver.samAccountName || "",
+        department: approver.department || "",
+        position: approver.position || "",
+      });
+    });
+
+    return Array.from(map.values());
+  }, [approversFromDb, directoryApprovers, editedApprovers]);
+
+  useEffect(() => () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+  }, []);
+
+  const runDirectorySearch = async (query, maxResults = 25) => {
+    try {
+      const users = await triggerDirectorySearch({ query, maxResults }, true).unwrap();
+      upsertDirectoryApprovers(users || []);
+      setDirectoryHint(users?.length ? "" : query ? "No matching staff found in Active Directory" : "No staff returned from Active Directory");
+    } catch {
+      setDirectoryHint("Active Directory search failed. Try again.");
+    }
+  };
+
+  const handleDirectorySearch = (rawQuery) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    const query = String(rawQuery || "").trim();
+
+    if (!query) {
+      debounceRef.current = setTimeout(() => {
+        setDirectoryHint("Loading staff from Active Directory...");
+        runDirectorySearch("", 200);
+      }, 150);
+      return;
+    }
+
+    if (query.length < 2) {
+      setDirectoryHint("Type at least 2 characters to search Active Directory staff");
+      return;
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setDirectoryHint("Searching Active Directory...");
+      runDirectorySearch(query, 50);
+    }, 300);
+  };
+
   if (!open) {
     return null;
   }
@@ -327,13 +440,28 @@ const RMEditApproversModal = ({
                         onChange={(option) => {
                           handleApproverSelection(idx, option);
                         }}
+                        onSearch={handleDirectorySearch}
+                        onDropdownVisibleChange={(openDropdown) => {
+                          if (openDropdown) {
+                            handleDirectorySearch("");
+                          }
+                        }}
                         style={{ width: "100%" }}
-                        loading={loadingApprovers}
+                        showSearch
+                        filterOption={false}
+                        loading={loadingApprovers || isSearchingDirectory}
                         disabled={hasApproved}
+                        notFoundContent={
+                          loadingApprovers || isSearchingDirectory ? (
+                            <div style={{ textAlign: "center", padding: "10px 0" }}>
+                              <Spin size="small" />
+                            </div>
+                          ) : directoryHint ? directoryHint : "No staff available"
+                        }
                       >
                         {(() => {
-                          const availableApprovers = approversFromDb.filter(user => {
-                            const userId = user._id || user.id;
+                          const availableApprovers = allDirectoryApprovers.filter(user => {
+                            const userId = user.id;
                             if (userId === approver.userId) return true;
                             return !editedApprovers.some(a => a.userId === userId);
                           });
@@ -341,11 +469,14 @@ const RMEditApproversModal = ({
                           return availableApprovers.length > 0 ? (
                             availableApprovers.map((user) => (
                               <Select.Option
-                                key={user._id || user.id}
-                                value={user._id || user.id}
+                                key={user.id}
+                                value={user.id}
                                 label={user.name}
+                                directoryApprover={user}
                               >
                                 {user.name}
+                                {user.position ? ` — ${user.position}` : ""}
+                                {user.department ? ` (${user.department})` : ""}
                               </Select.Option>
                             ))
                           ) : (

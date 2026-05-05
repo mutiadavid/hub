@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { Row, Col, message } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useGetApproversQuery } from "../../../api/userApi";
 import deferralApi from "../../../service/deferralApi";
 import { API_BASE_URL } from "../../../config/runtimeConfig";
 import { generateChecklistPDFBlob } from "../../../utils/reportGenerator";
@@ -86,9 +85,6 @@ export default function DeferralForm() {
 
   // Form submission
   const { handleSubmitDeferral } = useFormSubmission();
-
-  // Fetch available approvers
-  const { data: approverList = [] } = useGetApproversQuery();
 
   const { selectedDocuments, initializePerDocumentDays } = documentState;
   const { loanAmount } = formState;
@@ -515,7 +511,6 @@ export default function DeferralForm() {
         dclFile: documentState.dclFile,
         approverSlots: approverState.approverSlots,
         loanAmount: formState.loanAmount,
-        approverList,
         customerName: formState.customerName,
         businessName: formState.businessName,
         loanType: formState.loanType,
@@ -577,7 +572,6 @@ export default function DeferralForm() {
         perDocumentDays={documentState.perDocumentDays}
         deferralDescription={formState.deferralDescription}
         approverSlots={approverState.approverSlots}
-        approverList={approverList}
         facilities={formState.facilities}
         dclFile={documentState.dclFile}
         additionalFiles={documentState.additionalFiles}
@@ -652,7 +646,6 @@ export default function DeferralForm() {
         <Col span={6} className="deferral-form-sidebar-column">
           <ApproverSidebar
             approverSlots={approverState.approverSlots}
-            availableApprovers={approverList}
             updateApprover={approverState.updateApprover}
             addApprover={approverState.addApprover}
             removeApprover={approverState.removeApprover}

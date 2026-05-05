@@ -614,7 +614,7 @@ const deferralApi = {
       }
       const data = await res.json();
       return normalizeDeferralList(data);
-    } catch (err) {
+    } catch {
       // Fallback to pending if creator-queue endpoint doesn't exist (backward compatibility)
       console.warn("creator-queue endpoint not available, falling back to pending");
       const res = await fetch(`${API_BASE}/pending`, {
@@ -1437,6 +1437,10 @@ const deferralApi = {
             name: approver?.name || "",
             role: approver?.role || "",
             userId: normalizedUserId,
+            email: approver?.email || "",
+            samAccountName: approver?.samAccountName || "",
+            department: approver?.department || "",
+            position: approver?.position || "",
             approved: approver?.approved || approver?.approvalStatus === "approved",
             approvalStatus: approver?.approvalStatus || (approver?.approved ? "approved" : "pending"),
           };

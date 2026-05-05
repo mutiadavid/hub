@@ -1,11 +1,12 @@
-import React, { useMemo } from "react";
-import { Alert, Button, Divider, Select, Typography } from "antd";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Button, Divider, Select, Spin, Typography } from "antd";
 import {
   CheckCircleOutlined,
   InfoCircleOutlined,
   PlusOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
+import { useLazySearchAdUsersQuery } from "../../api/adSearchApi";
 import "../../styles/creatorDesignSystem.css";
 
 const { Text } = Typography;
@@ -13,7 +14,6 @@ const { Option } = Select;
 
 export default function ApproverSelector({
   slots = [],
-  availableApprovers = [],
   updateApprover,
   addApprover,
   removeApprover,
@@ -22,6 +22,14 @@ export default function ApproverSelector({
   selectedDocuments = [],
   loanAmount = "",
 }) {
+  const [directoryApprovers, setDirectoryApprovers] = useState([]);
+  const debounceRef = useRef(null);
+  const [directoryHint, setDirectoryHint] = useState(
+    "Open the list or type at least 2 characters to search Active Directory staff",
+  );
+  const [triggerDirectorySearch, { isFetching: isSearchingDirectory }] =
+    useLazySearchAdUsersQuery();
+
   const requiredSteps = slots.length;
   const selectedCount = slots.filter((slot) => !!slot.userId).length;
   const remainingApprovers = Math.max(requiredSteps - selectedCount, 0);
@@ -71,6 +79,112 @@ export default function ApproverSelector({
     requiredSteps > 0 &&
     selectedCount === requiredSteps &&
     !hasDuplicateApprovers;
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
+
+  const upsertDirectoryApprovers = (users) => {
+    const normalizedUsers = (users || [])
+      .map((user) => {
+        const identifier = String(
+          user?.id || user?._id || user?.userId || user?.samAccountName || user?.email || "",
+        ).trim();
+
+        if (!identifier) {
+          return null;
+        }
+
+        return {
+          id: identifier,
+          name:
+            user?.displayName ||
+            user?.name ||
+            user?.email ||
+            user?.samAccountName ||
+            "Unknown Staff",
+          email: user?.email || "",
+          samAccountName: user?.samAccountName || "",
+          department: user?.department || "",
+          position: user?.title || user?.position || "",
+        };
+      })
+      .filter(Boolean);
+
+    setDirectoryApprovers((prev) => {
+      const optionMap = new Map(prev.map((item) => [String(item.id), item]));
+
+      slots.forEach((slot) => {
+        if (!slot?.userId) {
+          return;
+        }
+
+        optionMap.set(String(slot.userId), {
+          id: String(slot.userId),
+          name: slot.name || slot.email || slot.samAccountName || String(slot.userId),
+          email: slot.email || "",
+          samAccountName: slot.samAccountName || "",
+          department: slot.department || "",
+          position: slot.position || "",
+        });
+      });
+
+      normalizedUsers.forEach((user) => {
+        optionMap.set(String(user.id), user);
+      });
+
+      return Array.from(optionMap.values());
+    });
+  };
+
+  const runDirectorySearch = async (query, maxResults = 25) => {
+    try {
+      const users = await triggerDirectorySearch(
+        { query, maxResults },
+        true,
+      ).unwrap();
+      upsertDirectoryApprovers(users);
+      setDirectoryHint(
+        users?.length
+          ? ""
+          : query
+            ? "No matching staff found in Active Directory"
+            : "No staff returned from Active Directory",
+      );
+    } catch {
+      setDirectoryHint("Active Directory search failed. Try again.");
+    }
+  };
+
+  const handleDirectorySearch = (rawQuery) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    const query = String(rawQuery || "").trim();
+
+    if (!query) {
+      debounceRef.current = setTimeout(() => {
+        setDirectoryHint("Loading staff from Active Directory...");
+        runDirectorySearch("", 200);
+      }, 150);
+      return;
+    }
+
+    if (query.length < 2) {
+      setDirectoryHint("Type at least 2 characters to search Active Directory staff");
+      return;
+    }
+
+    debounceRef.current = setTimeout(() => {
+      setDirectoryHint("Searching Active Directory...");
+      runDirectorySearch(query, 50);
+    }, 300);
+  };
 
   const getApproverLabel = (index) => {
     if (index === requiredSteps - 1) return "Final Approver";
@@ -352,113 +466,71 @@ export default function ApproverSelector({
                 </Text>
                 <Select
                   value={slot.userId || undefined}
-                  onChange={(value) => {
-                    const selectedApprover = availableApprovers.find(
-                      (approver) =>
-                        String(
-                          approver.id || approver._id || approver.userId,
-                        ) === String(value),
-                    );
-                    const selectedRole =
-                      selectedApprover?.position || slot.role || "Approver";
-                    updateApprover(index, value, selectedRole);
+                  onChange={(value, option) => {
+                    const selectedApprover =
+                      option?.directoryApprover ||
+                      directoryApprovers.find(
+                        (approver) => String(approver.id) === String(value),
+                      );
+
+                    updateApprover(index, value, slot.role || "Approver", {
+                      name: selectedApprover?.name || "",
+                      email: selectedApprover?.email || "",
+                      samAccountName: selectedApprover?.samAccountName || "",
+                      department: selectedApprover?.department || "",
+                      position: selectedApprover?.position || "",
+                    });
                   }}
                   onClear={() =>
-                    updateApprover(index, "", slot.role || "Approver")
+                    updateApprover(index, "", slot.role || "Approver", {})
                   }
+                  onSearch={handleDirectorySearch}
+                  onDropdownVisibleChange={(open) => {
+                    if (open) {
+                      handleDirectorySearch("");
+                    }
+                  }}
                   style={{ width: "100%", marginTop: 6 }}
-                  placeholder="-- Select --"
+                  placeholder="Search Active Directory staff"
                   size="middle"
                   showSearch
                   allowClear
-                  optionFilterProp="children"
+                  filterOption={false}
+                  loading={isSearchingDirectory}
+                  notFoundContent={
+                    isSearchingDirectory ? (
+                      <div style={{ textAlign: "center", padding: "10px 0" }}>
+                        <Spin size="small" />
+                      </div>
+                    ) : (
+                      <Text type="secondary">{directoryHint}</Text>
+                    )
+                  }
                 >
-                  {Array.isArray(availableApprovers) &&
-                  availableApprovers.length > 0 ? (
-                    (() => {
-                      const matching = availableApprovers.filter(
-                        (approver) =>
-                          String(approver.position || "").toLowerCase() ===
-                          String(slot.role || "").toLowerCase(),
-                      );
-                      const others = availableApprovers.filter(
-                        (approver) =>
-                          String(approver.position || "").toLowerCase() !==
-                          String(slot.role || "").toLowerCase(),
-                      );
-
-                      return (
-                        <>
-                          {matching.map((approver) => (
-                            <Option
-                              key={
-                                approver.id || approver._id || approver.userId
-                              }
-                              value={
-                                approver.id || approver._id || approver.userId
-                              }
-                              disabled={
-                                selectedUserIds.includes(
-                                  String(
-                                    approver.id ||
-                                      approver._id ||
-                                      approver.userId,
-                                  ),
-                                ) &&
-                                String(slot.userId || "") !==
-                                  String(
-                                    approver.id ||
-                                      approver._id ||
-                                      approver.userId,
-                                  )
-                              }
-                            >
-                              {approver.name}
-                              {approver.position
-                                ? ` — ${approver.position}`
-                                : ""}
-                            </Option>
-                          ))}
-                          {others.map((approver) => (
-                            <Option
-                              key={
-                                approver.id || approver._id || approver.userId
-                              }
-                              value={
-                                approver.id || approver._id || approver.userId
-                              }
-                              disabled={
-                                selectedUserIds.includes(
-                                  String(
-                                    approver.id ||
-                                      approver._id ||
-                                      approver.userId,
-                                  ),
-                                ) &&
-                                String(slot.userId || "") !==
-                                  String(
-                                    approver.id ||
-                                      approver._id ||
-                                      approver.userId,
-                                  )
-                              }
-                            >
-                              {approver.name}
-                              {approver.position
-                                ? ` — ${approver.position}`
-                                : ""}
-                            </Option>
-                          ))}
-                        </>
-                      );
-                    })()
+                  {Array.isArray(directoryApprovers) &&
+                  directoryApprovers.length > 0 ? (
+                    directoryApprovers.map((approver) => (
+                      <Option
+                        key={approver.id}
+                        value={approver.id}
+                        directoryApprover={approver}
+                        disabled={
+                          selectedUserIds.includes(String(approver.id)) &&
+                          String(slot.userId || "") !== String(approver.id)
+                        }
+                      >
+                        {approver.name}
+                        {approver.position ? ` — ${approver.position}` : ""}
+                        {approver.department ? ` (${approver.department})` : ""}
+                      </Option>
+                    ))
                   ) : (
                     <Option
-                      key="no-approvers"
-                      value="__no_approvers__"
+                      key="no-directory-users"
+                      value="__no_directory_users__"
                       disabled
                     >
-                      No approvers available
+                      No staff available
                     </Option>
                   )}
                 </Select>

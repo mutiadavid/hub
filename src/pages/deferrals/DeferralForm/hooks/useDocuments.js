@@ -1,5 +1,9 @@
 import { useState, useRef, useCallback } from "react";
-import { isValidFileType } from "../utils/helpers";
+import {
+  isValidFileType,
+  isValidFileSize,
+  MAX_DEFERRAL_UPLOAD_SIZE_MB,
+} from "../utils/helpers";
 import { showErrorToast, showInfoToast, showSuccessToast } from "../../../../utils/authToast";
 
 /**
@@ -24,6 +28,11 @@ export const useDocuments = () => {
       return false;
     }
 
+    if (!isValidFileSize(file)) {
+      showErrorToast(`File size exceeds ${MAX_DEFERRAL_UPLOAD_SIZE_MB}MB limit`);
+      return false;
+    }
+
     setDclFile(file);
     showSuccessToast(`${file.name} selected for DCL upload`);
     return false;
@@ -34,6 +43,11 @@ export const useDocuments = () => {
       showErrorToast(
         "File type not allowed. Please upload: .pdf, .doc, .docx, .xls, .xlsx, .png, .jpg, .jpeg"
       );
+      return false;
+    }
+
+    if (!isValidFileSize(file)) {
+      showErrorToast(`File size exceeds ${MAX_DEFERRAL_UPLOAD_SIZE_MB}MB limit`);
       return false;
     }
 

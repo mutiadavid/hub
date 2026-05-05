@@ -29,7 +29,6 @@ export const useFormSubmission = () => {
         dclFile,
         approverSlots,
         loanAmount,
-        approverList,
         customerName,
         businessName,
         loanType,
@@ -52,8 +51,7 @@ export const useFormSubmission = () => {
           selectedDocuments,
           dclFile,
           approverSlots,
-          loanAmount,
-          approverList
+          loanAmount
         )
       ) {
         return;
@@ -90,18 +88,19 @@ export const useFormSubmission = () => {
         const resolvedApprovers = approverSlots
           .filter((slot) => !!slot.userId)
           .map((slot) => {
-            const matched = approverList.find(
-              (approver) =>
-                String(approver?._id || approver?.id || approver?.userId || "") ===
-                String(slot.userId)
-            );
+            const resolvedUserId = GUID_REGEX.test(String(slot.userId || ""))
+              ? String(slot.userId)
+              : null;
 
-            const resolvedUserId =
-              matched?.id || matched?._id || matched?.userId || slot.userId;
             return {
               role: slot.role,
               userId: resolvedUserId,
               user: resolvedUserId,
+              name: slot.name,
+              email: slot.email,
+              samAccountName: slot.samAccountName,
+              department: slot.department,
+              position: slot.position,
             };
           });
 

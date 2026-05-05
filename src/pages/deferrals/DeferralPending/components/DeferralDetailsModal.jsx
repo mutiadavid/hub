@@ -1020,19 +1020,8 @@ const DeferralDetailsModal = ({
     setEditingApprovers(true);
     setWorkspaceTab("edit-approvers");
 
-    // Fetch approvers from database using deferralApi
-    setLoadingApprovers(true);
-    try {
-      const token = localStorage.getItem("token");
-      const users = await deferralApi.getApprovers(token);
-      setApproversFromDb(users || []);
-    } catch (error) {
-      console.error("Error loading approvers:", error);
-      showErrorToast("Failed to load approvers from database");
-      setApproversFromDb([]);
-    } finally {
-      setLoadingApprovers(false);
-    }
+    setApproversFromDb([]);
+    setLoadingApprovers(false);
   };
 
   const handleAddApprover = (afterIndex) => {
@@ -1050,6 +1039,11 @@ const DeferralDetailsModal = ({
       _id: `temp-${Date.now()}`,
       role: "",
       name: "",
+      userId: "",
+      email: "",
+      samAccountName: "",
+      department: "",
+      position: "",
       approved: false,
       approvalStatus: "pending",
     };
@@ -1094,6 +1088,8 @@ const DeferralDetailsModal = ({
   const handleApproverSelection = (idx, option) => {
     if (!option || editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") return;
 
+    const selectedApprover = option?.directoryApprover || null;
+
     setEditedApprovers((prev) => {
       const updated = [...prev];
       updated[idx] = {
@@ -1102,6 +1098,10 @@ const DeferralDetailsModal = ({
         name: typeof option.label === "string"
           ? option.label
           : updated[idx]?.name || "",
+        email: selectedApprover?.email || "",
+        samAccountName: selectedApprover?.samAccountName || "",
+        department: selectedApprover?.department || "",
+        position: selectedApprover?.position || "",
       };
       return updated;
     });
@@ -1124,6 +1124,10 @@ const DeferralDetailsModal = ({
         userId: a.userId,
         role: a.role,
         name: a.name,
+        email: a.email,
+        samAccountName: a.samAccountName,
+        department: a.department,
+        position: a.position,
         approved: a.approved || a.approvalStatus === "approved",
         approvalStatus: a.approvalStatus || (a.approved ? "approved" : "pending"),
       }));

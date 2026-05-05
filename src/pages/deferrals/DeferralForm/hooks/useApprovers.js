@@ -24,6 +24,11 @@ export const useApprovers = (selectedDocuments, loanAmount) => {
           role,
           userId: existingSlot?.userId || "",
           isCustom: existingSlot?.isCustom || false,
+          name: existingSlot?.name || "",
+          email: existingSlot?.email || "",
+          samAccountName: existingSlot?.samAccountName || "",
+          department: existingSlot?.department || "",
+          position: existingSlot?.position || "",
         };
       });
 
@@ -34,7 +39,12 @@ export const useApprovers = (selectedDocuments, loanAmount) => {
           return (
             slot?.role === nextSlot.role &&
             slot?.userId === nextSlot.userId &&
-            slot?.isCustom === nextSlot.isCustom
+            slot?.isCustom === nextSlot.isCustom &&
+            slot?.name === nextSlot.name &&
+            slot?.email === nextSlot.email &&
+            slot?.samAccountName === nextSlot.samAccountName &&
+            slot?.department === nextSlot.department &&
+            slot?.position === nextSlot.position
           );
         });
 
@@ -57,13 +67,18 @@ export const useApprovers = (selectedDocuments, loanAmount) => {
     setApproverSlots([...approverSlots, slot]);
   };
 
-  const updateApprover = (index, userId, role) => {
+  const updateApprover = (index, userId, role, details = {}) => {
     setApproverCustomized(true);
     const arr = [...approverSlots];
     arr[index] = {
       ...arr[index],
       userId,
       ...(role ? { role } : {}),
+      name: details.name || "",
+      email: details.email || "",
+      samAccountName: details.samAccountName || "",
+      department: details.department || "",
+      position: details.position || "",
     };
     setApproverSlots(arr);
   };

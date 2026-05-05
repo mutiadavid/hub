@@ -41,7 +41,6 @@ export default function DeferralConfirmationPage({
   perDocumentDays,
   deferralDescription,
   approverSlots,
-  approverList,
   facilities,
   dclFile,
   additionalFiles,
@@ -679,12 +678,10 @@ export default function DeferralConfirmationPage({
                   {approvers.length > 0 ? (
                     <div className="deferral-confirm-approver-list">
                       {approvers.map((slot, index) => {
-                        const user = approverList.find((approver) => approver._id === slot.userId || approver.id === slot.userId);
-
                         return (
                           <div key={`${slot.userId}-${index}`} className="deferral-confirm-approver-item">
-                            <div className="deferral-confirm-approver-name">{user?.name || slot.userId}</div>
-                            <div className="deferral-confirm-approver-role">{user?.position || user?.role || slot.role || "Approver"}</div>
+                            <div className="deferral-confirm-approver-name">{slot.name || slot.email || slot.samAccountName || slot.userId}</div>
+                            <div className="deferral-confirm-approver-role">{slot.position || slot.role || "Approver"}</div>
                           </div>
                         );
                       })}

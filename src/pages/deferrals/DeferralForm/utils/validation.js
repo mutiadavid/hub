@@ -57,8 +57,7 @@ export const validateDclFileUploaded = (dclFile) => {
 export const validateApprovers = (
   approverSlots,
   selectedDocuments,
-  loanAmount,
-  approverList
+  loanAmount
 ) => {
   // Check for duplicate approvers
   if (hasDuplicateApprovers(approverSlots)) {
@@ -88,7 +87,7 @@ export const validateApprovers = (
   // Check approver IDs are valid GUIDs
   if (!areApproverIdsValid(selectedSlots, GUID_REGEX)) {
     showErrorToast(
-      "One or more selected approvers have invalid IDs. Please reselect approvers and try again."
+      "One or more selected approvers are missing directory identity details. Please reselect approvers and try again."
     );
     return false;
   }
@@ -106,8 +105,7 @@ export const validateDeferralSubmission = (
   selectedDocuments,
   dclFile,
   approverSlots,
-  loanAmount,
-  approverList
+  loanAmount
 ) => {
   // Validate customer
   if (!validateCustomer(selectedCustomerId, customerNumber)) return false;
@@ -122,7 +120,7 @@ export const validateDeferralSubmission = (
   if (!validateDclFileUploaded(dclFile)) return false;
 
   // Validate approvers
-  if (!validateApprovers(approverSlots, selectedDocuments, loanAmount, approverList)) {
+  if (!validateApprovers(approverSlots, selectedDocuments, loanAmount)) {
     return false;
   }
 
