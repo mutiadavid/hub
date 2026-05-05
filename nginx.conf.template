@@ -1,7 +1,7 @@
 server {
   listen 5173;
   server_name localhost;
-  root /usr/share/nginx/html/digital-ipf-portal;
+  root /usr/share/nginx/html/ewer;
   index index.html;
 
   location / {
