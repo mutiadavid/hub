@@ -190,11 +190,11 @@ const AdminDashboard = () => {
 
   const handleToggleActive = async (id) => {
     try {
-      await toggleActive(id).unwrap();
+      await toggleActive({ id, active: false }).unwrap();
       message.success("User status updated");
       refetch();
     } catch (err) {
-      message.error("Failed to update status", err);
+      message.error(err?.data?.message || err?.data?.error || "Failed to update status");
     }
   };
 

@@ -1,19 +1,69 @@
 
 // socket.js
 import { io } from "socket.io-client";
-import { SOCKET_URL } from "../config/runtimeConfig";
+import { SOCKET_ENABLED, SOCKET_URL } from "../config/runtimeConfig";
 
-const socket = io(SOCKET_URL, {
-  autoConnect: false, // IMPORTANT
-  transports: ["websocket", "polling"],
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
+const createNoopSocket = () => ({
+  connected: false,
+  connect() {},
+  disconnect() {},
+  emit() {},
+  on() {},
+  off() {},
 });
 
-socket.on("connect_error", (err) => {
-  console.error("⚠️ WebSocket error:", err.message);
-});
+let socketInstance = null;
+let socketWarningShown = false;
+
+const getSocketInstance = () => {
+  if (!SOCKET_ENABLED) {
+    if (!socketWarningShown) {
+      console.info("Socket.IO disabled. Set VITE_SOCKET_ENABLED=true to enable realtime features.");
+      socketWarningShown = true;
+    }
+    return createNoopSocket();
+  }
+
+  if (!socketInstance) {
+    socketInstance = io(SOCKET_URL, {
+      autoConnect: false,
+      transports: ["websocket", "polling"],
+      reconnection: false,
+      timeout: 5000,
+    });
+
+    socketInstance.on("connect_error", (err) => {
+      if (!socketWarningShown) {
+        console.warn(`Socket.IO unavailable at ${SOCKET_URL}. Realtime features are disabled until the socket server is started.`);
+        console.debug("Socket connect error:", err.message);
+        socketWarningShown = true;
+      }
+    });
+  }
+
+  return socketInstance;
+};
+
+export const socket = {
+  get connected() {
+    return getSocketInstance().connected;
+  },
+  connect() {
+    return getSocketInstance().connect();
+  },
+  disconnect() {
+    return getSocketInstance().disconnect();
+  },
+  emit(...args) {
+    return getSocketInstance().emit(...args);
+  },
+  on(...args) {
+    return getSocketInstance().on(...args);
+  },
+  off(...args) {
+    return getSocketInstance().off(...args);
+  },
+};
 
 /* ===========================
    HELPERS

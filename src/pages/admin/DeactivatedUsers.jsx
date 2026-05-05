@@ -46,7 +46,7 @@ const PIE_COLORS = {
 
 const DeactivatedUsers = () => {
   const { data: users = [], isLoading, refetch } = useGetUsersQuery();
-  const [toggleActive, { isLoading: isToggling }] = useToggleActiveMutation();
+  const [toggleActive] = useToggleActiveMutation();
   const [togglingIds, setTogglingIds] = useState([]);
   const [reassignTasks, { isLoading: isReassigning }] = useReassignTasksMutation();
   const [reassignModalOpen, setReassignModalOpen] = useState(false);
@@ -90,7 +90,7 @@ const DeactivatedUsers = () => {
         setTogglingIds((s) => [...s, idStr]);
         toast.info("Activating user...");
         try {
-          await toggleActive(idStr).unwrap();
+          await toggleActive({ id: idStr, active: true }).unwrap();
           toast.success("User activated successfully");
           await refetch();
         } catch (err) {
@@ -106,6 +106,7 @@ const DeactivatedUsers = () => {
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
               },
+              body: JSON.stringify({ active: true }),
             });
 
             if (!res.ok) {

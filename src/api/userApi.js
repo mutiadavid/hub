@@ -39,10 +39,16 @@ export const userApi = createApi({
     }),
 
     toggleActive: builder.mutation({
-      query: (id) => ({
+      query: (arg) => {
+        const id = typeof arg === "object" && arg !== null ? arg.id : arg;
+        const active = typeof arg === "object" && arg !== null ? arg.active : undefined;
+
+        return {
         url: `/${id}/active`,
         method: "PUT",
-      }),
+        ...(typeof active === "boolean" ? { body: { active } } : {}),
+      };
+      },
       invalidatesTags: ["User"],
     }),
 

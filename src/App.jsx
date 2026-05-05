@@ -11,6 +11,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useHeartbeatPresenceMutation } from "./api/userApi";
 import socketService from "./service/socketService";
+import { SOCKET_ENABLED } from "./config/runtimeConfig";
 
 // Pages
 import RegisterPage from "./pages/RegisterPage";
@@ -37,7 +38,9 @@ const App = () => {
   // Connect socket when user is logged in
   useEffect(() => {
     if (user) {
-      socketService.connect(user);
+      if (SOCKET_ENABLED) {
+        socketService.connect(user);
+      }
 
       const sendHeartbeat = async (force = false) => {
         const now = Date.now();
@@ -60,7 +63,7 @@ const App = () => {
         }
 
         const activeUserId = user.id || user._id;
-        if (activeUserId) {
+        if (SOCKET_ENABLED && activeUserId) {
           socketService.emitUserActivity(activeUserId);
         }
       };
@@ -74,7 +77,9 @@ const App = () => {
 
       // Emit user online status immediately if already connected,
       // or it will happen automatically in socketService on 'connect' event
-      socketService.emitUserOnline(user);
+      if (SOCKET_ENABLED) {
+        socketService.emitUserOnline(user);
+      }
 
       activityEvents.forEach((eventName) => {
         window.addEventListener(eventName, handleActivity);

@@ -1,21 +1,28 @@
 import { io } from "socket.io-client";
+import { SOCKET_ENABLED, SOCKET_URL } from "../config/runtimeConfig";
 
 class SocketService {
   constructor() {
     this.socket = null;
+    this._disabledLogged = false;
   }
 
   connect(userData = null) {
     if (userData) this.lastUserData = userData;
 
+    if (!SOCKET_ENABLED) {
+      if (!this._disabledLogged) {
+        console.info("Socket.IO disabled. Using polling/API fallbacks for presence updates.");
+        this._disabledLogged = true;
+      }
+      return null;
+    }
+
     if (!this.socket) {
-      const socketURL =
-        import.meta.env.VITE_SOCKET_URL?.trim() || "http://localhost:5001";
-      this.socket = io(socketURL, {
+      this.socket = io(SOCKET_URL, {
         transports: ["websocket", "polling"],
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 20,
+        reconnection: false,
+        timeout: 5000,
       });
 
       this.socket.on("connect", () => {
@@ -29,7 +36,7 @@ class SocketService {
         // Only log on first attempt to avoid spamming console
         if (!this._errorLogged) {
           console.warn("⚠️ Socket server unavailable - real-time features disabled. The app will continue to work normally.");
-          console.info("💡 To enable real-time features, ensure the socket server is running on:", socketURL);
+          console.info("💡 To enable real-time features, ensure the socket server is running on:", SOCKET_URL);
           this._errorLogged = true;
         }
       });
@@ -51,7 +58,7 @@ class SocketService {
   }
 
   emitUserOnline(userData) {
-    if (!userData) return;
+    if (!userData || !SOCKET_ENABLED) return;
 
     // Save for reconnection attempts
     this.lastUserData = userData;
@@ -72,7 +79,7 @@ class SocketService {
   }
 
   emitUserActivity(userId) {
-    if (this.socket && userId) {
+    if (this.socket && userId && SOCKET_ENABLED) {
       this.socket.emit("user-activity", userId);
     }
   }

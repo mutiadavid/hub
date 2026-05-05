@@ -58,3 +58,7 @@ export const SOCKET_URL = normalizeOrigin(
   import.meta.env.VITE_SOCKET_URL,
   "http://localhost:5001",
 );
+
+export const SOCKET_ENABLED = String(
+  import.meta.env.VITE_SOCKET_ENABLED || "false",
+).trim().toLowerCase() === "true";
