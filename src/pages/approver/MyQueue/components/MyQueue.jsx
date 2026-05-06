@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Card, Tabs, Input, Button, Select, DatePicker, Space, Empty, Spin, message, Table, Descriptions, Typography, Modal } from "antd";
-import { SearchOutlined, ReloadOutlined, CalendarOutlined, FilePdfOutlined, FileDoneOutlined, CloseOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Card, Tabs, Input, Button, Select, DatePicker, Space, Empty, Spin, message, Table, Descriptions, Typography } from "antd";
+import { SearchOutlined, ReloadOutlined, CalendarOutlined, FilePdfOutlined, FileDoneOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
 import { PRIMARY_BLUE, ACCENT_LIME, SUCCESS_GREEN } from "../utils/constants";
@@ -18,7 +18,6 @@ import {
 import { DeferralDetailsModal, ExtensionApplicationsTab } from ".";
 import ExtensionApplicationModal from "./ExtensionApplicationModal";
 import { API_BASE_URL } from "../../../../config/runtimeConfig";
-import { getDrafts, deleteDraft, formatDraftDate } from "../../../../utils/draftsUtils";
 
 const { RangePicker } = DatePicker;
 
@@ -102,54 +101,6 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
   const [extensionApproveLoading, setExtensionApproveLoading] = useState(false);
   const [extensionRejectLoading, setExtensionRejectLoading] = useState(false);
   const [extensionReworkLoading, setExtensionReworkLoading] = useState(false);
-
-  // Draft management
-  const [draftsList, setDraftsList] = useState([]);
-  const [draftsLoading, setDraftsLoading] = useState(false);
-
-  // Load drafts
-  const loadDrafts = useCallback(() => {
-    setDraftsLoading(true);
-    try {
-      const allDrafts = getDrafts('deferral');
-      setDraftsList(allDrafts);
-    } catch (err) {
-      console.error('Error loading drafts:', err);
-      message.error('Failed to load drafts');
-    } finally {
-      setDraftsLoading(false);
-    }
-  }, []);
-
-  // Load drafts on mount and when tab changes to drafts
-  useEffect(() => {
-    if (activeTab === 'drafts') {
-      loadDrafts();
-    }
-  }, [activeTab, loadDrafts]);
-
-  const handleRestoreDraft = (draft) => {
-    navigate(`/rm/deferrals/request?draftId=${encodeURIComponent(draft.id)}`);
-  };
-
-  const handleDeleteDraftFromList = (draftId) => {
-    Modal.confirm({
-      title: 'Delete Draft',
-      content: 'Are you sure you want to delete this draft? This action cannot be undone.',
-      okText: 'Delete',
-      okType: 'danger',
-      onOk() {
-        try {
-          deleteDraft(draftId);
-          setDraftsList(draftsList.filter(d => d.id !== draftId));
-          message.success('Draft deleted successfully');
-        } catch (err) {
-          console.error('Error deleting draft:', err);
-          message.error('Failed to delete draft');
-        }
-      },
-    });
-  };
 
   const handleOpenDeferralDetails = (deferral) => {
     setSelectedDeferral(deferral);
@@ -561,94 +512,6 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                           onOpenExtensionDetails={handleOpenExtensionDetails}
                           tableClassName={queueTableShellClassName}
                         />
-                      </div>
-                    ),
-                  },
-                  {
-                    key: "drafts",
-                    label: renderTabLabel("Drafts", draftsList.length),
-                    children: (
-                      <div>
-                      <div className={compactFiltersRowClassName}>
-                        <div className={queueActionsClassName}>
-                          <Button
-                            className={primaryQueueButtonClassName}
-                            icon={<ReloadOutlined />}
-                            onClick={loadDrafts}
-                            loading={draftsLoading}
-                            size="large"
-                          >
-                            Refresh
-                          </Button>
-                        </div>
-                      </div>
-
-                      {draftsLoading ? (
-                        <div className={queueLoadingStateClassName}>
-                          <Spin />
-                        </div>
-                      ) : draftsList.length === 0 ? (
-                        <div className={queueLoadingStateClassName}>
-                          <Empty description="No saved deferral drafts" />
-                        </div>
-                      ) : (
-                        <div className={queueTableShellClassName}>
-                          <Table
-                            columns={[
-                              {
-                                title: "Customer",
-                                dataIndex: ["data", "customerName"],
-                                key: "customerName",
-                                render: (text) => text || "N/A",
-                              },
-                              {
-                                title: "DCL #",
-                                dataIndex: ["data", "dclNumber"],
-                                key: "dclNumber",
-                                render: (text) => text || "N/A",
-                              },
-                              {
-                                title: "Loan Amount",
-                                dataIndex: ["data", "loanAmount"],
-                                key: "loanAmount",
-                                render: (text) => (text ? `$${Number(text).toLocaleString()}` : "N/A"),
-                              },
-                              {
-                                title: "Saved",
-                                dataIndex: "updatedAt",
-                                key: "updatedAt",
-                                render: (text) => formatDraftDate(text),
-                              },
-                              {
-                                title: "Actions",
-                                key: "actions",
-                                render: (_, record) => (
-                                  <Space size="small">
-                                    <Button
-                                      className="rounded-md! border-0! bg-(--ncb-primary-500)! text-white! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! [&>span]:text-white!"
-                                      size="small"
-                                      onClick={() => handleRestoreDraft(record)}
-                                    >
-                                      Restore
-                                    </Button>
-                                    <Button
-                                      className="rounded-md! border-[rgba(220,38,38,0.2)]! bg-white! text-red-600! hover:border-red-600! hover:bg-red-50! hover:text-red-700! focus:border-red-600! focus:bg-red-50! focus:text-red-700!"
-                                      size="small"
-                                      icon={<DeleteOutlined />}
-                                      onClick={() => handleDeleteDraftFromList(record.id)}
-                                    />
-                                  </Space>
-                                ),
-                              },
-                            ]}
-                            dataSource={draftsList}
-                            rowKey={(record) => record.id}
-                            tableLayout="fixed"
-                            pagination={{ pageSize: 5, showSizeChanger: true, pageSizeOptions: ["5", "10", "20", "50"] }}
-                            scroll={{ x: 720 }}
-                          />
-                        </div>
-                      )}
                       </div>
                     ),
                   },

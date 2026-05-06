@@ -923,7 +923,7 @@ const RmReviewChecklistModal = ({
             ? {
                 ...d,
                 uploadData: uploadResult,
-                fileUrl: `${API_BASE_URL}${uploadResult.fileUrl}`,
+                fileUrl: uploadResult.fileUrl,
                 isUploading: false,
               }
             : d,
@@ -1078,7 +1078,7 @@ const RmReviewChecklistModal = ({
             status: doc.status,
             action: doc.action,
             comment: doc.comment || "",
-            fileUrl: doc.uploadData?.fileUrl || null,
+            fileUrl: doc.uploadData?.fileUrl || doc.fileUrl || null,
             deferralReason: doc.deferralReason || "",
             rmStatus: doc.rmStatus || null,
             deferralNumber: doc.deferralNumber || "",

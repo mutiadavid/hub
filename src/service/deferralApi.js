@@ -326,8 +326,17 @@ function collectRecipientsByType(deferral, notificationType, data = {}) {
 
 function getAuthHeaders(token) {
   // Prefer explicit token argument (from Redux) to avoid direct localStorage reads.
-  const stored = JSON.parse(localStorage.getItem("user") || "null");
-  const fallbackToken = stored?.token;
+  let fallbackToken = localStorage.getItem("token");
+
+  if (!fallbackToken) {
+    try {
+      const stored = JSON.parse(localStorage.getItem("user") || "null");
+      fallbackToken = stored?.token || null;
+    } catch {
+      fallbackToken = null;
+    }
+  }
+
   const t = token || fallbackToken;
   return {
     "content-type": "application/json",
@@ -504,8 +513,17 @@ const deferralApi = {
     if (opts.isAdditional) fd.append("isAdditional", "true");
     if (opts.documentName) fd.append("documentName", String(opts.documentName));
 
-    const stored = JSON.parse(localStorage.getItem("user") || "null");
-    const t = token || stored?.token;
+    let fallbackToken = localStorage.getItem("token");
+    if (!fallbackToken) {
+      try {
+        const stored = JSON.parse(localStorage.getItem("user") || "null");
+        fallbackToken = stored?.token || null;
+      } catch {
+        fallbackToken = null;
+      }
+    }
+
+    const t = token || fallbackToken;
 
     const res = await fetch(`${API_BASE}/${id}/documents/upload`, {
       method: "POST",

@@ -376,7 +376,7 @@ const CheckerReviewChecklistModal = ({
         checkerStatus: resolvedCheckerStatus,
         finalCheckerStatus: resolvedCheckerStatus,
         comment: doc.comment || "",
-        fileUrl: doc.fileUrl || null,
+        fileUrl: doc.fileUrl || doc.uploadData?.fileUrl || null,
         expiryDate: doc.expiryDate || doc.ExpiryDate || null,
         deferralNo: doc.deferralNo || null,
       };
@@ -420,7 +420,7 @@ const CheckerReviewChecklistModal = ({
     };
 
     fetchSupportingDocs();
-  }, [resolvedChecklistId, token]);
+  }, [API_BASE_URL, resolvedChecklistId, token]);
 
   const handlePdfDownload = async () => {
     setIsGeneratingPDF(true);

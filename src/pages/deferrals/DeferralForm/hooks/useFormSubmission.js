@@ -154,13 +154,20 @@ export const useFormSubmission = () => {
         };
 
         // Get user token for file uploads
-        const stored = JSON.parse(localStorage.getItem("user") || "null");
-        const userToken = stored?.token;
+        let userToken = localStorage.getItem("token");
+        if (!userToken) {
+          try {
+            const stored = JSON.parse(localStorage.getItem("user") || "null");
+            userToken = stored?.token || null;
+          } catch {
+            userToken = null;
+          }
+        }
 
         // Create deferral
         let newDeferral;
         try {
-          newDeferral = await deferralApi.createDeferral(payload);
+          newDeferral = await deferralApi.createDeferral(payload, userToken);
         } catch (err) {
           showErrorToast(err.message || "Failed to create deferral");
           setIsSubmitting(false);

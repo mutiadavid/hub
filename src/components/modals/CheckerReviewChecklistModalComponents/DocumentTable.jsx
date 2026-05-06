@@ -6,7 +6,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { getFullUrl } from "../../../utils/checklistUtils";
+import { openFileInNewTab } from "../../../utils/fileUtils";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
 
@@ -332,11 +332,7 @@ const DocumentTable = ({
               } else {
                 const fileUrl = record.fileUrl || record.uploadData?.fileUrl;
                 if (fileUrl) {
-                  const fullUrl = getFullUrl(fileUrl);
-                  const viewUrl = fullUrl.includes("?")
-                    ? `${fullUrl}&inline=true`
-                    : `${fullUrl}?inline=true`;
-                  window.open(viewUrl, "_blank", "noopener,noreferrer");
+                  openFileInNewTab(fileUrl);
                 }
               }
             }}

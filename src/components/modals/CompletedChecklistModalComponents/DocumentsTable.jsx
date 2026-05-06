@@ -1,6 +1,6 @@
 import React from "react";
 import { Table, Button, Tooltip } from "antd";
-import { getFullUrl as getFullUrlUtil } from "../../../utils/checklistUtils.js";
+import { openFileInNewTab } from "../../../utils/fileUtils";
 import {
   getCheckerStatusDisplay,
 } from "../../../utils/checklistConstants.js";
@@ -135,12 +135,7 @@ const DocumentsTable = ({ docs, checklist }) => {
           <Tooltip title="View document">
             <Button
               size="small"
-              onClick={() =>
-                window.open(
-                  getFullUrlUtil(record.fileUrl || record.uploadData?.fileUrl),
-                  "_blank",
-                )
-              }
+              onClick={() => openFileInNewTab(record.fileUrl || record.uploadData?.fileUrl)}
               className="completed-modal-view-btn"
             >
               View

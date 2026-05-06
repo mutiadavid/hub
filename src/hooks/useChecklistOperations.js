@@ -162,7 +162,7 @@ export const useChecklistOperations = (
             checkerStatus: getResolvedCheckerStatus(doc), // PRESERVE checker status
             finalCheckerStatus: getResolvedCheckerStatus(doc),
             comment: doc.comment,
-            fileUrl: doc.fileUrl,
+            fileUrl: doc.fileUrl || doc.uploadData?.fileUrl || null,
             expiryDate: doc.expiryDate || doc.ExpiryDate || null,
             deferralNumber: doc.deferralNo,
             deferralReason: doc.deferralReason,
@@ -255,7 +255,7 @@ export const useChecklistOperations = (
           checkerStatus: getResolvedCheckerStatus(doc), // PRESERVE checker status
           finalCheckerStatus: getResolvedCheckerStatus(doc),
           comment: doc.comment || "",
-          fileUrl: doc.fileUrl || null,
+          fileUrl: doc.fileUrl || doc.uploadData?.fileUrl || null,
           expiryDate: doc.expiryDate || doc.ExpiryDate || null,
           deferralNo: doc.deferralNo || null,
           deferralReason: doc.deferralReason || null,
@@ -336,7 +336,7 @@ export const useChecklistOperations = (
           checkerStatus: getResolvedCheckerStatus(doc),
           finalCheckerStatus: getResolvedCheckerStatus(doc),
           comment: doc.comment,
-          fileUrl: doc.fileUrl,
+          fileUrl: doc.fileUrl || doc.uploadData?.fileUrl || null,
           expiryDate: doc.expiryDate ?? doc.ExpiryDate ?? null,
           deferralNo: doc.deferralNo,
         })),

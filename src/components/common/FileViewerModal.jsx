@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Spin, message, Button } from "antd";
 import { DownloadOutlined, CloseOutlined } from "@ant-design/icons";
+import { fetchProtectedFileObjectUrl } from "../../utils/fileUtils";
 
 const FileViewerModal = ({ open, fileName, fileUrl, onClose, onDownload }) => {
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState(null);
   const [fileType, setFileType] = useState("unknown");
+  const [objectUrl, setObjectUrl] = useState(null);
 
   useEffect(() => {
     if (open && fileUrl) {
@@ -13,35 +15,44 @@ const FileViewerModal = ({ open, fileName, fileUrl, onClose, onDownload }) => {
     }
   }, [open, fileUrl]);
 
+  useEffect(() => () => {
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }, [objectUrl]);
+
   const loadFile = async () => {
     try {
       setLoading(true);
       const ext = fileName.split(".").pop().toLowerCase();
       setFileType(ext);
+      const nextObjectUrl = await fetchProtectedFileObjectUrl(fileUrl);
+
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      setObjectUrl(nextObjectUrl);
 
       if (["jpg", "jpeg", "png", "gif"].includes(ext)) {
-        // Image file
         setContent(
           <div style={{ textAlign: "center" }}>
             <img
-              src={fileUrl}
+              src={nextObjectUrl}
               alt={fileName}
               style={{ maxWidth: "100%", maxHeight: "500px" }}
             />
           </div>,
         );
       } else if (ext === "pdf") {
-        // PDF - embed viewer
         setContent(
           <iframe
-            src={fileUrl}
+            src={nextObjectUrl}
             style={{ width: "100%", height: "500px", border: "none" }}
             title={fileName}
           />,
         );
       } else if (["txt", "csv"].includes(ext)) {
-        // Text file
-        const response = await fetch(fileUrl);
+        const response = await fetch(nextObjectUrl);
         const text = await response.text();
         setContent(
           <pre
@@ -59,7 +70,6 @@ const FileViewerModal = ({ open, fileName, fileUrl, onClose, onDownload }) => {
           </pre>,
         );
       } else {
-        // Unsupported file type
         setContent(
           <div style={{ textAlign: "center", padding: "30px" }}>
             <p style={{ color: "#8C8C8C", marginBottom: "16px" }}>

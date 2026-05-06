@@ -1,12 +1,31 @@
 import { API_ORIGIN } from "../config/runtimeConfig";
+
+function normalizeApiDocumentUrl(url) {
+  const value = String(url || "").trim();
+  if (!value) return value;
+
+  if (/^(https?:)?\/\//i.test(value)) {
+    try {
+      const parsed = new URL(value);
+      parsed.pathname = parsed.pathname.replace(/\/api\/api\//i, "/api/");
+      return parsed.toString();
+    } catch {
+      return value.replace(/\/api\/api\//i, "/api/");
+    }
+  }
+
+  return value.replace(/^\/api\/api\//i, "/api/");
+}
+
 export function getFullUrl(url) {
   if (!url) return null;
+  const normalizedUrl = normalizeApiDocumentUrl(url);
   // If already absolute or data/blob, return as-is
-  if (/^(https?:)?\/\//i.test(url) || /^data:|^blob:/i.test(url)) return url;
+  if (/^(https?:)?\/\//i.test(normalizedUrl) || /^data:|^blob:/i.test(normalizedUrl)) return normalizedUrl;
   // For root-relative URLs like /uploads/..., prefix API base
   const base = API_ORIGIN;
-  if (url.startsWith("/")) return (base ? base : "") + url;
-  return url;
+  if (normalizedUrl.startsWith("/")) return (base ? base : "") + normalizedUrl;
+  return normalizedUrl;
 }
 
 function dataUrlToBlobUrl(dataUrl) {
@@ -37,6 +56,53 @@ function dataUrlToBlobUrl(dataUrl) {
   return URL.createObjectURL(blob);
 }
 
+function getAuthToken() {
+  const directToken = localStorage.getItem("token");
+  if (directToken) {
+    return directToken;
+  }
+
+  try {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+    return storedUser?.token || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchProtectedFileBlob(url, token = getAuthToken()) {
+  const full = getFullUrl(url);
+  if (!full) {
+    throw new Error("No file URL provided");
+  }
+
+  if (/^data:/i.test(full)) {
+    const blobUrl = dataUrlToBlobUrl(full);
+    const response = await fetch(blobUrl);
+    return response.blob();
+  }
+
+  if (/^blob:/i.test(full)) {
+    const response = await fetch(full);
+    return response.blob();
+  }
+
+  const response = await fetch(full, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  return response.blob();
+}
+
+export async function fetchProtectedFileObjectUrl(url, token = getAuthToken()) {
+  const blob = await fetchProtectedFileBlob(url, token);
+  return URL.createObjectURL(blob);
+}
+
 function safeOpenUrl(url, token) {
   if (!url) return;
 
@@ -44,13 +110,7 @@ function safeOpenUrl(url, token) {
   
   // If it's a regular URL (not data/blob), fetch with auth header and open
   if (!(/^data:|^blob:/i.test(url))) {
-    fetch(resolvedUrl, {
-      headers: token ? { authorization: `Bearer ${token}` } : {},
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.blob();
-      })
+    fetchProtectedFileBlob(resolvedUrl, token)
       .then((blob) => {
         const blobUrl = URL.createObjectURL(blob);
         window.open(blobUrl, "_blank", "noopener,noreferrer");
@@ -77,14 +137,14 @@ function safeOpenUrl(url, token) {
 export function openFileInNewTab(url) {
   const full = getFullUrl(url);
   if (!full) return;
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   safeOpenUrl(full, token);
 }
 
 export function downloadFile(url, filename) {
   const full = getFullUrl(url);
   if (!full) return;
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   
   // For data URLs, use the old method
   if (/^data:/i.test(full)) {
@@ -104,13 +164,7 @@ export function downloadFile(url, filename) {
   }
 
   // For regular URLs, fetch with auth header
-  fetch(full, {
-    headers: token ? { authorization: `Bearer ${token}` } : {},
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.blob();
-    })
+  fetchProtectedFileBlob(full, token)
     .then((blob) => {
       const link = document.createElement("a");
       const blobUrl = URL.createObjectURL(blob);

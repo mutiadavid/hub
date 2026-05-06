@@ -12,7 +12,7 @@ import {
 } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { getExpiryMeta, getExpiryStatus } from "../../../utils/documentUtils";
-import { getFullUrl } from "../../../utils/checklistUtils";
+import { openFileInNewTab } from "../../../utils/fileUtils";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
 
@@ -619,14 +619,9 @@ const DocumentTable = ({
                 onViewFile(record);
               } else {
                 console.error("onViewFile is not a function");
-                // Fallback: open URL directly with inline parameter
                 const fileUrl = record.fileUrl || record.uploadData?.fileUrl;
                 if (fileUrl) {
-                  const fullUrl = getFullUrl(fileUrl);
-                  const viewUrl = fullUrl.includes("?")
-                    ? `${fullUrl}&inline=true`
-                    : `${fullUrl}?inline=true`;
-                  window.open(viewUrl, "_blank", "noopener,noreferrer");
+                  openFileInNewTab(fileUrl);
                 }
               }
             }}

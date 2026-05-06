@@ -9,7 +9,8 @@ import {
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { formatDateTime, getFullUrl as resolveFullUrl } from "../../../utils/checklistUtils";
+import { formatDateTime } from "../../../utils/checklistUtils";
+import { downloadFile, openFileInNewTab } from "../../../utils/fileUtils";
 import "../../../styles/creatorDesignSystem.css";
 
 const DRAWER_CLASS = "creator-review-document-sidebar";
@@ -19,10 +20,7 @@ const DocumentSidebar = ({
   supportingDocs = [],
   open,
   onClose,
-  getFullUrl,
 }) => {
-  const buildFullUrl = getFullUrl || resolveFullUrl;
-
   const getRoleLabel = (role) => {
     const normalizedRole = String(role || "").trim().toLowerCase();
 
@@ -153,14 +151,7 @@ const DocumentSidebar = ({
 
   const handleDownloadFile = (fileName, fileUrl) => {
     try {
-      const resolvedUrl = buildFullUrl(fileUrl);
-      const link = document.createElement("a");
-      link.href = resolvedUrl;
-      link.download = fileName || "document";
-      link.target = "_blank";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      downloadFile(fileUrl, fileName || "document");
     } catch (error) {
       console.error("Error downloading file:", error);
     }
@@ -494,7 +485,7 @@ const DocumentSidebar = ({
                           onClick={(event) => {
                             event.stopPropagation();
                             try {
-                              window.open(buildFullUrl(doc.fileUrl), "_blank");
+                              openFileInNewTab(doc.fileUrl);
                             } catch (error) {
                               console.error("Error opening file:", error);
                             }

@@ -10,6 +10,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { formatDateTime, getFullUrl } from "../../../utils/checklistUtils";
+import { openFileInNewTab } from "../../../utils/fileUtils";
 import "../../../styles/creatorDesignSystem.css";
 
 const DRAWER_CLASS = "creator-review-document-sidebar";
@@ -491,7 +492,7 @@ const DocumentSidebar = ({
                           onClick={(event) => {
                             event.stopPropagation();
                             try {
-                              window.open(getFullUrl(doc.fileUrl), "_blank");
+                              openFileInNewTab(doc.fileUrl);
                             } catch (error) {
                               console.error("Error opening file:", error);
                             }

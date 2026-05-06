@@ -3,6 +3,7 @@ import { Drawer, Card, Tag, Button } from "antd";
 import { DownloadOutlined, EyeOutlined, FileOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { API_ORIGIN } from "../../config/runtimeConfig";
+import { openFileInNewTab } from "../../utils/fileUtils";
 
 const API_BASE_URL = API_ORIGIN;
 
@@ -270,7 +271,7 @@ const DocumentSidebar = ({ documents, open, onClose, supportingDocs = [] }) => {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.open(getFullUrl(fileUrl), "_blank");
+                            openFileInNewTab(fileUrl);
                           }}
                         >
                           View

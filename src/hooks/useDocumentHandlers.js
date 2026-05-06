@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { message } from "antd";
-import { getFullUrl } from "../utils/checklistUtils";
 import { API_BASE_URL } from "../utils/constants";
+import { openFileInNewTab } from "../utils/fileUtils";
 // import dayjs from 'dayjs';
 
 export const useDocumentHandlers = (docs, setDocs, isActionDisabled) => {
@@ -107,11 +107,7 @@ export const useDocumentHandlers = (docs, setDocs, isActionDisabled) => {
       return;
     }
 
-    const fullUrl = getFullUrl(fileUrl);
-    const newWindow = window.open(fullUrl, "_blank", "noopener,noreferrer");
-    if (!newWindow) {
-      message.error("Popup blocked! Please allow popups.");
-    }
+    openFileInNewTab(fileUrl);
   }, []);
 
   return {

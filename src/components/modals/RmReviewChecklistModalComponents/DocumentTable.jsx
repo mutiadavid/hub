@@ -10,6 +10,7 @@ import {
   Popover,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import { openFileInNewTab } from "../../../utils/fileUtils";
 import { getExpiryMeta, getExpiryStatus } from "../../../utils/documentStats";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
@@ -76,7 +77,6 @@ const DocumentTable = ({
   onEdit,
   isActionAllowed,
   handleFileUpload,
-  getFullUrl,
   readOnly,
   deferralValidationByDoc = {},
   onValidateDeferralNumber,
@@ -510,13 +510,7 @@ const DocumentTable = ({
                   <Button
                     size="small"
                     onClick={() => {
-                      const url = getFullUrl(
-                        record.fileUrl || record.uploadData?.fileUrl,
-                      );
-                      const viewUrl = url.includes("?")
-                        ? `${url}&inline=true`
-                        : `${url}?inline=true`;
-                      window.open(viewUrl, "_blank", "noopener,noreferrer");
+                      openFileInNewTab(record.fileUrl || record.uploadData?.fileUrl);
                     }}
                     style={{
                       backgroundColor: "#ffffff",

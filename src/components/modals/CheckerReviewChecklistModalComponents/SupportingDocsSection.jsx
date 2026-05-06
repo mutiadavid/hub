@@ -2,6 +2,7 @@ import React from "react";
 import { Card, Tag, Space, Button } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { openFileInNewTab } from "../../../utils/fileUtils";
 
 const SupportingDocsSection = ({ supportingDocs }) => {
   if (!supportingDocs || supportingDocs.length === 0) return null;
@@ -94,7 +95,7 @@ const SupportingDocsSection = ({ supportingDocs }) => {
                     <Button
                       size="small"
                       icon={<EyeOutlined />}
-                      onClick={() => window.open(doc.fileUrl, "_blank")}
+                      onClick={() => openFileInNewTab(doc.fileUrl)}
                     >
                       View
                     </Button>

@@ -2,23 +2,16 @@ import React from "react";
 import { Card, Button, Space, Tag } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { openFileInNewTab } from "../../../utils/fileUtils";
 
 const SupportingDocsSection = ({
   supportingDocs,
   handleDeleteSupportingDoc,
-  getFullUrl,
   isActionAllowed,
   readOnly,
-  // 🔹 NEW PROPS: Added to support filtered view and creator count display
   title = "RM Uploaded Supporting Documents",
-  showCreatorCount = false,
-  creatorCount = 0
 }) => {
-  // 🔹 CHANGED: Now shows message when no RM docs but creator docs exist
   if (!supportingDocs || supportingDocs.length === 0) {
-    if (showCreatorCount && creatorCount > 0) {
-
-    }
     return null;
   }
 
@@ -147,10 +140,7 @@ const SupportingDocsSection = ({
                     size="small"
                     icon={<EyeOutlined />}
                     onClick={() =>
-                      window.open(
-                        getFullUrl(doc.fileUrl || doc.uploadData?.fileUrl),
-                        "_blank",
-                      )
+                      openFileInNewTab(doc.fileUrl || doc.uploadData?.fileUrl)
                     }
                   >
                     View

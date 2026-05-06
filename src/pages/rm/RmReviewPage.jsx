@@ -14,6 +14,7 @@ import {
 } from "antd";
 import { UploadOutlined, EyeOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
+import { openFileInNewTab } from "../../utils/fileUtils";
 import {
   useGetChecklistsQuery,
   useSubmitRmChecklistMutation,
@@ -167,7 +168,7 @@ const RMReviewPage = () => {
             <Button
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => window.open(record.fileUrl, "_blank")}
+              onClick={() => openFileInNewTab(record.fileUrl)}
             >
               View
             </Button>
