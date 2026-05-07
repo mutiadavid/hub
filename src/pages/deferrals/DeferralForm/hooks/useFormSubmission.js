@@ -100,7 +100,7 @@ export const useFormSubmission = () => {
               email: slot.email,
               samAccountName: slot.samAccountName,
               department: slot.department,
-              position: slot.position,
+              position: slot.role || slot.position,
             };
           });
 

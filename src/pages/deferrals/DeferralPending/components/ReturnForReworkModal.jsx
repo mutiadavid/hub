@@ -504,6 +504,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
           email: user?.email || "",
           samAccountName: user?.samAccountName || "",
           department: user?.department || "",
+          title: user?.title || user?.position || "",
           position: user?.title || user?.position || "",
         };
       })
@@ -521,7 +522,8 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
           email: approver.email || "",
           samAccountName: approver.samAccountName || "",
           department: approver.department || "",
-          position: approver.position || "",
+          title: "",
+          position: approver.position || approver.role || "",
         });
       });
       return Array.from(map.values());
@@ -560,7 +562,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
 
     debounceRef.current = setTimeout(() => {
       setDirectoryHint("Searching Active Directory...");
-      runDirectorySearch(query, 50);
+      runDirectorySearch(query, 200);
     }, 300);
   };
 
@@ -665,7 +667,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
         email: selectedApprover?.email || "",
         samAccountName: selectedApprover?.samAccountName || "",
         department: selectedApprover?.department || "",
-        position: selectedApprover?.position || "",
+        position: updated[idx]?.role || updated[idx]?.position || "",
       };
       return updated;
     });
@@ -692,7 +694,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
         email: approver.email,
         samAccountName: approver.samAccountName,
         department: approver.department,
-        position: approver.position,
+        position: approver.role || approver.position,
         approved: false,
         approvalStatus: "pending",
       }));
@@ -979,7 +981,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
                                         directoryApprover={user}
                                       >
                                         {user.name}
-                                        {user.position ? ` — ${user.position}` : ""}
+                                        {(user.title || user.position) ? ` — ${user.title || user.position}` : ""}
                                         {user.department ? ` (${user.department})` : ""}
                                       </Select.Option>
                                     ))

@@ -46,12 +46,14 @@ const restoreDraftFile = (file) => {
     return null;
   }
 
-  if (file.url) {
+  const restoredUrl = file.url || file.fileUrl || null;
+  if (restoredUrl) {
     return {
       name: file.name || "document",
       size: Number(file.size) || 0,
       type: file.type || "",
-      url: file.url,
+      url: restoredUrl,
+      fileUrl: restoredUrl,
       isDCL: Boolean(file.isDCL),
     };
   }

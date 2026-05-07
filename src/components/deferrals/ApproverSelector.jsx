@@ -110,6 +110,7 @@ export default function ApproverSelector({
           email: user?.email || "",
           samAccountName: user?.samAccountName || "",
           department: user?.department || "",
+          title: user?.title || user?.position || "",
           position: user?.title || user?.position || "",
         };
       })
@@ -129,7 +130,8 @@ export default function ApproverSelector({
           email: slot.email || "",
           samAccountName: slot.samAccountName || "",
           department: slot.department || "",
-          position: slot.position || "",
+          title: "",
+          position: slot.position || slot.role || "",
         });
       });
 
@@ -182,7 +184,7 @@ export default function ApproverSelector({
 
     debounceRef.current = setTimeout(() => {
       setDirectoryHint("Searching Active Directory...");
-      runDirectorySearch(query, 50);
+      runDirectorySearch(query, 200);
     }, 300);
   };
 
@@ -478,7 +480,7 @@ export default function ApproverSelector({
                       email: selectedApprover?.email || "",
                       samAccountName: selectedApprover?.samAccountName || "",
                       department: selectedApprover?.department || "",
-                      position: selectedApprover?.position || "",
+                      position: slot.role || slot.position || "",
                     });
                   }}
                   onClear={() =>
@@ -520,7 +522,7 @@ export default function ApproverSelector({
                         }
                       >
                         {approver.name}
-                        {approver.position ? ` — ${approver.position}` : ""}
+                        {(approver.title || approver.position) ? ` — ${approver.title || approver.position}` : ""}
                         {approver.department ? ` (${approver.department})` : ""}
                       </Option>
                     ))

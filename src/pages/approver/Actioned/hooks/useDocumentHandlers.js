@@ -5,6 +5,7 @@
 
 import { message } from "antd";
 import { getDeferralDocumentBuckets } from "../../../../utils/deferralDocuments";
+import { downloadFile, openFileInNewTab } from "../../../../utils/fileUtils";
 
 /**
  * useDocumentHandlers - Manages document file operations
@@ -12,26 +13,25 @@ import { getDeferralDocumentBuckets } from "../../../../utils/deferralDocuments"
  */
 export const useDocumentHandlers = () => {
   const handleViewDocument = (file) => {
-    if (file && file.url) {
-      window.open(file.url, "_blank");
-      message.info(`Opening ${file.name || "document"}`);
-    } else {
+    const fileUrl = file?.url || file?.fileUrl;
+    if (!fileUrl) {
       message.info("No preview available");
+      return;
     }
+
+    openFileInNewTab(fileUrl);
+    message.info(`Opening ${file?.name || "document"}`);
   };
 
   const handleDownloadDocument = (file) => {
-    if (!file || !file.url) {
+    const fileUrl = file?.url || file?.fileUrl;
+    if (!fileUrl) {
       message.info("No file available for download");
       return;
     }
+
     try {
-      const a = document.createElement("a");
-      a.href = file.url;
-      a.download = file.name || "download";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      downloadFile(fileUrl, file?.name || "download");
     } catch (err) {
       console.error("Failed to download file:", err);
       message.error("Failed to download file");

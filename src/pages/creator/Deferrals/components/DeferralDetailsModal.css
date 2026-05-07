@@ -117,12 +117,12 @@
   border: none !important;
   background: var(--gradient-primary) !important;
   border-color: transparent !important;
-  color: #6b7280 !important;
+  color: var(--color-white) !important;
 }
 
 .deferral-review-actionbar__button.ant-btn span,
 .deferral-review-sidebar__post.ant-btn span {
-  color: #6b7280 !important;
+  color: var(--color-white) !important;
 }
 
 .deferral-review-actionbar__button.ant-btn:disabled,

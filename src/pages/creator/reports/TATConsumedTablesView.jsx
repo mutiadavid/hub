@@ -5,8 +5,13 @@ import { DCL_DISPLAY_NAME, NCBA_REPORT_THEME } from "./reportTheme";
 import DeferralTATTable from "./DeferralTATTable";
 import DCLTATTable from "./DCLTATTable";
 
-export default function TATConsumedTablesView({ deferralRows = [], dclRows = [] }) {
-  const [activeTab, setActiveTab] = useState("deferral");
+export default function TATConsumedTablesView({
+  deferralRows = [],
+  dclRows = [],
+  activeKey,
+  onActiveKeyChange,
+}) {
+  const [internalActiveTab, setInternalActiveTab] = useState(activeKey || "deferral");
 
   const tabLabelStyles = `
     .tat-consumed-tabs .ant-tabs-tab-btn {
@@ -79,13 +84,22 @@ export default function TATConsumedTablesView({ deferralRows = [], dclRows = [] 
     });
   }
 
+  const availableTabKeys = tabItems.map((item) => item.key);
+  const requestedTab = activeKey || internalActiveTab;
+  const activeTab = availableTabKeys.includes(requestedTab)
+    ? requestedTab
+    : availableTabKeys[0] || "deferral";
+
   return (
     <>
       <style>{tabLabelStyles}</style>
       <Tabs
         className="tat-consumed-tabs"
         activeKey={activeTab}
-        onChange={setActiveTab}
+        onChange={(key) => {
+          setInternalActiveTab(key);
+          onActiveKeyChange?.(key);
+        }}
         items={tabItems}
         tabBarStyle={{
           borderBottom: `2px solid ${NCBA_REPORT_THEME.brandLight}`,

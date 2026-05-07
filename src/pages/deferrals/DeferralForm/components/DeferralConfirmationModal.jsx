@@ -222,17 +222,7 @@ export default function DeferralConfirmationModal({
                                   <Button
                                     type="link"
                                     size="small"
-                                    onClick={() =>
-                                      uploaded.fileObj
-                                        ? handleViewDocument(
-                                            uploaded.fileObj
-                                          )
-                                        : uploaded.url &&
-                                          window.open(
-                                            uploaded.url,
-                                            "_blank"
-                                          )
-                                    }
+                                    onClick={() => handleViewDocument(uploaded.fileObj || uploaded)}
                                   >
                                     View
                                   </Button>
@@ -377,11 +367,7 @@ export default function DeferralConfirmationModal({
                         <div>
                           <Button
                             type="link"
-                            onClick={() =>
-                              it.fileObj
-                                ? handleViewDocument(it.fileObj)
-                                : it.url && window.open(it.url, "_blank")
-                            }
+                            onClick={() => handleViewDocument(it.fileObj || it)}
                           >
                             View
                           </Button>

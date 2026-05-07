@@ -10,6 +10,10 @@ import { ERROR_RED, PRIMARY_BLUE, SUCCESS_GREEN, WARNING_ORANGE } from "./consta
 import React from "react";
 import { Button, Tooltip } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  downloadFile as downloadProtectedFile,
+  openFileInNewTab as openProtectedFileInNewTab,
+} from "../../../../utils/fileUtils";
 import "../../../../styles/creatorDesignSystem.css";
 
 const resolveFileName = (fileOrName) => {
@@ -91,8 +95,8 @@ export const handleViewDocument = (file) => {
       URL.revokeObjectURL(fileURL);
     }, 10000);
     message.info(`Opening ${resolveFileName(file)}`);
-  } else if (file && file.url) {
-    window.open(file.url, "_blank");
+  } else if (file && (file.url || file.fileUrl)) {
+    openProtectedFileInNewTab(file.url || file.fileUrl);
     message.info(`Opening ${resolveFileName(file)}`);
   } else {
     message.info("This draft restored without a local file copy. Please re-upload to preview.");
@@ -123,13 +127,8 @@ export const handleDownload = (item) => {
     return;
   }
 
-  if (item.url) {
-    const a = document.createElement("a");
-    a.href = item.url;
-    a.download = item.name || "download";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+  if (item.url || item.fileUrl) {
+    downloadProtectedFile(item.url || item.fileUrl, resolveFileName(item));
     return;
   }
 
@@ -201,12 +200,7 @@ export const renderDocumentItem = (file, allowDelete = true, onDelete = null) =>
  */
 export const downloadFile = (url, filename) => {
   try {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadProtectedFile(url, filename);
   } catch (err) {
     console.error("Failed to download file:", err);
   }

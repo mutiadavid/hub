@@ -605,28 +605,28 @@ const DeferralIndex = ({ userId }) => {
           box-shadow: none !important;
         }
         .checker-workspace-btn--secondary.ant-btn {
-          border: 1px solid rgba(214, 189, 152, 0.28) !important;
-          background: var(--color-white) !important;
-          color: var(--color-text-medium) !important;
+          border: none !important;
+          background: var(--ncb-primary-500) !important;
+          color: var(--color-white) !important;
         }
         .checker-workspace-btn--secondary.ant-btn:hover,
         .checker-workspace-btn--secondary.ant-btn:focus,
         .checker-workspace-btn--secondary.ant-btn:active {
-          border-color: rgba(64, 83, 76, 0.24) !important;
-          background: rgba(214, 189, 152, 0.1) !important;
-          color: var(--color-text-dark) !important;
+          border: none !important;
+          background: var(--ncb-primary-700) !important;
+          color: var(--color-white) !important;
           box-shadow: none !important;
         }
         .checker-workspace-btn.ant-btn:disabled,
         .checker-workspace-btn.ant-btn[disabled] {
           background: #D1D5DB !important;
           border-color: #D1D5DB !important;
-          color: #6b7280 !important;
+          color: var(--color-white) !important;
           box-shadow: none !important;
         }
         .checker-workspace-btn.ant-btn:disabled span,
         .checker-workspace-btn.ant-btn[disabled] span {
-          color: #6b7280 !important;
+          color: var(--color-white) !important;
         }
         .checker-comment-trail__header {
           margin-bottom: 12px;

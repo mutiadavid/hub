@@ -65,6 +65,9 @@ const getTimestampValue = (value) => {
   return parsed.valueOf();
 };
 
+const resolveDocumentUrl = (item) =>
+  item?.fileUrl || item?.url || item?.FileUrl || item?.Url || null;
+
 const getRoleSpecificityScore = (roleLabel) => {
   const normalizedRole = normalizeHistoryValue(roleLabel);
   if (!normalizedRole) return 0;
@@ -325,27 +328,31 @@ const DeferralDetailsModal = (props) => {
       title: "Actions",
       key: "actions",
       width: 168,
-      render: (_, doc) => (
-        <div className="deferral-review-actionset">
-          <Button
-            type="default"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => openFileInNewTab(doc.fileUrl || doc.url)}
-            disabled={!doc.fileUrl && !doc.url}
-          >
-            View
-          </Button>
-          <Button
-            size="small"
-            icon={<DownloadOutlined />}
-            onClick={() => downloadFile(doc.fileUrl || doc.url, doc.name)}
-            disabled={!doc.fileUrl && !doc.url}
-          >
-            Download
-          </Button>
-        </div>
-      ),
+      render: (_, doc) => {
+        const documentUrl = resolveDocumentUrl(doc);
+
+        return (
+          <div className="deferral-review-actionset">
+            <Button
+              type="default"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => openFileInNewTab(documentUrl)}
+              disabled={!documentUrl}
+            >
+              View
+            </Button>
+            <Button
+              size="small"
+              icon={<DownloadOutlined />}
+              onClick={() => downloadFile(documentUrl, doc.name)}
+              disabled={!documentUrl}
+            >
+              Download
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -415,16 +422,20 @@ const DeferralDetailsModal = (props) => {
       title: "Actions",
       key: "actions",
       width: 168,
-      render: (_, upload) => (
-        <div className="deferral-review-actionset">
-          <Button size="small" onClick={() => openFileInNewTab(upload.fileUrl || upload.url)}>
-            View
-          </Button>
-          <Button size="small" onClick={() => downloadFile(upload.fileUrl || upload.url, upload.name)}>
-            Download
-          </Button>
-        </div>
-      ),
+      render: (_, upload) => {
+        const documentUrl = resolveDocumentUrl(upload);
+
+        return (
+          <div className="deferral-review-actionset">
+            <Button size="small" onClick={() => openFileInNewTab(documentUrl)} disabled={!documentUrl}>
+              View
+            </Button>
+            <Button size="small" onClick={() => downloadFile(documentUrl, upload.name)} disabled={!documentUrl}>
+              Download
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 

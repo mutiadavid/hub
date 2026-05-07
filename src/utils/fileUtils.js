@@ -17,6 +17,69 @@ function normalizeApiDocumentUrl(url) {
   return value.replace(/^\/api\/api\//i, "/api/");
 }
 
+function stripDocumentHash(url) {
+  const value = String(url || "").trim();
+  if (!value) return value;
+
+  const marker = "#docSection=";
+  const markerIndex = value.toLowerCase().lastIndexOf(marker.toLowerCase());
+  if (markerIndex < 0) {
+    return value;
+  }
+
+  return value.substring(0, markerIndex);
+}
+
+function stripDocTargetQuery(url) {
+  const value = String(url || "").trim();
+  if (!value) return value;
+
+  try {
+    const parsed = /^(https?:)?\/\//i.test(value)
+      ? new URL(value)
+      : new URL(value.startsWith("/") ? value : `/${value}`, "http://local");
+
+    parsed.searchParams.delete("docTarget");
+
+    if (/^(https?:)?\/\//i.test(value)) {
+      return parsed.toString();
+    }
+
+    const relativeUrl = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    return value.startsWith("/") ? relativeUrl : relativeUrl.replace(/^\//, "");
+  } catch {
+    return value;
+  }
+}
+
+function buildDocumentUrlCandidates(url) {
+  const candidates = [];
+  const seen = new Set();
+
+  const addCandidate = (candidate) => {
+    const normalizedCandidate = String(candidate || "").trim();
+    if (!normalizedCandidate || seen.has(normalizedCandidate)) {
+      return;
+    }
+
+    seen.add(normalizedCandidate);
+    candidates.push(normalizedCandidate);
+  };
+
+  const normalized = normalizeApiDocumentUrl(url);
+  const withoutHash = stripDocumentHash(normalized);
+  const withoutDocTarget = stripDocTargetQuery(withoutHash);
+
+  addCandidate(normalized);
+  addCandidate(withoutHash);
+  addCandidate(withoutDocTarget);
+  addCandidate(getFullUrl(normalized));
+  addCandidate(getFullUrl(withoutHash));
+  addCandidate(getFullUrl(withoutDocTarget));
+
+  return candidates;
+}
+
 export function getFullUrl(url) {
   if (!url) return null;
   const normalizedUrl = normalizeApiDocumentUrl(url);
@@ -71,31 +134,41 @@ function getAuthToken() {
 }
 
 export async function fetchProtectedFileBlob(url, token = getAuthToken()) {
-  const full = getFullUrl(url);
-  if (!full) {
+  const candidates = buildDocumentUrlCandidates(url);
+  if (candidates.length === 0) {
     throw new Error("No file URL provided");
   }
 
-  if (/^data:/i.test(full)) {
-    const blobUrl = dataUrlToBlobUrl(full);
-    const response = await fetch(blobUrl);
-    return response.blob();
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    try {
+      if (/^data:/i.test(candidate)) {
+        const blobUrl = dataUrlToBlobUrl(candidate);
+        const response = await fetch(blobUrl);
+        return response.blob();
+      }
+
+      if (/^blob:/i.test(candidate)) {
+        const response = await fetch(candidate);
+        return response.blob();
+      }
+
+      const response = await fetch(candidate, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return response.blob();
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  if (/^blob:/i.test(full)) {
-    const response = await fetch(full);
-    return response.blob();
-  }
-
-  const response = await fetch(full, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-
-  return response.blob();
+  throw lastError || new Error("Failed to fetch protected file");
 }
 
 export async function fetchProtectedFileObjectUrl(url, token = getAuthToken()) {

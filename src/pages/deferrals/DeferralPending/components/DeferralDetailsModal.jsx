@@ -1101,7 +1101,7 @@ const DeferralDetailsModal = ({
         email: selectedApprover?.email || "",
         samAccountName: selectedApprover?.samAccountName || "",
         department: selectedApprover?.department || "",
-        position: selectedApprover?.position || "",
+        position: updated[idx]?.role || updated[idx]?.position || "",
       };
       return updated;
     });
@@ -1127,7 +1127,7 @@ const DeferralDetailsModal = ({
         email: a.email,
         samAccountName: a.samAccountName,
         department: a.department,
-        position: a.position,
+        position: a.role || a.position,
         approved: a.approved || a.approvalStatus === "approved",
         approvalStatus: a.approvalStatus || (a.approved ? "approved" : "pending"),
       }));
