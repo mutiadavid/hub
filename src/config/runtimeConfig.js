@@ -43,7 +43,7 @@ const resolveLocalDevOrigin = (origin) => {
 };
 
 export const API_ORIGIN = normalizeOrigin(
-  resolveLocalDevOrigin(import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_API_URL),
+  resolveLocalDevOrigin(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL),
   "http://localhost:5082",
 );
 
@@ -55,7 +55,7 @@ export const APP_URL = normalizeOrigin(
 );
 
 export const SOCKET_URL = normalizeOrigin(
-  import.meta.env.VITE_SOCKET_URL,
+  import.meta.env.VITE_API_URL,
   "http://localhost:5001",
 );
 
