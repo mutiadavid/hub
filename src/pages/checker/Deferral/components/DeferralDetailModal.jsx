@@ -24,6 +24,7 @@ import {
 } from "../../../../utils/deferralDocuments";
 import { openFileInNewTab, downloadFile } from "../../../../utils/fileUtils";
 import downloadDeferralPdf from "../../../../utils/deferralPdfGenerator";
+import deferralApi from "../../../../service/deferralApi";
 import DeferralReviewHeader from "../../../creator/Deferrals/components/DeferralReviewHeader";
 import DeferralStatusAlert from "./DeferralStatusAlert";
 
@@ -250,6 +251,23 @@ const DeferralDetailModal = ({
     [deferral, isCloseRequestAction],
   );
   const [checkerDocumentDecisions, setCheckerDocumentDecisions] = useState({});
+  const [fullDeferral, setFullDeferral] = useState(deferral);
+
+  // Fetch the full deferral so documents have fileUrl populated
+  // (the list API returns partial data without attachment URLs)
+  useEffect(() => {
+    if (!visible || !deferral?._id) {
+      setFullDeferral(deferral);
+      return;
+    }
+    const stored = JSON.parse(localStorage.getItem("user") || "null");
+    const token = stored?.token;
+    if (!token) return;
+
+    deferralApi.getDeferralById(deferral._id, token)
+      .then((data) => { if (data) setFullDeferral(data); })
+      .catch(() => setFullDeferral(deferral));
+  }, [visible, deferral?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const nextState = closeRequestDocuments.reduce((accumulator, document) => {
@@ -313,7 +331,7 @@ const DeferralDetailModal = ({
     : allApproversApproved && creatorApproved && !checkerApproved && !isRejected && !isClosed;
   const canReturnForRework = !isCloseRequestAction && canAccept;
   const { dclDocs, uploadedDocs, requestedDocs } =
-    getDeferralDocumentBuckets(deferral);
+    getDeferralDocumentBuckets(fullDeferral);
   const generalUploadedDocs = uploadedDocs.filter(
     (doc) => !doc.isCloseRequestEvidence,
   );
@@ -623,7 +641,7 @@ const DeferralDetailModal = ({
                 type={decision.status === "approved" ? "primary" : "default"}
                 onClick={() => updateCheckerDocumentDecision(document, { status: "approved" })}
               >
-                Accept
+                Approve
               </Button>
               <Button
                 size="small"
@@ -707,7 +725,7 @@ const DeferralDetailModal = ({
                   onClick={onApprove}
                   icon={<CheckCircleOutlined />}
                 >
-                  {isCloseRequestAction ? "Submit Review" : "Accept"}
+                  {isCloseRequestAction ? "Submit Review" : "Approve"}
                 </Button>
               ) : null}
 
