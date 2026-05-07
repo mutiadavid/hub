@@ -76,16 +76,21 @@ const COMMON_ENTITIES = [
 ];
 
 const ACTION_STYLES = {
-  CREATE: { background: "#e7f6ec", color: "#166534", borderColor: "#bbf7d0" },
-  UPDATE: { background: "#ebf5ff", color: "#1d4ed8", borderColor: "#bfdbfe" },
+  CREATE:  { background: "#e7f6ec", color: "#166534", borderColor: "#bbf7d0" },
+  UPDATE:  { background: "#ebf5ff", color: "#1d4ed8", borderColor: "#bfdbfe" },
   APPROVE: { background: "#ecfdf3", color: "#15803d", borderColor: "#86efac" },
-  REJECT: { background: "#fff1f2", color: "#b91c1c", borderColor: "#fecdd3" },
-  DELETE: { background: "#fff1f2", color: "#9f1239", borderColor: "#fda4af" },
-  LOGIN: { background: "#e0f2fe", color: "#075985", borderColor: "#7dd3fc" },
-  LOGOUT: { background: "#f3f4f6", color: "#4b5563", borderColor: "#d1d5db" },
-  RETURN: { background: "#fff7ed", color: "#c2410c", borderColor: "#fdba74" },
-  SEARCH: { background: "#f8fafc", color: "#475569", borderColor: "#cbd5e1" },
-  OTHER: { background: "#f5f5f4", color: "#57534e", borderColor: "#d6d3d1" },
+  REJECT:  { background: "#fff1f2", color: "#b91c1c", borderColor: "#fecdd3" },
+  DELETE:  { background: "#fff1f2", color: "#9f1239", borderColor: "#fda4af" },
+  LOGIN:   { background: "#e0f2fe", color: "#075985", borderColor: "#7dd3fc" },
+  LOGOUT:  { background: "#f3f4f6", color: "#4b5563", borderColor: "#d1d5db" },
+  RETURN:  { background: "#fff7ed", color: "#c2410c", borderColor: "#fdba74" },
+  SEARCH:  { background: "#f8fafc", color: "#475569", borderColor: "#cbd5e1" },
+  LOCK:    { background: "#fef9ec", color: "#92400e", borderColor: "#fcd34d" },
+  UNLOCK:  { background: "#f0fdf4", color: "#166534", borderColor: "#86efac" },
+  SUBMIT:  { background: "#eff6ff", color: "#1d4ed8", borderColor: "#bfdbfe" },
+  REVIVE:  { background: "#ecfdf3", color: "#15803d", borderColor: "#86efac" },
+  DRAFT:   { background: "#fafafa", color: "#57534e", borderColor: "#e7e5e4" },
+  OTHER:   { background: "#f5f5f4", color: "#57534e", borderColor: "#d6d3d1" },
 };
 
 const ROLE_STYLES = {
@@ -172,8 +177,6 @@ const normalizeEntity = (value) => {
 const getActionCategory = (action, httpMethod) => {
   const normalized = String(action || httpMethod || "OTHER").trim().toUpperCase();
 
-  // Use negative-lookahead so "APPROVER" (a person) does NOT trigger the APPROVE category.
-  // e.g. UPDATE_DEFERRAL_APPROVER_FLOW → UPDATE, not APPROVE.
   if (/APPROVE(?!R)/.test(normalized)) return "APPROVE";
   if (normalized.includes("REJECT")) return "REJECT";
   if (normalized.includes("DELETE") || normalized.includes("ARCHIVE")) return "DELETE";
@@ -181,15 +184,18 @@ const getActionCategory = (action, httpMethod) => {
   if (normalized.includes("LOGOUT") || normalized.includes("SIGN_OUT")) return "LOGOUT";
   if (normalized.includes("RETURN")) return "RETURN";
   if (normalized.includes("SEARCH") || normalized.includes("QUERY")) return "SEARCH";
+  // Specific workflow actions — must be before generic CREATE/UPDATE checks
+  if (normalized === "LOCK_DCL")   return "LOCK";
+  if (normalized === "UNLOCK_DCL") return "UNLOCK";
+  if (normalized.includes("SUBMIT_TO")) return "SUBMIT";
+  if (normalized === "REVIVE_DCL")      return "REVIVE";
+  if (normalized === "SAVE_DRAFT_DCL") return "DRAFT";
   if (
     normalized === "POST" ||
     normalized.includes("CREATE") ||
     normalized.includes("UPLOAD") ||
     normalized.includes("ADD_")
-  ) {
-    return "CREATE";
-  }
-
+  ) return "CREATE";
   if (
     normalized === "PUT" ||
     normalized === "PATCH" ||
@@ -197,9 +203,7 @@ const getActionCategory = (action, httpMethod) => {
     normalized.includes("CHANGE") ||
     normalized.includes("TOGGLE") ||
     normalized.includes("REASSIGN")
-  ) {
-    return "UPDATE";
-  }
+  ) return "UPDATE";
 
   return normalized || "OTHER";
 };
@@ -208,26 +212,39 @@ const getActionLabel = (action, httpMethod) => titleize(action || httpMethod || 
 
 const actionPhrase = (actionCategory) => {
   switch (actionCategory) {
-    case "CREATE":
-      return "created";
-    case "UPDATE":
-      return "updated";
+    case "CREATE":  return "created";
+    case "UPDATE":  return "updated";
+    case "APPROVE": return "approved";
+    case "REJECT":  return "rejected";
+    case "DELETE":  return "deleted";
+    case "LOGIN":   return "logged in to";
+    case "LOGOUT":  return "logged out of";
+    case "RETURN":  return "returned";
+    case "SEARCH":  return "searched";
+    case "LOCK":    return "locked";
+    case "UNLOCK":  return "unlocked";
+    case "SUBMIT":  return "submitted";
+    case "REVIVE":  return "revived";
+    case "DRAFT":   return "saved a draft of";
+    default:        return "performed";
+  }
+};
+
+/** Maps an audit action category to the same colour palette used by NotificationBell. */
+const getAuditTone = (actionCategory) => {
+  switch (actionCategory) {
     case "APPROVE":
-      return "approved";
+      return { label: "Done",   tagBg: "rgba(34,197,94,0.14)",    tagColor: "#15803D", iconBg: "rgba(34,197,94,0.12)",    iconColor: "#15803D", accent: "#65A30D" };
     case "REJECT":
-      return "rejected";
-    case "DELETE":
-      return "deleted";
-    case "LOGIN":
-      return "logged in to";
-    case "LOGOUT":
-      return "logged out of";
     case "RETURN":
-      return "returned";
-    case "SEARCH":
-      return "searched";
+    case "DELETE":
+      return { label: "Action", tagBg: "rgba(248,113,113,0.14)",  tagColor: "#B91C1C", iconBg: "rgba(248,113,113,0.12)",  iconColor: "#B91C1C", accent: "#DC2626" };
+    case "CREATE":
+    case "SUBMIT":
+    case "REVIVE":
+      return { label: "New",    tagBg: "rgba(59,130,246,0.14)",   tagColor: "#2563EB", iconBg: "rgba(59,130,246,0.12)",   iconColor: "#2563EB", accent: "#1A3636" };
     default:
-      return "performed";
+      return { label: "Info",   tagBg: "rgba(148,163,184,0.18)",  tagColor: "#475569", iconBg: "rgba(148,163,184,0.12)",  iconColor: "#475569", accent: "#D6BD98" };
   }
 };
 
@@ -412,7 +429,6 @@ const buildBriefDescription = (log, normalized) => {
     REJECT:  `Rejected ${subject}`,
     RETURN:  `Returned ${subject}`,
     CREATE:  `Created ${subject}`,
-    // For UPDATE: check if this is an approval-flow change specifically
     UPDATE:  /approver.*flow|flow.*approver|approval.*flow|flow.*approval/i.test(
                String(log.action || ""),
              )
@@ -420,6 +436,11 @@ const buildBriefDescription = (log, normalized) => {
              : `Updated ${subject}`,
     DELETE:  `Deleted ${subject}`,
     SEARCH:  `Searched ${entityLabel}`,
+    LOCK:    `Locked ${subject}`,
+    UNLOCK:  `Unlocked ${subject}`,
+    SUBMIT:  `Submitted ${subject}`,
+    REVIVE:  `Revived ${subject} as new copy`,
+    DRAFT:   `Saved draft of ${subject}`,
   };
 
   if (briefMap[actionCategory]) return briefMap[actionCategory];
@@ -484,35 +505,60 @@ const getErrorMessage = (error) => {
 };
 
 /**
- * Entities that should ALWAYS be visible regardless of other filters.
- * Everything else is silently excluded.
+ * Whitelist of business audit actions that are meaningful in the audit trail.
+ * Only entries whose raw action matches one of these are displayed.
+ * Raw HTTP methods (POST, PATCH, GET, …) created by the middleware fallback
+ * are intentionally excluded — they can misattribute actions (e.g. a CoChecker
+ * locking a record appears as "Created DCL").
  */
-const ALLOWED_ENTITIES = new Set(["Deferral", "DCL", "Authentication"]);
+const ALLOWED_AUDIT_ACTIONS = new Set([
+  // DCL lifecycle
+  "CREATE_DCL", "REVIVE_DCL", "UPDATE_DCL", "SAVE_DRAFT_DCL",
+  // DCL workflow transitions
+  "SUBMIT_TO_RM", "SUBMIT_TO_COCHECKER", "RM_SUBMIT_TO_COCREATOR",
+  "CHECKER_APPROVED", "CHECKER_REJECTED", "CHECKER_CO_CREATOR_REVIEW",
+  "APPROVE", "REJECT", "RETURN",
+  // Deferral lifecycle
+  "CREATE_DEFERRAL", "UPDATE_DEFERRAL", "UPDATE_DEFERRAL_APPROVER_FLOW",
+  // Security / auth
+  "LOGIN_ATTEMPT",
+  // Admin
+  "REASSIGN_TASKS", "CHANGE_ROLE", "TOGGLE_ACTIVE",
+  "CREATE_USER", "CREATE_USER_FROM_AD",
+]);
 
 /**
- * Filter logs to DCL/Deferral flow + login events, strip System rows,
- * and remove back-to-back duplicates.
+ * Entities that should be visible in the audit trail.
+ */
+const ALLOWED_ENTITIES = new Set(["Deferral", "DCL", "Authentication", "User"]);
+
+/**
+ * Filter logs to known business events only, strip System rows
+ * and consecutive duplicates.
  */
 const filterAndDedupe = (logs) => {
-  // 1. Keep only meaningful, user-generated events
   const kept = logs.filter((log) => {
-    if (log.userName === "System") return false;               // system-internal noise
-    if (!ALLOWED_ENTITIES.has(log.entityLabel)) return false; // no notifications, admin, session etc.
+    if (log.userName === "System") return false;
+    if (!ALLOWED_ENTITIES.has(log.entityLabel)) return false;
+    // Only show explicitly recognised business actions — suppress middleware fallbacks
+    const rawAction = String(log.raw?.action || "").toUpperCase();
+    if (!ALLOWED_AUDIT_ACTIONS.has(rawAction)) return false;
     return true;
   });
 
-  // 2. Remove consecutive duplicates (same user + action + entity + brief)
+  // Remove consecutive duplicates (same user + action + entity + brief)
   return kept.filter((log, idx, arr) => {
     if (idx === 0) return true;
     const prev = arr[idx - 1];
     return !(
-      log.userName        === prev.userName &&
-      log.actionCategory  === prev.actionCategory &&
-      log.entityLabel     === prev.entityLabel &&
+      log.userName         === prev.userName &&
+      log.actionCategory   === prev.actionCategory &&
+      log.entityLabel      === prev.entityLabel &&
       log.briefDescription === prev.briefDescription
     );
   });
 };
+
 
 const metricCards = (stats, filteredTotal) => [
   {
@@ -1345,7 +1391,6 @@ const AuditLogsPage = () => {
           onChange={(nextPagination, _filters, sorter) => {
             setCurrentPage(nextPagination.current || 1);
             setPageSize(nextPagination.pageSize || 20);
-
             if (!Array.isArray(sorter) && sorter?.columnKey === "createdAt") {
               setTimeSortOrder(sorter.order || "descend");
             }

@@ -1,24 +1,32 @@
-import React, { useState, useMemo } from "react";
-import dayjs from "dayjs";
-import { useSelector } from "react-redux";
-import { Table, Button, Tag, Spin, Empty, Input, Select } from "antd";
+// export default AllChecklists;
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Table, Button, Input, Select, Tabs, Spin, Empty } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewChecklistModalComponents/CheckerReviewChecklistModal";
-import { useGetCheckerMyQueueQuery, useLockDclMutation } from "../../api/checklistApi.js";
-import { showLockToast } from "../../utils/authToast";
-import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
+import dayjs from "dayjs";
+import ChecklistsPage from "./ChecklistsPage.jsx";
+import CheckerReviewChecklistModal from "../../components/modals/CheckerReviewChecklistModalComponents/CheckerReviewChecklistModal.jsx";
+import {
+  useGetAllCoCreatorChecklistsQuery,
+  useGetCheckerMyQueueQuery,
+  useLockDclMutation,
+} from "../../api/checklistApi.js";
+import { showLockToast } from "../../utils/authToast.js";
+import RealTimeSlaTag from "../../components/common/RealTimeSlaTag.jsx";
 
-const pageRootClassName = "min-h-full w-full bg-white";
+const pageRootClassName = "min-h-full w-full bg-(--color-bg)";
 const inlineReviewClassName = "w-full min-h-full border-0 bg-transparent p-0 shadow-none";
 const queueCardClassName = "overflow-hidden rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]";
-const toolbarClassName = "flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] bg-white p-4 max-md:flex-col max-md:items-stretch";
+const toolbarClassName = "flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] bg-(--color-bg) p-4 max-md:flex-col max-md:items-stretch";
 const titleClassName = "m-0 text-[15px] leading-tight font-bold tracking-[-0.02em] text-(--color-text-dark)";
+const toolbarActionsClassName = "flex flex-1 flex-wrap items-center justify-end gap-2.5";
 const searchClassName = "w-full min-[769px]:max-w-[360px] [&_.ant-input-affix-wrapper]:rounded-md [&_.ant-input-affix-wrapper]:border-[rgba(214,189,152,0.2)] [&_.ant-input-affix-wrapper]:bg-white [&_.ant-input-affix-wrapper]:px-3 [&_.ant-input-affix-wrapper]:py-2 [&_.ant-input-affix-wrapper]:shadow-none [&_.ant-input-affix-wrapper:hover]:border-(--color-primary-dark) [&_.ant-input-affix-wrapper-focused]:border-(--color-primary-dark) [&_.ant-input]:bg-transparent [&_.ant-input]:text-xs [&_.ant-input]:text-(--color-text-medium) [&_.anticon]:text-(--color-text-light)";
-const filtersClassName = "grid gap-3 border-b border-[rgba(214,189,152,0.2)] bg-white p-4 min-[1025px]:grid-cols-[minmax(0,1.5fr)_minmax(180px,1fr)_minmax(180px,1fr)_minmax(120px,160px)] md:grid-cols-2 max-md:grid-cols-1 [&_.ant-select-selector]:h-[38px]! [&_.ant-select-selector]:rounded-md! [&_.ant-select-selector]:border-[rgba(214,189,152,0.2)]! [&_.ant-select-selector]:shadow-none! [&_.ant-select-selector]:px-3! [&_.ant-select-selector]:py-1! [&_.ant-btn]:h-[38px]! [&_.ant-btn]:rounded-md! [&_.ant-btn]:border-[rgba(214,189,152,0.2)]! [&_.ant-btn]:text-(--color-text-medium)! [&_.ant-btn]:font-semibold! [&_.ant-btn]:shadow-none!";
-const filterSelectClassName = "w-full";
-const tableShellClassName = "bg-white px-4 pb-4 [&_.ant-table]:w-full [&_.ant-table]:table-fixed [&_.ant-table-wrapper]:bg-white [&_.ant-spin-nested-loading]:bg-white [&_.ant-spin-container]:bg-white [&_.ant-table-container]:bg-white [&_.ant-table-content]:overflow-x-auto [&_.ant-table-header]:bg-inherit [&_.ant-table-body]:bg-inherit [&_.ant-empty]:bg-inherit [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3.5 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-(--color-text-medium) [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr:hover>td]:bg-[rgba(245,247,244,0.9)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination]:mb-0 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-bold [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark) [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
-const loadingClassName = "flex min-h-full items-center justify-center p-6";
-const emptyClassName = "bg-white px-4 py-6";
+const filterClassName = "min-w-[180px] [&_.ant-select-selector]:h-[38px]! [&_.ant-select-selector]:rounded-md! [&_.ant-select-selector]:border-[rgba(214,189,152,0.2)]! [&_.ant-select-selector]:bg-white! [&_.ant-select-selector]:px-3! [&_.ant-select-selector]:py-1! [&_.ant-select-selector]:shadow-none! [&_.ant-select-arrow]:text-(--color-text-light)";
+const clearButtonClassName = "h-[38px]! rounded-md! border-[rgba(214,189,152,0.28)]! bg-white! text-(--color-text-medium)! text-xs! font-semibold! shadow-none! hover:border-(--color-primary-dark)! hover:bg-[rgba(214,189,152,0.08)]! hover:text-(--color-primary-dark)!";
+const tabsClassName = "[&_.ant-tabs-nav]:mb-0 [&_.ant-tabs-nav]:border-b [&_.ant-tabs-nav]:border-[rgba(214,189,152,0.2)] [&_.ant-tabs-nav]:bg-white [&_.ant-tabs-nav]:px-4 [&_.ant-tabs-nav::before]:border-b-[rgba(214,189,152,0.2)] [&_.ant-tabs-tab]:m-0! [&_.ant-tabs-tab]:mr-6! [&_.ant-tabs-tab]:rounded-none! [&_.ant-tabs-tab]:border-0! [&_.ant-tabs-tab]:bg-transparent! [&_.ant-tabs-tab]:px-2! [&_.ant-tabs-tab]:pb-3! [&_.ant-tabs-tab]:pt-3.5! [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-(--color-text-light) [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-(--color-primary-dark)! [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:bg-(--color-primary-dark)";
+const tabLabelClassName = "inline-flex items-center gap-1.5";
+const tabCountClassName = "inline-flex min-w-[18px] items-center justify-center rounded-full bg-[rgba(214,189,152,0.18)] px-[5px] text-[10px] font-bold text-(--color-text-dark)";
+const tableShellClassName = "bg-white px-4 pb-4 [&_.ant-table]:w-full [&_.ant-table]:table-fixed [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:overflow-x-hidden [&_.ant-table-header]:bg-inherit [&_.ant-table-body]:bg-inherit [&_.ant-empty]:bg-inherit [&_.ant-table-thead>tr>th]:bg-transparent [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3.5 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:text-(--color-text-medium) [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-tbody>tr>td]:bg-transparent [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr:hover>td]:bg-[rgba(214,189,152,0.06)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination]:mb-0 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-bold [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark) [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+const contentStateClassName = "bg-white px-4 py-6";
 
 const getLockBadgeClassName = (variant) => {
   if (variant === "mine") return "border-[rgba(26,54,54,0.16)] bg-[rgba(26,54,54,0.12)] text-(--color-primary-dark)";
@@ -28,25 +36,50 @@ const getLockBadgeClassName = (variant) => {
 
 const getStatusBadgeClassName = (variant) => {
   if (variant === "approved") return "border-[rgba(82,196,26,0.2)] bg-[rgba(82,196,26,0.12)] text-[var(--color-status-success)]";
+  if (variant === "rework") return "border-[rgba(245,158,11,0.2)] bg-[rgba(245,158,11,0.12)] text-[#b45309]";
   if (variant === "pending") return "border-[rgba(214,189,152,0.24)] bg-[rgba(214,189,152,0.14)] text-(--color-primary-dark)";
   return "border-[rgba(22,70,121,0.18)] bg-[rgba(22,70,121,0.1)] text-(--color-primary-dark)";
 };
 
+const { TabPane } = Tabs;
+
 const getQueueStatusMeta = (status) => {
   const normalizedStatus = (status || "").toLowerCase();
-
-  if (["cocheckerreview", "co_checker_review"].includes(normalizedStatus)) {
-    return { label: "Checker Review", variant: "qs-review" };
-  }
 
   if (normalizedStatus === "approved") {
     return { label: "Approved", variant: "approved" };
   }
 
+  if (normalizedStatus === "rejected") {
+    return { label: "Rejected", variant: "rework" };
+  }
+
+  if (["cocreatorreview", "co_creator_review", "pending"].includes(normalizedStatus)) {
+    return { label: "Pending", variant: "pending" };
+  }
+
+  if (["rmreview", "rm_review"].includes(normalizedStatus)) {
+    return { label: "RM Review", variant: "qs-review" };
+  }
+
+  if (["cocheckerreview", "co_checker_review"].includes(normalizedStatus)) {
+    return { label: "Checker Review", variant: "qs-review" };
+  }
+
   return {
     label: (status || "In Progress").replace(/_/g, " "),
-    variant: "pending",
+    variant: "qs-review",
   };
+};
+
+const matchesActiveTab = (status, activeTab) => {
+  const normalizedStatus = String(status || "").trim().toLowerCase();
+
+  if (activeTab === "assigned" || activeTab === "all") {
+    return normalizedStatus === "co_checker_review" || normalizedStatus === "cocheckerreview";
+  }
+
+  return normalizedStatus === activeTab;
 };
 
 const BUSINESS_START_HOUR = 8;
@@ -124,148 +157,207 @@ const getTatSortValue = (record) => {
   return calculateBusinessMilliseconds(startedAt, dayjs());
 };
 
-const MyQueuePage = () => {
+const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null }) => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedChecklist, setSelectedChecklist] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [activeTab, setActiveTab] = useState("assigned");
   const [loanTypeFilter, setLoanTypeFilter] = useState("all");
-  const [creatorFilter, setCreatorFilter] = useState("all");
-
-  // Get checker ID from Redux auth
-  const auth = useSelector((state) => state.auth);
-  const checkerId = auth?.user?.id || auth?.user?._id || auth?.id || auth?._id;
-  const checkerName = auth?.user?.name || auth?.user?.username || auth?.name || auth?.username || "Current User";
   const [lockDcl] = useLockDclMutation();
 
-  const getLockMeta = (checklist) => {
-    const lockedByUserId = checklist?.lockedByUserId || checklist?.lockedBy?.id;
-    const lockedByUserName = checklist?.lockedBy?.name || checklist?.lockedByUserName;
-    const isLockedBySomeoneElse = !!lockedByUserId && lockedByUserId !== checkerId;
-    const isLockedByMe = !!lockedByUserId && lockedByUserId === checkerId;
+  useEffect(() => {
+    if (draftToRestore && draftToRestore.data) {
+      const draftChecklist = {
+        id: draftToRestore.data.checklistId || draftToRestore.id,
+        _id: draftToRestore.data.checklistId || draftToRestore.id,
+        dclNo: draftToRestore.data.dclNo,
+        title: draftToRestore.data.title,
+        customerName: draftToRestore.data.customerName,
+        customerNumber: draftToRestore.data.customerNumber,
+        loanType: draftToRestore.data.loanType,
+        status: draftToRestore.data.status,
+        documents: draftToRestore.data.documents || [],
+        supportingDocs: draftToRestore.data.supportingDocs || [],
+        checkerComment:
+          draftToRestore.data.checkerComment ||
+          draftToRestore.data.creatorComment ||
+          "",
+        _checkerComment:
+          draftToRestore.data.checkerComment ||
+          draftToRestore.data.creatorComment ||
+          "",
+        commentTrail: draftToRestore.data.commentTrail || [],
+        _draftCommentTrail: draftToRestore.data.commentTrail || [],
+        _draftRestored: true,
+      };
 
-    return {
-      lockedByUserId,
-      lockedByUserName,
-      isLockedBySomeoneElse,
-      isLockedByMe,
-    };
-  };
+      const restoreId = window.setTimeout(() => {
+        setSelectedChecklist(draftChecklist);
+      }, 0);
 
-  const openChecklist = async (checklist) => {
-    const checklistId = checklist?.id || checklist?._id;
-    const { isLockedBySomeoneElse, isLockedByMe, lockedByUserName } = getLockMeta(checklist);
+      if (setDraftToRestore) {
+        setDraftToRestore(null);
+      }
 
-    if (!checklistId) {
-      return;
+      return () => window.clearTimeout(restoreId);
     }
 
-    if (isLockedBySomeoneElse) {
-      showLockToast(lockedByUserName || "another user");
-      return;
-    }
+    return undefined;
+  }, [draftToRestore, setDraftToRestore]);
 
-    if (!isLockedByMe) {
-      try {
-        await lockDcl(checklistId).unwrap();
-      } catch (error) {
-        if (error?.data?.lockedByUserId) {
-          showLockToast(error?.data?.lockedByUserName || "another user");
-          return;
-        }
+  const { data: myChecklists = [], refetch, isLoading } =
+    useGetCheckerMyQueueQuery(userId, {
+      skip: !userId,
+      pollingInterval: 2000,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    });
+  const { data: allChecklists = [], isLoading: isLoadingAllChecklists } =
+    useGetAllCoCreatorChecklistsQuery(undefined, {
+      pollingInterval: 2000,
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    });
 
-        console.error("Failed to lock checker checklist before opening:", error);
+  const getLockMeta = useCallback(
+    (checklist) => {
+      const lockedByUserId = checklist?.lockedByUserId || checklist?.lockedBy?.id;
+      const lockedByUserName = checklist?.lockedBy?.name || checklist?.lockedByUserName;
+      const isLockedBySomeoneElse = !!lockedByUserId && lockedByUserId !== userId;
+      const isLockedByMe = !!lockedByUserId && lockedByUserId === userId;
+
+      return {
+        lockedByUserId,
+        lockedByUserName,
+        isLockedBySomeoneElse,
+        isLockedByMe,
+      };
+    },
+    [userId],
+  );
+
+  const openChecklist = useCallback(
+    async (checklist) => {
+      const checklistId = checklist?.id || checklist?._id;
+      const { isLockedBySomeoneElse, isLockedByMe, lockedByUserName } = getLockMeta(checklist);
+
+      if (!checklistId) {
         return;
       }
-    }
 
-    setSelectedChecklist({
-      ...checklist,
-      lockedByUserId: checkerId,
-      lockedByUserName: checkerName,
-      lockedBy: { id: checkerId, name: checkerName },
-    });
-  };
-
-  // Fetch checklists assigned to this checker for review
-  const {
-    data: myQueue = [],
-    isLoading,
-    refetch,
-  } = useGetCheckerMyQueueQuery(checkerId, {
-    skip: !checkerId, // Skip query if no checkerId
-    pollingInterval: 2000,
-    refetchOnMountOrArgChange: true,
-    refetchOnFocus: true,
-  });
-
-  /**
-   * ✅ PENDING CHECKLISTS FOR THIS CHECKER
-   * These are checklists in CoCheckerReview status assigned to this specific checker
-   */
-  const pendingChecklists = useMemo(() => {
-    const filtered = myQueue.filter((c) => {
-      const isPendingReview =
-        c.status?.toLowerCase() === "cocheckerreview" ||
-        c.status?.toLowerCase() === "co_checker_review";
-
-      if (!isPendingReview) {
-        return false;
+      if (isLockedBySomeoneElse) {
+        showLockToast(lockedByUserName || "another user");
+        return;
       }
 
+      if (!isLockedByMe) {
+        try {
+          await lockDcl(checklistId).unwrap();
+        } catch (error) {
+          if (error?.data?.lockedByUserId) {
+            showLockToast(error?.data?.lockedByUserName || "another user");
+            return;
+          }
+
+          console.error("Failed to lock checker checklist before opening:", error);
+          return;
+        }
+      }
+
+      setSelectedChecklist({
+        ...checklist,
+        lockedByUserId: userId,
+        lockedByUserName: "Current User",
+        lockedBy: { id: userId, name: "Current User" },
+      });
+    },
+    [getLockMeta, lockDcl, userId],
+  );
+
+  const applyCommonFilters = useCallback(
+    (checklists) =>
+      checklists.filter((checklist) => {
       const searchTarget = [
-        c.dclNo,
-        c.customerName,
-        c.customerNumber,
-        c.loanType,
-        c.createdBy?.name,
+        checklist.dclNo,
+        checklist.customerName,
+        checklist.customerNumber,
+        checklist.loanType,
+        checklist.assignedToChecker?.name,
+        checklist.assignedToRM?.name,
+        checklist.status,
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
-      const matchesSearch = !searchText || searchTarget.includes(searchText.toLowerCase());
-      const matchesLoanType =
-        loanTypeFilter === "all" ||
-        (c.loanType || "").toLowerCase() === loanTypeFilter;
-      const matchesCreator =
-        creatorFilter === "all" ||
-        (c.createdBy?.name || "").toLowerCase() === creatorFilter;
+      const matchesSearch =
+        !searchText || searchTarget.includes(searchText.toLowerCase());
 
-      return matchesSearch && matchesLoanType && matchesCreator;
-    });
-    return filtered;
-  }, [creatorFilter, loanTypeFilter, myQueue, searchText]);
+      const normalizedStatus = String(checklist.status || "")
+        .trim()
+        .toLowerCase();
+      const matchesStatus = matchesActiveTab(normalizedStatus, activeTab);
+
+      const normalizedLoanType = String(checklist.loanType || "")
+        .trim()
+        .toLowerCase();
+      const matchesLoanType =
+        loanTypeFilter === "all" || normalizedLoanType === loanTypeFilter;
+
+        return matchesSearch && matchesStatus && matchesLoanType;
+      }),
+    [activeTab, loanTypeFilter, searchText],
+  );
+
+  const assignedReviewChecklists = useMemo(
+    () => applyCommonFilters(myChecklists),
+    [applyCommonFilters, myChecklists],
+  );
+
+  const allReviewChecklists = useMemo(
+    () => applyCommonFilters(allChecklists),
+    [allChecklists, applyCommonFilters],
+  );
+
+  const statusCounts = useMemo(
+    () => ({
+      assigned: myChecklists.filter((item) => {
+        const value = String(item.status || "").trim().toLowerCase();
+        return value === "co_checker_review" || value === "cocheckerreview";
+      }).length,
+      all: allChecklists.filter((item) => {
+        const value = String(item.status || "").trim().toLowerCase();
+        return value === "co_checker_review" || value === "cocheckerreview";
+      }).length,
+    }),
+    [allChecklists, myChecklists],
+  );
 
   const loanTypeOptions = useMemo(
     () =>
       Array.from(
         new Set(
-          myQueue
+          myChecklists
             .map((item) => item.loanType)
             .filter(Boolean)
             .map((value) => value.trim()),
         ),
       ).sort((a, b) => a.localeCompare(b)),
-    [myQueue],
-  );
-
-  const creatorOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          myQueue
-            .map((item) => item.createdBy?.name)
-            .filter(Boolean)
-            .map((value) => value.trim()),
-        ),
-      ).sort((a, b) => a.localeCompare(b)),
-    [myQueue],
+    [myChecklists],
   );
 
   const clearFilters = () => {
     setSearchText("");
+    setActiveTab("assigned");
     setLoanTypeFilter("all");
-    setCreatorFilter("all");
   };
+
+  const renderTabLabel = (label, count) => (
+    <span className={tabLabelClassName}>
+      <span>{label}</span>
+      <span className={tabCountClassName}>{count}</span>
+    </span>
+  );
 
   const columns = [
     {
@@ -284,55 +376,53 @@ const MyQueuePage = () => {
       dataIndex: "customerName",
       width: 146,
       ellipsis: true,
-      render: (text) => (
-        <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{text || "-"}</span>
-      ),
+      render: (text) => <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{text || "-"}</span>,
     },
     {
       title: "CUSTOMER NUMBER",
       dataIndex: "customerNumber",
       width: 134,
       ellipsis: true,
-      render: (text) => (
-        <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{text || "-"}</span>
-      ),
+      render: (text) => <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{text || "-"}</span>,
     },
     {
       title: "LOAN TYPE",
       dataIndex: "loanType",
       width: 118,
       ellipsis: true,
-      render: (text) => (
-        <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{text || "-"}</span>
-      ),
+      render: (text) => <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{text || "-"}</span>,
     },
     {
-      title: "Docs",
+      title: "ASSIGNED RM",
+      dataIndex: "assignedToRM",
+      width: 122,
+      ellipsis: true,
+      render: (rm) => <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{rm?.name || "Not Assigned"}</span>,
+    },
+    {
+      title: "DOCS",
       dataIndex: "documents",
       width: 74,
       align: "center",
-      render: (docs) => {
-        const totalDocs =
-          docs?.reduce((sum, cat) => sum + (cat.docList?.length || 0), 0) || 0;
-        return <span className="creator-table-primary-value">{totalDocs}</span>;
+      render: (docs = []) => {
+        const total = docs.reduce((sum, documentItem) => {
+          if (Array.isArray(documentItem?.docList)) {
+            return sum + documentItem.docList.length;
+          }
+
+          return sum + 1;
+        }, 0);
+
+        return <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{total}</span>;
       },
     },
     {
-      title: "CO CREATOR",
-      dataIndex: "createdBy",
-      width: 122,
-      ellipsis: true,
-      render: (creator) => (
-        <span className="truncate whitespace-nowrap text-xs font-normal text-(--color-text-medium)">{creator?.name || "Not Assigned"}</span>
-      ),
-    },
-    {
       title: "STATUS",
-      dataIndex: "status",
       width: 96,
       ellipsis: true,
-      render: (status) => {
-        const statusMeta = getQueueStatusMeta(status);
+      render: (_, record) => {
+        const statusMeta = getQueueStatusMeta(record.status);
+
         return (
           <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold ${getStatusBadgeClassName(statusMeta.variant)}`}>
             {statusMeta.label}
@@ -366,10 +456,9 @@ const MyQueuePage = () => {
       title: "TAT CONSUMED",
       dataIndex: "slaExpiry",
       width: 116,
+      ellipsis: true,
       sorter: (a, b) => getTatSortValue(a) - getTatSortValue(b),
       defaultSortOrder: "descend",
-      fixed: "right",
-      ellipsis: true,
       render: (date, record) => (
         <RealTimeSlaTag
           slaExpiry={date}
@@ -382,122 +471,137 @@ const MyQueuePage = () => {
         />
       ),
     },
-    {
-      title: "ACTION",
-      width: 100,
-      fixed: "right",
-      render: (_, record) => (
-        <Button
-          type="link"
-          size="small"
-          className="p-0 text-(--color-primary-medium) font-semibold"
-          onClick={() => openChecklist(record)}
-        >
-          Review
-        </Button>
-      ),
-    },
   ];
-
-  if (isLoading) {
-    return (
-      <div className={loadingClassName}>
-        <Spin size="large" />
-      </div>
-    );
-  }
 
   return (
     <div className={pageRootClassName}>
-      <div className="flex flex-col gap-4 bg-white">
-        {selectedChecklist ? (
-          <section className={inlineReviewClassName}>
-            <CheckerReviewChecklistModal
-              checklist={selectedChecklist}
-              embedded
-              open={!!selectedChecklist}
+      {/* Drawer for creating new DCL */}
+      {selectedChecklist ? (
+        <section className={inlineReviewClassName}>
+          <CheckerReviewChecklistModal
+            checklist={selectedChecklist}
+            embedded
+            open={!!selectedChecklist}
+            onClose={() => {
+              setSelectedChecklist(null);
+              refetch();
+            }}
+          />
+        </section>
+      ) : (
+        <>
+          {drawerOpen && (
+            <ChecklistsPage
+              open={drawerOpen}
               onClose={() => {
-                setSelectedChecklist(null);
+                setDrawerOpen(false);
                 refetch();
               }}
+              coCreatorId={userId}
             />
-          </section>
-        ) : (
+          )}
+
           <div className="w-full">
             <div className={queueCardClassName}>
               <div className={toolbarClassName}>
                 <h2 className={titleClassName}>My Queue</h2>
-                <Input
-                  className={searchClassName}
-                  placeholder="Search DCL, Customer, Loan, Co-Creator"
-                  prefix={<SearchOutlined />}
-                  allowClear
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
-              </div>
-
-              <div className={filtersClassName}>
-                <Select
-                  value={loanTypeFilter}
-                  onChange={setLoanTypeFilter}
-                  className={filterSelectClassName}
-                  options={[
-                    { value: "all", label: "All loan types" },
-                    ...loanTypeOptions.map((value) => ({
-                      value: value.toLowerCase(),
-                      label: value,
-                    })),
-                  ]}
-                />
-                <Select
-                  value={creatorFilter}
-                  onChange={setCreatorFilter}
-                  className={filterSelectClassName}
-                  options={[
-                    { value: "all", label: "All co-creators" },
-                    ...creatorOptions.map((value) => ({
-                      value: value.toLowerCase(),
-                      label: value,
-                    })),
-                  ]}
-                />
-                <Button block onClick={clearFilters}>
-                  Clear
-                </Button>
-              </div>
-
-              {pendingChecklists.length === 0 ? (
-                <div className={emptyClassName}>
-                  <Empty description="No checklists pending review" />
-                </div>
-              ) : (
-                <div className={tableShellClassName}>
-                  <Table
-                    columns={columns}
-                    dataSource={pendingChecklists}
-                    rowKey={(record) => record.id || record._id || record.dclNo}
-                    tableLayout="fixed"
-                    scroll={{ x: 1180 }}
-                    pagination={{
-                      pageSize: 5,
-                      showSizeChanger: true,
-                      pageSizeOptions: ["5", "10", "20", "50"],
-                      position: ["bottomCenter"],
-                    }}
-                    onRow={(record) => ({
-                      onClick: () => openChecklist(record),
-                      className: "cursor-pointer",
-                    })}
+                <div className={toolbarActionsClassName}>
+                  <Input
+                    prefix={<SearchOutlined />}
+                    placeholder="Search DCL / Customer / Loan"
+                    allowClear
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className={searchClassName}
                   />
+                  <Select
+                    value={loanTypeFilter}
+                    onChange={setLoanTypeFilter}
+                    className={filterClassName}
+                    options={[
+                      { value: "all", label: "All loan types" },
+                      ...loanTypeOptions.map((value) => ({
+                        value: value.toLowerCase(),
+                        label: value,
+                      })),
+                    ]}
+                  />
+                  <Button className={clearButtonClassName} onClick={clearFilters}>
+                    Clear
+                  </Button>
                 </div>
-              )}
+              </div>
+
+              <Tabs activeKey={activeTab} onChange={setActiveTab} className={tabsClassName}>
+                <TabPane tab={renderTabLabel("My Queue", statusCounts.assigned)} key="assigned">
+                  {isLoading ? (
+                    <div className={contentStateClassName}>
+                      <Spin />
+                    </div>
+                  ) : assignedReviewChecklists.length === 0 ? (
+                    <div className={contentStateClassName}>
+                      <Empty description="No assigned co-checker review items" />
+                    </div>
+                  ) : (
+                    <div className={tableShellClassName}>
+                      <Table
+                        columns={columns}
+                        dataSource={assignedReviewChecklists}
+                        rowKey={(record) => record.id || record._id || record.dclNo}
+                        tableLayout="fixed"
+                        scroll={{ x: 1040 }}
+                        pagination={{
+                          pageSize: 5,
+                          showSizeChanger: true,
+                          pageSizeOptions: ["5", "10", "20", "50"],
+                          position: ["bottomCenter"],
+                        }}
+                        onRow={(record) => ({
+                          onClick: () => openChecklist(record),
+                          className: "cursor-pointer",
+                        })}
+                      />
+                    </div>
+                  )}
+                </TabPane>
+                <TabPane tab={renderTabLabel("All DCLs(Checker Review)", statusCounts.all)} key="all">
+                  {isLoadingAllChecklists ? (
+                    <div className={contentStateClassName}>
+                      <Spin />
+                    </div>
+                  ) : allReviewChecklists.length === 0 ? (
+                    <div className={contentStateClassName}>
+                      <Empty description="No co-checker review items in the system" />
+                    </div>
+                  ) : (
+                    <div className={tableShellClassName}>
+                      <Table
+                        columns={columns}
+                        dataSource={allReviewChecklists}
+                        rowKey={(record) => record.id || record._id || record.dclNo}
+                        tableLayout="fixed"
+                        scroll={{ x: 1040 }}
+                        pagination={{
+                          pageSize: 5,
+                          showSizeChanger: true,
+                          pageSizeOptions: ["5", "10", "20", "50"],
+                          position: ["bottomCenter"],
+                        }}
+                        onRow={(record) => ({
+                          onClick: () => openChecklist(record),
+                          className: "cursor-pointer",
+                        })}
+                      />
+                    </div>
+                  )}
+                </TabPane>
+              </Tabs>
             </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };
 
-export default MyQueuePage;
+export default AllChecklists;

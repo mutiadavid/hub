@@ -486,7 +486,7 @@ const Myqueue = ({ draftToRestore = null, setDraftToRestore = null }) => {
           <Tabs activeKey={activeTab} onChange={setActiveTab} className={tabsClassName}>
         {/* NEW TAB: Unassigned DCLs */}
 
-        <TabPane tab={renderTabLabel("CO Creator Review", tabCounts.co_creator_review)} key="co_creator_review">
+        <TabPane tab={renderTabLabel("My Queue", tabCounts.co_creator_review)} key="co_creator_review">
           {isLoadingCreator ? (
             <div className={stateClassName}>
               <Spin className="block" />
@@ -583,7 +583,7 @@ const Myqueue = ({ draftToRestore = null, setDraftToRestore = null }) => {
         </TabPane>
 
         <TabPane
-          tab={renderTabLabel("Active DCLs", tabCounts.unassigned)}
+          tab={renderTabLabel("All DCLs(Creator Review)", tabCounts.unassigned)}
           key="unassigned"
         >
           {isLoadingUnassigned ? (
