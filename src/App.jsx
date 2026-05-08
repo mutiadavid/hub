@@ -13,7 +13,6 @@ import { useHeartbeatPresenceMutation } from "./api/userApi";
 import socketService from "./service/socketService";
 
 // Pages
-import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SessionTimeout from "./components/common/SessionTimeout";
@@ -102,7 +101,6 @@ const App = () => {
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
 
         {/* PROTECTED ROUTES */}
 

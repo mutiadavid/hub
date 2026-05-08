@@ -16,7 +16,7 @@ import SharedSidebar from "../common/SharedSidebar";
 
 // Pages
 import { Suspense, lazy } from "react";
-const AllChecklists = lazy(() => import("../../pages/checker/allChecklists"));
+const AllChecklists = lazy(() => import("../../pages/checker/myQueue"));
 const CompletedChecklists = lazy(() => import("../../pages/checker/Completed"));
 const Deferrals = lazy(() => import("../../pages/checker/Deferral"));
 const Reportss = lazy(() => import("../../pages/creator/Reports"));

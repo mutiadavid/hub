@@ -238,15 +238,24 @@ const parseStatusCode = (value) => {
   return 500;
 };
 
-const createSanitizedApiError = (status) => {
+const createSanitizedApiError = (status, message) => {
   const normalizedStatus = parseStatusCode(status);
-  const error = new Error(String(normalizedStatus));
+  const resolvedMessage = String(message || "").trim() || String(normalizedStatus);
+  const error = new Error(resolvedMessage);
   error.status = normalizedStatus;
   return error;
 };
 
-const sanitizeThrownApiError = (error) =>
-  createSanitizedApiError(error?.status || error?.data?.status || error?.message);
+const sanitizeThrownApiError = (error) => {
+  const status = error?.status || error?.data?.status || error?.originalStatus || error?.message;
+  const backendMessage =
+    error?.data?.error ||
+    error?.data?.message ||
+    error?.error ||
+    error?.message;
+
+  return createSanitizedApiError(status, backendMessage);
+};
 
 async function sendViaLocalEmailServer(payload) {
   const res = await fetch(`${EMAIL_SERVER_BASE}/api/send-deferral`, {
@@ -1536,4 +1545,3 @@ const wrappedDeferralApi = Object.fromEntries(
 );
 
 export default wrappedDeferralApi;
-

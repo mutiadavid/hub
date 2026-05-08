@@ -1,8 +1,9 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { createBaseQueryWithSession } from "./baseQueryWithSession";
+import { API_BASE_URL } from "../config/runtimeConfig";
 
 const baseQuery = createBaseQueryWithSession({
-  baseUrl: `${import.meta.env.VITE_API_URL}/api`,
+  baseUrl: API_BASE_URL,
 });
 
 export const notificationApi = createApi({

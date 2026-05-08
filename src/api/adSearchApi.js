@@ -1,68 +1,10 @@
-// import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-// // AD Search has its own base URL and auth headers (X-App-Id, X-Api-Token)
-// // These should ideally be proxied through your own backend, but if calling
-// // directly, keep them in env vars.
-// const adBaseQuery = fetchBaseQuery({
-//   baseUrl: import.meta.env.VITE_AD_SEARCH_URL || "http://uatintegrationsistio.ncbagroup.com/ad-search",
-//   prepareHeaders: (headers) => {
-//     const appId = import.meta.env.VITE_AD_APP_ID;
-//     const apiToken = import.meta.env.VITE_AD_API_TOKEN;
-//     if (appId) headers.set("X-App-Id", appId);
-//     if (apiToken) headers.set("X-Api-Token", apiToken);
-//     headers.set("Content-Type", "application/json");
-//     return headers;
-//   },
-// });
-
-// export const adSearchApi = createApi({
-//   reducerPath: "adSearchApi",
-//   baseQuery: adBaseQuery,
-//   endpoints: (builder) => ({
-//     searchAdUsers: builder.query({
-//       query: (searchTerm) => ({
-//         url: "/api/ADSearch/search",
-//         method: "POST",
-//         body: {
-//           query: searchTerm?.trim() || "",
-//           maxResults: 10,
-//           useRegex: false,
-//           includeGroups: false,
-//           includeSuggestions: false,
-//           bypassCache: false,
-//         },
-//       }),
-//       // Cache results per query string for 60s to reduce duplicate hits
-//       keepUnusedDataFor: 60,
-//       transformResponse: (response) => {
-//         if (!response?.success || !Array.isArray(response.users)) {
-//           return [];
-//         }
-//         return response.users;
-//       },
-//     }),
-
-//     getAdUserDetails: builder.query({
-//       query: (samAccountName) => ({
-//         url: `/api/ADSearch/user/${encodeURIComponent(samAccountName)}`,
-//         method: "GET",
-//       }),
-//     }),
-//   }),
-// });
-
-// export const {
-//   useLazySearchAdUsersQuery,
-//   useSearchAdUsersQuery,
-//   useGetAdUserDetailsQuery,
-// } = adSearchApi;
-
 
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { createBaseQueryWithSession } from "./baseQueryWithSession";
+import { API_BASE_URL } from "../config/runtimeConfig";
 
 const baseQuery = createBaseQueryWithSession({
-  baseUrl: import.meta.env.VITE_API_URL + "/api/users",
+  baseUrl: `${API_BASE_URL}/users`,
 });
 
 export const adSearchApi = createApi({
@@ -78,7 +20,7 @@ export const adSearchApi = createApi({
             : 10;
 
         return ({
-        url: "/ad-search",
+        url: "ad-search",
         method: "POST",
         body: {
           query: searchTerm?.trim() || "",
@@ -88,10 +30,22 @@ export const adSearchApi = createApi({
       },
       keepUnusedDataFor: 60,
       transformResponse: (response) => {
-        if (!response?.success || !Array.isArray(response.users)) {
-          return [];
-        }
-        return response.users;
+        if (!response) return [];
+
+        // The upstream AD search service and this backend proxy may return
+        // different shapes. Handle the common ones robustly.
+        if (Array.isArray(response.users)) return response.users;
+
+        // Some services may wrap payload under "data"
+        if (Array.isArray(response.data?.users)) return response.data.users;
+
+        // If the backend proxy returns { success: true, users: [...] }
+        if (response.success === true && Array.isArray(response.users)) return response.users;
+
+        // Sometimes the service may return { users: [...] } without "success"
+        if (Array.isArray(response?.users)) return response.users;
+
+        return [];
       },
     }),
   }),

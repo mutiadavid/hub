@@ -23,9 +23,12 @@ export default function ApproverSelector({
   loanAmount = "",
 }) {
   const [directoryApprovers, setDirectoryApprovers] = useState([]);
-  const debounceRef = useRef(null);
+  const [directorySearchText, setDirectorySearchText] = useState("");
+  const directorySearchCacheRef = useRef(new Map());
+  const directorySearchDebounceRef = useRef(null);
+  const directorySearchRequestIdRef = useRef(0);
   const [directoryHint, setDirectoryHint] = useState(
-    "Open the list or type at least 2 characters to search Active Directory staff",
+    "Type to filter Active Directory staff",
   );
   const [triggerDirectorySearch, { isFetching: isSearchingDirectory }] =
     useLazySearchAdUsersQuery();
@@ -80,19 +83,22 @@ export default function ApproverSelector({
     selectedCount === requiredSteps &&
     !hasDuplicateApprovers;
 
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, []);
-
   const upsertDirectoryApprovers = (users) => {
     const normalizedUsers = (users || [])
       .map((user) => {
         const identifier = String(
-          user?.id || user?._id || user?.userId || user?.samAccountName || user?.email || "",
+          user?.id ??
+            user?._id ??
+            user?.userId ??
+            user?.UserIdentifier ??
+            user?.userIdentifier ??
+            user?.samAccountName ??
+            user?.samAccount ??
+            user?.email ??
+            user?.mail ??
+            user?.userPrincipalName ??
+            user?.accountName ??
+            ""
         ).trim();
 
         if (!identifier) {
@@ -102,16 +108,32 @@ export default function ApproverSelector({
         return {
           id: identifier,
           name:
-            user?.displayName ||
-            user?.name ||
-            user?.email ||
-            user?.samAccountName ||
+            user?.displayName ??
+            user?.name ??
+            user?.fullName ??
+            user?.commonName ??
+            user?.cn ??
+            user?.email ??
+            user?.mail ??
+            user?.samAccountName ??
+            user?.samAccount ??
             "Unknown Staff",
-          email: user?.email || "",
-          samAccountName: user?.samAccountName || "",
-          department: user?.department || "",
-          title: user?.title || user?.position || "",
-          position: user?.title || user?.position || "",
+          email: user?.email ?? user?.mail ?? "",
+          samAccountName: user?.samAccountName ?? user?.samAccount ?? "",
+          department:
+            user?.department ?? user?.Department ?? user?.division ?? "",
+          title:
+            user?.title ??
+            user?.jobTitle ??
+            user?.position ??
+            user?.role ??
+            "",
+          position:
+            user?.position ?? user?.jobTitle ?? user?.title ?? user?.role ?? "",
+          role:
+            user?.role ??
+            user?.Role ??
+            "",
         };
       })
       .filter(Boolean);
@@ -143,50 +165,97 @@ export default function ApproverSelector({
     });
   };
 
-  const runDirectorySearch = async (query, maxResults = 25) => {
+  const searchDirectoryOnServer = async (rawQuery) => {
+    const query = String(rawQuery || "").trim();
+    if (!query) return;
+
+    // Requirement: once user types one character, show the full AD staff listing.
+    const shouldLoadAllStaff = query.length === 1;
+    const effectiveQuery = shouldLoadAllStaff ? "*" : query;
+    const effectiveMaxResults = shouldLoadAllStaff ? 1000 : 200;
+
+    const normalizedKey = shouldLoadAllStaff ? "__all__" : query.toLowerCase();
+    if (directorySearchCacheRef.current.has(normalizedKey)) {
+      const cachedUsers = directorySearchCacheRef.current.get(normalizedKey) || [];
+      upsertDirectoryApprovers(cachedUsers);
+      setDirectoryHint("");
+      return;
+    }
+
+    const requestId = ++directorySearchRequestIdRef.current;
+    setDirectoryHint("Searching Active Directory...");
+
     try {
       const users = await triggerDirectorySearch(
-        { query, maxResults },
+        { query: effectiveQuery, maxResults: effectiveMaxResults },
         true,
       ).unwrap();
-      upsertDirectoryApprovers(users);
-      setDirectoryHint(
-        users?.length
-          ? ""
-          : query
-            ? "No matching staff found in Active Directory"
-            : "No staff returned from Active Directory",
-      );
-    } catch {
-      setDirectoryHint("Active Directory search failed. Try again.");
+
+      if (requestId !== directorySearchRequestIdRef.current) return;
+
+      const arr = Array.isArray(users) ? users : [];
+      directorySearchCacheRef.current.set(normalizedKey, arr);
+      upsertDirectoryApprovers(arr);
+      setDirectoryHint(arr.length ? "" : "No matching staff found in Active Directory");
+    } catch (error) {
+      if (requestId !== directorySearchRequestIdRef.current) return;
+      const status = Number(error?.status ?? error?.originalStatus);
+      if (status === 503) {
+        setDirectoryHint("Active Directory service is unavailable right now.");
+      } else if (status === 504) {
+        setDirectoryHint("Active Directory request timed out. Please retry.");
+      } else {
+        setDirectoryHint("Active Directory search failed. Try again.");
+      }
     }
   };
 
-  const handleDirectorySearch = (rawQuery) => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+  const filteredDirectoryApprovers = useMemo(() => {
+    const normalizedQuery = String(directorySearchText || "")
+      .trim()
+      .toLowerCase();
+
+    if (!normalizedQuery) {
+      return directoryApprovers;
     }
 
-    const query = String(rawQuery || "").trim();
+    // Always keep selected approvers visible even if they don't match the current filter.
+    const selectedIdSet = new Set(selectedUserIds.map(String));
 
-    if (!query) {
-      debounceRef.current = setTimeout(() => {
-        setDirectoryHint("Loading staff from Active Directory...");
-        runDirectorySearch("", 200);
-      }, 150);
-      return;
+    return (directoryApprovers || []).filter((user) => {
+      const id = String(user?.id ?? user?._id ?? "");
+      if (selectedIdSet.has(id)) return true;
+
+      const haystack = [
+        user?.name,
+        user?.email,
+        user?.samAccountName,
+        user?.department,
+        user?.title,
+        user?.position,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(normalizedQuery);
+    });
+  }, [directoryApprovers, directorySearchText, selectedUserIds]);
+
+  const notFoundText = useMemo(() => {
+    if (isSearchingDirectory) return "";
+    const normalizedQuery = String(directorySearchText || "").trim();
+    const hintLooksLikeError = /unavailable|timed out|failed/i.test(
+      String(directoryHint || ""),
+    );
+    if (!normalizedQuery) {
+      return directoryHint || "Type at least 1 character to search Active Directory staff";
     }
-
-    if (query.length < 2) {
-      setDirectoryHint("Type at least 2 characters to search Active Directory staff");
-      return;
+    if (hintLooksLikeError) {
+      return directoryHint;
     }
-
-    debounceRef.current = setTimeout(() => {
-      setDirectoryHint("Searching Active Directory...");
-      runDirectorySearch(query, 200);
-    }, 300);
-  };
+    return "No matching staff found in Active Directory";
+  }, [directoryHint, directorySearchText, isSearchingDirectory]);
 
   const getApproverLabel = (index) => {
     if (index === requiredSteps - 1) return "Final Approver";
@@ -480,16 +549,46 @@ export default function ApproverSelector({
                       email: selectedApprover?.email || "",
                       samAccountName: selectedApprover?.samAccountName || "",
                       department: selectedApprover?.department || "",
+                      role: selectedApprover?.role || "",
                       position: slot.role || slot.position || "",
                     });
                   }}
                   onClear={() =>
                     updateApprover(index, "", slot.role || "Approver", {})
                   }
-                  onSearch={handleDirectorySearch}
+                  onSearch={(value) => {
+                    const v = String(value || "");
+                    setDirectorySearchText(v);
+
+                    if (directorySearchDebounceRef.current) {
+                      clearTimeout(directorySearchDebounceRef.current);
+                    }
+
+                    const trimmed = v.trim();
+                    if (trimmed.length >= 1) {
+                      directorySearchDebounceRef.current = setTimeout(() => {
+                        searchDirectoryOnServer(trimmed);
+                      }, 220);
+                      return;
+                    }
+
+                    if (!trimmed) {
+                      return;
+                    }
+
+                    setDirectoryHint(
+                      "Type at least 1 character to search Active Directory staff"
+                    );
+                  }}
                   onDropdownVisibleChange={(open) => {
                     if (open) {
-                      handleDirectorySearch("");
+                      setDirectorySearchText("");
+                      if (directorySearchDebounceRef.current) {
+                        clearTimeout(directorySearchDebounceRef.current);
+                      }
+                      setDirectoryHint(
+                        "Type at least 1 character to search Active Directory staff"
+                      );
                     }
                   }}
                   style={{ width: "100%", marginTop: 6 }}
@@ -505,36 +604,36 @@ export default function ApproverSelector({
                         <Spin size="small" />
                       </div>
                     ) : (
-                      <Text type="secondary">{directoryHint}</Text>
+                      <Text type="secondary">{notFoundText}</Text>
                     )
                   }
                 >
-                  {Array.isArray(directoryApprovers) &&
-                  directoryApprovers.length > 0 ? (
-                    directoryApprovers.map((approver) => (
-                      <Option
-                        key={approver.id}
-                        value={approver.id}
-                        directoryApprover={approver}
-                        disabled={
-                          selectedUserIds.includes(String(approver.id)) &&
-                          String(slot.userId || "") !== String(approver.id)
-                        }
-                      >
-                        {approver.name}
-                        {(approver.title || approver.position) ? ` — ${approver.title || approver.position}` : ""}
-                        {approver.department ? ` (${approver.department})` : ""}
-                      </Option>
-                    ))
-                  ) : (
-                    <Option
-                      key="no-directory-users"
-                      value="__no_directory_users__"
-                      disabled
-                    >
-                      No staff available
-                    </Option>
-                  )}
+                  {Array.isArray(filteredDirectoryApprovers) &&
+                  filteredDirectoryApprovers.length > 0
+                    ? filteredDirectoryApprovers.map((approver) => (
+                        <Option
+                          key={approver.id}
+                          value={approver.id}
+                          directoryApprover={approver}
+                          disabled={
+                            selectedUserIds.includes(String(approver.id)) &&
+                            String(slot.userId || "") !==
+                              String(approver.id)
+                          }
+                        >
+                          {approver.name}
+                          {approver.role
+                            ? ` [${approver.role}]`
+                            : ""}
+                          {(approver.title || approver.position)
+                            ? ` — ${approver.title || approver.position}`
+                            : ""}
+                          {approver.department
+                            ? ` (${approver.department})`
+                            : ""}
+                        </Option>
+                      ))
+                    : null}
                 </Select>
 
                 {index < slots.length - 1 && (

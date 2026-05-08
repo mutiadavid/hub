@@ -134,17 +134,6 @@ const LoginPage = () => {
             {isLoginLoading ? "Signing in..." : "Next"}
           </button>
         </form>
-
-        <p className="ms-login-card__footer">
-          No account?{" "}
-          <button
-            type="button"
-            className="ms-login-card__footer-link"
-            onClick={() => navigate("/register")}
-          >
-            Create one!
-          </button>
-        </p>
       </div>
     </div>
   );

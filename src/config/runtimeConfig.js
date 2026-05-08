@@ -32,7 +32,8 @@ const resolveLocalDevOrigin = (origin) => {
     }
 
     const portMap = {
-      "7082": "5082",
+      "7082": "5000",
+      "5082": "5000",
     };
 
     const resolvedPort = portMap[url.port] || url.port;
@@ -42,9 +43,11 @@ const resolveLocalDevOrigin = (origin) => {
   }
 };
 
+const DEFAULT_DEV_API_ORIGIN = "http://localhost:5000";
+
 export const API_ORIGIN = normalizeOrigin(
   resolveLocalDevOrigin(import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_API_URL),
-  "http://localhost:5082",
+  DEFAULT_DEV_API_ORIGIN,
 );
 
 export const API_BASE_URL = `${API_ORIGIN}/api`;

@@ -80,7 +80,7 @@ export const useFormSubmission = () => {
         const normalizedFacilities = normalizeFacilities(facilities);
 
         // Convert loan amount category to numeric value
-        const loanAmountValue = 
+        const loanAmountValue =
           loanAmount === "above75" ? 100000000 : // 100M for above threshold
           loanAmount === "below75" ? 50000000 :  // 50M for below threshold
           parseLoanAmount(loanAmount);
@@ -104,6 +104,43 @@ export const useFormSubmission = () => {
             };
           });
 
+        const selectedDocumentPayload = (selectedDocuments || []).map((doc, idx) => {
+          const docKey = (doc && (doc._id || doc.name)) || String(idx);
+          const days = Number(perDocumentDays[docKey]) || 0;
+          const nextDateIso = days
+            ? dayjs()
+                .add(days, "day")
+                .toISOString()
+            : undefined;
+
+          if (typeof doc === "string") {
+            return {
+              name: doc,
+              type: documentCategory === "Primary" ? "Primary" : "Secondary",
+              daysSought: days || undefined,
+              nextDocumentDueDate: nextDateIso,
+            };
+          }
+
+          return {
+            ...doc,
+            type: normalizeDocumentType(doc, documentCategory),
+            daysSought: days || undefined,
+            nextDocumentDueDate: nextDateIso,
+          };
+        });
+
+        const aggregateDaysSought = selectedDocumentPayload
+          .map((doc) => Number(doc?.daysSought) || 0)
+          .filter((days) => days > 0)
+          .reduce((max, value) => Math.max(max, value), 0);
+
+        if (aggregateDaysSought <= 0) {
+          showErrorToast("Please enter number of days sought before submitting the deferral request");
+          setIsSubmitting(false);
+          return;
+        }
+
         const payload = {
           request: "CreateDeferral", // Add required request field
           customerId: selectedCustomerId || undefined,
@@ -112,35 +149,12 @@ export const useFormSubmission = () => {
           businessName,
           loanType,
           loanAmount: loanAmountValue, // Use numeric value instead of category string
+          daysSought: aggregateDaysSought,
           dclNumber,
           deferralDescription,
           facilities: normalizedFacilities,
           approvers: resolvedApprovers,
-          selectedDocuments: (selectedDocuments || []).map((doc, idx) => {
-            const docKey = (doc && (doc._id || doc.name)) || String(idx);
-            const days = Number(perDocumentDays[docKey]) || 0;
-            const nextDateIso = days
-              ? dayjs()
-                  .add(days, "day")
-                  .toISOString()
-              : undefined;
-
-            if (typeof doc === "string") {
-              return {
-                name: doc,
-                type: documentCategory === "Primary" ? "Primary" : "Secondary",
-                daysSought: days || undefined,
-                nextDocumentDueDate: nextDateIso,
-              };
-            }
-
-            return {
-              ...doc,
-              type: normalizeDocumentType(doc, documentCategory),
-              daysSought: days || undefined,
-              nextDocumentDueDate: nextDateIso,
-            };
-          }),
+          selectedDocuments: selectedDocumentPayload,
           comments: postedComments.map((c) => ({
             text: c.message,
             createdAt: c.createdAt,
