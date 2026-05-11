@@ -3,6 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Avoid OOM during large Vite builds in CI
+ENV NODE_OPTIONS=--max-old-space-size=4096
+
 COPY package*.json ./
 
 # Clean install (best practice)
@@ -34,11 +37,9 @@ RUN chown -R nginx:nginx /usr/share/nginx/html/ewer
 
 USER nginx
 
-# Correct port
-EXPOSE 80
+EXPOSE 8080
 
-# Correct healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost/ || exit 1
+  CMD wget -qO- http://127.0.0.1:8080/ || exit 1
 
 CMD ["/bin/sh", "-c", "/env.sh && nginx -g 'daemon off;'"]
