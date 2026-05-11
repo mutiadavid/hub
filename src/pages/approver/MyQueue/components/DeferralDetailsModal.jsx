@@ -823,7 +823,7 @@ const DeferralDetailsModal = ({
           setRejectComment("");
         },
         onConfirm: handleReject,
-        confirmText: "Yes, Reject",
+        confirmText: "Reject",
         confirmLoading: rejecting,
         confirmDisabled: !rejectComment.trim(),
         confirmClassName: "",
@@ -867,7 +867,7 @@ const DeferralDetailsModal = ({
           setApproveComment("");
         },
         onConfirm: executeApprove,
-        confirmText: "Yes, Approve",
+        confirmText: "Approve",
         confirmLoading: approveLoading,
         summaryCopy: "Approving this request will advance it in the workflow and publish your decision to the review trail.",
         inputLabel: "Approval comments",

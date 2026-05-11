@@ -11,7 +11,7 @@ const formatTimestamp = (value) => {
     return String(value);
   }
 
-  return parsed.format("DD MMM YYYY HH:mm:ss");
+  return parsed.format("DD MMM YYYY HH:mm");
 };
 
 const getRoleTone = (role) => {

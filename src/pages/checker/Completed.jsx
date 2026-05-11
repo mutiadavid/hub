@@ -200,14 +200,21 @@ const Completed = ({ userId }) => {
       dataIndex: "documents",
       width: 74,
       align: "center",
-      render: (documents = []) => {
-        const totalDocs =
-          documents.reduce(
-            (total, category) => total + (category.docList?.length || 0),
+      render: (documents = [], record) => {
+        const mainTotal =
+          (documents || []).reduce(
+            (total, category) => total + (category.docList?.length || category.items?.length || 0),
             0,
           ) || 0;
 
-        return <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{totalDocs}</span>;
+        const supportingTotal = (record.supportingDocs || []).length;
+        const totalDocs = mainTotal + supportingTotal;
+
+        return (
+          <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">
+            {totalDocs}
+          </span>
+        );
       },
     },
     {

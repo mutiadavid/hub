@@ -27,80 +27,140 @@ import {
   GlobalOutlined,
   ReloadOutlined,
   SearchOutlined,
+  DashboardOutlined,
+  TableOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  UserOutlined,
+  TeamOutlined,
+  FileOutlined,
+  CheckSquareOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import relativeTime from "dayjs/plugin/relativeTime";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { useGetAuditLogsQuery, useGetAuditLogStatsQuery } from "../../api/auditApi";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
+import { useLazyGetAuditLogsQuery, useGetAuditLogStatsQuery } from "../../api/auditApi";
 import { useGetUsersQuery } from "../../api/userApi";
 import "../../styles/creatorDesignSystem.css";
+import "./AuditLogsPage.css";
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
 dayjs.extend(relativeTime);
+
+// Set default timezone (adjust to your local timezone, e.g., "Africa/Nairobi" for East Africa)
+const LOCAL_TIMEZONE = "Africa/Nairobi";
+
+/** Client-side table: one API fetch loads all matching rows; table shows this many per page. */
+const AUDIT_LOGS_PAGE_SIZE = 8;
+const AUDIT_LOGS_FETCH_BATCH = 500;
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 
-const COMMON_ACTIONS = [
-  "LOGIN",
-  "LOGOUT",
-  "APPROVE",
-  "REJECT",
-  "RETURN",
-  "AD_SEARCH",
-  "CREATE_USER",
-  "TOGGLE_ACTIVE",
-  "CHANGE_ROLE",
-  "REASSIGN_TASKS",
+// Business actions only - removed LOGIN/LOGOUT
+const BUSINESS_ACTIONS = [
   "CREATE_DCL",
   "UPDATE_DCL",
   "DELETE_DCL",
+  "REVIVE_DCL",
+  "SAVE_DRAFT_DCL",
+  "SUBMIT_TO_RM",
+  "SUBMIT_TO_COCHECKER",
+  "RM_SUBMIT_TO_COCREATOR",
+  "RM_RETURN_TO_MAKER",
+  "CHECKER_APPROVED",
+  "CHECKER_REJECTED",
+  "CHECKER_CO_CREATOR_REVIEW",
+  "APPROVE",
+  "REJECT",
+  "RETURN",
   "CREATE_DEFERRAL",
   "UPDATE_DEFERRAL",
+  "APPROVE_DEFERRAL",
+  "REJECT_DEFERRAL",
+  "RETURN_DEFERRAL",
+  "UPDATE_DEFERRAL_APPROVER_FLOW",
+  "CREATE_USER",
+  "UPDATE_USER",
+  "DELETE_USER",
+  "ACTIVATE_USER",
+  "DEACTIVATE_USER",
+  "REASSIGN_TASKS",
+  "CHANGE_ROLE",
+  "TOGGLE_ACTIVE",
+  "CREATE_CHECKLIST",
+  "UPDATE_CHECKLIST",
+  "DELETE_CHECKLIST",
   "UPLOAD_DOCUMENT",
   "DELETE_DOCUMENT",
   "ADD_COMMENT",
+  "UPDATE_ROLE",
 ];
 
-const COMMON_ENTITIES = [
-  "User",
-  "Checklist",
-  "Deferral",
-  "Document",
-  "Auth",
-  "Notification",
-  "Role",
-  "Session",
+const BUSINESS_ENTITIES = [
+  "Deferral", "DCL", "User", "Document", "Checklist", "Notification", "Role",
 ];
+
+const NCBA_COLORS = {
+  primary: "#006a4d",
+  accent: "#7AB800",
+  secondary: "#164679",
+  success: "#15803d",
+  danger: "#b91c1c",
+  warning: "#d97706",
+  neutral: "#62717f",
+  bg: "#ffffff",
+  white: "#ffffff",
+  border: "rgba(0, 106, 77, 0.08)",
+};
 
 const ACTION_STYLES = {
-  CREATE:  { background: "#e7f6ec", color: "#166534", borderColor: "#bbf7d0" },
-  UPDATE:  { background: "#ebf5ff", color: "#1d4ed8", borderColor: "#bfdbfe" },
+  CREATE: { background: "rgba(0, 106, 77, 0.06)", color: NCBA_COLORS.primary, borderColor: "rgba(0, 106, 77, 0.1)" },
+  UPDATE: { background: "#ebf5ff", color: "#1d4ed8", borderColor: "#bfdbfe" },
   APPROVE: { background: "#ecfdf3", color: "#15803d", borderColor: "#86efac" },
-  REJECT:  { background: "#fff1f2", color: "#b91c1c", borderColor: "#fecdd3" },
-  DELETE:  { background: "#fff1f2", color: "#9f1239", borderColor: "#fda4af" },
-  LOGIN:   { background: "#e0f2fe", color: "#075985", borderColor: "#7dd3fc" },
-  LOGOUT:  { background: "#f3f4f6", color: "#4b5563", borderColor: "#d1d5db" },
-  RETURN:  { background: "#fff7ed", color: "#c2410c", borderColor: "#fdba74" },
-  SEARCH:  { background: "#f8fafc", color: "#475569", borderColor: "#cbd5e1" },
-  LOCK:    { background: "#fef9ec", color: "#92400e", borderColor: "#fcd34d" },
-  UNLOCK:  { background: "#f0fdf4", color: "#166534", borderColor: "#86efac" },
-  SUBMIT:  { background: "#eff6ff", color: "#1d4ed8", borderColor: "#bfdbfe" },
-  REVIVE:  { background: "#ecfdf3", color: "#15803d", borderColor: "#86efac" },
-  DRAFT:   { background: "#fafafa", color: "#57534e", borderColor: "#e7e5e4" },
-  OTHER:   { background: "#f5f5f4", color: "#57534e", borderColor: "#d6d3d1" },
+  REJECT: { background: "#fff1f2", color: "#b91c1c", borderColor: "#fecdd3" },
+  DELETE: { background: "#fff1f2", color: "#9f1239", borderColor: "#fda4af" },
+  SUBMIT: { background: "#fef3c7", color: "#92400e", borderColor: "#fcd34d" },
+  RETURN: { background: "#fff7ed", color: "#c2410c", borderColor: "#fdba74" },
+  SEARCH: { background: "#f8fafc", color: "#475569", borderColor: "#cbd5e1" },
+  OTHER: { background: "#f5f5f4", color: "#57534e", borderColor: "#d6d3d1" },
 };
 
 const ROLE_STYLES = {
-  Admin: { background: "#fff1f2", color: "#9f1239", borderColor: "#fecdd3" },
-  RM: { background: "#fef3c7", color: "#92400e", borderColor: "#fcd34d" },
-  Approver: { background: "#eefbf3", color: "#166534", borderColor: "#bbf7d0" },
-  CoCreator: { background: "#ecfeff", color: "#155e75", borderColor: "#a5f3fc" },
-  CoChecker: { background: "#eff6ff", color: "#1d4ed8", borderColor: "#bfdbfe" },
-  Customer: { background: "#f5f3ff", color: "#6d28d9", borderColor: "#ddd6fe" },
-  System: { background: "#f4f4f5", color: "#3f3f46", borderColor: "#d4d4d8" },
+  Admin: { background: "rgba(159, 18, 57, 0.06)", color: "#9f1239" },
+  RM: { background: "rgba(146, 64, 14, 0.06)", color: "#92400e" },
+  Approver: { background: "rgba(22, 101, 52, 0.06)", color: "#166534" },
+  CoCreator: { background: "rgba(21, 94, 117, 0.06)", color: "#155e75" },
+  CoChecker: { background: "rgba(29, 78, 216, 0.06)", color: "#1d4ed8" },
+  Customer: { background: "rgba(109, 40, 217, 0.06)", color: "#6d28d9" },
+  System: { background: "#f4f4f5", color: "#3f3f46" },
+};
+
+// Helper function to convert UTC to local timezone
+const convertToLocalTime = (utcDateString) => {
+  if (!utcDateString) return dayjs();
+  return dayjs.utc(utcDateString).tz(LOCAL_TIMEZONE);
 };
 
 const isGuid = (value) =>
@@ -110,12 +170,7 @@ const isGuid = (value) =>
 
 const parseJsonSafely = (value) => {
   if (!value || typeof value !== "string") return null;
-
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(value); } catch { return null; }
 };
 
 const titleize = (value) =>
@@ -124,21 +179,15 @@ const titleize = (value) =>
     .toLowerCase()
     .replace(/\b\w/g, (match) => match.toUpperCase());
 
-/**
- * Converts an email address into a human-readable name.
- * e.g. "tabitha.mwangi@ncbagroup.com" → "Tabitha Mwangi"
- * Plain names are returned as-is.
- */
 const humanizeName = (raw) => {
   if (!raw || raw === "System") return raw || "System";
   const s = String(raw).trim();
-  // Looks like an email – take only the local part
   const local = s.includes("@") ? s.split("@")[0] : s;
   return local
     .replace(/[._-]+/g, " ")
     .split(" ")
     .filter(Boolean)
-    .slice(0, 2)                           // at most two words (first + last)
+    .slice(0, 2)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(" ");
 };
@@ -146,65 +195,33 @@ const humanizeName = (raw) => {
 const formatRole = (role) => {
   const normalized = String(role || "System").trim().toLowerCase();
   const roleMap = {
-    admin: "Admin",
-    rm: "RM",
-    approver: "Approver",
-    cocreator: "CoCreator",
-    cochecker: "CoChecker",
-    customer: "Customer",
-    system: "System",
+    admin: "Admin", rm: "RM", approver: "Approver",
+    cocreator: "CoCreator", cochecker: "CoChecker",
+    customer: "Customer", system: "System",
   };
-
   return roleMap[normalized] || titleize(normalized);
 };
 
 const normalizeEntity = (value) => {
   const normalized = String(value || "").trim().toLowerCase();
-
   if (!normalized) return "System";
   if (["checklist", "dcl"].includes(normalized)) return "DCL";
   if (normalized === "deferral") return "Deferral";
   if (normalized === "user") return "User";
   if (["document", "file", "upload"].includes(normalized)) return "Document";
-  if (["auth", "authentication", "login"].includes(normalized)) return "Authentication";
-  if (["notification", "email"].includes(normalized)) return "Notification";
-  if (normalized === "role") return "Role";
-  if (normalized === "session") return "Session";
-
   return titleize(normalized);
 };
 
 const getActionCategory = (action, httpMethod) => {
   const normalized = String(action || httpMethod || "OTHER").trim().toUpperCase();
-
   if (/APPROVE(?!R)/.test(normalized)) return "APPROVE";
   if (normalized.includes("REJECT")) return "REJECT";
   if (normalized.includes("DELETE") || normalized.includes("ARCHIVE")) return "DELETE";
-  if (normalized.includes("LOGIN") || normalized.includes("SIGN_IN")) return "LOGIN";
-  if (normalized.includes("LOGOUT") || normalized.includes("SIGN_OUT")) return "LOGOUT";
   if (normalized.includes("RETURN")) return "RETURN";
-  if (normalized.includes("SEARCH") || normalized.includes("QUERY")) return "SEARCH";
-  // Specific workflow actions — must be before generic CREATE/UPDATE checks
-  if (normalized === "LOCK_DCL")   return "LOCK";
-  if (normalized === "UNLOCK_DCL") return "UNLOCK";
-  if (normalized.includes("SUBMIT_TO")) return "SUBMIT";
-  if (normalized === "REVIVE_DCL")      return "REVIVE";
-  if (normalized === "SAVE_DRAFT_DCL") return "DRAFT";
-  if (
-    normalized === "POST" ||
-    normalized.includes("CREATE") ||
-    normalized.includes("UPLOAD") ||
-    normalized.includes("ADD_")
-  ) return "CREATE";
-  if (
-    normalized === "PUT" ||
-    normalized === "PATCH" ||
-    normalized.includes("UPDATE") ||
-    normalized.includes("CHANGE") ||
-    normalized.includes("TOGGLE") ||
-    normalized.includes("REASSIGN")
-  ) return "UPDATE";
-
+  if (normalized.includes("SUBMIT")) return "SUBMIT";
+  if (normalized.includes("CREATE") || normalized.includes("UPLOAD") || normalized.includes("ADD_")) return "CREATE";
+  if (normalized.includes("UPDATE") || normalized.includes("CHANGE") ||
+      normalized.includes("TOGGLE") || normalized.includes("REASSIGN")) return "UPDATE";
   return normalized || "OTHER";
 };
 
@@ -212,61 +229,30 @@ const getActionLabel = (action, httpMethod) => titleize(action || httpMethod || 
 
 const actionPhrase = (actionCategory) => {
   switch (actionCategory) {
-    case "CREATE":  return "created";
-    case "UPDATE":  return "updated";
+    case "CREATE": return "created";
+    case "UPDATE": return "updated";
     case "APPROVE": return "approved";
-    case "REJECT":  return "rejected";
-    case "DELETE":  return "deleted";
-    case "LOGIN":   return "logged in to";
-    case "LOGOUT":  return "logged out of";
-    case "RETURN":  return "returned";
-    case "SEARCH":  return "searched";
-    case "LOCK":    return "locked";
-    case "UNLOCK":  return "unlocked";
-    case "SUBMIT":  return "submitted";
-    case "REVIVE":  return "revived";
-    case "DRAFT":   return "saved a draft of";
-    default:        return "performed";
-  }
-};
-
-/** Maps an audit action category to the same colour palette used by NotificationBell. */
-const getAuditTone = (actionCategory) => {
-  switch (actionCategory) {
-    case "APPROVE":
-      return { label: "Done",   tagBg: "rgba(34,197,94,0.14)",    tagColor: "#15803D", iconBg: "rgba(34,197,94,0.12)",    iconColor: "#15803D", accent: "#65A30D" };
-    case "REJECT":
-    case "RETURN":
-    case "DELETE":
-      return { label: "Action", tagBg: "rgba(248,113,113,0.14)",  tagColor: "#B91C1C", iconBg: "rgba(248,113,113,0.12)",  iconColor: "#B91C1C", accent: "#DC2626" };
-    case "CREATE":
-    case "SUBMIT":
-    case "REVIVE":
-      return { label: "New",    tagBg: "rgba(59,130,246,0.14)",   tagColor: "#2563EB", iconBg: "rgba(59,130,246,0.12)",   iconColor: "#2563EB", accent: "#1A3636" };
-    default:
-      return { label: "Info",   tagBg: "rgba(148,163,184,0.18)",  tagColor: "#475569", iconBg: "rgba(148,163,184,0.12)",  iconColor: "#475569", accent: "#D6BD98" };
+    case "REJECT": return "rejected";
+    case "DELETE": return "deleted";
+    case "RETURN": return "returned";
+    case "SUBMIT": return "submitted";
+    default: return "performed";
   }
 };
 
 const findCandidateValue = (source, keys) => {
   if (!source || typeof source !== "object") return null;
-
   for (const [key, value] of Object.entries(source)) {
     if (value === null || value === undefined || value === "") continue;
-
     const normalizedKey = key.toLowerCase();
     if (keys.some((candidate) => normalizedKey === candidate || normalizedKey.endsWith(`.${candidate}`))) {
       return value;
     }
-
     if (typeof value === "object") {
       const nested = findCandidateValue(value, keys);
-      if (nested !== null && nested !== undefined && nested !== "") {
-        return nested;
-      }
+      if (nested !== null && nested !== undefined && nested !== "") return nested;
     }
   }
-
   return null;
 };
 
@@ -274,75 +260,36 @@ const extractReferenceNumber = (log, entityLabel) => {
   const metadata = parseJsonSafely(log.metadataJson);
   const oldValues = parseJsonSafely(log.oldValuesJson);
   const newValues = parseJsonSafely(log.newValuesJson);
-  const keyCandidates = [
-    "referencenumber",
-    "reference",
-    "deferralnumber",
-    "dclnumber",
-    "dclno",
-    "checklistnumber",
-    "number",
-  ];
+  const keyCandidates = ["referencenumber", "reference", "deferralnumber", "dclnumber", "dclno", "checklistnumber", "number"];
 
-  const candidate =
-    findCandidateValue(metadata, keyCandidates) ||
-    findCandidateValue(newValues, keyCandidates) ||
-    findCandidateValue(oldValues, keyCandidates);
+  const candidate = findCandidateValue(metadata, keyCandidates) ||
+                    findCandidateValue(newValues, keyCandidates) ||
+                    findCandidateValue(oldValues, keyCandidates);
+  if (candidate && !isGuid(candidate)) return String(candidate);
 
-  if (candidate && !isGuid(candidate)) {
-    return String(candidate);
-  }
-
-  // Search the full details text for known reference number formats:
-  // e.g. DEF-26-0019, DCL-25-001, (DEF-26-0019) etc.
   const detailText = `${log.details || ""} ${log.targetName || ""}`;
   const patterns = [
-    // Explicit label prefix: "deferral DEF-26-009" or "Deferral Number: DEF-26-009"
     /\b(?:Deferral(?:\s+Number)?|DEFERRAL)[:\s#-]*([A-Z]{2,4}-\d{2}-\d{3,})\b/i,
-    // Explicit label prefix: "DCL-26-009" / "DCL No. 26-009"
     /\b(?:DCL(?:\s+(?:No|Number))?|CHECKLIST)[:\s#-]*([A-Z]{2,4}-\d{2}-\d{3,})\b/i,
-    // Bare reference anywhere: DEF-26-0019, DCL-25-001
     /\b((?:DEF|DCL|REF|CHK)-\d{2}-\d{3,})\b/i,
-    // Parenthesised letter-dash reference: (DEF-26-0019)
     /\(([A-Z]{2,4}-\d{2}-\d{3,})\)/i,
-    // Parenthesised year-based DCL/Deferral ref: (2026-0007) or (2026-0007 copy 1)
     /\((\d{4}-\d{4})(?:\s+copy\s+\d+)?\)/i,
-    // Bare year-based ref in details text: 2026-0007, 2026-0010
     /\b(\d{4}-\d{4})\b/,
   ];
-
   for (const pattern of patterns) {
     const match = detailText.match(pattern);
-    if (match?.[1] && !isGuid(match[1])) {
-      return match[1].toUpperCase();
-    }
+    if (match?.[1] && !isGuid(match[1])) return match[1].toUpperCase();
   }
-
-  // For Deferral/DCL: only use resourceId if it's not a GUID — never use targetName (person)
-  if (["DCL", "Deferral"].includes(entityLabel)) {
-    if (log.resourceId && !isGuid(log.resourceId)) return String(log.resourceId);
-  }
-
+  if (["DCL", "Deferral"].includes(entityLabel) && log.resourceId && !isGuid(log.resourceId)) return String(log.resourceId);
   return "-";
 };
 
-/**
- * Strips API endpoint noise from a description string.
- * Removes patterns like:
- *   - "POST /api/deferrals/... completed with status 201."
- *   - "GET /api/... with status 200"
- *   - GUIDs embedded in paths
- */
 const sanitizeDescription = (text) => {
   if (!text) return text;
   return String(text)
-    // Remove entire sentences/clauses that contain an API path
     .replace(/\.?\s*(?:GET|POST|PUT|PATCH|DELETE)\s+\/api\/[^.]+(?:completed\s+with\s+status\s+\d+)?\s*\.?/gi, "")
-    // Remove any remaining standalone "completed with status NNN" fragment
     .replace(/\.?\s*completed\s+with\s+status\s+\d+\.?/gi, "")
-    // Remove raw GUIDs
     .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi, "")
-    // Collapse multiple spaces and leading/trailing whitespace
     .replace(/\s{2,}/g, " ")
     .trim();
 };
@@ -350,102 +297,54 @@ const sanitizeDescription = (text) => {
 const buildFullDescription = (log, normalized) => {
   const { userName, actionCategory, entityLabel, referenceNumber } = normalized;
   const isDeferralOrDCL = ["Deferral", "DCL"].includes(entityLabel);
+  const rawAction = String(log?.action || "").toUpperCase();
 
-  // ── Deferral / DCL ──────────────────────────────────────────────────────────
-  // Build a clean sentence with NO person names — neither performer nor customer.
+  if (rawAction === "DELETE_DOCUMENT" && isDeferralOrDCL) {
+    const ref = referenceNumber && referenceNumber !== "-" ? ` ${referenceNumber}` : "";
+    if (entityLabel === "Deferral") return `Deleted deferral document${ref}.`;
+    return `Deleted DCL document${ref}.`;
+  }
+
   if (isDeferralOrDCL) {
     const ref = referenceNumber && referenceNumber !== "-" ? ` ${referenceNumber}` : "";
-    const isFlowUpdate = /approver.*flow|flow.*approver|approval.*flow/i.test(
-      String(log.action || ""),
-    );
-    if (isFlowUpdate) {
-      return `Updated approval flow for ${entityLabel}${ref}.`;
-    }
     const phrase = actionPhrase(actionCategory);
     const Phrase = phrase.charAt(0).toUpperCase() + phrase.slice(1);
     return `${Phrase} ${entityLabel}${ref}.`;
   }
 
-  // ── Authentication ───────────────────────────────────────────────────────────
-  // Keep sanitized details so we get the failure reason (e.g. "no provisioned account").
-  if (entityLabel === "Authentication") {
-    const raw = log.details || log.errorMessage || "";
-    if (raw.trim()) return sanitizeDescription(String(raw).trim());
-    const failed = /reject|fail|error|attempt|no provision|not found|not exist|unauthori|no account|invalid|denied|401|403/i.test(
-      raw,
-    );
-    return failed ? `${userName} failed to log in.` : `${userName} logged in successfully.`;
-  }
+  if (log.errorMessage && String(log.errorMessage).trim()) return sanitizeDescription(String(log.errorMessage).trim());
 
-  // ── Everything else ──────────────────────────────────────────────────────────
-  if (log.errorMessage && String(log.errorMessage).trim()) {
-    return sanitizeDescription(String(log.errorMessage).trim());
-  }
-
-  const subject =
-    referenceNumber && referenceNumber !== "-"
-      ? `${entityLabel} ${referenceNumber}`
-      : entityLabel.toLowerCase();
-
+  const subject = referenceNumber && referenceNumber !== "-" ? `${entityLabel} ${referenceNumber}` : entityLabel.toLowerCase();
   return `${userName} ${actionPhrase(actionCategory)} ${subject}.`;
 };
 
-/**
- * Builds a short, human-readable brief (≤ ~60 chars) for the Description column.
- * Examples: "Logged in successfully", "Approved DCL-26-009", "Failed to log in"
- */
 const buildBriefDescription = (log, normalized) => {
   const { actionCategory, entityLabel, referenceNumber } = normalized;
+  const rawAction = String(log?.action || "").toUpperCase();
 
-  // Auth / login events — detect failure from status code OR description keywords
-  if (actionCategory === "LOGIN") {
-    const detailsText = String(log.details || log.errorMessage || "");
-    const failed =
-      (log.status != null && log.status >= 400) ||
-      /reject|fail|error|attempt|no provision|not found|not exist|unauthori[sz]|no account|invalid|denied|401|403/i.test(
-        detailsText,
-      );
-    return failed ? "Failed login attempt" : "Logged in successfully";
-  }
-  if (actionCategory === "LOGOUT") {
-    return "Logged out";
-  }
-
-  // For Deferral / DCL: always use the reference number — never a person's name.
-  // For User entity: show the target user name.
-  // For anything else without a reference: just show the entity label.
   const isDeferralEntity = ["Deferral", "DCL"].includes(entityLabel);
-  const subject =
-    referenceNumber && referenceNumber !== "-"
-      ? `${entityLabel} ${referenceNumber}`
-      : isDeferralEntity
-        ? entityLabel                                      // e.g. "Approved Deferral" — no name
-        : entityLabel === "User"
-          ? normalized.targetName || "user account"
-          : entityLabel;
+  const subject = referenceNumber && referenceNumber !== "-"
+    ? `${entityLabel} ${referenceNumber}`
+    : isDeferralEntity ? entityLabel : entityLabel;
+
+  if (rawAction === "DELETE_DOCUMENT" && isDeferralEntity) {
+    const ref = referenceNumber && referenceNumber !== "-" ? ` ${referenceNumber}` : "";
+    return entityLabel === "Deferral"
+      ? `Deleted deferral document${ref}`
+      : `Deleted DCL document${ref}`;
+  }
 
   const briefMap = {
     APPROVE: `Approved ${subject}`,
     REJECT:  `Rejected ${subject}`,
     RETURN:  `Returned ${subject}`,
     CREATE:  `Created ${subject}`,
-    UPDATE:  /approver.*flow|flow.*approver|approval.*flow|flow.*approval/i.test(
-               String(log.action || ""),
-             )
-             ? `Updated approval flow for ${subject}`
-             : `Updated ${subject}`,
+    UPDATE:  `Updated ${subject}`,
     DELETE:  `Deleted ${subject}`,
-    SEARCH:  `Searched ${entityLabel}`,
-    LOCK:    `Locked ${subject}`,
-    UNLOCK:  `Unlocked ${subject}`,
     SUBMIT:  `Submitted ${subject}`,
-    REVIVE:  `Revived ${subject} as new copy`,
-    DRAFT:   `Saved draft of ${subject}`,
   };
-
   if (briefMap[actionCategory]) return briefMap[actionCategory];
 
-  // Fallback: shorten the full description to 60 chars
   const full = buildFullDescription(log, normalized);
   return full.length > 60 ? full.slice(0, 57).trimEnd() + "..." : full;
 };
@@ -453,11 +352,12 @@ const buildBriefDescription = (log, normalized) => {
 const normalizeAuditLog = (log, index) => {
   const entityLabel = normalizeEntity(log.targetType || log.resource);
   const actionCategory = getActionCategory(log.action, log.httpMethod);
-  const timestamp = dayjs(log.createdAt);
+  // Convert UTC to local timezone
+  const localTimestamp = convertToLocalTime(log.createdAt);
   const userName = humanizeName(log.performedBy?.name || log.performedByName || "System");
   const userRole = formatRole(log.actorRole || log.performedBy?.role || "System");
   const referenceNumber = extractReferenceNumber(log, entityLabel);
-  const targetName = log.targetUser?.name || log.targetName || null;
+  const ipAddress = log.ipAddress || log.IpAddress || "";
   const normalized = {
     key: log.id || log._id || `${log.createdAt || "audit"}-${index}`,
     raw: log,
@@ -467,25 +367,17 @@ const normalizeAuditLog = (log, index) => {
     actionLabel: getActionLabel(log.action, log.httpMethod),
     entityLabel,
     referenceNumber,
-    targetName,
-    createdAtMs: timestamp.isValid() ? timestamp.valueOf() : 0,
-    createdAtRelative: timestamp.isValid() ? timestamp.fromNow() : "-",
-    // dayjs formats in the browser's local timezone by default.
-    // Using 12-hour clock (hh:mm:ss A) so the user sees e.g. "10:22:50 AM".
-    createdAtExact: timestamp.isValid()
-      ? timestamp.format("DD MMM YYYY, hh:mm:ss A")
-      : "-",
-    createdAtDate: timestamp.isValid() ? timestamp.format("DD MMM YYYY") : "-",
-    createdAtTime: timestamp.isValid() ? timestamp.format("hh:mm:ss A") : "-",
+    ipAddress: String(ipAddress || "").trim() || "-",
+    createdAtMs: localTimestamp.isValid() ? localTimestamp.valueOf() : 0,
+    createdAtRelative: localTimestamp.isValid() ? localTimestamp.fromNow() : "-",
+    createdAtExact: localTimestamp.isValid() ? localTimestamp.format("DD MMM YYYY, hh:mm:ss A") : "-",
+    createdAtDate: localTimestamp.isValid() ? localTimestamp.format("DD MMM YYYY") : "-",
+    createdAtTime: localTimestamp.isValid() ? localTimestamp.format("hh:mm:ss A") : "-",
   };
-
-  const fullDescription = buildFullDescription(log, normalized);
-  const briefDescription = buildBriefDescription(log, { ...normalized });
-
   return {
     ...normalized,
-    description: fullDescription,
-    briefDescription,
+    description: buildFullDescription(log, normalized),
+    briefDescription: buildBriefDescription(log, normalized),
   };
 };
 
@@ -504,98 +396,27 @@ const getErrorMessage = (error) => {
   return "Unable to load audit trail.";
 };
 
-/**
- * Whitelist of business audit actions that are meaningful in the audit trail.
- * Only entries whose raw action matches one of these are displayed.
- * Raw HTTP methods (POST, PATCH, GET, …) created by the middleware fallback
- * are intentionally excluded — they can misattribute actions (e.g. a CoChecker
- * locking a record appears as "Created DCL").
- */
-const ALLOWED_AUDIT_ACTIONS = new Set([
-  // DCL lifecycle
-  "CREATE_DCL", "REVIVE_DCL", "UPDATE_DCL", "SAVE_DRAFT_DCL",
-  // DCL workflow transitions
-  "SUBMIT_TO_RM", "SUBMIT_TO_COCHECKER", "RM_SUBMIT_TO_COCREATOR",
-  "CHECKER_APPROVED", "CHECKER_REJECTED", "CHECKER_CO_CREATOR_REVIEW",
-  "APPROVE", "REJECT", "RETURN",
-  // Deferral lifecycle
-  "CREATE_DEFERRAL", "UPDATE_DEFERRAL", "UPDATE_DEFERRAL_APPROVER_FLOW",
-  // Security / auth
-  "LOGIN_ATTEMPT",
-  // Admin
-  "REASSIGN_TASKS", "CHANGE_ROLE", "TOGGLE_ACTIVE",
-  "CREATE_USER", "CREATE_USER_FROM_AD",
-]);
-
-/**
- * Entities that should be visible in the audit trail.
- */
-const ALLOWED_ENTITIES = new Set(["Deferral", "DCL", "Authentication", "User"]);
-
-/**
- * Filter logs to known business events only, strip System rows
- * and consecutive duplicates.
- */
-const filterAndDedupe = (logs) => {
-  const kept = logs.filter((log) => {
+// Filter to only business actions (exclude login/logout)
+const filterBusinessLogs = (logs) => {
+  return logs.filter((log) => {
     if (log.userName === "System") return false;
-    if (!ALLOWED_ENTITIES.has(log.entityLabel)) return false;
-    // Only show explicitly recognised business actions — suppress middleware fallbacks
+    if (!BUSINESS_ENTITIES.includes(log.entityLabel)) return false;
     const rawAction = String(log.raw?.action || "").toUpperCase();
-    if (!ALLOWED_AUDIT_ACTIONS.has(rawAction)) return false;
-    return true;
-  });
-
-  // Remove consecutive duplicates (same user + action + entity + brief)
-  return kept.filter((log, idx, arr) => {
-    if (idx === 0) return true;
-    const prev = arr[idx - 1];
-    return !(
-      log.userName         === prev.userName &&
-      log.actionCategory   === prev.actionCategory &&
-      log.entityLabel      === prev.entityLabel &&
-      log.briefDescription === prev.briefDescription
-    );
+    // Exclude login/logout actions
+    if (rawAction === "LOGIN" || rawAction === "LOGOUT" || rawAction === "LOGIN_ATTEMPT") return false;
+    return BUSINESS_ACTIONS.includes(rawAction);
   });
 };
 
-
-const metricCards = (stats, filteredTotal) => [
-  {
-    key: "total",
-    label: "Total Logs",
-    value: stats?.totalLogs ?? filteredTotal ?? 0,
-    note: "All recorded audit events",
-  },
-  {
-    key: "today",
-    label: "Today",
-    value: stats?.todayLogs ?? 0,
-    note: "Events captured since midnight",
-  },
-  {
-    key: "success",
-    label: "Successful",
-    value: stats?.successLogs ?? 0,
-    note: "Completed without failure",
-  },
-  {
-    key: "failure",
-    label: "Failed",
-    value: stats?.failureLogs ?? 0,
-    note: "Rejected or unsuccessful attempts",
-  },
-];
-
-/* ─── helpers shared by export functions ──────────────────────────────────── */
 const EXPORT_COLUMNS = [
-  { header: "User",           key: "userName" },
-  { header: "Role",           key: "userRole" },
-  { header: "Action",         key: "actionCategory" },
-  { header: "Entity",         key: "entityLabel" },
-  { header: "Description",    key: "description" },
-  { header: "Reference No.",  key: "referenceNumber" },
-  { header: "Timestamp",      key: "createdAtExact" },
+  { header: "User", key: "userName" },
+  { header: "Role", key: "userRole" },
+  { header: "Action", key: "actionCategory" },
+  { header: "Entity", key: "entityLabel" },
+  { header: "Description", key: "description" },
+  { header: "Reference No.", key: "referenceNumber" },
+  { header: "IP address", key: "ipAddress" },
+  { header: "Timestamp", key: "createdAtExact" },
 ];
 
 const logsToRows = (logs) =>
@@ -606,7 +427,6 @@ const logsToRows = (logs) =>
     }, {}),
   );
 
-/* ─── Standalone export utilities ─────────────────────────────────────────── */
 const runExportCSV = (logs) => {
   const headers = EXPORT_COLUMNS.map((c) => c.header);
   const rows = logs.map((log) =>
@@ -623,66 +443,52 @@ const runExportCSV = (logs) => {
 const runExportExcel = (logs) => {
   const rows = logsToRows(logs);
   const worksheet = XLSX.utils.json_to_sheet(rows);
-  const colWidths = EXPORT_COLUMNS.map((col) => ({
-    wch: Math.max(col.header.length, ...logs.map((log) => String(log[col.key] ?? "-").length)),
-  }));
-  worksheet["!cols"] = colWidths;
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Audit Logs");
   const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-  saveAs(
-    new Blob([buffer], { type: "application/octet-stream" }),
-    `audit-logs-${dayjs().format("YYYY-MM-DD")}.xlsx`,
-  );
+  saveAs(new Blob([buffer], { type: "application/octet-stream" }), `audit-logs-${dayjs().format("YYYY-MM-DD")}.xlsx`);
 };
 
 const runExportPDF = (logs) => {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   doc.setFontSize(14);
   doc.setTextColor(21, 49, 58);
-  doc.text("Enterprise Audit Trail", 14, 16);
+  doc.text("Business Audit Trail", 14, 16);
   doc.setFontSize(9);
   doc.setTextColor(98, 113, 127);
-  doc.text(
-    `Exported on ${dayjs().format("DD MMM YYYY, HH:mm:ss")}  •  ${logs.length} record(s)`,
-    14, 22,
-  );
+  doc.text(`Exported on ${dayjs().format("DD MMM YYYY, HH:mm:ss")}  •  ${logs.length} record(s)`, 14, 22);
   autoTable(doc, {
     startY: 28,
     head: [EXPORT_COLUMNS.map((c) => c.header)],
     body: logs.map((log) => EXPORT_COLUMNS.map((col) => log[col.key] ?? "-")),
     styles: { fontSize: 8, cellPadding: 3, overflow: "linebreak" },
-    headStyles: { fillColor: [244, 241, 232], textColor: [21, 49, 58], fontStyle: "bold", fontSize: 8 },
-    alternateRowStyles: { fillColor: [248, 250, 249] },
-    columnStyles: { 4: { cellWidth: 60 } },
+    headStyles: { fillColor: [255, 255, 255], textColor: [21, 49, 58], fontStyle: "bold", fontSize: 8 },
+    alternateRowStyles: { fillColor: [255, 255, 255] },
     margin: { top: 28, left: 14, right: 14 },
   });
-  doc.save(`audit-logs-${dayjs().format("YYYY-MM-DD")}.pdf`);
+  doc.save(`business-audit-${dayjs().format("YYYY-MM-DD")}.pdf`);
 };
 
 const runExportWebView = (logs) => {
   const headers = EXPORT_COLUMNS.map((c) => `<th>${c.header}</th>`).join("");
-  const bodyRows = logs
-    .map((log) => {
-      const cells = EXPORT_COLUMNS.map((col) => `<td>${log[col.key] ?? "-"}</td>`).join("");
-      return `<tr>${cells}</tr>`;
-    })
-    .join("");
+  const bodyRows = logs.map((log) => {
+    const cells = EXPORT_COLUMNS.map((col) => `<td>${log[col.key] ?? "-"}</td>`).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
   const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/>
-<title>Audit Logs — ${dayjs().format("DD MMM YYYY")}</title>
+<title>Business Audit Logs — ${dayjs().format("DD MMM YYYY")}</title>
 <style>
-  body{font-family:system-ui,sans-serif;background:#f6f8f6;color:#15313a;margin:0;padding:24px}
+  body{font-family:system-ui,sans-serif;background:#ffffff;color:#15313a;margin:0;padding:24px}
   h1{font-size:22px;margin-bottom:4px} p{color:#62717f;font-size:13px;margin:0 0 20px}
   table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06)}
-  th{background:#f4f1e8;color:#15313a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:10px 12px;text-align:left}
+  th{background:#ffffff;color:#15313a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:10px 12px;text-align:left;border-bottom:1px solid rgba(21,49,58,.08)}
   td{padding:9px 12px;font-size:13px;border-bottom:1px solid rgba(21,49,58,.06);vertical-align:top}
-  tr:last-child td{border-bottom:none} tr:nth-child(even) td{background:#f8faf9}
   @media print{body{padding:0}}
 </style></head><body>
-<h1>Enterprise Audit Trail</h1>
+<h1>Business Audit Trail</h1>
 <p>Exported ${dayjs().format("DD MMM YYYY, HH:mm:ss")} &nbsp;•&nbsp; ${logs.length} record(s)</p>
-<table><thead><tr>${headers}</tr></thead><tbody>${bodyRows}</tbody></table>
+<tr><thead><tr>${headers}</tr></thead><tbody>${bodyRows}</tbody></table>
 </body></html>`;
   const blob = new Blob([html], { type: "text/html;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -690,55 +496,243 @@ const runExportWebView = (logs) => {
   if (win) win.addEventListener("load", () => URL.revokeObjectURL(url));
 };
 
-const EXPORT_DISPATCH = {
-  pdf:   runExportPDF,
-  excel: runExportExcel,
-  csv:   runExportCSV,
-  web:   runExportWebView,
-};
+const EXPORT_DISPATCH = { pdf: runExportPDF, excel: runExportExcel, csv: runExportCSV, web: runExportWebView };
 
-/* ─── ExportMenu — just opens the scope modal ─────────────────────────────── */
 const ExportMenu = ({ onExport }) => {
   const menuItems = [
-    {
-      key: "pdf",
-      label: "Export as PDF",
-      icon: <FilePdfOutlined style={{ color: "#dc2626" }} />,
-      onClick: () => onExport("pdf"),
-    },
-    {
-      key: "excel",
-      label: "Export as Excel",
-      icon: <FileExcelOutlined style={{ color: "#16a34a" }} />,
-      onClick: () => onExport("excel"),
-    },
-    {
-      key: "csv",
-      label: "Export as CSV",
-      icon: <FileTextOutlined style={{ color: "#0284c7" }} />,
-      onClick: () => onExport("csv"),
-    },
+    { key: "pdf", label: "Export as PDF", icon: <FilePdfOutlined style={{ color: "#dc2626" }} />, onClick: () => onExport("pdf") },
+    { key: "excel", label: "Export as Excel", icon: <FileExcelOutlined style={{ color: "#16a34a" }} />, onClick: () => onExport("excel") },
+    { key: "csv", label: "Export as CSV", icon: <FileTextOutlined style={{ color: "#0284c7" }} />, onClick: () => onExport("csv") },
     { type: "divider" },
-    {
-      key: "web",
-      label: "Open Web View",
-      icon: <GlobalOutlined style={{ color: "#7c3aed" }} />,
-      onClick: () => onExport("web"),
-    },
+    { key: "web", label: "Open Web View", icon: <GlobalOutlined style={{ color: "#7c3aed" }} />, onClick: () => onExport("web") },
   ];
-
   return (
     <Dropdown menu={{ items: menuItems }} placement="bottomRight" trigger={["click"]}>
-      <Button icon={<DownloadOutlined />} type="primary" ghost>
-        Export
-      </Button>
+      <Button icon={<DownloadOutlined />}>Export</Button>
     </Dropdown>
+  );
+};
+
+// Dashboard Component with User & Role Analytics
+const AuditDashboard = ({ logs, stats, users }) => {
+  // Action distribution by category - using the filtered logs
+  const actionTypeData = useMemo(() => {
+    const actionCounts = {};
+    logs.forEach(log => {
+      const action = log.actionCategory;
+      actionCounts[action] = (actionCounts[action] || 0) + 1;
+    });
+    return Object.entries(actionCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [logs]);
+
+  // User activity distribution - using the filtered logs
+  const userActivityData = useMemo(() => {
+    const userCounts = {};
+    logs.forEach(log => {
+      const user = log.userName;
+      userCounts[user] = (userCounts[user] || 0) + 1;
+    });
+    return Object.entries(userCounts)
+      .map(([name, actions]) => ({ name, actions }))
+      .sort((a, b) => b.actions - a.actions)
+      .slice(0, 8);
+  }, [logs]);
+
+  // Role distribution - using the filtered logs
+  const roleDistribution = useMemo(() => {
+    const roleCounts = {};
+    logs.forEach(log => {
+      const role = log.userRole;
+      roleCounts[role] = (roleCounts[role] || 0) + 1;
+    });
+    return Object.entries(roleCounts)
+      .map(([name, value]) => ({ name, value, color: ROLE_STYLES[name]?.color || NCBA_COLORS.neutral }));
+  }, [logs]);
+
+  // Activity over time - using the filtered logs with proper date handling
+  const activityOverTime = useMemo(() => {
+    const dailyCounts = {};
+    logs.forEach(log => {
+      const date = log.createdAtDate;
+      dailyCounts[date] = (dailyCounts[date] || 0) + 1;
+    });
+    return Object.entries(dailyCounts)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(-30);
+  }, [logs]);
+
+  // Entity distribution - using the filtered logs
+  const entityData = useMemo(() => {
+    const entityCounts = {};
+    logs.forEach(log => {
+      const entity = log.entityLabel;
+      entityCounts[entity] = (entityCounts[entity] || 0) + 1;
+    });
+    return Object.entries(entityCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [logs]);
+
+  const totalBusinessActions = logs.length;
+  const uniqueUsers = new Set(logs.map(l => l.userName)).size;
+  
+  // Calculate today's activity count from the filtered logs
+  const todayStr = dayjs().tz(LOCAL_TIMEZONE).format("DD MMM YYYY");
+  const todayActivity = logs.filter(l => l.createdAtDate === todayStr).length;
+
+  return (
+    <div className="audit-dashboard" style={{ animation: "fadeIn 0.4s ease-out" }}>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <Card bordered={false} className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+          <div className="flex justify-between items-center">
+            <div>
+              <Text type="secondary" className="text-xs uppercase tracking-wide">Business Actions</Text>
+              <div className="text-3xl font-bold mt-2" style={{ color: NCBA_COLORS.primary }}>{totalBusinessActions.toLocaleString()}</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${NCBA_COLORS.primary}10` }}>
+              <CheckSquareOutlined style={{ fontSize: 24, color: NCBA_COLORS.primary }} />
+            </div>
+          </div>
+        </Card>
+        <Card bordered={false} className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+          <div className="flex justify-between items-center">
+            <div>
+              <Text type="secondary" className="text-xs uppercase tracking-wide">Active Users</Text>
+              <div className="text-3xl font-bold mt-2" style={{ color: NCBA_COLORS.secondary }}>{uniqueUsers}</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${NCBA_COLORS.secondary}10` }}>
+              <TeamOutlined style={{ fontSize: 24, color: NCBA_COLORS.secondary }} />
+            </div>
+          </div>
+        </Card>
+        <Card bordered={false} className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+          <div className="flex justify-between items-center">
+            <div>
+              <Text type="secondary" className="text-xs uppercase tracking-wide">Success Rate</Text>
+              <div className="text-3xl font-bold mt-2" style={{ color: NCBA_COLORS.success }}>
+                {logs.length > 0 ? Math.round((logs.filter(l => l.raw?.status >= 200 && l.raw?.status < 300).length / logs.length) * 100) : 0}%
+              </div>
+            </div>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${NCBA_COLORS.success}10` }}>
+              <CheckCircleOutlined style={{ fontSize: 24, color: NCBA_COLORS.success }} />
+            </div>
+          </div>
+        </Card>
+        <Card bordered={false} className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border, boxShadow: "0 4px 12px rgba(0,0,0,0.02)" }}>
+          <div className="flex justify-between items-center">
+            <div>
+              <Text type="secondary" className="text-xs uppercase tracking-wide">Today's Activity</Text>
+              <div className="text-3xl font-bold mt-2" style={{ color: NCBA_COLORS.accent }}>{todayActivity}</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${NCBA_COLORS.accent}10` }}>
+              <CalendarOutlined style={{ fontSize: 24, color: NCBA_COLORS.accent }} />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Bar Chart - Actions by Type */}
+        <Card bordered={false} title="Action Distribution" className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart data={actionTypeData} layout="vertical" margin={{ left: 80 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+              <XAxis type="number" axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 500 }} width={80} />
+              <RechartsTooltip />
+              <Bar dataKey="value" fill={NCBA_COLORS.primary} radius={[0, 6, 6, 0]} barSize={28} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        {/* User Activity */}
+        <Card bordered={false} title="Top Users by Activity" className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart data={userActivityData} layout="vertical" margin={{ left: 100 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+              <XAxis type="number" axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} width={100} />
+              <RechartsTooltip />
+              <Bar dataKey="actions" fill={NCBA_COLORS.secondary} radius={[0, 6, 6, 0]} barSize={28} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        {/* Activity Trend */}
+        <Card bordered={false} title="Activity Trend" className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <AreaChart data={activityOverTime}>
+              <defs>
+                <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={NCBA_COLORS.primary} stopOpacity={0.15}/>
+                  <stop offset="95%" stopColor={NCBA_COLORS.primary} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} />
+              <RechartsTooltip />
+              <Area type="monotone" dataKey="count" stroke={NCBA_COLORS.primary} strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
+
+        {/* Role Distribution Pie */}
+        <Card bordered={false} title="Role Distribution" className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <PieChart>
+              <Pie
+                data={roleDistribution}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={4}
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                labelLine={{ strokeWidth: 1 }}
+              >
+                {roleDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color || NCBA_COLORS.primary} />
+                ))}
+              </Pie>
+              <RechartsTooltip />
+              <Legend verticalAlign="bottom" height={36} />
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+// Compact Audit Table Component
+const AuditTable = ({ logs, loading, columns, pagination, onChange }) => {
+  return (
+    <Table
+      rowKey="key"
+      columns={columns}
+      dataSource={logs}
+      loading={loading}
+      scroll={{ x: 1240 }}
+      onChange={onChange}
+      pagination={{
+        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total}`,
+        size: "small",
+        ...pagination,
+      }}
+      size="small"
+    />
   );
 };
 
 const AuditLogsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   const [selectedUserId, setSelectedUserId] = useState(undefined);
   const [selectedAction, setSelectedAction] = useState(undefined);
   const [selectedEntity, setSelectedEntity] = useState(undefined);
@@ -746,28 +740,28 @@ const AuditLogsPage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [dateRange, setDateRange] = useState(null);
   const [timeSortOrder, setTimeSortOrder] = useState("descend");
+  const [activeView, setActiveView] = useState("dashboard");
 
-  // Export scope modal state
   const [exportModal, setExportModal] = useState({ open: false, format: null });
   const [exportScope, setExportScope] = useState("100");
-  // exportQueryParams is set when the user confirms — triggers the export fetch
-  const [exportQueryParams, setExportQueryParams] = useState(null);
+  const [allRawLogs, setAllRawLogs] = useState([]);
+  const [isFetchingAll, setIsFetchingAll] = useState(false);
+  const [fetchAllError, setFetchAllError] = useState(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearch(searchInput.trim());
     }, 350);
-
     return () => window.clearTimeout(timeoutId);
   }, [searchInput]);
 
   const { data: usersData = [], isLoading: isUsersLoading, refetch: refetchUsers } = useGetUsersQuery();
   const { data: statsData, refetch: refetchStats } = useGetAuditLogStatsQuery();
+  const [triggerFetchAuditLogs] = useLazyGetAuditLogsQuery();
 
-  const queryParams = useMemo(
+  const auditListFilterParams = useMemo(
     () => ({
-      page: currentPage,
-      limit: pageSize,
       userId: selectedUserId,
       action: selectedAction,
       resource: selectedEntity,
@@ -775,681 +769,300 @@ const AuditLogsPage = () => {
       startDate: dateRange?.[0] ? dateRange[0].startOf("day").toISOString() : undefined,
       endDate: dateRange?.[1] ? dateRange[1].endOf("day").toISOString() : undefined,
     }),
-    [currentPage, pageSize, selectedUserId, selectedAction, selectedEntity, debouncedSearch, dateRange],
+    [selectedUserId, selectedAction, selectedEntity, debouncedSearch, dateRange],
   );
 
-  const {
-    data: auditData,
-    isLoading: isAuditLoading,
-    isFetching: isAuditFetching,
-    error: auditError,
-    refetch: refetchAudit,
-  } = useGetAuditLogsQuery(queryParams, { refetchOnMountOrArgChange: true });
-
-  // Separate query fired only when user confirms an export scope
-  const {
-    data: exportRawData,
-    isFetching: isExportFetching,
-  } = useGetAuditLogsQuery(exportQueryParams ?? queryParams, {
-    skip: exportQueryParams === null,
-  });
-
-  // Fire the actual export as soon as the export data arrives
   useEffect(() => {
-    if (!exportQueryParams || isExportFetching || !exportRawData) return;
+    setCurrentPage(1);
+  }, [auditListFilterParams]);
 
-    // Normalize, sort, and filter the raw records
-    const allFiltered = filterAndDedupe(
-      (exportRawData.logs || []).map((log, i) => normalizeAuditLog(log, i))
-        .sort((a, b) => b.createdAtMs - a.createdAtMs),
-    );
-
-    // Slice to the user's chosen count (null = all)
-    const { _requestedCount } = exportQueryParams;
-    const logs = _requestedCount ? allFiltered.slice(0, _requestedCount) : allFiltered;
-
-    const fn = EXPORT_DISPATCH[exportQueryParams._format];
-    if (fn) fn(logs);
-    setExportQueryParams(null); // reset so query is skipped again
-  }, [exportRawData, isExportFetching, exportQueryParams]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setAllRawLogs([]);
+      setFetchAllError(null);
+      setIsFetchingAll(true);
+      const merged = [];
+      try {
+        let page = 1;
+        while (!cancelled) {
+          const res = await triggerFetchAuditLogs({
+            ...auditListFilterParams,
+            page,
+            limit: AUDIT_LOGS_FETCH_BATCH,
+          }).unwrap();
+          const batch = Array.isArray(res?.logs) ? res.logs : [];
+          merged.push(...batch);
+          if (batch.length === 0) break;
+          const apiTotal = res?.total != null ? Number(res.total) : NaN;
+          const haveFullCount = Number.isFinite(apiTotal) && merged.length >= apiTotal;
+          if (haveFullCount || batch.length < AUDIT_LOGS_FETCH_BATCH) break;
+          page += 1;
+        }
+        if (!cancelled) setAllRawLogs(merged);
+      } catch (e) {
+        if (!cancelled) setFetchAllError(e);
+      } finally {
+        if (!cancelled) setIsFetchingAll(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [auditListFilterParams, refreshNonce, triggerFetchAuditLogs]);
 
   const users = useMemo(() => getUsersArray(usersData), [usersData]);
-  const rawLogs = useMemo(() => (Array.isArray(auditData?.logs) ? auditData.logs : []), [auditData]);
-  const total = Number(auditData?.total || 0);
+  const rawLogs = allRawLogs;
 
-  const auditLogs = useMemo(
-    () => rawLogs.map((log, index) => normalizeAuditLog(log, index)),
-    [rawLogs],
-  );
+  const auditLogs = useMemo(() => rawLogs.map((log, index) => normalizeAuditLog(log, index)), [rawLogs]);
+
+  // Filter to business logs only (exclude login/logout)
+  const businessLogs = useMemo(() => filterBusinessLogs(auditLogs), [auditLogs]);
 
   const sortedAuditLogs = useMemo(() => {
     const direction = timeSortOrder === "ascend" ? 1 : -1;
-    const sorted = [...auditLogs].sort((left, right) => (left.createdAtMs - right.createdAtMs) * direction);
-    return filterAndDedupe(sorted);
-  }, [auditLogs, timeSortOrder]);
+    return [...businessLogs].sort((left, right) => (left.createdAtMs - right.createdAtMs) * direction);
+  }, [businessLogs, timeSortOrder]);
+
+  const pagedAuditLogs = useMemo(() => {
+    const start = (currentPage - 1) * AUDIT_LOGS_PAGE_SIZE;
+    return sortedAuditLogs.slice(start, start + AUDIT_LOGS_PAGE_SIZE);
+  }, [sortedAuditLogs, currentPage]);
+
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(sortedAuditLogs.length / AUDIT_LOGS_PAGE_SIZE) || 1);
+    if (currentPage > maxPage) setCurrentPage(maxPage);
+  }, [sortedAuditLogs.length, currentPage]);
 
   const userOptions = useMemo(
-    () =>
-      users
-        .filter((user) => user?._id && user?.name)
-        .map((user) => ({
-          label: `${user.name} (${formatRole(user.role)})`,
-          value: user._id,
-        }))
-        .sort((left, right) => left.label.localeCompare(right.label)),
+    () => users.filter((user) => user?._id && user?.name).map((user) => ({ label: `${user.name}`, value: user._id })).sort((a, b) => a.label.localeCompare(b.label)),
     [users],
   );
 
+  // Get unique actions from business logs only
   const actionOptions = useMemo(() => {
-    const dynamicActions = auditLogs.map((log) => log.raw.action).filter(Boolean);
-    const values = [...new Set([...COMMON_ACTIONS, ...dynamicActions])];
-
-    return values
-      .filter(Boolean)
-      .map((value) => ({ value, label: titleize(value) }))
-      .sort((left, right) => left.label.localeCompare(right.label));
-  }, [auditLogs]);
+    const actions = [...new Set(businessLogs.map((log) => log.actionCategory))];
+    return actions.filter(Boolean).map((value) => ({ value, label: titleize(value) })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [businessLogs]);
 
   const entityOptions = useMemo(() => {
-    const dynamicEntities = auditLogs.map((log) => log.raw.targetType || log.raw.resource).filter(Boolean);
-    const values = [...new Set([...COMMON_ENTITIES, ...dynamicEntities.map((value) => normalizeEntity(value))])];
+    const entities = [...new Set(businessLogs.map((log) => log.entityLabel))];
+    return entities.filter(Boolean).map((value) => ({ value, label: value })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [businessLogs]);
 
-    return values
-      .filter(Boolean)
-      .map((value) => ({ value, label: normalizeEntity(value) }))
-      .sort((left, right) => left.label.localeCompare(right.label));
-  }, [auditLogs]);
-
-  const cards = metricCards(statsData, total);
-  const isBusy = isAuditLoading || isAuditFetching;
+  const isBusy = isFetchingAll;
+  const auditError = fetchAllError;
   const errorMessage = getErrorMessage(auditError);
 
   const handleRefresh = () => {
-    refetchAudit();
+    setRefreshNonce((n) => n + 1);
     refetchStats();
     refetchUsers();
   };
-
-  const handleSearchChange = (event) => {
-    setCurrentPage(1);
-    setSearchInput(event.target.value);
-  };
-
-  const handleUserChange = (value) => {
-    setCurrentPage(1);
-    setSelectedUserId(value);
-  };
-
-  const handleActionChange = (value) => {
-    setCurrentPage(1);
-    setSelectedAction(value);
-  };
-
-  const handleEntityChange = (value) => {
-    setCurrentPage(1);
-    setSelectedEntity(value);
-  };
-
-  const handleDateRangeChange = (value) => {
-    setCurrentPage(1);
-    setDateRange(value);
-  };
-
+  const handleSearchChange = (event) => { setCurrentPage(1); setSearchInput(event.target.value); };
+  const handleUserChange = (value) => { setCurrentPage(1); setSelectedUserId(value); };
+  const handleActionChange = (value) => { setCurrentPage(1); setSelectedAction(value); };
+  const handleEntityChange = (value) => { setCurrentPage(1); setSelectedEntity(value); };
+  const handleDateRangeChange = (value) => { setCurrentPage(1); setDateRange(value); };
   const clearFilters = () => {
-    setCurrentPage(1);
-    setSelectedUserId(undefined);
-    setSelectedAction(undefined);
-    setSelectedEntity(undefined);
-    setDateRange(null);
-    setSearchInput("");
+    setCurrentPage(1); setSelectedUserId(undefined); setSelectedAction(undefined);
+    setSelectedEntity(undefined); setDateRange(null); setSearchInput("");
   };
 
-  // Opens the scope-selection modal when a format is chosen from ExportMenu
-  const handleExportFormat = (format) => {
-    setExportScope("100");
-    setExportModal({ open: true, format });
-  };
-
-  // Triggers the export fetch with the chosen scope
+  const handleExportFormat = (format) => { setExportScope("100"); setExportModal({ open: true, format }); };
   const handleExportConfirm = () => {
     const requestedCount = exportScope === "all" ? null : parseInt(exportScope, 10);
-    // Fetch up to 10× more raw rows from the backend so that, after filterAndDedupe
-    // removes Notification/System/duplicate rows, we still have enough to fill the
-    // user's chosen count. Cap at total to avoid pointless over-fetching.
-    const fetchLimit =
-      requestedCount === null
-        ? 99999
-        : Math.min(requestedCount * 10, total > 0 ? total : 99999);
-
+    const format = exportModal.format;
     setExportModal({ open: false, format: null });
-    setExportQueryParams({
-      ...queryParams,
-      page: 1,
-      limit: fetchLimit,
-      _format: exportModal.format,
-      _requestedCount: requestedCount, // null means "all"
-    });
+    if (!format) return;
+    const logs =
+      requestedCount === null ? sortedAuditLogs : sortedAuditLogs.slice(0, requestedCount);
+    const fn = EXPORT_DISPATCH[format];
+    if (fn) fn(logs);
   };
 
   const columns = [
-    {
-      title: "User",
-      key: "user",
-      width: 240,
-      render: (_, record) => {
-        const roleStyle = ROLE_STYLES[record.userRole] || ROLE_STYLES.System;
-
-        return (
-          <div className="audit-trail-user-cell">
-            <div className="audit-trail-user-avatar">{record.userName.charAt(0).toUpperCase()}</div>
-            <div className="audit-trail-user-meta">
-              <Text strong className="audit-trail-user-name">{record.userName}</Text>
-              <Tag
-                bordered
-                className="audit-trail-role-tag"
-                style={roleStyle}
-              >
-                {record.userRole}
-              </Tag>
-            </div>
+    { title: "User", key: "user", width: 200, render: (_, record) => {
+      const roleStyle = ROLE_STYLES[record.userRole] || ROLE_STYLES.System;
+      return (
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold bg-gradient-to-br from-[#dfece6] to-[#e5cfaa]">{record.userName.charAt(0).toUpperCase()}</div>
+          <div>
+            <div className="font-semibold" style={{ color: "#15313a" }}>{record.userName}</div>
+            <Tag className="border-none mt-0.5" style={{ background: roleStyle.background, color: roleStyle.color }}>{record.userRole}</Tag>
           </div>
-        );
-      },
-    },
+        </div>
+      );
+    } },
+    { title: "Action", key: "action", width: 130, render: (_, record) => {
+      const actionStyle = ACTION_STYLES[record.actionCategory] || ACTION_STYLES.OTHER;
+      return <Tag className="border-none" style={{ background: actionStyle.background, color: actionStyle.color }}>{record.actionCategory}</Tag>;
+    } },
+    { title: "Entity", dataIndex: "entityLabel", key: "entityLabel", width: 120, render: (value) => <Text strong>{value}</Text> },
+    { title: "Description", dataIndex: "briefDescription", key: "description", ellipsis: true, render: (brief, record) => (
+      <Tooltip title={<span className="whitespace-pre-wrap">{record.description}</span>} placement="topLeft">
+        <Text style={{ color: "#223843" }}>{brief}</Text>
+      </Tooltip>
+    ) },
+    { title: "Reference", dataIndex: "referenceNumber", key: "referenceNumber", width: 140, render: (value) => <Text className="font-mono" style={{ color: "#1f4b57" }}>{value || "-"}</Text> },
     {
-      title: "Action",
-      key: "action",
-      width: 165,
-      render: (_, record) => {
-        const actionStyle = ACTION_STYLES[record.actionCategory] || ACTION_STYLES.OTHER;
-
-        return (
-          <div className="audit-trail-action-cell">
-            <Tag bordered className="audit-trail-action-tag" style={actionStyle}>
-              {record.actionCategory}
-            </Tag>
-            <Text type="secondary" className="audit-trail-action-detail">
-              {record.actionLabel}
-            </Text>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Entity",
-      dataIndex: "entityLabel",
-      key: "entityLabel",
-      width: 150,
-      render: (value) => <Text strong>{value}</Text>,
-    },
-    {
-      title: "Description",
-      dataIndex: "briefDescription",
-      key: "description",
+      title: "IP address",
+      dataIndex: "ipAddress",
+      key: "ipAddress",
+      width: 130,
       ellipsis: true,
-      render: (brief, record) => (
-        <Tooltip
-          title={
-            <span style={{ whiteSpace: "pre-wrap", fontSize: 13 }}>
-              {record.description}
-            </span>
-          }
-          placement="topLeft"
-          overlayStyle={{ maxWidth: 420 }}
-        >
-          <div className="audit-trail-description-cell">
-            <Text className="audit-trail-description-text">{brief}</Text>
-          </div>
+      render: (value, record) => (
+        <Tooltip title={record.ipAddress && record.ipAddress !== "-" ? record.ipAddress : undefined}>
+          <Text className="font-mono text-xs" style={{ color: "#1f4b57" }}>{value || "-"}</Text>
         </Tooltip>
       ),
     },
-    {
-      title: "Reference No.",
-      dataIndex: "referenceNumber",
-      key: "referenceNumber",
-      width: 170,
-      render: (value) => (
-        <Text className="audit-trail-reference">{value || "-"}</Text>
-      ),
-    },
-    {
-      title: "Timestamp",
-      dataIndex: "createdAtMs",
-      key: "createdAt",
-      width: 200,
-      sorter: true,
-      sortDirections: ["descend", "ascend"],
-      sortOrder: timeSortOrder,
-      render: (_, record) => (
-        <Tooltip title={record.createdAtRelative}>
-          <div className="audit-trail-time-cell">
-            <Text strong style={{ fontSize: 13 }}>{record.createdAtDate}</Text>
-            <Text type="secondary" style={{ fontSize: 12 }}>{record.createdAtTime}</Text>
-          </div>
-        </Tooltip>
-      ),
-    },
+    { title: "Timestamp", dataIndex: "createdAtMs", key: "createdAt", width: 170, sorter: true, sortDirections: ["descend", "ascend"], sortOrder: timeSortOrder, render: (_, record) => (
+      <Tooltip title={record.createdAtRelative}>
+        <div>
+          <div className="font-medium">{record.createdAtDate}</div>
+          <div className="text-xs" style={{ color: "#62717f" }}>{record.createdAtTime}</div>
+        </div>
+      </Tooltip>
+    ) },
   ];
 
   return (
-    <div className="audit-trail-page">
-      <style>
-        {`
-          .audit-trail-page {
-            --audit-ink: #15313a;
-            --audit-muted: #62717f;
-            --audit-border: rgba(21, 49, 58, 0.1);
-            --audit-panel: rgba(255, 255, 255, 0.92);
-            min-height: 100%;
-            padding: 24px;
-            background:
-              radial-gradient(circle at top left, rgba(180, 210, 197, 0.32), transparent 28%),
-              radial-gradient(circle at top right, rgba(232, 214, 178, 0.3), transparent 32%),
-              linear-gradient(180deg, #f6f8f6 0%, #eef2ef 100%);
-          }
-
-          .audit-trail-hero {
-            display: flex;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-            align-items: flex-start;
-            margin-bottom: 20px;
-          }
-
-          .audit-trail-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(21, 49, 58, 0.1);
-            background: rgba(255, 255, 255, 0.66);
-            color: #1f4b57;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-          }
-
-          .audit-trail-title.ant-typography {
-            margin-bottom: 6px;
-            color: var(--audit-ink);
-          }
-
-          .audit-trail-subtitle.ant-typography {
-            max-width: 760px;
-            color: var(--audit-muted);
-            font-size: 15px;
-          }
-
-          .audit-trail-metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-            margin-bottom: 18px;
-          }
-
-          .audit-trail-metric {
-            border: 1px solid var(--audit-border);
-            border-radius: 18px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 249, 0.88) 100%);
-            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
-          }
-
-          .audit-trail-metric .ant-card-body {
-            padding: 18px;
-          }
-
-          .audit-trail-metric-value {
-            display: block;
-            color: var(--audit-ink);
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 8px;
-          }
-
-          .audit-trail-panel {
-            border: 1px solid var(--audit-border);
-            border-radius: 20px;
-            background: var(--audit-panel);
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
-            backdrop-filter: blur(10px);
-          }
-
-          .audit-trail-panel + .audit-trail-panel {
-            margin-top: 16px;
-          }
-
-          .audit-trail-toolbar {
-            display: grid;
-            grid-template-columns: minmax(240px, 1.4fr) repeat(4, minmax(180px, 1fr));
-            gap: 12px;
-            align-items: center;
-          }
-
-          .audit-trail-toolbar-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            flex-wrap: wrap;
-          }
-
-          .audit-trail-table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 14px;
-            flex-wrap: wrap;
-          }
-
-          .audit-trail-table-title.ant-typography {
-            margin-bottom: 0;
-            color: var(--audit-ink);
-          }
-
-          .audit-trail-table-subtitle.ant-typography {
-            color: var(--audit-muted);
-          }
-
-          .audit-trail-page .ant-table-wrapper .ant-table {
-            background: transparent;
-          }
-
-          .audit-trail-page .ant-table-wrapper .ant-table-thead > tr > th {
-            background: #f4f1e8;
-            color: var(--audit-ink);
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            border-bottom: 1px solid rgba(21, 49, 58, 0.08);
-          }
-
-          .audit-trail-page .ant-table-wrapper .ant-table-tbody > tr > td {
-            vertical-align: top;
-            border-bottom: 1px solid rgba(21, 49, 58, 0.06);
-          }
-
-          .audit-trail-page .ant-table-wrapper .ant-table-tbody > tr:hover > td {
-            background: rgba(236, 242, 239, 0.62);
-          }
-
-          .audit-trail-user-cell {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-          }
-
-          .audit-trail-user-avatar {
-            flex: 0 0 38px;
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #dfece6 0%, #e5cfaa 100%);
-            color: #17353e;
-            font-weight: 700;
-          }
-
-          .audit-trail-user-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 0;
-          }
-
-          .audit-trail-user-name.ant-typography {
-            color: var(--audit-ink);
-          }
-
-          .audit-trail-role-tag,
-          .audit-trail-action-tag {
-            width: fit-content;
-            border-radius: 999px;
-            padding-inline: 10px;
-            font-weight: 700;
-          }
-
-          .audit-trail-action-cell,
-          .audit-trail-time-cell,
-          .audit-trail-description-cell {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-          }
-
-          .audit-trail-action-detail.ant-typography,
-          .audit-trail-description-meta.ant-typography,
-          .audit-trail-time-cell .ant-typography-secondary {
-            font-size: 12px;
-          }
-
-          .audit-trail-description-text.ant-typography {
-            color: #223843;
-            line-height: 1.5;
-          }
-
-          .audit-trail-reference.ant-typography {
-            font-family: Consolas, Monaco, monospace;
-            color: #1f4b57;
-          }
-
-          .audit-trail-state {
-            padding: 36px 0 12px;
-          }
-
-          @media (max-width: 1280px) {
-            .audit-trail-toolbar {
-              grid-template-columns: repeat(3, minmax(180px, 1fr));
-            }
-          }
-
-          @media (max-width: 900px) {
-            .audit-trail-page {
-              padding: 16px;
-            }
-
-            .audit-trail-toolbar {
-              grid-template-columns: 1fr;
-            }
-
-            .audit-trail-toolbar-actions {
-              justify-content: flex-start;
-            }
-          }
-        `}
-      </style>
-
-      <div className="audit-trail-hero">
-        <div>
-          <div className="audit-trail-kicker">
-            <CalendarOutlined />
-            Enterprise Audit Trail
-          </div>
-          <Title level={2} className="audit-trail-title">
-            Professional audit log viewer
-          </Title>
-          <Text className="audit-trail-subtitle">
-            Monitor every critical action across users, DCLs, deferrals, approvals, and authentication events with searchable, time-aware, human-readable records.
-          </Text>
-        </div>
-
-        <Space>
-          <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={isBusy}>
-            Refresh
-          </Button>
-        </Space>
-      </div>
-
-      <div className="audit-trail-metrics">
-        {cards.map((card) => (
-          <Card key={card.key} className="audit-trail-metric" bordered={false}>
-            <Text type="secondary">{card.label}</Text>
-            <span className="audit-trail-metric-value">{card.value}</span>
-            <Text type="secondary">{card.note}</Text>
-          </Card>
-        ))}
-      </div>
-
-      <Card className="audit-trail-panel" bordered={false}>
-        <div className="audit-trail-toolbar">
-          <Input
-            allowClear
-            value={searchInput}
-            onChange={handleSearchChange}
-            prefix={<SearchOutlined />}
-            placeholder="Search by description, reference number, or user"
-          />
-
-          <Select
-            allowClear
-            showSearch
-            loading={isUsersLoading}
-            optionFilterProp="label"
-            placeholder="Filter by user"
-            value={selectedUserId}
-            onChange={handleUserChange}
-            options={userOptions}
-          />
-
-          <Select
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            placeholder="Filter by action"
-            value={selectedAction}
-            onChange={handleActionChange}
-            options={actionOptions}
-          />
-
-          <Select
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            placeholder="Filter by entity"
-            value={selectedEntity}
-            onChange={handleEntityChange}
-            options={entityOptions}
-          />
-
-          <RangePicker
-            value={dateRange}
-            onChange={handleDateRangeChange}
-            style={{ width: "100%" }}
-          />
-        </div>
-
-        <div className="audit-trail-toolbar-actions" style={{ marginTop: 12 }}>
-          <Button icon={<FilterOutlined />} onClick={clearFilters}>
-            Clear Filters
-          </Button>
-        </div>
-      </Card>
-
-      <Card className="audit-trail-panel" bordered={false}>
-        <div className="audit-trail-table-header">
+    <div className="audit-logs-container min-h-screen p-6" style={{ background: "#ffffff" }}>
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex justify-between items-start flex-wrap gap-4">
           <div>
-            <Title level={4} className="audit-trail-table-title">
-              Audit Events
-            </Title>
-            <Text className="audit-trail-table-subtitle">
-              {total} matching log{total === 1 ? "" : "s"} across the selected criteria.
-            </Text>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${NCBA_COLORS.primary}15` }}>
+                <FileOutlined style={{ color: NCBA_COLORS.primary, fontSize: 16 }} />
+              </div>
+              <span className="text-xs font-extrabold tracking-wider uppercase" style={{ color: NCBA_COLORS.neutral }}>Business Activity Audit Trail</span>
+            </div>
+            <Title level={2} className="m-0" style={{ color: "#15313a", letterSpacing: "-0.03em" }}>Audit Trail</Title>
+            <Text style={{ color: NCBA_COLORS.neutral, fontSize: 15 }}>Real-time monitoring system events, user actions, and system integrity</Text>
           </div>
-
-          <ExportMenu onExport={handleExportFormat} />
-        </div>
-
-        {auditError ? (
-          <div className="audit-trail-state">
-            <Alert
-              type="error"
-              showIcon
-              message="Failed to load audit logs"
-              description={errorMessage}
-              action={
-                <Button size="small" onClick={handleRefresh}>
-                  Retry
-                </Button>
-              }
+          <Space size="middle">
+            <div className="bg-black/5 p-1 rounded-xl flex gap-1">
+              <Button
+                type={activeView === "dashboard" ? "primary" : "text"}
+                icon={<DashboardOutlined />}
+                onClick={() => setActiveView("dashboard")}
+                className="h-9 rounded-lg"
+                style={{ background: activeView === "dashboard" ? NCBA_COLORS.primary : "transparent", color: activeView === "dashboard" ? "#fff" : NCBA_COLORS.neutral }}
+              >
+                Dashboard
+              </Button>
+              <Button
+                type={activeView === "logs" ? "primary" : "text"}
+                icon={<TableOutlined />}
+                onClick={() => setActiveView("logs")}
+                className="h-9 rounded-lg"
+                style={{ background: activeView === "logs" ? NCBA_COLORS.primary : "transparent", color: activeView === "logs" ? "#fff" : NCBA_COLORS.neutral }}
+              >
+                Audit Logs
+              </Button>
+            </div>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={handleRefresh}
+              loading={isBusy}
+              className="rounded-xl h-11 w-11"
             />
-          </div>
-        ) : null}
+          </Space>
+        </div>
+      </div>
 
-        <Table
-          rowKey="key"
-          columns={columns}
-          dataSource={sortedAuditLogs}
-          loading={isBusy}
-          scroll={{ x: 1180 }}
-          onChange={(nextPagination, _filters, sorter) => {
-            setCurrentPage(nextPagination.current || 1);
-            setPageSize(nextPagination.pageSize || 20);
-            if (!Array.isArray(sorter) && sorter?.columnKey === "createdAt") {
-              setTimeSortOrder(sorter.order || "descend");
-            }
-          }}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
-            showTotal: (value, range) => `${range[0]}-${range[1]} of ${value} logs`,
-          }}
-          locale={{
-            emptyText: isBusy ? (
-              <Empty description="Loading audit trail..." />
+      {activeView === "dashboard" ? (
+        <AuditDashboard logs={sortedAuditLogs} stats={statsData} users={users} />
+      ) : (
+        <>
+          {/* Filters */}
+          <Card bordered={false} className="rounded-2xl mb-6 border" style={{ borderColor: NCBA_COLORS.border }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+              <div>
+                <Text strong className="text-xs" style={{ color: NCBA_COLORS.neutral }}>Search</Text>
+                <Input allowClear value={searchInput} onChange={handleSearchChange} prefix={<SearchOutlined style={{ color: NCBA_COLORS.primary }} />} placeholder="Search logs..." className="mt-1 rounded-lg" />
+              </div>
+              <div>
+                <Text strong className="text-xs" style={{ color: NCBA_COLORS.neutral }}>User</Text>
+                <Select allowClear showSearch loading={isUsersLoading} optionFilterProp="label" placeholder="All Users" value={selectedUserId} onChange={handleUserChange} options={userOptions} className="w-full mt-1 rounded-lg" />
+              </div>
+              <div>
+                <Text strong className="text-xs" style={{ color: NCBA_COLORS.neutral }}>Action</Text>
+                <Select allowClear showSearch optionFilterProp="label" placeholder="All Actions" value={selectedAction} onChange={handleActionChange} options={actionOptions} className="w-full mt-1 rounded-lg" />
+              </div>
+              <div>
+                <Text strong className="text-xs" style={{ color: NCBA_COLORS.neutral }}>Entity</Text>
+                <Select allowClear showSearch optionFilterProp="label" placeholder="All Entities" value={selectedEntity} onChange={handleEntityChange} options={entityOptions} className="w-full mt-1 rounded-lg" />
+              </div>
+              <div>
+                <Text strong className="text-xs" style={{ color: NCBA_COLORS.neutral }}>Date Range</Text>
+                <RangePicker value={dateRange} onChange={handleDateRangeChange} className="w-full mt-1 rounded-lg" />
+              </div>
+              <div className="flex items-end">
+                <Button block icon={<FilterOutlined />} onClick={clearFilters} className="rounded-lg h-10">Reset Filters</Button>
+              </div>
+            </div>
+          </Card>
+
+          {/* Table */}
+          <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: NCBA_COLORS.border }}>
+            <div className="flex justify-between items-center mb-5">
+              <div>
+                <Title level={4} className="m-0" style={{ color: "#15313a" }}>Business Event Log</Title>
+                <Text type="secondary" className="text-sm">Showing {sortedAuditLogs.length} business events</Text>
+              </div>
+              <ExportMenu onExport={handleExportFormat} />
+            </div>
+
+            {auditError ? (
+              <Alert type="error" showIcon message="Sync Error" description={errorMessage} action={<Button size="small" onClick={handleRefresh}>Retry</Button>} className="rounded-xl" />
             ) : (
-              <Empty
-                description={
-                  debouncedSearch || selectedUserId || selectedAction || selectedEntity || dateRange
-                    ? "No audit logs match the selected filters."
-                    : "No audit logs available yet."
-                }
+              <AuditTable
+                logs={pagedAuditLogs}
+                loading={isBusy}
+                columns={columns}
+                pagination={{
+                  current: currentPage,
+                  pageSize: AUDIT_LOGS_PAGE_SIZE,
+                  total: sortedAuditLogs.length,
+                  showSizeChanger: false,
+                }}
+                onChange={(nextPagination, _filters, sorter) => {
+                  setCurrentPage(nextPagination.current || 1);
+                  if (!Array.isArray(sorter) && sorter?.columnKey === "createdAt") setTimeSortOrder(sorter.order || "descend");
+                }}
               />
-            ),
-          }}
-        />
-      </Card>
+            )}
+          </div>
+        </>
+      )}
 
-      {/* ─── Export scope-selection modal ──────────────────────────────── */}
+      {/* Export Modal */}
       <Modal
         open={exportModal.open}
-        title="Choose export scope"
+        title="Export Business Audit Data"
         onCancel={() => setExportModal({ open: false, format: null })}
         onOk={handleExportConfirm}
-        okText={isExportFetching ? <Spin size="small" /> : "Generate"}
-        okButtonProps={{ disabled: isExportFetching }}
-        width={400}
+                okText="Generate Report"
+                okButtonProps={{}}
+        width={420}
+        className="rounded-2xl"
       >
         <p style={{ color: "#62717f", marginBottom: 16 }}>
-          How many records would you like to include in the{" "}
-          <strong>{exportModal.format?.toUpperCase()}</strong> export?
-          {total > 0 && (
-            <span style={{ display: "block", marginTop: 4, fontSize: 12 }}>
-              {total} total record{total === 1 ? "" : "s"} match your current filters.
+          Select the number of business records to include in the <strong>{exportModal.format?.toUpperCase()}</strong> export.
+          {sortedAuditLogs.length > 0 && (
+            <span className="block mt-2 text-sm" style={{ color: NCBA_COLORS.primary }}>
+              {sortedAuditLogs.length} total business records match your filters.
             </span>
           )}
         </p>
-
-        <Radio.Group
-          value={exportScope}
-          onChange={(e) => setExportScope(e.target.value)}
-          style={{ display: "flex", flexDirection: "column", gap: 12 }}
-        >
+        <Radio.Group value={exportScope} onChange={(e) => setExportScope(e.target.value)} className="flex flex-col gap-3">
           <Radio value="50">First 50 records</Radio>
           <Radio value="100">First 100 records</Radio>
           <Radio value="500">First 500 records</Radio>
-          <Radio value="all">
-            All records{total > 0 ? ` (${total})` : ""}
-          </Radio>
+          <Radio value="all">All available records ({sortedAuditLogs.length})</Radio>
         </Radio.Group>
       </Modal>
     </div>

@@ -1,5 +1,13 @@
 import React from "react";
 import { Spin } from "antd";
+import dayjs from "dayjs";
+
+const formatTimestamp = (value) => {
+  if (!value) return "";
+  const parsed = dayjs(value);
+  if (!parsed.isValid()) return String(value);
+  return parsed.format("DD MMM YYYY HH:mm");
+};
 
 const DeferralReviewSidebar = ({
   isPostingComment,
@@ -23,7 +31,7 @@ const DeferralReviewSidebar = ({
               <div key={`${item.date || item.createdAt || "comment"}-${index}`} className="deferral-review-sidebar__history-item">
                 <div className="deferral-review-sidebar__history-meta">
                   <span className="deferral-review-sidebar__history-user">{item.user || item.userName || "User"}</span>
-                  <span className="deferral-review-sidebar__history-time">{item.date || item.createdAt || item.timestamp || ""}</span>
+                  <span className="deferral-review-sidebar__history-time">{formatTimestamp(item.date || item.createdAt || item.timestamp)}</span>
                 </div>
                 <div className="deferral-review-sidebar__history-text">
                   {item.comment || item.notes || item.message || item.text || "No comment provided."}

@@ -142,6 +142,7 @@ export const auditApi = createApi({
 
 export const {
   useGetAuditLogsQuery,
+  useLazyGetAuditLogsQuery,
   useCreateAuditLogMutation,
   useGetAuditLogByIdQuery,
   useUpdateAuditLogMutation,

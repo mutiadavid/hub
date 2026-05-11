@@ -107,8 +107,12 @@ const CheckerReviewChecklistModal = ({
     });
 
   const uploadedDocsCount = useMemo(() => {
-    const mainDocsCount = docs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
-    const supportingDocsCount = supportingDocs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
+    const mainDocsCount = docs.filter(
+      (doc) => doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url
+    ).length;
+    const supportingDocsCount = supportingDocs.filter(
+      (doc) => doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url
+    ).length;
     return mainDocsCount + supportingDocsCount;
   }, [docs, supportingDocs]);
 
@@ -209,21 +213,21 @@ const CheckerReviewChecklistModal = ({
     if (isDraftRestored) {
       setCheckerComment(
         localChecklist?.checkerComment ||
-          localChecklist?._checkerComment ||
-          checklist?.checkerComment ||
-          checklist?._checkerComment ||
-          checklist?.creatorComment ||
-          "",
+        localChecklist?._checkerComment ||
+        checklist?.checkerComment ||
+        checklist?._checkerComment ||
+        checklist?.creatorComment ||
+        "",
       );
       return;
     }
 
     setCheckerComment(
       checklistDetail?.checkerComment ||
-        checklist?.checkerComment ||
-        checklistDetail?.creatorComment ||
-        checklist?.creatorComment ||
-        "",
+      checklist?.checkerComment ||
+      checklistDetail?.creatorComment ||
+      checklist?.creatorComment ||
+      "",
     );
   }, [checklist, checklistDetail, isDraftRestored, localChecklist]);
 
@@ -312,7 +316,7 @@ const CheckerReviewChecklistModal = ({
 
     return () => {
       if (!keepLockOnCloseRef.current && !submittedRef.current) {
-        unlockDcl(resolvedChecklistId).unwrap().catch(() => {});
+        unlockDcl(resolvedChecklistId).unwrap().catch(() => { });
       }
     };
   }, [currentUserId, effectiveReadOnly, open, resolvedChecklistId, unlockDcl]);

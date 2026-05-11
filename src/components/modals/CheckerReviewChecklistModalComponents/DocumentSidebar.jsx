@@ -168,12 +168,16 @@ const DocumentSidebar = ({
     const processedDocs = documents
       .filter(
         (doc) =>
-          (doc.uploadData && doc.uploadData.status !== "deleted") || doc.fileUrl,
+          (doc.uploadData && doc.uploadData.status !== "deleted") ||
+          doc.fileUrl ||
+          doc.url ||
+          doc.uploadData?.fileUrl ||
+          doc.uploadData?.url,
       )
       .map((doc, index) => {
         const uploaderInfo = resolveUploaderInfo(doc);
-        const fileUrl = doc.fileUrl || doc.uploadData?.fileUrl;
-        const fallbackFileName = fileUrl ? fileUrl.split("/").pop() : null;
+        const fileUrl = doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url;
+        const fallbackFileName = fileUrl ? String(fileUrl).split("/").pop() : null;
 
         return {
           id: doc.id || doc._id || `main-${index}`,
@@ -194,22 +198,25 @@ const DocumentSidebar = ({
         };
       });
 
-    const processedSupportingDocs = supportingDocs.map((doc, index) => {
-      const uploaderInfo = resolveUploaderInfo(doc);
+    const processedSupportingDocs = supportingDocs
+      .filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url)
+      .map((doc, index) => {
+        const uploaderInfo = resolveUploaderInfo(doc);
+        const fileUrl = doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url;
 
-      return {
-        id: doc.id || doc._id || `support-${index}`,
-        title: doc.fileName || doc.name || `Supporting Doc ${index + 1}`,
-        category: doc.category || "Supporting Documents",
-        fileName: doc.fileName || doc.name || `Supporting Doc ${index + 1}`,
-        fileUrl: doc.fileUrl,
-        uploadedBy: uploaderInfo.uploadedBy,
-        uploadedByRole: uploaderInfo.uploadedByRole,
-        uploadDate: resolveUploadDate(doc),
-        modifiedDate: doc.modifiedDate || doc.updatedAt || null,
-        isSupporting: true,
-      };
-    });
+        return {
+          id: doc.id || doc._id || `support-${index}`,
+          title: doc.fileName || doc.name || `Supporting Doc ${index + 1}`,
+          category: doc.category || "Supporting Documents",
+          fileName: doc.fileName || doc.name || `Supporting Doc ${index + 1}`,
+          fileUrl,
+          uploadedBy: uploaderInfo.uploadedBy,
+          uploadedByRole: uploaderInfo.uploadedByRole,
+          uploadDate: resolveUploadDate(doc),
+          modifiedDate: doc.modifiedDate || doc.updatedAt || null,
+          isSupporting: true,
+        };
+      });
 
     return [...processedDocs, ...processedSupportingDocs];
   }, [documents, supportingDocs]);

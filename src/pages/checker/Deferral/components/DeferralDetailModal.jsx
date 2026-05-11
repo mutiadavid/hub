@@ -137,7 +137,11 @@ const dedupeHistoryEntries = (entries) => {
   });
 
   return deduped
-    .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
+    .sort((a, b) => {
+      const timeA = dayjs(a.date || a.createdAt || 0).valueOf();
+      const timeB = dayjs(b.date || b.createdAt || 0).valueOf();
+      return timeA - timeB;
+    })
     .map((entry) => {
       const nextEntry = { ...entry };
       delete nextEntry.__index;
@@ -1010,7 +1014,7 @@ const DeferralDetailModal = ({
                   <div className="text-xs leading-5 text-(--color-text-medium)">No user comments yet.</div>
                 ) : (
                   <div className="flex flex-col gap-2.5">
-                    {history.map((item, index) => (
+                    {[...history].reverse().map((item, index) => (
                       <div
                         key={`${item.date || item.createdAt || "comment"}-${index}`}
                         className={`${index === 0 ? "" : "border-t border-[rgba(214,189,152,0.14)] pt-2.5"}`}

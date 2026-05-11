@@ -6,11 +6,7 @@ import { formatUsername } from "../utils/helpers";
 import { PRIMARY_BLUE } from "../utils/constants";
 import { formatCommentTimestamp, normalizeBackendDate } from "../../../../utils/checklistUtils";
 
-/**
- * CommentTrail Component
- * Displays historical comments and approvals in a timeline format
- * Groups system messages and user comments together
- */
+
 const CommentTrail = ({ history, isLoading }) => {
   if (isLoading) return <Spin className="block m-5" />;
   if (!history || history.length === 0)

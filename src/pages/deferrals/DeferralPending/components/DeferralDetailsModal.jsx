@@ -162,7 +162,11 @@ const dedupeHistoryEntries = (entries) => {
   });
 
   return deduped
-    .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
+    .sort((a, b) => {
+      const timeA = dayjs(a.date || a.createdAt || 0).valueOf();
+      const timeB = dayjs(b.date || b.createdAt || 0).valueOf();
+      return timeA - timeB;
+    })
     .map((entry) => {
       const nextEntry = { ...entry };
       delete nextEntry.__index;

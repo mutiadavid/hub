@@ -404,16 +404,22 @@ const AllChecklists = ({ userId, draftToRestore = null, setDraftToRestore = null
       dataIndex: "documents",
       width: 74,
       align: "center",
-      render: (docs = []) => {
-        const total = docs.reduce((sum, documentItem) => {
+      render: (docs = [], record) => {
+        const mainTotal = (docs || []).reduce((sum, documentItem) => {
           if (Array.isArray(documentItem?.docList)) {
             return sum + documentItem.docList.length;
           }
-
           return sum + 1;
         }, 0);
 
-        return <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">{total}</span>;
+        const supportingTotal = (record.supportingDocs || []).length;
+        const total = mainTotal + supportingTotal;
+
+        return (
+          <span className="truncate whitespace-nowrap text-[13px] font-normal tracking-[-0.01em] text-(--color-text-dark)">
+            {total}
+          </span>
+        );
       },
     },
     {

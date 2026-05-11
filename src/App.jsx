@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useHeartbeatPresenceMutation } from "./api/userApi";
 import socketService from "./service/socketService";
@@ -27,9 +27,12 @@ import ApproverLayout from "./components/approver/ApproverLayout"; // Add this i
 // Styles
 import "./App.css";
 
-const App = () => {
+const HEARTBEAT_MIN_INTERVAL_MS = 25000;
+
+const AppShell = () => {
   const { user } = useSelector((state) => state.auth);
   const userId = user?.id;
+  const location = useLocation();
   const [heartbeatPresence] = useHeartbeatPresenceMutation();
   const lastHeartbeatAtRef = useRef(0);
 
@@ -40,7 +43,7 @@ const App = () => {
 
       const sendHeartbeat = async (force = false) => {
         const now = Date.now();
-        if (!force && now - lastHeartbeatAtRef.current < 30000) {
+        if (!force && now - lastHeartbeatAtRef.current < HEARTBEAT_MIN_INTERVAL_MS) {
           return;
         }
 
@@ -64,8 +67,19 @@ const App = () => {
         }
       };
 
-      const activityEvents = ["load", "mousemove", "mousedown", "click", "scroll", "keypress", "touchstart"];
+      const activityEvents = [
+        "load",
+        "mousemove",
+        "mousedown",
+        "click",
+        "scroll",
+        "keydown",
+        "touchstart",
+        "visibilitychange",
+        "focus",
+      ];
       const handleActivity = () => {
+        if (document.visibilityState === "hidden") return;
         void sendHeartbeat(false);
       };
 
@@ -76,7 +90,7 @@ const App = () => {
       socketService.emitUserOnline(user);
 
       activityEvents.forEach((eventName) => {
-        window.addEventListener(eventName, handleActivity);
+        window.addEventListener(eventName, handleActivity, { passive: true });
       });
 
       return () => {
@@ -90,6 +104,25 @@ const App = () => {
       socketService.disconnect();
     }
   }, [heartbeatPresence, user]);
+
+  // Route changes count as activity for server-side idle tracking (no click on SPA transition).
+  useEffect(() => {
+    if (!user) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await heartbeatPresence();
+        if (!cancelled && result?.error?.status !== 401) {
+          lastHeartbeatAtRef.current = Date.now();
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [heartbeatPresence, location.pathname, user]);
 
   return (
     <>
@@ -160,5 +193,7 @@ const App = () => {
     </>
   );
 };
+
+const App = () => <AppShell />;
 
 export default App;

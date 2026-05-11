@@ -1,0 +1,74 @@
+/* Custom styles that can't be easily replaced with Tailwind */
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ant Design table overrides */
+.audit-logs-container .ant-table-thead > tr > th {
+  background: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: #62717f !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+}
+
+.audit-logs-container .ant-table-tbody > tr:hover > td {
+  background: rgba(0, 106, 77, 0.02) !important;
+}
+
+/* Ant Design card overrides */
+.audit-logs-container .ant-card-head {
+  border-bottom: 1px solid rgba(0, 106, 77, 0.08) !important;
+  min-height: 56px !important;
+}
+
+/* Ant Design button overrides */
+.audit-logs-container .ant-btn-primary {
+  background: #006a4d !important;
+  border-color: #006a4d !important;
+}
+
+.audit-logs-container .ant-btn-primary:hover {
+  background: #00523d !important;
+}
+
+/* Custom scrollbar for tables */
+.audit-logs-container .ant-table-content::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.audit-logs-container .ant-table-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.audit-logs-container .ant-table-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.audit-logs-container .ant-table-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
