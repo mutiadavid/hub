@@ -58,7 +58,7 @@ export const APP_URL = normalizeOrigin(
 );
 
 export const SOCKET_URL = normalizeOrigin(
-  import.meta.env.VITE_SOCKET_URL,
+  import.meta.env.VITE_API_URL,
   "http://localhost:5001",
 );
 
