@@ -3,31 +3,31 @@ import { Modal, Button, Input } from "antd";
 
 /** Matches approver queue decision modals — shared by creator & checker deferral flows. */
 export const deferralDecisionModalWrapClassName =
-  "deferral-decision-modal [&_.ant-modal]:max-sm:mx-auto [&_.ant-modal]:max-sm:my-3 [&_.ant-modal]:max-sm:max-w-[calc(100vw-24px)] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[rgba(214,189,152,0.18)] [&_.ant-modal-header]:bg-white! [&_.ant-modal-title]:text-(--color-text-dark) [&_.ant-modal-close]:top-5 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-(--color-text-medium) hover:[&_.ant-modal-close]:bg-[rgba(214,189,152,0.12)] hover:[&_.ant-modal-close]:text-(--color-text-dark) [&_.ant-modal-body]:bg-white [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-white [&_.ant-modal-footer]:pt-0";
+  "deferral-decision-modal [&_.ant-modal]:max-sm:mx-auto [&_.ant-modal]:max-sm:my-3 [&_.ant-modal]:max-sm:max-w-[calc(100vw-24px)] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_16px_48px_rgba(18,36,36,0.12)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[rgba(214,189,152,0.12)] [&_.ant-modal-header]:bg-white! [&_.ant-modal-title]:text-(--color-text-dark) [&_.ant-modal-close]:top-4 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-7 [&_.ant-modal-close]:w-7 [&_.ant-modal-close]:text-(--color-text-medium) hover:[&_.ant-modal-close]:bg-[rgba(214,189,152,0.08)] hover:[&_.ant-modal-close]:text-(--color-text-dark) [&_.ant-modal-body]:bg-white [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-white [&_.ant-modal-footer]:pt-0";
 
 const decisionSecondaryButtonClassName =
-  "min-w-[92px]! h-11! rounded-[10px]! border-[#d0d5dd]! bg-white! text-(--color-text-medium)! shadow-none! font-semibold! hover:border-[#d0d5dd]! hover:bg-[#f8fafc]! hover:text-(--color-text-dark)! focus:border-[#d0d5dd]! focus:bg-[#f8fafc]! focus:text-(--color-text-dark)! active:border-[#d0d5dd]! active:bg-[#f8fafc]! active:text-(--color-text-dark)! max-sm:w-full";
+  "min-w-[88px]! h-9! rounded-lg! border-[#d0d5dd]! bg-white! text-(--color-text-medium)! shadow-none! text-sm! font-medium! hover:border-[#d0d5dd]! hover:bg-[#f8fafc]! hover:text-(--color-text-dark)! focus:border-[#d0d5dd]! focus:bg-[#f8fafc]! focus:text-(--color-text-dark)! active:border-[#d0d5dd]! active:bg-[#f8fafc]! active:text-(--color-text-dark)! max-sm:w-full";
 
 const decisionPrimaryButtonClassName =
-  "min-w-[156px]! h-11! rounded-[10px]! border-0! bg-(--ncb-primary-500)! text-white! shadow-[0_10px_20px_rgba(58,179,229,0.18)]! font-bold! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white! max-sm:w-full";
+  "min-w-[132px]! h-9! rounded-lg! border-0! bg-(--ncb-primary-500)! text-white! shadow-[0_2px_8px_rgba(58,179,229,0.16)]! text-sm! font-medium! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white! max-sm:w-full";
 
 const outerBodyClassName =
-  "rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-[rgba(255,255,255,0.98)] p-5 shadow-[0_10px_28px_rgba(26,54,54,0.06)] max-sm:p-3.5 [&_.ant-input]:min-h-[132px] [&_.ant-input]:rounded-[10px] [&_.ant-input]:border-[#eaecf0] [&_.ant-input]:bg-white [&_.ant-input]:p-3.5 [&_.ant-input]:text-[15px] [&_.ant-input]:text-(--color-text-dark) [&_.ant-input]:shadow-none [&_.ant-input]:placeholder:text-[#98a2b3] hover:[&_.ant-input]:border-(--ncb-primary-500) focus-within:[&_.ant-input]:border-(--ncb-primary-500) focus-within:[&_.ant-input]:shadow-[0_0_0_2px_rgba(58,179,229,0.12)]";
+  "rounded-lg border border-[rgba(214,189,152,0.12)] bg-white p-4 shadow-sm [&_.ant-input]:min-h-[100px] [&_.ant-input]:rounded-md [&_.ant-input]:border-[#eaecf0] [&_.ant-input]:bg-white [&_.ant-input]:p-2.5 [&_.ant-input]:text-sm [&_.ant-input]:text-(--color-text-dark) [&_.ant-input]:shadow-none [&_.ant-input]:placeholder:text-[#98a2b3] hover:[&_.ant-input]:border-(--ncb-primary-500) focus-within:[&_.ant-input]:border-(--ncb-primary-500) focus-within:[&_.ant-input]:shadow-[0_0_0_2px_rgba(58,179,229,0.08)]";
 
 const summaryCardClassName =
-  "mb-5 rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-white p-[18px] max-sm:mb-3 max-sm:rounded-[10px] max-sm:p-3";
+  "mb-4 rounded-lg border border-[rgba(214,189,152,0.12)] bg-[#fafafa] p-3";
 
 const summaryTitleClassName =
-  "text-[28px] font-bold leading-[1.2] text-(--color-text-dark) max-sm:text-[22px]";
+  "text-xl font-semibold leading-tight text-(--color-text-dark)";
 
 const summaryNameClassName =
-  "mt-2 text-[18px] leading-[1.35] text-(--color-text-medium) max-sm:text-base";
+  "mt-1 text-sm text-gray-500";
 
 const summaryLineClassName =
-  "mt-4 text-[15px] leading-[1.65] text-(--color-text-medium) max-sm:text-sm";
+  "mt-2 text-sm leading-relaxed text-gray-500";
 
 const labelClassName =
-  "block text-[11px] font-bold uppercase tracking-[0.16em] text-(--color-text-medium)";
+  "block text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-1";
 
 /**
  * @param {object} props
@@ -71,7 +71,7 @@ export default function DeferralDecisionModal({
   confirmLoading = false,
   confirmDisabled = false,
   confirmClassName = "",
-  width = 760,
+  width = 520,
   zIndex,
 }) {
   const paragraphs = Array.isArray(summaryCopy)
@@ -83,18 +83,18 @@ export default function DeferralDecisionModal({
   return (
     <Modal
       title={(
-        <div className="flex items-start gap-4 pr-9 max-sm:gap-3 max-sm:pr-6">
+        <div className="flex items-center gap-3 pr-8">
           {titleIcon ? (
-            <span className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(214,189,152,0.2)] bg-[rgba(26,54,54,0.04)] text-(--color-text-dark) [&_.anticon]:text-[22px] max-sm:h-11 max-sm:w-11">
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[rgba(214,189,152,0.15)] bg-[rgba(26,54,54,0.03)] text-(--color-text-dark) [&_.anticon]:text-base">
               {titleIcon}
             </span>
           ) : null}
-          <span className="flex flex-col gap-1.5">
-            <strong className="text-[20px] font-bold leading-[1.2] text-(--color-text-dark) max-sm:text-[18px]">
+          <div className="flex flex-col gap-0.5">
+            <strong className="text-base font-semibold leading-snug text-(--color-text-dark)">
               {title}
             </strong>
-            <span className="text-[13px] leading-[1.45] text-(--color-text-medium)">{subtitle}</span>
-          </span>
+            <span className="text-xs leading-relaxed text-gray-400">{subtitle}</span>
+          </div>
         </div>
       )}
       open={open}
@@ -103,14 +103,14 @@ export default function DeferralDecisionModal({
       wrapClassName={deferralDecisionModalWrapClassName}
       zIndex={zIndex}
       styles={{
-        header: { background: "white", margin: 0, padding: "22px 26px 18px" },
-        body: { background: "white", padding: "28px 26px 24px" },
-        footer: { background: "white", padding: "0 26px 24px", margin: 0 },
+        header: { background: "white", margin: 0, padding: "16px 20px 12px" },
+        body: { background: "white", padding: "0 20px 16px", margin: 0 },
+        footer: { background: "white", padding: "0 20px 20px", margin: 0 },
         content: { background: "white", padding: 0 },
       }}
       width={width}
       footer={[
-        <div key="actions" className="flex justify-end gap-3 max-sm:flex-col-reverse">
+        <div key="actions" className="flex justify-end gap-2">
           <Button
             className={decisionSecondaryButtonClassName}
             onClick={onCancel}
@@ -130,6 +130,7 @@ export default function DeferralDecisionModal({
       ]}
     >
       <div className={outerBodyClassName}>
+        {/* Summary Card - Minimal */}
         <div className={summaryCardClassName}>
           <div className={summaryTitleClassName}>
             {deferralNumber || "Deferral request"}
@@ -143,7 +144,7 @@ export default function DeferralDecisionModal({
               className={
                 index === 0
                   ? summaryLineClassName
-                  : "mt-2 text-[15px] leading-[1.65] text-(--color-text-medium) max-sm:text-sm"
+                  : "mt-1 text-sm leading-relaxed text-gray-500"
               }
             >
               {line}
@@ -151,13 +152,14 @@ export default function DeferralDecisionModal({
           ))}
         </div>
 
-        <div className="flex flex-col gap-2">
+        {/* Input Section - Tightened */}
+        <div className="flex flex-col gap-1">
           <label className={labelClassName}>
             {inputLabel}
-            {inputRequired ? " (Required)" : ""}
+            {inputRequired ? " *" : ""}
           </label>
           <Input.TextArea
-            rows={4}
+            rows={3}
             value={inputValue}
             onChange={(event) => onInputChange(event.target.value)}
             placeholder={inputPlaceholder}

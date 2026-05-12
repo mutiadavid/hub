@@ -12,22 +12,24 @@ const DeferralHeader = ({
   loading,
 }) => {
   return (
-    <div className="deferrals-header">
-      <div className="deferrals-header__main">
-        <div className="deferrals-header__copy">
-          <h2 className="deferrals-header__title">Deferral Requests</h2>
-          <p className="deferrals-header__meta">
+    <div className="mb-6">
+      <div className="flex justify-between items-start flex-wrap gap-4">
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold text-[#164679] mb-1 tracking-tight">
+            Deferral Requests
+          </h2>
+          <p className="text-xs text-gray-500 m-0">
             {deferrals.length} records across active deferral workflows
           </p>
         </div>
 
-        <div className="deferrals-header__actions">
+        <div className="flex gap-2">
           <Button
             type="default"
             icon={<ReloadOutlined />}
             onClick={onRefresh}
             loading={loading}
-            className="deferrals-header__button deferrals-header__button--primary"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-none"
           >
             Refresh
           </Button>

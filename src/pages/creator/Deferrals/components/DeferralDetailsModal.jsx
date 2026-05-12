@@ -23,7 +23,6 @@ import DeferralReviewHeader from "./DeferralReviewHeader";
 import DeferralReviewContent from "./DeferralReviewContent";
 import DeferralReviewFooter from "./DeferralReviewFooter";
 import DeferralReviewSidebar from "./DeferralReviewSidebar";
-import "./DeferralDetailsModal.css";
 
 dayjs.extend(relativeTime);
 
@@ -158,6 +157,10 @@ const DeferralDetailsModal = (props) => {
     _onDocDecision,
     _onResetDocDecision,
     sourceTab,
+    newComment,
+    onNewCommentChange,
+    onPostComment,
+    isPostingComment,
   } = props;
 
   const [activeTab, setActiveTab] = useState("details");
@@ -218,8 +221,8 @@ const DeferralDetailsModal = (props) => {
   // Determine if deferral can be approved
   const allApproversApproved =
     isApprovedTabContext ||
-    (deferral.approverFlow || []).length === 0 || // No approvers needed
-    (deferral.approverFlow || []).every(a => a.approved || a.approvalStatus === "approved"); // OR all approvers approved
+    (deferral.approverFlow || []).length === 0 ||
+    (deferral.approverFlow || []).every(a => a.approved || a.approvalStatus === "approved");
   const approvedApproversCount = isApprovedTabContext
     ? (deferral.approverFlow || []).length
     : (deferral.approverFlow || []).filter(
@@ -232,6 +235,7 @@ const DeferralDetailsModal = (props) => {
   const canReturnForRework =
     !isApprovedTabContext && !creatorApproved;
   const uploadedDocumentCount = dclDocs.length + generalUploadedDocs.length + closeRequestDocuments.length;
+  
   // Build history from comments and events
   const history = (function renderHistory() {
     const events = [];
@@ -281,7 +285,7 @@ const DeferralDetailsModal = (props) => {
       dataIndex: "name",
       key: "name",
       render: (value) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+        <span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>
           {value || "-"}
         </span>
       ),
@@ -289,18 +293,21 @@ const DeferralDetailsModal = (props) => {
     {
       title: "Type",
       key: "type",
-      render: (_, doc) => doc.type || doc.documentType || "-",
+      render: (_, doc) => <span className="text-sm font-normal">{doc.type || doc.documentType || "-"}</span>,
     },
     {
       title: "Requested Days",
       key: "requestedDays",
-      render: (_, doc) => doc.requestedDays || doc.daysSought || "-",
+      render: (_, doc) => <span className="text-sm font-normal">{doc.requestedDays || doc.daysSought || "-"}</span>,
     },
     {
       title: "New Due Date",
       key: "newDueDate",
-      render: (_, doc) =>
-        doc.newDueDate ? dayjs(doc.newDueDate).format("DD MMM YYYY") : "-",
+      render: (_, doc) => (
+        <span className="text-sm font-normal">
+          {doc.newDueDate ? dayjs(doc.newDueDate).format("DD MMM YYYY") : "-"}
+        </span>
+      ),
     },
   ];
 
@@ -310,11 +317,11 @@ const DeferralDetailsModal = (props) => {
       key: "document",
       render: (_, doc) => (
         <div>
-          <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+          <div className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>
             {doc.name || "Uploaded Document"}
           </div>
           {doc.uploadDate ? (
-            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+            <div className="text-md text-gray-400">
               {`Uploaded ${dayjs(doc.uploadDate).format("DD MMM YYYY")}`}
             </div>
           ) : null}
@@ -329,13 +336,14 @@ const DeferralDetailsModal = (props) => {
         const documentUrl = resolveDocumentUrl(doc);
 
         return (
-          <div className="deferral-review-actionset">
+          <div className="flex items-center gap-2 whitespace-nowrap">
             <Button
               type="default"
               size="small"
               icon={<EyeOutlined />}
               onClick={() => openFileInNewTab(documentUrl)}
               disabled={!documentUrl}
+              className="text-sm"
             >
               View
             </Button>
@@ -344,6 +352,7 @@ const DeferralDetailsModal = (props) => {
               icon={<DownloadOutlined />}
               onClick={() => downloadFile(documentUrl, doc.name)}
               disabled={!documentUrl}
+              className="text-sm"
             >
               Download
             </Button>
@@ -358,17 +367,17 @@ const DeferralDetailsModal = (props) => {
       title: "Step",
       key: "step",
       width: 80,
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => <span className="text-sm font-normal">{index + 1}</span>,
     },
     {
       title: "Role",
       key: "role",
-      render: (_, approver) => approver.designation || approver.role || "-",
+      render: (_, approver) => <span className="text-sm font-normal">{approver.designation || approver.role || "-"}</span>,
     },
     {
       title: "Approver",
       key: "approver",
-      render: (_, approver) => approver.name || approver.approverName || "User",
+      render: (_, approver) => <span className="text-sm font-normal">{approver.name || approver.approverName || "User"}</span>,
     },
     {
       title: "Status",
@@ -388,7 +397,7 @@ const DeferralDetailsModal = (props) => {
 
         return (
           <span
-            className="deferral-review-status-pill"
+            className="text-sm font-normal"
             style={{ color: isApprovedInFlow ? SUCCESS_GREEN : isCurrent ? PRIMARY_BLUE : "var(--color-text-muted)" }}
           >
             {isApprovedInFlow ? "Approved" : isCurrent ? "Current" : "Pending Approval"}
@@ -404,11 +413,11 @@ const DeferralDetailsModal = (props) => {
       key: "name",
       render: (_, upload) => (
         <div>
-          <div style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+          <div className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>
             {upload.name || "Evidence Document"}
           </div>
           {upload.uploadDate ? (
-            <div style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+            <div className="text-md text-gray-400">
               {`Uploaded ${dayjs(upload.uploadDate).format("DD MMM YYYY")}`}
             </div>
           ) : null}
@@ -423,11 +432,11 @@ const DeferralDetailsModal = (props) => {
         const documentUrl = resolveDocumentUrl(upload);
 
         return (
-          <div className="deferral-review-actionset">
-            <Button size="small" onClick={() => openFileInNewTab(documentUrl)} disabled={!documentUrl}>
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <Button size="small" onClick={() => openFileInNewTab(documentUrl)} disabled={!documentUrl} className="text-sm">
               View
             </Button>
-            <Button size="small" onClick={() => downloadFile(documentUrl, upload.name)} disabled={!documentUrl}>
+            <Button size="small" onClick={() => downloadFile(documentUrl, upload.name)} disabled={!documentUrl} className="text-sm">
               Download
             </Button>
           </div>
@@ -459,7 +468,7 @@ const DeferralDetailsModal = (props) => {
       dataIndex: "documentName",
       key: "documentName",
       render: (value) => (
-        <span style={{ color: PRIMARY_BLUE, fontWeight: 600 }}>
+        <span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>
           {value || "-"}
         </span>
       ),
@@ -468,7 +477,7 @@ const DeferralDetailsModal = (props) => {
       title: "RM Comment",
       dataIndex: "comment",
       key: "comment",
-      render: (value) => value || "-",
+      render: (value) => <span className="text-sm font-normal">{value || "-"}</span>,
     },
     {
       title: "Creator Review",
@@ -485,7 +494,7 @@ const DeferralDetailsModal = (props) => {
         return (
           <div>
             <div
-              className="deferral-review-status-pill"
+              className="text-sm font-normal"
               style={{ color: state === "approved" ? SUCCESS_GREEN : state === "rejected" ? ERROR_RED : PRIMARY_BLUE }}
             >
               {label}
@@ -509,7 +518,7 @@ const DeferralDetailsModal = (props) => {
         return (
           <div>
             <div
-              className="deferral-review-status-pill"
+              className="text-sm font-normal"
               style={{ color: checkerState === "approved" ? SUCCESS_GREEN : checkerState === "rejected" ? ERROR_RED : PRIMARY_BLUE }}
             >
               {checkerLabel}
@@ -523,11 +532,12 @@ const DeferralDetailsModal = (props) => {
       key: "actions",
       width: 300,
       render: (_, document) => (
-        <div className="deferral-review-actionset">
+        <div className="flex items-center gap-2">
           <Button
             type={document.decision?.status === "approved" ? "primary" : "default"}
             onClick={() => _onDocDecision?.(document.decisionKey, "approved", document.decision?.comment || "")}
             disabled={sourceTab !== "closeRequests"}
+            className="text-sm"
             style={
               document.decision?.status === "approved"
                 ? { backgroundColor: SUCCESS_GREEN, borderColor: SUCCESS_GREEN }
@@ -541,12 +551,14 @@ const DeferralDetailsModal = (props) => {
             type={document.decision?.status === "rejected" ? "primary" : "default"}
             onClick={() => _onDocDecision?.(document.decisionKey, "rejected", document.decision?.comment || "")}
             disabled={sourceTab !== "closeRequests"}
+            className="text-sm"
           >
             Reject
           </Button>
           <Button
             onClick={() => _onResetDocDecision?.(document.decisionKey)}
             disabled={sourceTab !== "closeRequests"}
+            className="text-sm"
           >
             Reset
           </Button>
@@ -556,82 +568,88 @@ const DeferralDetailsModal = (props) => {
   ];
 
   return (
-    <>
-      <div className="deferral-review-panel">
-          <div className="deferral-review-container creator-theme">
-            <DeferralReviewHeader
-              deferral={deferral}
-              onClose={onClose}
-              onViewDocuments={() => setActiveTab("documents")}
-              documentCount={uploadedDocumentCount}
-            />
+    <div className="deferral-review-panel">
+      <div className="deferral-review-container creator-theme">
+        <DeferralReviewHeader
+          deferral={deferral}
+          onClose={onClose}
+          onViewDocuments={() => setActiveTab("documents")}
+          documentCount={uploadedDocumentCount}
+        />
 
-            <DeferralReviewFooter
-              canApprove={canApprove}
-              canReturnForRework={canReturnForRework}
-              isLoading={isLoading}
-              onApprove={onApprove}
-              onReturnForRework={onReturnForRework}
-              onDownloadPDF={downloadDeferralAsPDF}
-              onClose={onClose}
-              sourceTab={sourceTab}
-            />
+        <DeferralReviewFooter
+          canApprove={canApprove}
+          canReturnForRework={canReturnForRework}
+          isLoading={isLoading}
+          onApprove={onApprove}
+          onReturnForRework={onReturnForRework}
+          onDownloadPDF={downloadDeferralAsPDF}
+          onClose={onClose}
+          sourceTab={sourceTab}
+        />
 
-            <div className="deferral-review-tabs">
-              <button
-                type="button"
-                className={`deferral-review-tab${activeTab === "details" ? " deferral-review-tab--active" : ""}`}
-                onClick={() => setActiveTab("details")}
-              >
-                Deferral Details
-              </button>
-              <button
-                type="button"
-                className={`deferral-review-tab${activeTab === "documents" ? " deferral-review-tab--active" : ""}`}
-                onClick={() => setActiveTab("documents")}
-              >
-                Required Documents
-              </button>
-            </div>
+        <div className="flex gap-1 border-b border-[rgba(214,189,152,0.2)] mb-4 overflow-x-auto">
+          <button
+            type="button"
+            className={`px-3 py-2 border-none border-b-2 border-transparent bg-transparent text-gray-500 text-sm font-semibold cursor-pointer whitespace-nowrap font-['Century_Gothic','CenturyGothic','AppleGothic',sans-serif] ${
+              activeTab === "details" ? "text-[#164679] border-b-2 border-[#164679]" : ""
+            }`}
+            onClick={() => setActiveTab("details")}
+          >
+            Deferral Details
+          </button>
+          <button
+            type="button"
+            className={`px-3 py-2 border-none border-b-2 border-transparent bg-transparent text-gray-500 text-sm font-semibold cursor-pointer whitespace-nowrap font-['Century_Gothic','CenturyGothic','AppleGothic',sans-serif] ${
+              activeTab === "documents" ? "text-[#164679] border-b-2 border-[#164679]" : ""
+            }`}
+            onClick={() => setActiveTab("documents")}
+          >
+            Required Documents
+          </button>
+        </div>
 
-            <div className="deferral-review-workspace">
-              <div className="deferral-review-main">
-                <div className="deferral-review-body">
-                  <Spin spinning={isLoading}>
-                    <DeferralReviewContent
-                      deferral={deferral}
-                      activeTab={activeTab}
-                      isApprovedTabContext={isApprovedTabContext}
-                      creatorApproved={creatorApproved}
-                      checkerApproved={checkerApproved}
-                      creatorStatusLabel={creatorStatusLabel}
-                      checkerStatusLabel={checkerStatusLabel}
-                      approvedApproversCount={approvedApproversCount}
-                      requestedDocsWithDates={requestedDocsWithDates}
-                      requestedDocsColumns={requestedDocsColumns}
-                      dclDocs={dclDocs}
-                      generalUploadedDocs={generalUploadedDocs}
-                      uploadedDocumentColumns={uploadedDocumentColumns}
-                      isCloseRequestContext={isCloseRequestContext}
-                      closeRequestDocuments={closeRequestDocuments}
-                      closeRequestColumns={closeRequestColumns}
-                      closeRequestDocumentColumns={closeRequestDocumentColumns}
-                      closeRequestUploadColumns={closeRequestUploadColumns}
-                      approvalFlowColumns={approvalFlowColumns}
-                    />
-                  </Spin>
-                </div>
-              </div>
-
-              <DeferralReviewSidebar
-                newComment={props.newComment}
-                onNewCommentChange={props.onNewCommentChange}
-                onPostComment={props.onPostComment}
-                isPostingComment={props.isPostingComment}
-                history={history}
-              />
+        {/* Updated grid layout - wider sidebar (5fr for content, 3.5fr for sidebar) */}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(380px,3.5fr)] gap-6 items-start">
+          <div className="min-w-0">
+            <div className="p-0 overflow-visible">
+              <Spin spinning={isLoading}>
+                <DeferralReviewContent
+                  deferral={deferral}
+                  activeTab={activeTab}
+                  isApprovedTabContext={isApprovedTabContext}
+                  creatorApproved={creatorApproved}
+                  checkerApproved={checkerApproved}
+                  creatorStatusLabel={creatorStatusLabel}
+                  checkerStatusLabel={checkerStatusLabel}
+                  approvedApproversCount={approvedApproversCount}
+                  requestedDocsWithDates={requestedDocsWithDates}
+                  requestedDocsColumns={requestedDocsColumns}
+                  dclDocs={dclDocs}
+                  generalUploadedDocs={generalUploadedDocs}
+                  uploadedDocumentColumns={uploadedDocumentColumns}
+                  isCloseRequestContext={isCloseRequestContext}
+                  closeRequestDocuments={closeRequestDocuments}
+                  closeRequestColumns={closeRequestColumns}
+                  closeRequestDocumentColumns={closeRequestDocumentColumns}
+                  closeRequestUploadColumns={closeRequestUploadColumns}
+                  approvalFlowColumns={approvalFlowColumns}
+                />
+              </Spin>
             </div>
           </div>
+
+          {/* Larger sidebar */}
+          <div className="min-w-[380px]">
+            <DeferralReviewSidebar
+              newComment={newComment}
+              onNewCommentChange={onNewCommentChange}
+              onPostComment={onPostComment}
+              isPostingComment={isPostingComment}
+              history={history}
+            />
+          </div>
+        </div>
       </div>
 
       <DeferralDecisionModal
@@ -689,7 +707,7 @@ const DeferralDetailsModal = (props) => {
         confirmDisabled={!String(reworkComment || "").trim()}
         zIndex={1600}
       />
-    </>
+    </div>
   );
 };
 

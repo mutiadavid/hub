@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Alert, Button, Divider, Select, Spin, Typography } from "antd";
 import {
   CheckCircleOutlined,
@@ -7,7 +7,6 @@ import {
   WarningOutlined,
 } from "@ant-design/icons";
 import { useLazySearchAdUsersQuery } from "../../api/adSearchApi";
-import "../../styles/creatorDesignSystem.css";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -51,11 +50,9 @@ export default function ApproverSelector({
       .toLowerCase()
       .trim();
 
-    // Handle predefined dropdown values
-    if (loanStr === "above75") return 76000000; // Above threshold
-    if (loanStr === "below75") return 74000000; // Below threshold
+    if (loanStr === "above75") return 76000000;
+    if (loanStr === "below75") return 74000000;
 
-    // Handle numeric input (fallback for direct number entry)
     const normalized = loanStr.replace(/[^0-9.-]+/g, "");
     return parseFloat(normalized) || 0;
   }, [loanAmount]);
@@ -142,10 +139,7 @@ export default function ApproverSelector({
       const optionMap = new Map(prev.map((item) => [String(item.id), item]));
 
       slots.forEach((slot) => {
-        if (!slot?.userId) {
-          return;
-        }
-
+        if (!slot?.userId) return;
         optionMap.set(String(slot.userId), {
           id: String(slot.userId),
           name: slot.name || slot.email || slot.samAccountName || String(slot.userId),
@@ -169,7 +163,6 @@ export default function ApproverSelector({
     const query = String(rawQuery || "").trim();
     if (!query) return;
 
-    // Requirement: once user types one character, show the full AD staff listing.
     const shouldLoadAllStaff = query.length === 1;
     const effectiveQuery = shouldLoadAllStaff ? "*" : query;
     const effectiveMaxResults = shouldLoadAllStaff ? 1000 : 200;
@@ -221,9 +214,7 @@ export default function ApproverSelector({
       const id = String(user?.id ?? user?._id ?? "");
       if (selectedIdSet.has(id)) return true;
 
-      if (!normalizedQuery) {
-        return true;
-      }
+      if (!normalizedQuery) return true;
 
       const haystack = [
         user?.name,
@@ -283,266 +274,65 @@ export default function ApproverSelector({
   };
 
   return (
-    <div className="deferral-approver-selector">
-      <style>{`
-        .deferral-approver-selector {
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          max-height: 78vh;
-          width: 100%;
-          box-sizing: border-box;
-          overflow-y: auto;
-          overflow-x: hidden;
-          overscroll-behavior: contain;
-          padding: 0 4px 12px;
-          min-height: 0;
-        }
-        .deferral-approver-selector-title {
-          color: var(--color-text-dark) !important;
-          margin-bottom: 8px !important;
-          font-size: 17px !important;
-          font-weight: 700 !important;
-          letter-spacing: -0.02em;
-        }
-        .deferral-approver-selector .ant-divider {
-          border-color: rgba(214, 189, 152, 0.18) !important;
-        }
-        .deferral-approver-alert.ant-alert {
-          border-radius: 10px !important;
-          background: rgba(214, 189, 152, 0.12) !important;
-          border: 1px solid rgba(214, 189, 152, 0.45) !important;
-          color: var(--color-text-dark) !important;
-          margin-bottom: 12px;
-        }
-        .deferral-approver-alert .ant-alert-message {
-          color: var(--color-text-dark) !important;
-          font-size: 13px;
-          font-weight: 600;
-        }
-        .deferral-approver-summary {
-          border: 1px solid rgba(214, 189, 152, 0.28);
-          border-radius: 10px;
-          padding: 12px;
-          background: rgba(245, 247, 244, 0.82);
-          margin-bottom: 10px;
-        }
-        .deferral-approver-summary-title {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          color: var(--color-text-dark);
-          font-size: 13px;
-          font-weight: 600;
-        }
-        .deferral-approver-summary-caption {
-          margin-top: 4px;
-          font-size: 12px;
-          color: var(--color-text-light);
-        }
-        .deferral-approver-summary-stats {
-          margin-top: 10px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .deferral-approver-summary-stat {
-          font-size: 12px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          flex-wrap: wrap;
-          color: var(--color-text-light);
-        }
-        .deferral-approver-summary-pill {
-          border: 1px solid rgba(214, 189, 152, 0.22);
-          background: var(--color-white);
-          color: var(--color-text-medium);
-          border-radius: 999px;
-          padding: 2px 8px;
-          font-weight: 600;
-        }
-        .deferral-approver-empty {
-          text-align: center;
-          padding: 42px 14px;
-          color: var(--color-text-light);
-        }
-        .deferral-approver-empty-icon {
-          font-size: 64px;
-          color: rgba(103, 125, 106, 0.28);
-        }
-        .deferral-approver-empty-dots {
-          margin-top: 14px;
-          color: rgba(103, 125, 106, 0.36);
-          line-height: 1;
-        }
-        .deferral-approver-empty-title {
-          margin: 12px 0 6px !important;
-          color: rgba(64, 83, 76, 0.52) !important;
-          font-size: 15px;
-          font-weight: 600;
-        }
-        .deferral-approver-list {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-        .deferral-approver-slot {
-          padding: 12px;
-          border: 1px solid rgba(214, 189, 152, 0.18);
-          border-radius: 10px;
-          background: rgba(255, 255, 255, 0.92);
-        }
-        .deferral-approver-slot-label {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          color: var(--color-text-dark) !important;
-          font-size: 14px;
-          font-weight: 600;
-          margin-bottom: 8px;
-        }
-        .deferral-approver-selector .ant-select-selection-item,
-        .deferral-approver-selector .ant-select-selection-placeholder,
-        .deferral-approver-selector .ant-select-item,
-        .deferral-approver-selector .ant-typography,
-        .deferral-approver-selector .ant-btn {
-          font-size: 13px !important;
-        }
-        .deferral-approver-selector .ant-select-selector {
-          border: 1px solid rgba(214, 189, 152, 0.2) !important;
-          border-radius: 8px !important;
-          min-height: 42px !important;
-          box-shadow: none !important;
-        }
-        .deferral-approver-selector .ant-select-selector:hover,
-        .deferral-approver-selector .ant-select-focused .ant-select-selector {
-          border-color: var(--color-primary-dark) !important;
-          box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
-        }
-        .deferral-approver-add-btn.ant-btn {
-          width: 100%;
-          margin-top: 10px;
-          border-radius: 8px !important;
-          border: 1px dashed rgba(214, 189, 152, 0.45) !important;
-          background: rgba(245, 247, 244, 0.8) !important;
-          color: var(--color-text-medium) !important;
-          box-shadow: none !important;
-        }
-        .deferral-approver-remove-btn.ant-btn {
-          margin-top: 6px;
-          padding-left: 0 !important;
-          color: #b42318 !important;
-        }
-        .deferral-approver-footer {
-          background: transparent;
-          border-top: 1px solid rgba(214, 189, 152, 0.16);
-          padding: 14px 0 10px;
-          margin-top: 10px;
-        }
-        .deferral-approver-submit.ant-btn {
-          width: 100%;
-          border-radius: 8px !important;
-          border: none !important;
-          background: var(--ncb-primary-500) !important;
-          color: var(--color-white) !important;
-          box-shadow: 0 10px 20px rgba(26, 54, 54, 0.12) !important;
-        }
-        .deferral-approver-submit.ant-btn[disabled],
-        .deferral-approver-submit.ant-btn:disabled {
-          background: #d1d5db !important;
-          color: #6b7280 !important;
-          box-shadow: none !important;
-        }
-        .deferral-approver-status {
-          font-size: 13px;
-          text-align: center;
-          min-height: 36px;
-          padding-top: 10px;
-          line-height: 1.45;
-        }
-        .deferral-approver-status--danger {
-          color: #b42318;
-        }
-        .deferral-approver-status--success {
-          color: #166534;
-          font-weight: 600;
-        }
-        .deferral-approver-status--warning {
-          color: #b45309;
-        }
-        .deferral-approver-matrix-note {
-          margin-top: 4px;
-        }
-        .deferral-approver-selector-title {
-          color: #164679 !important;
-          font-size: 18px !important;
-          font-weight: 700 !important;
-          font-family: inherit !important;
-          letter-spacing: -0.02em;
-          line-height: 1.3;
-          margin: 0 0 12px !important;
-        }
-      `}</style>
-      <div className="deferral-approver-selector-title">
+    <div className="flex flex-col h-full max-h-[78vh] w-full overflow-y-auto overflow-x-hidden px-1 pb-3 min-h-0">
+      <div className="text-[#164679] text-lg font-bold tracking-tight mb-3">
         Approver Selection Matrix
       </div>
 
       {!canDetermineMatrix || requiredSteps === 0 ? (
         <Alert
-          className="deferral-approver-alert"
           type="warning"
           showIcon
           icon={<WarningOutlined />}
           message="Select loan amount and documents to determine approver matrix"
+          className="rounded-lg bg-[rgba(214,189,152,0.12)] border border-[rgba(214,189,152,0.45)] text-gray-700 mb-3"
         />
       ) : (
-        <div className="deferral-approver-summary">
-          <div className="deferral-approver-summary-title">
+        <div className="border border-[rgba(214,189,152,0.28)] rounded-lg p-3 bg-[rgba(245,247,244,0.82)] mb-2.5">
+          <div className="flex items-center gap-1.5 text-gray-700 text-sm font-semibold">
             Applied: {matrixLabel}
           </div>
-          <div className="deferral-approver-summary-caption">
+          <div className="mt-1 text-xs text-gray-500">
             For selected documents with current loan amount
           </div>
-          <div className="deferral-approver-summary-stats">
-            <Text type="secondary" className="deferral-approver-summary-stat">
-              <span>Required Steps:</span>
-              <span className="deferral-approver-summary-pill">
+          <div className="mt-2.5 flex flex-col gap-1.5">
+            <span className="text-xs flex items-center gap-1.5 flex-wrap text-gray-500">
+              Required Steps:
+              <span className="border border-[rgba(214,189,152,0.22)] bg-white text-gray-600 rounded-full px-2 py-0.5 font-semibold">
                 {requiredSteps} levels
               </span>
-            </Text>
-            <Text type="secondary" className="deferral-approver-summary-stat">
-              <span>Completed:</span>
-              <span className="deferral-approver-summary-pill">
+            </span>
+            <span className="text-xs flex items-center gap-1.5 flex-wrap text-gray-500">
+              Completed:
+              <span className="border border-[rgba(214,189,152,0.22)] bg-white text-gray-600 rounded-full px-2 py-0.5 font-semibold">
                 {selectedCount}/{requiredSteps}
               </span>
-            </Text>
+            </span>
           </div>
         </div>
       )}
 
-      <Divider style={{ margin: "16px 0" }} />
+      <Divider className="my-4 border-[rgba(214,189,152,0.18)]" />
 
-      <div className="deferral-approver-list">
+      <div className="flex flex-col gap-3.5">
         {!canDetermineMatrix || requiredSteps === 0 ? (
-          <div className="deferral-approver-empty">
-            <InfoCircleOutlined className="deferral-approver-empty-icon" />
-            <div className="deferral-approver-empty-dots" style={{ fontSize: 32 }}>·</div>
-            <div className="deferral-approver-empty-dots" style={{ fontSize: 28 }}>·</div>
-            <div className="deferral-approver-empty-title">
+          <div className="text-center py-10 px-3.5 text-gray-400">
+            <InfoCircleOutlined className="text-6xl text-[rgba(103,125,106,0.28)]" />
+            <div className="text-[32px] leading-none text-[rgba(103,125,106,0.36)] mt-2">·</div>
+            <div className="text-lg font-semibold text-[rgba(64,83,76,0.52)] mt-3 mb-1.5">
               Approver Matrix Pending
             </div>
-            <Text type="secondary">
+            <span className="text-gray-400 text-sm">
               Select loan amount and documents to determine approver matrix
-            </Text>
+            </span>
           </div>
         ) : (
           <>
             {slots.map((slot, index) => (
-              <div key={`selector-${index}`} className="deferral-approver-slot">
-                <Text strong className="deferral-approver-slot-label">
+              <div key={`selector-${index}`} className="p-3 border border-[rgba(214,189,152,0.18)] rounded-lg bg-white/90">
+                <div className="inline-flex items-center gap-1.5 text-gray-700 text-sm font-semibold mb-2">
                   {getApproverLabel(index)}: {slot.role || "Approver"}
-                </Text>
+                </div>
                 <Select
                   value={slot.userId || undefined}
                   onChange={(value, option) => {
@@ -580,9 +370,7 @@ export default function ApproverSelector({
                       return;
                     }
 
-                    if (!trimmed) {
-                      return;
-                    }
+                    if (!trimmed) return;
 
                     setDirectoryHint(
                       "Type at least 1 character to search Active Directory staff"
@@ -599,7 +387,7 @@ export default function ApproverSelector({
                       );
                     }
                   }}
-                  style={{ width: "100%", marginTop: 6 }}
+                  className="w-full mt-1.5"
                   placeholder="Search Active Directory staff"
                   size="middle"
                   showSearch
@@ -608,11 +396,11 @@ export default function ApproverSelector({
                   loading={isSearchingDirectory}
                   notFoundContent={
                     isSearchingDirectory ? (
-                      <div style={{ textAlign: "center", padding: "10px 0" }}>
+                      <div className="text-center py-2.5">
                         <Spin size="small" />
                       </div>
                     ) : (
-                      <Text type="secondary">{notFoundText}</Text>
+                      <span className="text-gray-400 text-sm">{notFoundText}</span>
                     )
                   }
                 >
@@ -630,15 +418,11 @@ export default function ApproverSelector({
                           }
                         >
                           {approver.name}
-                          {approver.role
-                            ? ` [${approver.role}]`
-                            : ""}
+                          {approver.role ? ` [${approver.role}]` : ""}
                           {(approver.title || approver.position)
                             ? ` — ${approver.title || approver.position}`
                             : ""}
-                          {approver.department
-                            ? ` (${approver.department})`
-                            : ""}
+                          {approver.department ? ` (${approver.department})` : ""}
                         </Option>
                       ))
                     : null}
@@ -648,16 +432,17 @@ export default function ApproverSelector({
                   <Button
                     icon={<PlusOutlined />}
                     onClick={() => handleAddApproverBetween(index + 1)}
-                    className="deferral-approver-add-btn"
-                    aria-label="Add approver"
-                  />
+                    className="w-full mt-2.5 rounded-lg border border-dashed border-[rgba(214,189,152,0.45)] bg-[rgba(245,247,244,0.8)] text-gray-500 shadow-none hover:bg-gray-100"
+                  >
+                    Add Approver
+                  </Button>
                 )}
 
                 {slot.isCustom === true &&
                   typeof removeApprover === "function" && (
                     <Button
                       type="link"
-                      className="deferral-approver-remove-btn"
+                      className="mt-1.5 pl-0 text-red-700"
                       onClick={() => removeApprover(index)}
                     >
                       Remove
@@ -668,45 +453,43 @@ export default function ApproverSelector({
           </>
         )}
       </div>
-      <div className="deferral-approver-footer">
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+
+      <div className="bg-transparent border-t border-[rgba(214,189,152,0.16)] pt-3.5 pb-2.5 mt-2.5">
+        <div className="flex flex-col gap-2">
           <Button
             onClick={handleSubmitClick}
             htmlType="button"
             loading={isSubmitting}
             size="large"
             type="primary"
-            className="deferral-approver-submit"
+            className="w-full rounded-lg border-none bg-[#3ab3e5] text-white shadow-md hover:bg-[#2a8cb5] disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none"
             disabled={!canSubmit}
           >
             {isSubmitting ? "Submitting..." : "Submit Deferral"}
           </Button>
         </div>
 
-        <div className="deferral-approver-status">
+        <div className="text-center text-sm min-h-[36px] pt-2.5 leading-relaxed">
           {!canDetermineMatrix || requiredSteps === 0 ? (
-            <Text type="secondary">
+            <span className="text-gray-500">
               Complete loan amount and document selection first
-            </Text>
+            </span>
           ) : hasDuplicateApprovers ? (
-            <div className="deferral-approver-status--danger">
-              <WarningOutlined /> Same approver cannot be selected in more than
-              one step
+            <div className="text-red-700">
+              <WarningOutlined className="mr-1" /> Same approver cannot be selected in more than one step
             </div>
           ) : canSubmit ? (
-            <div className="deferral-approver-status--success">
-              <CheckCircleOutlined /> All approvers correctly selected
+            <div className="text-green-800 font-semibold">
+              <CheckCircleOutlined className="mr-1" /> All approvers correctly selected
             </div>
           ) : (
-            <div className="deferral-approver-status--warning">
-              <WarningOutlined /> Need {remainingApprovers} more approver(s)
+            <div className="text-amber-700">
+              <WarningOutlined className="mr-1" /> Need {remainingApprovers} more approver(s)
             </div>
           )}
           {canDetermineMatrix && requiredSteps > 0 && (
-            <div className="deferral-approver-matrix-note">
-              <Text type="secondary" style={{ fontSize: 11 }}>
-                Matrix: {matrixLabel}
-              </Text>
+            <div className="mt-1">
+              <span className="text-gray-400 text-[11px]">Matrix: {matrixLabel}</span>
             </div>
           )}
         </div>

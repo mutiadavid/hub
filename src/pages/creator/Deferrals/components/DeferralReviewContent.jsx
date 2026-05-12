@@ -29,38 +29,57 @@ const DeferralReviewContent = ({
   const showDetailsTab = activeTab === "details";
   const showDocumentsTab = activeTab === "documents";
 
+  // Apply font styles to columns
+  const applyFontToColumns = (columns) => {
+    if (!columns) return columns;
+    return columns.map(col => ({
+      ...col,
+      className: "text-md font-normal",
+      render: col.render ? (text, record, index) => {
+        const rendered = col.render(text, record, index);
+        return <span className="text-md font-normal">{rendered}</span>;
+      } : (text) => <span className="text-md font-normal">{text}</span>,
+    }));
+  };
+
+  const styledRequestedDocsColumns = applyFontToColumns(requestedDocsColumns);
+  const styledUploadedDocumentColumns = applyFontToColumns(uploadedDocumentColumns);
+  const styledApprovalFlowColumns = applyFontToColumns(approvalFlowColumns);
+  const styledCloseRequestDocumentColumns = applyFontToColumns(closeRequestDocumentColumns);
+  const styledCloseRequestUploadColumns = applyFontToColumns(closeRequestUploadColumns);
+
   return (
-    <>
+    <div className="text-md font-normal font-['Gothic_A1','Century_Gothic','Gill_Sans','Segoe_UI',sans-serif]">
       {showDetailsTab && (
         <>
           <Card
-            className="deferral-info-card deferral-review-section"
+            className="deferral-info-card deferral-review-section mb-4"
             size="small"
-            title={<span style={{ color: PRIMARY_BLUE }}>Deferral Details</span>}
+            title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Deferral Details</span>}
             style={{ marginBottom: 18 }}
           >
-            <Descriptions className="deferral-review-summary" size="middle" column={{ xs: 1, sm: 2, lg: 3 }}>
-              <Descriptions.Item label="Customer Name">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.customerName}</Typography.Text>
+            <Descriptions className="deferral-review-summary" size="middle" column={{ md: 1, sm: 2, lg: 3 }}>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Customer Name</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: PRIMARY_BLUE }}>{deferral.customerName}</Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Customer Number">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.customerNumber}</Typography.Text>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Customer Number</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: PRIMARY_BLUE }}>{deferral.customerNumber}</Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Deferral No">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.deferralNumber}</Typography.Text>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Deferral No</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: PRIMARY_BLUE }}>{deferral.deferralNumber}</Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="DCL No">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.dclNo || deferral.dclNumber}</Typography.Text>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">DCL No</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: PRIMARY_BLUE }}>{deferral.dclNo || deferral.dclNumber}</Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Loan Type">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{deferral.loanType}</Typography.Text>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Loan Type</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: PRIMARY_BLUE }}>{deferral.loanType}</Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Created At">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>{dayjs(deferral.createdAt).format("DD MMM YYYY")}</Typography.Text>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Created At</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: PRIMARY_BLUE }}>{dayjs(deferral.createdAt).format("DD MMM YYYY")}</Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Status">
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Status</span>}>
                 <Typography.Text
-                  strong
+                  className="text-md font-normal"
                   style={{
                     color:
                       isApprovedTabContext || deferral.status === "approved"
@@ -77,52 +96,74 @@ const DeferralReviewContent = ({
                       : "-"}
                 </Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Creator Status">
-                <Typography.Text style={{ color: creatorApproved ? "green" : PRIMARY_BLUE }}>{creatorStatusLabel}</Typography.Text>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Creator Status</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: creatorApproved ? "green" : PRIMARY_BLUE }}>
+                  {creatorStatusLabel}
+                </Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Checker Status">
-                <Typography.Text style={{ color: checkerApproved ? "green" : PRIMARY_BLUE }}>{checkerStatusLabel}</Typography.Text>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Checker Status</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: checkerApproved ? "green" : PRIMARY_BLUE }}>
+                  {checkerStatusLabel}
+                </Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Approvers Status">
-                <Typography.Text strong style={{ color: PRIMARY_BLUE }}>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Approvers Status</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: PRIMARY_BLUE }}>
                   {approvedApproversCount} of {(deferral.approverFlow || []).length} Approved
                 </Typography.Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Loan Amount">
-                <Typography.Text>{deferral.loanAmount || "Below 75 million"}</Typography.Text>
+              <Descriptions.Item label={<span className="text-md font-normal text-gray-500">Loan Amount</span>}>
+                <Typography.Text className="text-md font-normal" style={{ color: PRIMARY_BLUE }}>{deferral.loanAmount || "Below 75 million"}</Typography.Text>
               </Descriptions.Item>
             </Descriptions>
           </Card>
 
           <Card
-            className="deferral-review-section"
+            className="deferral-review-section mb-4"
             size="small"
-            title={<span style={{ color: PRIMARY_BLUE }}>Review Summary</span>}
+            title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Review Summary</span>}
             style={{ marginBottom: 18 }}
           >
-            <div className="deferral-review-stats">
+            <div className="flex gap-6">
               <div className="deferral-review-stat">
-                <div className="deferral-review-stat__label">Requested Docs</div>
-                <div className="deferral-review-stat__value">{requestedDocsWithDates.length}</div>
+                <div className="text-md font-normal text-gray-500">Requested Docs</div>
+                <div className="text-base font-medium" style={{ color: PRIMARY_BLUE }}>
+                  {requestedDocsWithDates.length}
+                </div>
               </div>
               <div className="deferral-review-stat">
-                <div className="deferral-review-stat__label">Uploaded Docs</div>
-                <div className="deferral-review-stat__value">{dclDocs.length + generalUploadedDocs.length}</div>
+                <div className="text-md font-normal text-gray-500">Uploaded Docs</div>
+                <div className="text-base font-medium" style={{ color: PRIMARY_BLUE }}>
+                  {dclDocs.length + generalUploadedDocs.length}
+                </div>
               </div>
               <div className="deferral-review-stat">
-                <div className="deferral-review-stat__label">Approvals</div>
-                <div className="deferral-review-stat__value">{approvedApproversCount}</div>
+                <div className="text-md font-normal text-gray-500">Approvals</div>
+                <div className="text-base font-medium" style={{ color: PRIMARY_BLUE }}>
+                  {approvedApproversCount}
+                </div>
               </div>
             </div>
           </Card>
 
-          <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Deferral Description</span>} style={{ marginBottom: 18 }}>
-            <div className="deferral-review-text-block">{deferral.deferralDescription || "-"}</div>
+          <Card
+            className="deferral-review-section mb-4"
+            size="small"
+            title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Deferral Description</span>}
+            style={{ marginBottom: 18 }}
+          >
+            <div className="text-md font-normal">
+              {deferral.deferralDescription || "-"}
+            </div>
           </Card>
 
           {deferral.facilities && deferral.facilities.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Facility Details ({deferral.facilities.length})</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card
+              className="deferral-review-section mb-4"
+              size="small"
+              title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Facility Details ({deferral.facilities.length})</span>}
+              style={{ marginBottom: 18 }}
+            >
+              <div className="overflow-x-auto">
                 <Table
                   dataSource={deferral.facilities}
                   columns={getFacilityColumns()}
@@ -136,11 +177,16 @@ const DeferralReviewContent = ({
           )}
 
           {deferral.approverFlow && deferral.approverFlow.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Approval Flow</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card
+              className="deferral-review-section mb-4"
+              size="small"
+              title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Approval Flow</span>}
+              style={{ marginBottom: 18 }}
+            >
+              <div className="overflow-x-auto">
                 <Table
                   dataSource={deferral.approverFlow}
-                  columns={approvalFlowColumns}
+                  columns={styledApprovalFlowColumns}
                   pagination={false}
                   size="small"
                   rowKey={(approver, index) => approver._id || approver.id || `approver-${index}`}
@@ -155,11 +201,16 @@ const DeferralReviewContent = ({
       {showDocumentsTab && (
         <>
           {requestedDocsWithDates.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Document(s) to be deferred ({requestedDocsWithDates.length})</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card
+              className="deferral-review-section mb-4"
+              size="small"
+              title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Document(s) to be deferred ({requestedDocsWithDates.length})</span>}
+              style={{ marginBottom: 18 }}
+            >
+              <div className="overflow-x-auto">
                 <Table
                   dataSource={requestedDocsWithDates}
-                  columns={requestedDocsColumns}
+                  columns={styledRequestedDocsColumns}
                   pagination={false}
                   size="small"
                   rowKey={(doc, index) => doc.id || doc._id || `${doc.name || "doc"}-${index}`}
@@ -170,11 +221,16 @@ const DeferralReviewContent = ({
           )}
 
           {dclDocs.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Mandatory: DCL Upload ✓</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card
+              className="deferral-review-section mb-4"
+              size="small"
+              title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Mandatory: DCL Upload ✓</span>}
+              style={{ marginBottom: 18 }}
+            >
+              <div className="overflow-x-auto">
                 <Table
                   dataSource={dclDocs}
-                  columns={uploadedDocumentColumns}
+                  columns={styledUploadedDocumentColumns}
                   pagination={false}
                   size="small"
                   rowKey={(doc, index) => doc.id || doc._id || `dcl-${index}`}
@@ -185,11 +241,16 @@ const DeferralReviewContent = ({
           )}
 
           {generalUploadedDocs.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Additional Documents ({generalUploadedDocs.length})</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card
+              className="deferral-review-section mb-4"
+              size="small"
+              title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Additional Documents ({generalUploadedDocs.length})</span>}
+              style={{ marginBottom: 18 }}
+            >
+              <div className="overflow-x-auto">
                 <Table
                   dataSource={generalUploadedDocs}
-                  columns={uploadedDocumentColumns}
+                  columns={styledUploadedDocumentColumns}
                   pagination={false}
                   size="small"
                   rowKey={(doc, index) => doc.id || doc._id || `upload-${index}`}
@@ -200,11 +261,16 @@ const DeferralReviewContent = ({
           )}
 
           {isCloseRequestContext && closeRequestDocuments.length > 0 && (
-            <Card className="deferral-review-section" size="small" title={<span style={{ color: PRIMARY_BLUE }}>Close Request Documents ({closeRequestDocuments.length})</span>} style={{ marginBottom: 18 }}>
-              <div className="deferral-review-table-shell">
+            <Card
+              className="deferral-review-section mb-4"
+              size="small"
+              title={<span className="text-sm font-normal" style={{ color: PRIMARY_BLUE }}>Close Request Documents ({closeRequestDocuments.length})</span>}
+              style={{ marginBottom: 18 }}
+            >
+              <div className="overflow-x-auto">
                 <Table
                   dataSource={closeRequestColumns}
-                  columns={closeRequestDocumentColumns}
+                  columns={styledCloseRequestDocumentColumns}
                   pagination={false}
                   size="small"
                   rowKey={(document) => document.key || document.documentName}
@@ -213,13 +279,13 @@ const DeferralReviewContent = ({
                       document.uploads?.length > 0 ? (
                         <Table
                           dataSource={document.uploads}
-                          columns={closeRequestUploadColumns}
+                          columns={styledCloseRequestUploadColumns}
                           pagination={false}
                           size="small"
                           rowKey={(upload, index) => upload.id || upload._id || `${document.key}-upload-${index}`}
                         />
                       ) : (
-                        <div style={{ color: "#94a3b8", fontSize: 12, padding: "4px 0" }}>
+                        <div className="text-md font-normal text-gray-400 py-1">
                           No uploaded close-request evidence found for this document.
                         </div>
                       ),
@@ -232,7 +298,7 @@ const DeferralReviewContent = ({
           )}
         </>
       )}
-    </>
+    </div>
   );
 };
 

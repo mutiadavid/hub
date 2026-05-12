@@ -1,44 +1,32 @@
 import React from "react";
-import { Spin } from "antd";
-import { formatCommentTimestamp } from "../../../../utils/checklistUtils";
+import CommentTrail from "./CommentTrail";
 
+/**
+ * DeferralReviewSidebar Component - Comments only
+ */
 const DeferralReviewSidebar = ({
-  isPostingComment,
   history,
+  isLoadingHistory,
+  comments,
+  commentsLoading,
 }) => {
-  const recentComments = Array.isArray(history) ? [...history].reverse() : [];
-
   return (
-    <aside className="deferral-review-sidebar">
-      <div className="deferral-review-sidebar__section">
-        <div className="deferral-review-sidebar__title">Recent Comments</div>
-        {isPostingComment ? (
-          <div className="deferral-review-sidebar__empty">
-            <Spin size="small" />
-          </div>
-        ) : recentComments.length === 0 ? (
-          <div className="deferral-review-sidebar__empty">No user comments yet.</div>
-        ) : (
-          <div className="deferral-review-sidebar__history">
-            {recentComments.map((item, index) => (
-              <div key={`${item.date || item.createdAt || "comment"}-${index}`} className="deferral-review-sidebar__history-item">
-                <div className="deferral-review-sidebar__history-meta">
-                  <span className="deferral-review-sidebar__history-user">{item.user || item.userName || "User"}</span>
-                  <span className="deferral-review-sidebar__history-time">
-                    {formatCommentTimestamp(
-                      item.date || item.createdAt || item.timestamp || "",
-                    )}
-                  </span>
-                </div>
-                <div className="deferral-review-sidebar__history-text">
-                  {item.comment || item.notes || item.message || item.text || "No comment provided."}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="bg-white border border-[rgba(214,189,152,0.2)] rounded-xl shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-3 py-2 border-b border-[rgba(214,189,152,0.2)]">
+        <div className="text-xs font-semibold tracking-wide uppercase text-gray-500">
+          Comments
+        </div>
       </div>
-    </aside>
+
+      {/* Body - No scrollbar, natural flow */}
+      <div className="p-3">
+        <div className="text-xs font-medium text-gray-600 mb-2">
+          Comment Trail & History
+        </div>
+        <CommentTrail history={history || comments} isLoading={isLoadingHistory || commentsLoading} />
+      </div>
+    </div>
   );
 };
 
