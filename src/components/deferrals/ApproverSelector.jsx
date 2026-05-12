@@ -215,16 +215,15 @@ export default function ApproverSelector({
       .trim()
       .toLowerCase();
 
-    if (!normalizedQuery) {
-      return directoryApprovers;
-    }
-
-    // Always keep selected approvers visible even if they don't match the current filter.
     const selectedIdSet = new Set(selectedUserIds.map(String));
 
-    return (directoryApprovers || []).filter((user) => {
+    let list = (directoryApprovers || []).filter((user) => {
       const id = String(user?.id ?? user?._id ?? "");
       if (selectedIdSet.has(id)) return true;
+
+      if (!normalizedQuery) {
+        return true;
+      }
 
       const haystack = [
         user?.name,
@@ -233,6 +232,7 @@ export default function ApproverSelector({
         user?.department,
         user?.title,
         user?.position,
+        user?.role,
       ]
         .filter(Boolean)
         .join(" ")
@@ -240,6 +240,14 @@ export default function ApproverSelector({
 
       return haystack.includes(normalizedQuery);
     });
+
+    list = [...list].sort((a, b) =>
+      String(a?.name || "").localeCompare(String(b?.name || ""), undefined, {
+        sensitivity: "base",
+      }),
+    );
+
+    return list;
   }, [directoryApprovers, directorySearchText, selectedUserIds]);
 
   const notFoundText = useMemo(() => {
@@ -568,7 +576,7 @@ export default function ApproverSelector({
                     if (trimmed.length >= 1) {
                       directorySearchDebounceRef.current = setTimeout(() => {
                         searchDirectoryOnServer(trimmed);
-                      }, 220);
+                      }, 120);
                       return;
                     }
 

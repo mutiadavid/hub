@@ -16,6 +16,7 @@ import {
   formatLoanType,
 } from "../utils/helpers";
 import { handleViewDocument, handleDownload } from "../utils/fileUtils";
+import { formatCommentTimestamp } from "../../../../utils/checklistUtils";
 
 const { Title } = Typography;
 
@@ -432,7 +433,7 @@ export default function DeferralConfirmationModal({
                           </div>
                           <div style={{ fontSize: 12, color: "#777" }}>
                             {item.createdAt
-                              ? new Date(item.createdAt).toLocaleString()
+                              ? formatCommentTimestamp(item.createdAt)
                               : ""}
                           </div>
                         </div>

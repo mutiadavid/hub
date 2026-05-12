@@ -115,6 +115,7 @@ export const formatKenyaDateTime = (date, options = {}) => {
 export const formatDateTimeDetailed = (date) =>
     formatKenyaDateTime(date, { includeSeconds: true, includeTimezone: true });
 
+/** Human-readable date + time for comment trails (no raw ISO / milliseconds). */
 export const formatCommentTimestamp = (date) => {
     const normalizedDate = normalizeBackendDate(date);
     if (!normalizedDate) return "";
@@ -311,32 +312,32 @@ export const getStatusConfig = (status) => {
         approved: { color: GREEN, bgColor: "#f6ffed", label: "Approved" },
         submitted: { color: GREEN, bgColor: "#f6ffed", label: "Submitted" },              
         submitted_for_review: { color: GREEN, bgColor: "#f6ffed", label: "Submitted for Review" },
-        
+       
         // Pending statuses - RED (Awaiting action)
         pending: { color: RED, bgColor: "#ffebe6", label: "Pending" },
         pending_from_customer: { color: RED, bgColor: "#ffebe6", label: "Pending from Customer" },
         pendingrm: { color: RED, bgColor: "#ffebe6", label: "Pending RM" },
         pendingco: { color: RED, bgColor: "#ffebe6", label: "Pending Co" },
-        
+       
         // Document review/sighting statuses - GREEN (Success)
         sighted: { color: GREEN, bgColor: "#f6ffed", label: "Sighted" },                  
         tbo: { color: AMBER, bgColor: "#fffbe6", label: "TBO" },                        
-        
+       
         // Rejection/Deferral
         rejected: { color: RED, bgColor: "#ffebe6", label: "Rejected" },
         deferred: { color: AMBER, bgColor: "#fffbe6", label: "Deferred" },
         defferal_requested: { color: AMBER, bgColor: "#fffbe6", label: "Deferral Requested" },
-        
+       
         // Miscellaneous
         waived: { color: AMBER, bgColor: "#fffbe6", label: "Waived" },
         expired: { color: RED, bgColor: "#ffebe6", label: "Expired" },
         current: { color: GREEN, bgColor: "#f6ffed", label: "Current" },
-        
+       
         // Review stages (using same color scheme)
         co_review: { color: RED, bgColor: "#ffebe6", label: "Co Review" },
         rm_review: { color: RED, bgColor: "#ffebe6", label: "RM Review" },
         co_checker_review: { color: RED, bgColor: "#ffebe6", label: "Co-Checker Review" },
-        
+       
         // Completion statuses
         completed: { color: GREEN, bgColor: "#f6ffed", label: "Completed" },
         draft: { color: DEFAULT, bgColor: "#fafafa", label: "Draft" },
@@ -412,7 +413,7 @@ export const calculateDocumentStats = (docs = []) => {
 /**
  * Format file size in bytes to human-readable string
  * @param {number} bytes - File size in bytes
- * @returns {string} 
+ * @returns {string}
  */
 export const formatFileSize = (bytes) => {
     if (bytes === 0) return "0 Bytes";

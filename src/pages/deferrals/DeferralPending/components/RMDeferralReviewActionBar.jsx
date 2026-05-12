@@ -12,7 +12,7 @@ const RMDeferralReviewActionBar = ({
   onResubmit,
   resubmitLoading,
   extensionSubmissionSuccess,
-  hasOpenExtensionRequest,
+  extensionPipelineBlocksRmCloseRequest = false,
   hasOpenCloseRequest,
   onApplyExtension,
   closeLoading,
@@ -25,10 +25,12 @@ const RMDeferralReviewActionBar = ({
   const showApprovedActionSet = !readOnly && activeTab === "approved";
   const canApplyExtension =
     showApprovedActionSet &&
-    (((!hasOpenExtensionRequest && !hasOpenCloseRequest) || extensionSubmissionSuccess));
+    (((!extensionPipelineBlocksRmCloseRequest && !hasOpenCloseRequest) ||
+      extensionSubmissionSuccess));
   const canOpenCloseRequest =
     showApprovedActionSet &&
-    (((!hasOpenExtensionRequest && !hasOpenCloseRequest) || extensionSubmissionSuccess));
+    (((!extensionPipelineBlocksRmCloseRequest && !hasOpenCloseRequest) ||
+      extensionSubmissionSuccess));
 
   return (
     <div className="deferral-review-actionbar">

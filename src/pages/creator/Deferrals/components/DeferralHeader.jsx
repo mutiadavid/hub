@@ -9,9 +9,7 @@ import { ReloadOutlined, DownloadOutlined } from "@ant-design/icons";
 const DeferralHeader = ({
   deferrals,
   onRefresh,
-  onExport,
   loading,
-  disabledExport,
 }) => {
   return (
     <div className="deferrals-header">
@@ -32,15 +30,6 @@ const DeferralHeader = ({
             className="deferrals-header__button deferrals-header__button--primary"
           >
             Refresh
-          </Button>
-
-          <Button
-            icon={<DownloadOutlined />}
-            onClick={onExport}
-            disabled={disabledExport}
-            className="deferrals-header__button"
-          >
-            Export
           </Button>
         </div>
       </div>

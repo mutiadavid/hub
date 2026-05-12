@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Table,
@@ -71,6 +70,50 @@ const isApprovalMarkedApproved = (approver) =>
   )
     .trim()
     .toLowerCase() === "approved";
+
+/** RM close-request / apply-extension until extension is fully done, including checker sign-off. */
+const getExtensionPipelineBlocksRmCloseRequest = (deferralPayload) => {
+  if (!deferralPayload) return false;
+  const extensionRecords = Array.isArray(deferralPayload.extensions)
+    ? deferralPayload.extensions
+    : [];
+  const extStatusLower = String(deferralPayload.extensionStatus || "")
+    .trim()
+    .toLowerCase();
+  const hasOpenExtensionRequest =
+    !["approved", "rejected", "withdrawn", ""].includes(extStatusLower) ||
+    extensionRecords.some((extension) => {
+      const status = String(extension?.status || extension?.Status || "")
+        .trim()
+        .toLowerCase();
+      return status && !["approved", "rejected", "withdrawn"].includes(status);
+    });
+  if (hasOpenExtensionRequest) return true;
+  const currentExtension =
+    [...extensionRecords]
+      .reverse()
+      .find((extension) => {
+        const status = String(extension?.status || extension?.Status || "")
+          .trim()
+          .toLowerCase();
+        return status && !["approved", "rejected", "withdrawn"].includes(status);
+      }) || extensionRecords[extensionRecords.length - 1] || null;
+  if (!currentExtension) return false;
+  const st = String(currentExtension?.status || currentExtension?.Status || "")
+    .trim()
+    .toLowerCase();
+  if (st !== "approved") return false;
+  const chk = String(
+    currentExtension?.checkerApprovalStatus ||
+      currentExtension?.checkerStatus ||
+      currentExtension?.CheckerApprovalStatus ||
+      "",
+  )
+    .trim()
+    .toLowerCase();
+  if (chk === "approved" || chk === "rejected") return false;
+  return true;
+};
 
 const GENERIC_ROLE_LABELS = new Set([
   "user",
@@ -162,11 +205,7 @@ const dedupeHistoryEntries = (entries) => {
   });
 
   return deduped
-    .sort((a, b) => {
-      const timeA = dayjs(a.date || a.createdAt || 0).valueOf();
-      const timeB = dayjs(b.date || b.createdAt || 0).valueOf();
-      return timeA - timeB;
-    })
+    .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
     .map((entry) => {
       const nextEntry = { ...entry };
       delete nextEntry.__index;
@@ -1090,18 +1129,20 @@ const DeferralDetailsModal = ({
   };
 
   const handleApproverSelection = (idx, option) => {
-    if (!option || editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") return;
+    if (option == null || editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") return;
 
     const selectedApprover = option?.directoryApprover || null;
+    const resolvedName =
+      selectedApprover?.name ||
+      (typeof option?.label === "string" ? option.label : "") ||
+      "";
 
     setEditedApprovers((prev) => {
       const updated = [...prev];
       updated[idx] = {
         ...updated[idx],
         userId: option.value,
-        name: typeof option.label === "string"
-          ? option.label
-          : updated[idx]?.name || "",
+        name: resolvedName,
         email: selectedApprover?.email || "",
         samAccountName: selectedApprover?.samAccountName || "",
         department: selectedApprover?.department || "",
@@ -1180,6 +1221,13 @@ const DeferralDetailsModal = ({
       setConfirmingApprovers(false);
     }
   };
+
+  useEffect(() => {
+    if (!open || !deferral) return;
+    const payload = fullDeferral || deferral;
+    if (!getExtensionPipelineBlocksRmCloseRequest(payload)) return;
+    setWorkspaceTab((tab) => (tab === "close-request" ? "details" : tab));
+  }, [open, deferral, fullDeferral]);
 
   if (!open || !deferral) return null;
 
@@ -1299,10 +1347,15 @@ const DeferralDetailsModal = ({
     .trim()
     .toLowerCase();
   const normalizedExtensionCheckerApprovalStatus = String(
-    currentExtension?.checkerApprovalStatus || "",
+    currentExtension?.checkerApprovalStatus ||
+      currentExtension?.checkerStatus ||
+      currentExtension?.CheckerApprovalStatus ||
+      "",
   )
     .trim()
     .toLowerCase();
+  const extensionPipelineBlocksRmCloseRequest =
+    getExtensionPipelineBlocksRmCloseRequest(displayDeferral);
   const deferralStatusLabel = isWithdrawnDeferral
     ? "Withdrawn"
     : isRejectedDeferral
@@ -1573,7 +1626,12 @@ const DeferralDetailsModal = ({
           .every(isApprovalMarkedApproved);
         const isCurrent = !isApprovedInDeferral && previousApprovalsComplete;
 
-        if (activeTab === "closed" || !isCurrent || !canShowRemindButton) {
+        if (
+          activeTab === "closed" ||
+          activeTab === "rejected" ||
+          !isCurrent ||
+          !canShowRemindButton
+        ) {
           return <span style={{ color: "#94a3b8" }}>-</span>;
         }
 
@@ -1768,7 +1826,9 @@ const DeferralDetailsModal = ({
               onResubmit={handleResubmitDeferral}
               resubmitLoading={resubmitLoading}
               extensionSubmissionSuccess={false}
-              hasOpenExtensionRequest={hasOpenExtensionRequest}
+              extensionPipelineBlocksRmCloseRequest={
+                extensionPipelineBlocksRmCloseRequest
+              }
               hasOpenCloseRequest={hasOpenCloseRequest}
               onApplyExtension={handleApplyExtensionClick}
               closeLoading={closeLoading}
@@ -1804,7 +1864,9 @@ const DeferralDetailsModal = ({
                     Edit Approvers
                   </button>
                 )}
-                {!readOnly && activeTab === "approved" && (
+                {!readOnly &&
+                  activeTab === "approved" &&
+                  !extensionPipelineBlocksRmCloseRequest && (
                   <button
                     type="button"
                     className={`deferral-review-tab ${workspaceTab === "close-request" ? "deferral-review-tab--active" : ""}`}
@@ -1865,7 +1927,8 @@ const DeferralDetailsModal = ({
                     />
                   )}
 
-                  {workspaceTab === "close-request" && (
+                  {workspaceTab === "close-request" &&
+                    !extensionPipelineBlocksRmCloseRequest && (
                     <CloseRequestModal
                       key={`${displayDeferral?._id || displayDeferral?.id || "deferral"}-close-request`}
                       embedded

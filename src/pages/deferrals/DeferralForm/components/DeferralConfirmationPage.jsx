@@ -12,6 +12,7 @@ import {
   parseLoanAmount,
 } from "../utils/helpers";
 import { handleDownload, handleViewDocument } from "../utils/fileUtils";
+import { formatCommentTimestamp } from "../../../../utils/checklistUtils";
 
 const TABS = [
   { key: "details", label: "Request Details" },
@@ -708,7 +709,9 @@ export default function DeferralConfirmationPage({
                           <div className="deferral-confirm-comment-message">{item.message}</div>
                           <div className="deferral-confirm-comment-meta">
                             {item.user?.role || "User"}
-                            {item.createdAt ? ` • ${new Date(item.createdAt).toLocaleString()}` : ""}
+                            {item.createdAt
+                              ? ` • ${formatCommentTimestamp(item.createdAt)}`
+                              : ""}
                           </div>
                         </div>
                       ))}

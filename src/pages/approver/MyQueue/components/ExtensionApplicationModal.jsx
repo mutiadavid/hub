@@ -48,7 +48,7 @@ const primaryButtonClassName = "rounded-lg! border-0! bg-(--ncb-primary-500)! te
 
 const secondaryButtonClassName = "rounded-lg! border-(--color-primary-soft)! bg-transparent! text-(--color-primary-medium)! shadow-none! hover:border-(--color-primary-soft)! hover:bg-[rgba(214,189,152,0.1)]! hover:text-(--color-primary-dark)! focus:border-(--color-primary-soft)! focus:bg-[rgba(214,189,152,0.1)]! focus:text-(--color-primary-dark)! active:border-(--color-primary-soft)! active:bg-[rgba(214,189,152,0.1)]! active:text-(--color-primary-dark)! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-white! disabled:[&>span]:text-white!";
 
-const editDecisionModalWrapClassName = "approver-extension-decision-modal [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:mb-0 [&_.ant-modal-header]:border-b-0 [&_.ant-modal-header]:bg-[linear-gradient(180deg,#34504c_0%,#2b4541_100%)] [&_.ant-modal-header]:px-[24px] [&_.ant-modal-header]:pb-[16px] [&_.ant-modal-header]:pt-[18px] [&_.ant-modal-title]:text-white [&_.ant-modal-close]:top-4 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-[rgba(255,255,255,0.88)] hover:[&_.ant-modal-close]:bg-[rgba(255,255,255,0.12)] hover:[&_.ant-modal-close]:text-white [&_.ant-modal-body]:max-h-[70vh] [&_.ant-modal-body]:overflow-y-auto [&_.ant-modal-body]:bg-[#f7f6f2] [&_.ant-modal-body]:px-[24px] [&_.ant-modal-body]:pb-[20px] [&_.ant-modal-body]:pt-[20px] [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-[#f7f6f2] [&_.ant-modal-footer]:px-[24px] [&_.ant-modal-footer]:pb-[20px] [&_.ant-modal-footer]:pt-0";
+const editDecisionModalWrapClassName = "approver-extension-decision-modal [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:mb-0 [&_.ant-modal-header]:border-b-0 [&_.ant-modal-header]:bg-[linear-gradient(180deg,#34504c_0%,#2b4541_100%)] [&_.ant-modal-header]:px-[26px] [&_.ant-modal-header]:pb-[18px] [&_.ant-modal-header]:pt-[22px] [&_.ant-modal-title]:text-white [&_.ant-modal-close]:top-5 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-[rgba(255,255,255,0.88)] hover:[&_.ant-modal-close]:bg-[rgba(255,255,255,0.12)] hover:[&_.ant-modal-close]:text-white [&_.ant-modal-body]:max-h-[70vh] [&_.ant-modal-body]:overflow-y-auto [&_.ant-modal-body]:bg-[#f7f6f2] [&_.ant-modal-body]:px-[26px] [&_.ant-modal-body]:pb-6 [&_.ant-modal-body]:pt-7 [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-[#f7f6f2] [&_.ant-modal-footer]:px-[26px] [&_.ant-modal-footer]:pb-6 [&_.ant-modal-footer]:pt-0";
 
 const decisionSecondaryButtonClassName = "min-w-[92px]! h-11! rounded-[10px]! border-[#d0d5dd]! bg-white! text-(--color-text-medium)! shadow-none! font-semibold! hover:border-[#d0d5dd]! hover:bg-white! hover:text-(--color-text-medium)! focus:border-[#d0d5dd]! focus:bg-white! focus:text-(--color-text-medium)! active:border-[#d0d5dd]! active:bg-white! active:text-(--color-text-medium)! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! disabled:[&>span]:text-[#6b7280]!";
 
@@ -356,10 +356,11 @@ const ExtensionApplicationModal = ({
   }) => (
     <Modal
       title={(
-        <div className={`flex items-start gap-3 pr-9 text-white ${titleClassName || ""}`.trim()}>
-          <span className={`inline-flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-[12px] border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.92)] [&_svg]:h-[22px] [&_svg]:w-[22px] ${titleIconClassName || ""}`.trim()}>{titleIcon}</span>
+        <div className={`flex items-start gap-4 pr-9 text-white ${titleClassName || ""}`.trim()}>
+          <span className={`inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.92)] [&_svg]:h-[26px] [&_svg]:w-[26px] ${titleIconClassName || ""}`.trim()}>{titleIcon}</span>
           <span className={`flex flex-col gap-0.5 ${titleCopyClassName || ""}`.trim()}>
             <span className="font-bold text-white">{title}</span>
+            {/* Moved subtitle to summary body */}
           </span>
         </div>
       )}
@@ -387,32 +388,32 @@ const ExtensionApplicationModal = ({
         </Button>,
       ]}
     >
-      <div className={`rounded-xl border border-[rgba(214,189,152,0.22)] bg-white ${cardClassName || "p-4"}`.trim()}>
-        <div className={`rounded-[12px] border border-[rgba(214,189,152,0.18)] bg-[rgba(255,255,255,0.98)] px-4 pb-3 pt-3.5 shadow-[0_10px_28px_rgba(26,54,54,0.06)] ${summaryClassName || ""}`.trim()}>
-          <div className="text-sm font-medium text-(--color-text-dark)">
+      <div className={`rounded-xl border border-[rgba(214,189,152,0.22)] bg-white p-3.5 ${cardClassName || ""}`.trim()}>
+        <div className={`mb-3 rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-[rgba(255,255,255,0.98)] px-[18px] pb-4 pt-[18px] shadow-[0_10px_28px_rgba(26,54,54,0.06)] ${summaryClassName || ""}`.trim()}>
+          <div className="font-normal text-(--color-text-dark)">
             {extensionLabel || "Extension request"}
           </div>
-          <div className="mt-1 text-xs text-(--color-text-medium)">
+          <div className="mt-1 text-xs text-(--color-text-dark)">
             {currentExtension.customerName || linkedDeferral.customerName || "Customer"}
           </div>
-          <div className="mt-1 text-xs text-(--color-text-medium)">
+          <div className="mt-2 text-xs text-(--color-text-dark)">
             {subtitle}
           </div>
-          <div className="mt-2 text-sm text-(--color-text-dark) border-t border-[rgba(214,189,152,0.12)] pt-2.5">
+          <div className="mt-2 text-xs text-(--color-text-dark)">
             {summaryCopy}
           </div>
         </div>
 
-        <label className={`mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-(--color-text-medium) ${labelClassName || ""}`.trim()}>
+        <label className={`mb-2 block text-[11px] font-bold uppercase tracking-[0.16em] text-(--color-text-medium) ${labelClassName || ""}`.trim()}>
           {inputLabel}
           {inputRequired ? " (Required)" : ""}
         </label>
         <Input.TextArea
-          rows={3}
+          rows={4}
           value={inputValue}
           onChange={(event) => onInputChange(event.target.value)}
           placeholder={inputPlaceholder}
-          className="[&.ant-input]:min-h-[100px] [&.ant-input]:rounded-[8px] [&.ant-input]:border-[#eaecf0] [&.ant-input]:bg-white [&.ant-input]:p-3 [&.ant-input]:text-[14px] [&.ant-input]:text-(--color-text-dark) [&.ant-input]:shadow-none [&.ant-input]:placeholder:text-[#98a2b3] hover:[&.ant-input]:border-(--color-primary-dark) focus:[&.ant-input]:border-(--color-primary-dark) focus:[&.ant-input]:shadow-[0_0_0_2px_rgba(26,54,54,0.08)]"
+          className="[&.ant-input]:min-h-[120px] [&.ant-input]:rounded-[10px] [&.ant-input]:border-[#eaecf0] [&.ant-input]:bg-white [&.ant-input]:p-3.5 [&.ant-input]:text-[15px] [&.ant-input]:text-(--color-text-dark) [&.ant-input]:shadow-none [&.ant-input]:placeholder:text-[#98a2b3] hover:[&.ant-input]:border-(--color-primary-dark) focus:[&.ant-input]:border-(--color-primary-dark) focus:[&.ant-input]:shadow-[0_0_0_2px_rgba(26,54,54,0.08)]"
         />
       </div>
     </Modal>
@@ -674,10 +675,10 @@ const ExtensionApplicationModal = ({
         modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
         titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
         titleIconClassName: "",
-        titleCopyClassName: "[&>span]:text-[18px] [&>span]:font-bold",
-        cardClassName: "p-4",
-        summaryClassName: "mb-4",
-        labelClassName: "mb-1.5 text-(--color-text-medium)",
+        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
+        cardClassName: "border-0 bg-transparent p-0 shadow-none",
+        summaryClassName: "mb-6",
+        labelClassName: "mb-2 text-(--color-text-medium)",
         cancelButtonClassName: "",
         confirmButtonClassName: "",
       })}
@@ -692,7 +693,7 @@ const ExtensionApplicationModal = ({
           setReworkReason("");
         },
         onConfirm: handleReturnForRework,
-        confirmText: "Yes, Return for Rework",
+        confirmText: "Return for Rework",
         confirmLoading: reworkLoading,
         confirmDisabled: !reworkReason.trim(),
         confirmClassName: "",
@@ -705,10 +706,10 @@ const ExtensionApplicationModal = ({
         modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
         titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
         titleIconClassName: "",
-        titleCopyClassName: "[&>span]:text-[18px] [&>span]:font-bold",
-        cardClassName: "p-4",
-        summaryClassName: "mb-4",
-        labelClassName: "mb-1.5 text-(--color-text-medium)",
+        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
+        cardClassName: "border-0 bg-transparent p-0 shadow-none",
+        summaryClassName: "mb-6",
+        labelClassName: "mb-2 text-(--color-text-medium)",
         cancelButtonClassName: "",
         confirmButtonClassName: "",
       })}
@@ -736,10 +737,10 @@ const ExtensionApplicationModal = ({
         modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
         titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
         titleIconClassName: "",
-        titleCopyClassName: "[&>span]:text-[18px] [&>span]:font-bold",
-        cardClassName: "p-4",
-        summaryClassName: "mb-4",
-        labelClassName: "mb-1.5 text-(--color-text-medium)",
+        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
+        cardClassName: "border-0 bg-transparent p-0 shadow-none",
+        summaryClassName: "mb-6",
+        labelClassName: "mb-2 text-(--color-text-medium)",
         cancelButtonClassName: "",
         confirmButtonClassName: "",
       })}

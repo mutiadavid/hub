@@ -1,13 +1,6 @@
 import React from "react";
-import dayjs from "dayjs";
 import UniformTag from "../../../../components/common/UniformTag";
-
-const formatTimestamp = (value) => {
-  if (!value) return "";
-  const parsed = dayjs(value);
-  if (!parsed.isValid()) return String(value);
-  return parsed.format("DD MMM YYYY HH:mm");
-};
+import { formatCommentTimestamp } from "../../../../utils/checklistUtils";
 
 const getRoleTag = (role) => {
   const roleLower = String(role || "").toLowerCase();
@@ -71,7 +64,11 @@ const RMDeferralReviewSidebar = ({ history }) => {
                     <span className="deferral-review-sidebar__history-user">{item.user || item.userName || "User"}</span>
                     {getRoleTag(item.userRole || item.role)}
                   </div>
-                  <span className="deferral-review-sidebar__history-time">{formatTimestamp(item.date || item.createdAt || item.timestamp)}</span>
+                  <span className="deferral-review-sidebar__history-time">
+                    {formatCommentTimestamp(
+                      item.date || item.createdAt || item.timestamp || "",
+                    )}
+                  </span>
                 </div>
                 <div className="deferral-review-sidebar__history-text">
                   {item.comment || item.notes || item.message || item.text || "No comment provided."}

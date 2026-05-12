@@ -3,8 +3,6 @@ import {
   Button,
   Descriptions,
   Empty,
-  Input,
-  Modal,
   Table,
   Typography,
   message,
@@ -36,6 +34,7 @@ import {
   WARNING_ORANGE,
 } from "../utils/constants";
 import CommentTrail from "./CommentTrail";
+import DeferralDecisionModal from "../../../../components/deferrals/DeferralDecisionModal";
 
 const TABS = [
   { key: "details", label: "Deferral Details" },
@@ -151,12 +150,6 @@ const tableShellClassName = "overflow-hidden rounded-xl border border-[rgba(214,
 const primaryButtonClassName = "rounded-lg! border-0! bg-(--ncb-primary-500)! text-white! shadow-none! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! [&>span]:text-white! disabled:[&>span]:text-[#6b7280]!";
 
 const secondaryButtonClassName = "rounded-lg! border-(--color-primary-soft)! bg-transparent! text-(--color-primary-medium)! shadow-none! hover:border-(--color-primary-soft)! hover:bg-[rgba(214,189,152,0.1)]! hover:text-(--color-primary-dark)! focus:border-(--color-primary-soft)! focus:bg-[rgba(214,189,152,0.1)]! focus:text-(--color-primary-dark)! active:border-(--color-primary-soft)! active:bg-[rgba(214,189,152,0.1)]! active:text-(--color-primary-dark)! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! disabled:[&>span]:text-[#6b7280]!";
-
-const decisionSecondaryButtonClassName = "min-w-[92px]! h-11! rounded-[10px]! border-[#d0d5dd]! bg-white! text-(--color-text-medium)! shadow-none! font-semibold! hover:border-[#d0d5dd]! hover:bg-[#f8fafc]! hover:text-(--color-text-dark)! focus:border-[#d0d5dd]! focus:bg-[#f8fafc]! focus:text-(--color-text-dark)! active:border-[#d0d5dd]! active:bg-[#f8fafc]! active:text-(--color-text-dark)! max-sm:w-full";
-
-const decisionPrimaryButtonClassName = "min-w-[156px]! h-11! rounded-[10px]! border-0! bg-(--ncb-primary-500)! text-white! shadow-[0_10px_20px_rgba(58,179,229,0.18)]! font-bold! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white! max-sm:w-full";
-
-const decisionModalWrapClassName = "approver-decision-modal [&_.ant-modal]:max-sm:mx-auto [&_.ant-modal]:max-sm:my-3 [&_.ant-modal]:max-sm:max-w-[calc(100vw-24px)] [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:m-0 [&_.ant-modal-header]:border-b [&_.ant-modal-header]:border-[rgba(214,189,152,0.18)] [&_.ant-modal-header]:bg-white! [&_.ant-modal-title]:text-(--color-text-dark) [&_.ant-modal-close]:top-5 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-(--color-text-medium) hover:[&_.ant-modal-close]:bg-[rgba(214,189,152,0.12)] hover:[&_.ant-modal-close]:text-(--color-text-dark) [&_.ant-modal-body]:bg-white [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-white [&_.ant-modal-footer]:pt-0";
 
 const renderStatusLabel = (status) =>
   String(status || "pending")
@@ -479,97 +472,6 @@ const DeferralDetailsModal = ({
     }
   };
 
-  const renderDecisionModal = ({
-    title,
-    subtitle,
-    titleIcon,
-    open: modalOpen,
-    onCancel,
-    onConfirm,
-    confirmText,
-    confirmLoading,
-    confirmDisabled = false,
-    confirmClassName,
-    summaryCopy,
-    inputLabel,
-    inputRequired = false,
-    inputValue,
-    onInputChange,
-    inputPlaceholder,
-  }) => (
-    <Modal
-      title={(
-        <div className="flex items-start gap-4 pr-9 max-sm:gap-3 max-sm:pr-6">
-          {titleIcon ? (
-            <span className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(214,189,152,0.2)] bg-[rgba(26,54,54,0.04)] text-(--color-text-dark) [&_.anticon]:text-[22px] max-sm:h-11 max-sm:w-11">{titleIcon}</span>
-          ) : null}
-          <span className="flex flex-col gap-1.5">
-            <strong className="text-[20px] font-bold leading-[1.2] text-(--color-text-dark) max-sm:text-[18px]">{title}</strong>
-            <span className="text-[13px] leading-[1.45] text-(--color-text-medium)">{subtitle}</span>
-          </span>
-        </div>
-      )}
-      open={modalOpen}
-      onCancel={onCancel}
-      maskClosable={false}
-      wrapClassName={decisionModalWrapClassName}
-      styles={{
-        header: { background: "white", margin: 0, padding: "22px 26px 18px" },
-        body: { background: "white", padding: "28px 26px 24px" },
-        footer: { background: "white", padding: "0 26px 24px", margin: 0 },
-        content: { background: "white", padding: 0 }
-      }}
-      width={760}
-      footer={[
-        <div key="actions" className="flex justify-end gap-3 max-sm:flex-col-reverse">
-          <Button
-            className={decisionSecondaryButtonClassName}
-            onClick={onCancel}
-            disabled={confirmLoading}
-          >
-            Cancel
-          </Button>,
-          <Button
-            className={`${decisionPrimaryButtonClassName} ${confirmClassName || ""}`.trim()}
-            loading={confirmLoading}
-            onClick={onConfirm}
-            disabled={confirmDisabled}
-          >
-            {confirmText}
-          </Button>
-        </div>,
-      ]}
-    >
-      <div className="rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-[rgba(255,255,255,0.98)] p-5 shadow-[0_10px_28px_rgba(26,54,54,0.06)] max-sm:p-3.5 [&_.ant-input]:min-h-[132px] [&_.ant-input]:rounded-[10px] [&_.ant-input]:border-[#eaecf0] [&_.ant-input]:bg-white [&_.ant-input]:p-3.5 [&_.ant-input]:text-[15px] [&_.ant-input]:text-(--color-text-dark) [&_.ant-input]:shadow-none [&_.ant-input]:placeholder:text-[#98a2b3] hover:[&_.ant-input]:border-(--ncb-primary-500) focus-within:[&_.ant-input]:border-(--ncb-primary-500) focus-within:[&_.ant-input]:shadow-[0_0_0_2px_rgba(58,179,229,0.12)]">
-        <div className="mb-5 rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-white p-[18px] max-sm:mb-3 max-sm:rounded-[10px] max-sm:p-3">
-          <div className="text-[28px] font-bold leading-[1.2] text-(--color-text-dark) max-sm:text-[22px]">
-            {safeDeferral.deferralNumber || "Deferral request"}
-          </div>
-          <div className="mt-2 text-[18px] leading-[1.35] text-(--color-text-medium) max-sm:text-base">
-            {safeDeferral.customerName || "Customer"}
-          </div>
-          <div className="mt-4 text-[15px] leading-[1.65] text-(--color-text-medium) max-sm:text-sm">
-            {summaryCopy}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="block text-[11px] font-bold uppercase tracking-[0.16em] text-(--color-text-medium)">
-            {inputLabel}
-            {inputRequired ? " (Required)" : ""}
-          </label>
-          <Input.TextArea
-            rows={4}
-            value={inputValue}
-            onChange={(event) => onInputChange(event.target.value)}
-            placeholder={inputPlaceholder}
-            className="resize-y"
-          />
-        </div>
-      </div>
-    </Modal>
-  );
-
   return (
     <>
       <div className={reviewShellClassName}>
@@ -813,68 +715,73 @@ const DeferralDetailsModal = ({
         </div>
       </div>
 
-      {renderDecisionModal({
-        title: `Reject Deferral Request: ${safeDeferral.deferralNumber}`,
-        subtitle: "Document your rejection before closing this approval path.",
-        titleIcon: null,
-        open: rejectModalVisible,
-        onCancel: () => {
+      <DeferralDecisionModal
+        open={rejectModalVisible}
+        onCancel={() => {
           setRejectModalVisible(false);
           setRejectComment("");
-        },
-        onConfirm: handleReject,
-        confirmText: "Reject",
-        confirmLoading: rejecting,
-        confirmDisabled: !rejectComment.trim(),
-        confirmClassName: "",
-        summaryCopy: "Rejecting this request will close the approval path and record your reason in the audit trail.",
-        inputLabel: "Rejection reason",
-        inputRequired: true,
-        inputValue: rejectComment,
-        onInputChange: setRejectComment,
-        inputPlaceholder: "Enter rejection reason...",
-      })}
+        }}
+        title={`Reject Deferral Request: ${safeDeferral.deferralNumber}`}
+        subtitle="Document your rejection before closing this approval path."
+        titleIcon={null}
+        deferralNumber={safeDeferral.deferralNumber}
+        customerName={safeDeferral.customerName}
+        summaryCopy="Rejecting this request will close the approval path and record your reason in the audit trail."
+        inputLabel="Rejection reason"
+        inputRequired
+        inputValue={rejectComment}
+        onInputChange={setRejectComment}
+        inputPlaceholder="Enter rejection reason..."
+        confirmText="Reject"
+        onConfirm={handleReject}
+        confirmLoading={rejecting}
+        confirmDisabled={!rejectComment.trim()}
+      />
 
-      {renderDecisionModal({
-        title: `Return for Rework: ${safeDeferral.deferralNumber}`,
-        subtitle: "Send the request back with clear corrective instructions.",
-        titleIcon: <RedoOutlined />,
-        open: returnReworkModalVisible,
-        onCancel: () => {
+      <DeferralDecisionModal
+        open={returnReworkModalVisible}
+        onCancel={() => {
           setReturnReworkModalVisible(false);
           setReworkComment("");
-        },
-        onConfirm: executeReturnForRework,
-        confirmText: "Yes, Return for Rework",
-        confirmLoading: returnReworkLoading,
-        confirmDisabled: !reworkComment.trim(),
-        confirmClassName: "",
-        summaryCopy: "Returning this request will send it back with your instructions so the originating team can correct it.",
-        inputLabel: "Rework instructions",
-        inputRequired: true,
-        inputValue: reworkComment,
-        onInputChange: setReworkComment,
-        inputPlaceholder: "Enter rework instructions...",
-      })}
+        }}
+        title={`Return for Rework: ${safeDeferral.deferralNumber}`}
+        subtitle="Send the request back with clear corrective instructions."
+        titleIcon={<RedoOutlined />}
+        deferralNumber={safeDeferral.deferralNumber}
+        customerName={safeDeferral.customerName}
+        summaryCopy="Returning this request will send it back with your instructions so the originating team can correct it."
+        inputLabel="Rework instructions"
+        inputRequired
+        inputValue={reworkComment}
+        onInputChange={setReworkComment}
+        inputPlaceholder="Enter rework instructions..."
+        confirmText="Return for Rework"
+        onConfirm={executeReturnForRework}
+        confirmLoading={returnReworkLoading}
+        confirmDisabled={!reworkComment.trim()}
+      />
 
-      {renderDecisionModal({
-        title: `Approve Deferral: ${safeDeferral.deferralNumber}`,
-        subtitle: "Confirm the request and advance it to the next workflow stage.",
-        titleIcon: <CheckOutlined />,
-        open: approveModalVisible,
-        onCancel: () => {
+      <DeferralDecisionModal
+        open={approveModalVisible}
+        onCancel={() => {
           setApproveModalVisible(false);
           setApproveComment("");
-        },
-        onConfirm: executeApprove,
-        confirmText: "Approve",
-        confirmLoading: approveLoading,
-        summaryCopy: "Approving this request will advance it in the workflow and publish your decision to the review trail.",
-        inputLabel: "Approval comments",
-        inputValue: approveComment,
-        onInputChange: setApproveComment,
-        inputPlaceholder: "Enter any additional comments...",
-      })}
+        }}
+        title={`Approve Deferral: ${safeDeferral.deferralNumber}`}
+        subtitle="Confirm the request and advance it to the next workflow stage."
+        titleIcon={<CheckOutlined />}
+        deferralNumber={safeDeferral.deferralNumber}
+        customerName={safeDeferral.customerName}
+        summaryCopy="Approving this request will advance it in the workflow and publish your decision to the review trail."
+        inputLabel="Approval comments"
+        inputRequired={false}
+        inputValue={approveComment}
+        onInputChange={setApproveComment}
+        inputPlaceholder="Enter any additional comments..."
+        confirmText="Approve"
+        onConfirm={executeApprove}
+        confirmLoading={approveLoading}
+      />
     </>
   );
 };

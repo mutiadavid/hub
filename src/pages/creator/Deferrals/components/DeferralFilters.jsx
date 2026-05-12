@@ -1,13 +1,7 @@
 import React from "react";
-import { Input, DatePicker, Button } from "antd";
+import { Input, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
-const { RangePicker } = DatePicker;
-
-/**
- * DeferralFilters Component
- * Display and manage filter criteria for deferrals
- */
 const DeferralFilters = ({ filters, onFilterChange, onClearFilters }) => {
   return (
     <div className="deferrals-filters">
@@ -19,16 +13,6 @@ const DeferralFilters = ({ filters, onFilterChange, onClearFilters }) => {
         allowClear
         className="deferrals-filter deferrals-filter--search creator-input"
       />
-
-      <RangePicker
-        className="deferrals-filter deferrals-filter--date"
-        style={{ width: "100%" }}
-        placeholder={["Start date", "End date"]}
-        value={filters.dateRange}
-        onChange={(dates) => onFilterChange({ ...filters, dateRange: dates })}
-        format="DD/MM/YYYY"
-      />
-
       <Button onClick={onClearFilters} className="deferrals-filter-clear">
         Clear
       </Button>

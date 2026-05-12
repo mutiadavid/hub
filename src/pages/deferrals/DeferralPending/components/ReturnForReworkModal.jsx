@@ -1,20 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Form,
   Input,
   Button,
   InputNumber,
-  Select,
   Spin,
 } from "antd";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
-import { useLazySearchAdUsersQuery } from "../../../../api/adSearchApi";
+import { DeleteOutlined } from "@ant-design/icons";
 import deferralApi from "../../../../service/deferralApi";
+import RMEditApproversModal from "./RMEditApproversModal";
 import { showErrorToast, showSuccessToast } from "../../../../utils/authToast";
 import {
   WARNING_ORANGE,
@@ -441,15 +436,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [_editingApprovers, setEditingApprovers] = useState(false);
   const [editedApprovers, setEditedApprovers] = useState([]);
-  const [approversFromDb, setApproversFromDb] = useState([]);
-  const [loadingApprovers, setLoadingApprovers] = useState(false);
   const [_confirmingApprovers, setConfirmingApprovers] = useState(false);
-  const debounceRef = useRef(null);
-  const [directoryHint, setDirectoryHint] = useState(
-    "Open the list or type at least 2 characters to search Active Directory staff",
-  );
-  const [triggerDirectorySearch, { isFetching: isSearchingDirectory }] =
-    useLazySearchAdUsersQuery();
 
   const getDocumentDaysValidationMessage = (document) => {
     const documentName = String(document?.name || document?.label || "Document").trim() || "Document";
@@ -491,87 +478,6 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
     }
   }, [open, deferral, form]);
 
-  const upsertDirectoryApprovers = useCallback((users = []) => {
-    const normalizedUsers = users
-      .map((user) => {
-        const id = String(user?._id || user?.id || user?.samAccountName || user?.email || "").trim();
-        if (!id) return null;
-
-        return {
-          id,
-          _id: id,
-          name: user?.displayName || user?.name || user?.email || user?.samAccountName || "Unknown Staff",
-          email: user?.email || "",
-          samAccountName: user?.samAccountName || "",
-          department: user?.department || "",
-          title: user?.title || user?.position || "",
-          position: user?.title || user?.position || "",
-        };
-      })
-      .filter(Boolean);
-
-    setApproversFromDb((prev) => {
-      const map = new Map((prev || []).map((item) => [String(item.id || item._id), item]));
-      normalizedUsers.forEach((user) => map.set(String(user.id), user));
-      (editedApprovers || []).forEach((approver) => {
-        if (!approver?.userId) return;
-        map.set(String(approver.userId), {
-          id: String(approver.userId),
-          _id: String(approver.userId),
-          name: approver.name || approver.email || approver.samAccountName || String(approver.userId),
-          email: approver.email || "",
-          samAccountName: approver.samAccountName || "",
-          department: approver.department || "",
-          title: "",
-          position: approver.position || approver.role || "",
-        });
-      });
-      return Array.from(map.values());
-    });
-  }, [editedApprovers]);
-
-  const runDirectorySearch = useCallback(async (query, maxResults = 25) => {
-    try {
-      const users = await triggerDirectorySearch({ query, maxResults }, true).unwrap();
-      upsertDirectoryApprovers(users || []);
-      setDirectoryHint(users?.length ? "" : query ? "No matching staff found in Active Directory" : "No staff returned from Active Directory");
-    } catch {
-      setDirectoryHint("Active Directory search failed. Try again.");
-    }
-  }, [triggerDirectorySearch, upsertDirectoryApprovers]);
-
-  const handleDirectorySearch = (rawQuery) => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    const query = String(rawQuery || "").trim();
-
-    if (!query) {
-      debounceRef.current = setTimeout(() => {
-        setDirectoryHint("Loading staff from Active Directory...");
-        runDirectorySearch("", 200);
-      }, 150);
-      return;
-    }
-
-    if (query.length < 2) {
-      setDirectoryHint("Type at least 2 characters to search Active Directory staff");
-      return;
-    }
-
-    debounceRef.current = setTimeout(() => {
-      setDirectoryHint("Searching Active Directory...");
-      runDirectorySearch(query, 200);
-    }, 300);
-  };
-
-  useEffect(() => () => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-  }, []);
-
   const handleDocumentDaysChange = (index, value) => {
     setSelectedDocuments((prev) =>
       prev.map((document, currentIndex) =>
@@ -588,20 +494,19 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
   const _handleEditApproversClick = async () => {
     setEditedApprovers(deferral.approverFlow ? [...deferral.approverFlow] : []);
     setEditingApprovers(true);
-
-    setLoadingApprovers(true);
-    try {
-      await runDirectorySearch("", 200);
-    } catch (error) {
-      console.error("Error loading approvers:", error);
-      showErrorToast("Failed to load approvers from directory");
-      setApproversFromDb([]);
-    } finally {
-      setLoadingApprovers(false);
-    }
   };
 
   const handleAddApprover = (afterIndex) => {
+    if (
+      typeof afterIndex === "number" &&
+      editedApprovers[afterIndex + 1] &&
+      (editedApprovers[afterIndex + 1].approved ||
+        editedApprovers[afterIndex + 1].approvalStatus === "approved")
+    ) {
+      showErrorToast("You cannot insert a new approver before an approver who has already approved");
+      return;
+    }
+
     const newApprover = {
       _id: `temp-${Date.now()}`,
       role: "",
@@ -652,18 +557,26 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
   };
 
   const handleApproverSelection = (idx, option) => {
-    if (!option || editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") return;
+    if (option == null || editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") return;
 
-    const selectedApprover = option?.directoryApprover || null;
+    const selectedApprover =
+      option?.directoryApprover ||
+      approversFromDb.find(
+        (u) => String(u._id || u.id) === String(option.value),
+      ) ||
+      null;
+
+    const resolvedName =
+      selectedApprover?.name ||
+      (typeof option?.label === "string" ? option.label : "") ||
+      "";
 
     setEditedApprovers((prev) => {
       const updated = [...prev];
       updated[idx] = {
         ...updated[idx],
         userId: option.value,
-        name: typeof option.label === "string"
-          ? option.label
-          : updated[idx]?.name || "",
+        name: resolvedName,
         email: selectedApprover?.email || "",
         samAccountName: selectedApprover?.samAccountName || "",
         department: selectedApprover?.department || "",
@@ -727,7 +640,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
           console.debug("Failed to dispatch deferral:updated", eventError);
         }
       }
-      
+     
       // Trigger parent refresh to sync approvers across all pages
       if (onUpdate) {
         onUpdate(updatedDeferral || {
@@ -741,23 +654,6 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       setConfirmingApprovers(false);
     }
   };
-
-  // Automatically load approvers on mount
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoadingApprovers(true);
-      try {
-        await runDirectorySearch("", 200);
-      } catch (error) {
-        console.error("Error loading approvers:", error);
-      } finally {
-        setLoadingApprovers(false);
-      }
-    };
-    if (open) {
-      fetchUsers();
-    }
-  }, [open, runDirectorySearch]);
 
   const handleSubmit = async (values) => {
     try {
@@ -903,138 +799,28 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
               <h4>Approval Flow</h4>
             </div>
 
-            <Spin spinning={loadingApprovers}>
-              <div className="rm-resubmit-modal-flow-list">
-                {editedApprovers.length > 0 ? (
-                  editedApprovers.map((approver, idx) => {
-                    const hasApproved =
-                      approver.approved || approver.approvalStatus === "approved";
-
-                    return (
-                      <React.Fragment key={approver._id || idx}>
-                        <div
-                          className={`rm-resubmit-modal-flow-card ${hasApproved ? "rm-resubmit-modal-flow-card--locked" : ""}`}
-                        >
-                          <div className="rm-resubmit-modal-step-index">
-                            {idx + 1}
-                          </div>
-
-                          <div className="rm-resubmit-modal-flow-fields">
-                            <div className="rm-resubmit-modal-field">
-                              <span className="rm-resubmit-modal-label">Role</span>
-                              <Input
-                                placeholder="Role/Designation"
-                                value={approver.role || ""}
-                                onChange={(e) =>
-                                  handleApproverChange(idx, "role", e.target.value)
-                                }
-                                disabled={hasApproved}
-                              />
-                            </div>
-                            <div className="rm-resubmit-modal-field">
-                              <span className="rm-resubmit-modal-label">Approver</span>
-                              <Select
-                                labelInValue
-                                placeholder="Select Approver"
-                                value={
-                                  approver.userId
-                                    ? {
-                                        label: approver.name,
-                                        value: approver.userId,
-                                      }
-                                    : undefined
-                                }
-                                onChange={(option) => {
-                                  handleApproverSelection(idx, option);
-                                }}
-                                onSearch={handleDirectorySearch}
-                                onDropdownVisibleChange={(openDropdown) => {
-                                  if (openDropdown) {
-                                    handleDirectorySearch("");
-                                  }
-                                }}
-                                style={{ width: "100%" }}
-                                showSearch
-                                filterOption={false}
-                                loading={loadingApprovers || isSearchingDirectory}
-                                disabled={hasApproved}
-                                notFoundContent={
-                                  loadingApprovers || isSearchingDirectory ? (
-                                    <div style={{ textAlign: "center", padding: "10px 0" }}><Spin size="small" /></div>
-                                  ) : directoryHint ? directoryHint : "No staff available"
-                                }
-                              >
-                                {approversFromDb.length > 0 ? (
-                                  approversFromDb
-                                    .filter((user) => {
-                                      const userId = user._id || user.id;
-                                      // Allow if it's the current user for this specific step
-                                      if (userId === approver.userId) return true;
-                                      // Otherwise, check if this user is already selected in any other step
-                                      return !editedApprovers.some((ea) => ea.userId === userId);
-                                    })
-                                    .map((user) => (
-                                      <Select.Option
-                                        key={user._id || user.id}
-                                        value={user._id || user.id}
-                                        label={user.name}
-                                        directoryApprover={user}
-                                      >
-                                        {user.name}
-                                        {(user.title || user.position) ? ` — ${user.title || user.position}` : ""}
-                                        {user.department ? ` (${user.department})` : ""}
-                                      </Select.Option>
-                                    ))
-                                ) : (
-                                  <Select.Option disabled>
-                                    No approvers available
-                                  </Select.Option>
-                                )}
-                              </Select>
-                            </div>
-                          </div>
-
-                          <Button
-                            type="text"
-                            className="rm-resubmit-modal-delete"
-                            icon={<DeleteOutlined />}
-                            onClick={() => handleRemoveApprover(idx)}
-                            disabled={hasApproved || editedApprovers.length === 1}
-                          />
-                        </div>
-                        
-                        {/* Insert button between steps */}
-                        {idx < editedApprovers.length - 1 && (
-                          <div className="rm-resubmit-modal-insert">
-                            <Button
-                              type="text"
-                              shape="circle"
-                              icon={<PlusOutlined />}
-                              className="rm-resubmit-modal-insert-btn"
-                              onClick={() => handleAddApprover(idx)}
-                            />
-                          </div>
-                        )}
-                      </React.Fragment>
-                    );
-                  })
-                ) : (
-                  <div className="rm-resubmit-modal-empty">
-                    No approvers defined
-                  </div>
-                )}
-
-                <div className="rm-resubmit-modal-insert">
-                  <Button
-                    type="text"
-                    shape="circle"
-                    icon={<PlusOutlined />}
-                    className="rm-resubmit-modal-insert-btn"
-                    onClick={() => handleAddApprover()}
-                  />
-                </div>
-              </div>
-            </Spin>
+            {editedApprovers.length > 0 ? (
+              <RMEditApproversModal
+                open={open}
+                embedded
+                suppressIntro
+                suppressFooter
+                suppressNote
+                showTrailingInsert
+                editedApprovers={editedApprovers}
+                handleApproverChange={handleApproverChange}
+                handleApproverSelection={handleApproverSelection}
+                handleRemoveApprover={handleRemoveApprover}
+                handleAddApprover={handleAddApprover}
+                approversFromDb={[]}
+                loadingApprovers={false}
+                confirmingApprovers={false}
+                onCancel={() => {}}
+                onConfirm={() => {}}
+              />
+            ) : (
+              <div className="rm-resubmit-modal-empty">No approvers defined</div>
+            )}
 
             <div className="rm-resubmit-modal-note">
               <strong>Note:</strong> Any approver who has already approved is locked,

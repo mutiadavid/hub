@@ -144,7 +144,12 @@ export const buildApprovalFlowColumns = ({
         .every(isApprovalMarkedApproved);
       const isCurrent = !isApprovedInDeferral && previousApprovalsComplete;
 
-      if (activeTab === "closed" || !isCurrent || !canShowRemindButton) {
+      if (
+        activeTab === "closed" ||
+        activeTab === "rejected" ||
+        !isCurrent ||
+        !canShowRemindButton
+      ) {
         return <span style={{ color: "#94a3b8" }}>-</span>;
       }
 
@@ -300,7 +305,7 @@ export const buildCloseRequestColumns = ({
       );
     },
   },
-  {
+  { 
     title: "Evidence",
     key: "evidenceCount",
     width: 110,

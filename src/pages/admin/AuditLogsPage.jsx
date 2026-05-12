@@ -143,6 +143,8 @@ const ACTION_STYLES = {
   DELETE: { background: "#fff1f2", color: "#9f1239", borderColor: "#fda4af" },
   SUBMIT: { background: "#fef3c7", color: "#92400e", borderColor: "#fcd34d" },
   RETURN: { background: "#fff7ed", color: "#c2410c", borderColor: "#fdba74" },
+  ACTIVATE: { background: "#ecfdf5", color: "#065f46", borderColor: "#6ee7b7" },
+  DEACTIVATE: { background: "#fdf2f8", color: "#86198f", borderColor: "#e879f9" },
   SEARCH: { background: "#f8fafc", color: "#475569", borderColor: "#cbd5e1" },
   OTHER: { background: "#f5f5f4", color: "#57534e", borderColor: "#d6d3d1" },
 };
@@ -214,6 +216,8 @@ const normalizeEntity = (value) => {
 
 const getActionCategory = (action, httpMethod) => {
   const normalized = String(action || httpMethod || "OTHER").trim().toUpperCase();
+  if (normalized === "ACTIVATE_USER") return "ACTIVATE";
+  if (normalized === "DEACTIVATE_USER") return "DEACTIVATE";
   if (/APPROVE(?!R)/.test(normalized)) return "APPROVE";
   if (normalized.includes("REJECT")) return "REJECT";
   if (normalized.includes("DELETE") || normalized.includes("ARCHIVE")) return "DELETE";
@@ -221,7 +225,7 @@ const getActionCategory = (action, httpMethod) => {
   if (normalized.includes("SUBMIT")) return "SUBMIT";
   if (normalized.includes("CREATE") || normalized.includes("UPLOAD") || normalized.includes("ADD_")) return "CREATE";
   if (normalized.includes("UPDATE") || normalized.includes("CHANGE") ||
-      normalized.includes("TOGGLE") || normalized.includes("REASSIGN")) return "UPDATE";
+    normalized.includes("TOGGLE") || normalized.includes("REASSIGN")) return "UPDATE";
   return normalized || "OTHER";
 };
 
@@ -236,6 +240,8 @@ const actionPhrase = (actionCategory) => {
     case "DELETE": return "deleted";
     case "RETURN": return "returned";
     case "SUBMIT": return "submitted";
+    case "ACTIVATE": return "activated";
+    case "DEACTIVATE": return "deactivated";
     default: return "performed";
   }
 };
@@ -263,8 +269,8 @@ const extractReferenceNumber = (log, entityLabel) => {
   const keyCandidates = ["referencenumber", "reference", "deferralnumber", "dclnumber", "dclno", "checklistnumber", "number"];
 
   const candidate = findCandidateValue(metadata, keyCandidates) ||
-                    findCandidateValue(newValues, keyCandidates) ||
-                    findCandidateValue(oldValues, keyCandidates);
+    findCandidateValue(newValues, keyCandidates) ||
+    findCandidateValue(oldValues, keyCandidates);
   if (candidate && !isGuid(candidate)) return String(candidate);
 
   const detailText = `${log.details || ""} ${log.targetName || ""}`;
@@ -298,6 +304,17 @@ const buildFullDescription = (log, normalized) => {
   const { userName, actionCategory, entityLabel, referenceNumber } = normalized;
   const isDeferralOrDCL = ["Deferral", "DCL"].includes(entityLabel);
   const rawAction = String(log?.action || "").toUpperCase();
+  const targetUserName = humanizeName(log?.targetName || log?.targetUser?.name || "");
+
+  // Activate / Deactivate — always about a named user
+  if (rawAction === "ACTIVATE_USER") {
+    const subject = targetUserName || "a user";
+    return `${userName} activated user ${subject}.`;
+  }
+  if (rawAction === "DEACTIVATE_USER") {
+    const subject = targetUserName || "a user";
+    return `${userName} deactivated user ${subject}.`;
+  }
 
   if (rawAction === "DELETE_DOCUMENT" && isDeferralOrDCL) {
     const ref = referenceNumber && referenceNumber !== "-" ? ` ${referenceNumber}` : "";
@@ -321,6 +338,15 @@ const buildFullDescription = (log, normalized) => {
 const buildBriefDescription = (log, normalized) => {
   const { actionCategory, entityLabel, referenceNumber } = normalized;
   const rawAction = String(log?.action || "").toUpperCase();
+  const targetUserName = humanizeName(log?.targetName || log?.targetUser?.name || "");
+
+  // Specific labels for activate / deactivate
+  if (rawAction === "ACTIVATE_USER") {
+    return targetUserName ? `Activated ${targetUserName}` : "Activated user";
+  }
+  if (rawAction === "DEACTIVATE_USER") {
+    return targetUserName ? `Deactivated ${targetUserName}` : "Deactivated user";
+  }
 
   const isDeferralEntity = ["Deferral", "DCL"].includes(entityLabel);
   const subject = referenceNumber && referenceNumber !== "-"
@@ -336,12 +362,14 @@ const buildBriefDescription = (log, normalized) => {
 
   const briefMap = {
     APPROVE: `Approved ${subject}`,
-    REJECT:  `Rejected ${subject}`,
-    RETURN:  `Returned ${subject}`,
-    CREATE:  `Created ${subject}`,
-    UPDATE:  `Updated ${subject}`,
-    DELETE:  `Deleted ${subject}`,
-    SUBMIT:  `Submitted ${subject}`,
+    REJECT: `Rejected ${subject}`,
+    RETURN: `Returned ${subject}`,
+    CREATE: `Created ${subject}`,
+    UPDATE: `Updated ${subject}`,
+    DELETE: `Deleted ${subject}`,
+    SUBMIT: `Submitted ${subject}`,
+    ACTIVATE: targetUserName ? `Activated ${targetUserName}` : `Activated ${subject}`,
+    DEACTIVATE: targetUserName ? `Deactivated ${targetUserName}` : `Deactivated ${subject}`,
   };
   if (briefMap[actionCategory]) return briefMap[actionCategory];
 
@@ -578,7 +606,7 @@ const AuditDashboard = ({ logs, stats, users }) => {
 
   const totalBusinessActions = logs.length;
   const uniqueUsers = new Set(logs.map(l => l.userName)).size;
-  
+
   // Calculate today's activity count from the filtered logs
   const todayStr = dayjs().tz(LOCAL_TIMEZONE).format("DD MMM YYYY");
   const todayActivity = logs.filter(l => l.createdAtDate === todayStr).length;
@@ -669,8 +697,8 @@ const AuditDashboard = ({ logs, stats, users }) => {
             <AreaChart data={activityOverTime}>
               <defs>
                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={NCBA_COLORS.primary} stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor={NCBA_COLORS.primary} stopOpacity={0}/>
+                  <stop offset="5%" stopColor={NCBA_COLORS.primary} stopOpacity={0.15} />
+                  <stop offset="95%" stopColor={NCBA_COLORS.primary} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
@@ -882,28 +910,34 @@ const AuditLogsPage = () => {
   };
 
   const columns = [
-    { title: "User", key: "user", width: 200, render: (_, record) => {
-      const roleStyle = ROLE_STYLES[record.userRole] || ROLE_STYLES.System;
-      return (
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold bg-gradient-to-br from-[#dfece6] to-[#e5cfaa]">{record.userName.charAt(0).toUpperCase()}</div>
-          <div>
-            <div className="font-semibold" style={{ color: "#15313a" }}>{record.userName}</div>
-            <Tag className="border-none mt-0.5" style={{ background: roleStyle.background, color: roleStyle.color }}>{record.userRole}</Tag>
+    {
+      title: "User", key: "user", width: 200, render: (_, record) => {
+        const roleStyle = ROLE_STYLES[record.userRole] || ROLE_STYLES.System;
+        return (
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold bg-gradient-to-br from-[#dfece6] to-[#e5cfaa]">{record.userName.charAt(0).toUpperCase()}</div>
+            <div>
+              <div className="font-semibold" style={{ color: "#15313a" }}>{record.userName}</div>
+              <Tag className="border-none mt-0.5" style={{ background: roleStyle.background, color: roleStyle.color }}>{record.userRole}</Tag>
+            </div>
           </div>
-        </div>
-      );
-    } },
-    { title: "Action", key: "action", width: 130, render: (_, record) => {
-      const actionStyle = ACTION_STYLES[record.actionCategory] || ACTION_STYLES.OTHER;
-      return <Tag className="border-none" style={{ background: actionStyle.background, color: actionStyle.color }}>{record.actionCategory}</Tag>;
-    } },
+        );
+      }
+    },
+    {
+      title: "Action", key: "action", width: 130, render: (_, record) => {
+        const actionStyle = ACTION_STYLES[record.actionCategory] || ACTION_STYLES.OTHER;
+        return <Tag className="border-none" style={{ background: actionStyle.background, color: actionStyle.color }}>{record.actionCategory}</Tag>;
+      }
+    },
     { title: "Entity", dataIndex: "entityLabel", key: "entityLabel", width: 120, render: (value) => <Text strong>{value}</Text> },
-    { title: "Description", dataIndex: "briefDescription", key: "description", ellipsis: true, render: (brief, record) => (
-      <Tooltip title={<span className="whitespace-pre-wrap">{record.description}</span>} placement="topLeft">
-        <Text style={{ color: "#223843" }}>{brief}</Text>
-      </Tooltip>
-    ) },
+    {
+      title: "Description", dataIndex: "briefDescription", key: "description", ellipsis: true, render: (brief, record) => (
+        <Tooltip title={<span className="whitespace-pre-wrap">{record.description}</span>} placement="topLeft">
+          <Text style={{ color: "#223843" }}>{brief}</Text>
+        </Tooltip>
+      )
+    },
     { title: "Reference", dataIndex: "referenceNumber", key: "referenceNumber", width: 140, render: (value) => <Text className="font-mono" style={{ color: "#1f4b57" }}>{value || "-"}</Text> },
     {
       title: "IP address",
@@ -917,14 +951,16 @@ const AuditLogsPage = () => {
         </Tooltip>
       ),
     },
-    { title: "Timestamp", dataIndex: "createdAtMs", key: "createdAt", width: 170, sorter: true, sortDirections: ["descend", "ascend"], sortOrder: timeSortOrder, render: (_, record) => (
-      <Tooltip title={record.createdAtRelative}>
-        <div>
-          <div className="font-medium">{record.createdAtDate}</div>
-          <div className="text-xs" style={{ color: "#62717f" }}>{record.createdAtTime}</div>
-        </div>
-      </Tooltip>
-    ) },
+    {
+      title: "Timestamp", dataIndex: "createdAtMs", key: "createdAt", width: 170, sorter: true, sortDirections: ["descend", "ascend"], sortOrder: timeSortOrder, render: (_, record) => (
+        <Tooltip title={record.createdAtRelative}>
+          <div>
+            <div className="font-medium">{record.createdAtDate}</div>
+            <div className="text-xs" style={{ color: "#62717f" }}>{record.createdAtTime}</div>
+          </div>
+        </Tooltip>
+      )
+    },
   ];
 
   return (
@@ -1045,8 +1081,8 @@ const AuditLogsPage = () => {
         title="Export Business Audit Data"
         onCancel={() => setExportModal({ open: false, format: null })}
         onOk={handleExportConfirm}
-                okText="Generate Report"
-                okButtonProps={{}}
+        okText="Generate Report"
+        okButtonProps={{}}
         width={420}
         className="rounded-2xl"
       >

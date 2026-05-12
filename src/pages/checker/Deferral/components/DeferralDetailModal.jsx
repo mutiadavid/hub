@@ -3,7 +3,6 @@ import {
   Button,
   Card,
   Descriptions,
-  Input,
   message as antMessage,
   Spin,
   Table,
@@ -11,11 +10,13 @@ import {
 } from "antd";
 import {
   CheckCircleOutlined,
+  CheckOutlined,
   DownloadOutlined,
   ExclamationCircleOutlined,
   EyeOutlined,
   RedoOutlined,
 } from "@ant-design/icons";
+import DeferralDecisionModal from "../../../../components/deferrals/DeferralDecisionModal";
 import dayjs from "dayjs";
 import getFacilityColumns from "../../../../utils/facilityColumns";
 import {
@@ -25,10 +26,10 @@ import {
 import { openFileInNewTab, downloadFile } from "../../../../utils/fileUtils";
 import downloadDeferralPdf from "../../../../utils/deferralPdfGenerator";
 import deferralApi from "../../../../service/deferralApi";
+import { formatCommentTimestamp } from "../../../../utils/checklistUtils";
 import DeferralReviewHeader from "../../../creator/Deferrals/components/DeferralReviewHeader";
 import DeferralStatusAlert from "./DeferralStatusAlert";
 
-const { TextArea } = Input;
 const { Text } = Typography;
 
 const TABS = [
@@ -137,11 +138,7 @@ const dedupeHistoryEntries = (entries) => {
   });
 
   return deduped
-    .sort((a, b) => {
-      const timeA = dayjs(a.date || a.createdAt || 0).valueOf();
-      const timeB = dayjs(b.date || b.createdAt || 0).valueOf();
-      return timeA - timeB;
-    })
+    .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
     .map((entry) => {
       const nextEntry = { ...entry };
       delete nextEntry.__index;
@@ -157,17 +154,6 @@ const isApprovalMarkedApproved = (value) =>
   String(value || "")
     .trim()
     .toLowerCase() === "approved";
-
-const formatHistoryTimestamp = (value) => {
-  if (!value) return "";
-
-  const parsed = dayjs(value);
-  if (!parsed.isValid()) {
-    return String(value);
-  }
-
-  return parsed.format("DD MMM YYYY HH:mm");
-};
 
 const reviewShellClassName =
   "border-t border-[rgba(214,189,152)] bg-(--color-bg) [&_.ant-card]:overflow-hidden [&_.ant-card]:rounded-xl [&_.ant-card]:border-[rgba(214,189,152,0.18)] [&_.ant-card]:shadow-[0_8px_24px_rgba(15,23,42,0.04)] [&_.ant-card-head]:min-h-0 [&_.ant-card-head]:border-b [&_.ant-card-head]:border-[rgba(214,189,152,0.18)] [&_.ant-card-head]:bg-white [&_.ant-card-head]:px-4 [&_.ant-card-head]:py-3.5 [&_.ant-card-head-title]:p-0 [&_.ant-card-body]:bg-white [&_.ant-card-body]:p-4 [&_.ant-descriptions-item-label]:text-[11px] [&_.ant-descriptions-item-label]:font-semibold [&_.ant-descriptions-item-label]:uppercase [&_.ant-descriptions-item-label]:tracking-[0.04em] [&_.ant-descriptions-item-label]:text-(--color-text-light) [&_.ant-descriptions-item-content]:overflow-wrap-anywhere [&_.ant-descriptions-item-content]:text-[13px] [&_.ant-descriptions-item-content]:font-medium [&_.ant-descriptions-item-content]:text-(--color-text-dark) [&_.ant-input]:rounded-[10px] [&_.ant-input]:border-[rgba(214,189,152,0.22)] [&_.ant-input]:bg-white [&_.ant-input]:shadow-none [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-header]:border-b-0 [&_.ant-table-header]:shadow-none [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr]:border-b-0 [&_.ant-table-thead>tr>th]:!border-b-0 [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:bg-[#fbfaf6] [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.04em] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-tbody>tr:first-child>td]:!border-t-0 [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.1)] [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr:last-child>td]:border-b-0 [&_.ant-table-row:hover>td]:bg-[#fcfbf8] [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
@@ -191,22 +177,6 @@ const tableShellClassName = "mb-[18px] overflow-x-auto rounded-xl border border-
 const statsGridClassName = "grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))] max-md:grid-cols-1";
 const statCardClassName = "rounded-[10px] border border-[rgba(214,189,152,0.16)] bg-[linear-gradient(180deg,rgba(245,240,231,0.58)_0%,#fff_100%)] p-3";
 const actionSetClassName = "inline-flex flex-nowrap items-center gap-1.5 whitespace-nowrap [&_.ant-btn]:h-[27px] [&_.ant-btn]:min-w-0 [&_.ant-btn]:rounded-[7px] [&_.ant-btn]:px-2 [&_.ant-btn]:text-xs [&_.ant-btn>span]:inline-flex [&_.ant-btn>span]:items-center [&_.ant-btn>span]:gap-1";
-const confirmOverlayClassName = "fixed inset-0 z-[1400] flex items-center justify-center bg-[rgba(15,23,42,0.28)] p-6 backdrop-blur-[2px] max-md:items-end max-md:p-3";
-const confirmDialogClassName = "w-[min(550px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-[rgba(214,189,152,0.28)] bg-white shadow-[0_24px_64px_rgba(26,54,54,0.14)] max-md:w-full max-md:max-w-full";
-const confirmHeroClassName = "relative bg-white px-6 pb-5 pt-6 text-(--color-text-dark) max-md:px-4 max-md:pr-[52px]";
-const confirmHeroIconClassName = "mb-3.5 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[rgba(214,189,152,0.18)] bg-[rgba(26,54,54,0.06)] text-[22px] text-(--color-primary-dark)";
-const confirmCloseClassName = "absolute right-5 top-[18px] inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(214,189,152,0.12)] bg-white p-0 text-2xl leading-none text-(--color-text-dark) hover:bg-[rgba(214,189,152,0.04)] max-md:right-4 max-md:top-[14px]";
-const confirmBodyClassName = "bg-white px-6 pb-6 pt-5 max-md:px-4";
-const confirmBodyCardClassName = "rounded-xl border border-[rgba(214,189,152,0.22)] bg-white p-3.5";
-const confirmSummaryClassName = "mb-3 rounded-[10px] bg-[rgba(214,189,152,0.12)] p-3";
-const confirmLabelClassName = "mb-1.5 block text-[11px] font-bold tracking-[0.04em] text-(--color-text-light) uppercase";
-const confirmTextareaClassName = "rounded-[10px] border-[rgba(214,189,152,0.22)]";
-const modalFooterClassName = "mt-[18px] flex justify-end gap-2";
-const modalPrimaryButtonClassName =
-  "rounded-lg! border-0! bg-(--ncb-primary-500)! text-white! shadow-none! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white!";
-const modalSecondaryButtonClassName =
-  "rounded-lg! border-[rgba(214,189,152,0.28)]! bg-white! text-(--color-text-medium)! shadow-none! hover:border-[rgba(214,189,152,0.35)]! hover:bg-[#faf7f2]! hover:text-(--color-text-dark)!";
-
 const getStatusToneClassName = (tone) => {
   if (tone === "success") return "text-[var(--color-status-success)]";
   if (tone === "danger") return "text-[var(--color-status-danger)]";
@@ -367,6 +337,17 @@ const DeferralDetailModal = ({
         return !["approved", "rejected"].includes(String(decision?.status || "").toLowerCase());
       }).length
     : 0;
+
+  const checkerApprovalSummaryCopy = isCloseRequestAction
+    ? pendingCheckerDecisions > 0
+      ? [
+          `Review ${pendingCheckerDecisions} remaining close-request document${pendingCheckerDecisions === 1 ? "" : "s"} before you submit.`,
+          "Approving this review will advance the close request and publish your decision to the workflow trail.",
+        ]
+      : [
+          "Approving this review will advance the close request and publish your decision to the workflow trail.",
+        ]
+    : "Approving this request will advance it in the workflow and publish your decision to the review trail.";
 
   const updateCheckerDocumentDecision = (document, updates) => {
     const key = normalizeCloseRequestDecisionKey(document.documentName || document.key);
@@ -1014,7 +995,7 @@ const DeferralDetailModal = ({
                   <div className="text-xs leading-5 text-(--color-text-medium)">No user comments yet.</div>
                 ) : (
                   <div className="flex flex-col gap-2.5">
-                    {[...history].reverse().map((item, index) => (
+                    {history.map((item, index) => (
                       <div
                         key={`${item.date || item.createdAt || "comment"}-${index}`}
                         className={`${index === 0 ? "" : "border-t border-[rgba(214,189,152,0.14)] pt-2.5"}`}
@@ -1024,7 +1005,9 @@ const DeferralDetailModal = ({
                             {item.user || "User"}
                           </span>
                           <span className="shrink-0 text-[11px] text-[#94a3b8]">
-                            {formatHistoryTimestamp(item.date || item.createdAt || item.timestamp)}
+                            {formatCommentTimestamp(
+                              item.date || item.createdAt || item.timestamp || "",
+                            )}
                           </span>
                         </div>
                         <div className="overflow-wrap-anywhere break-word text-xs leading-5 text-(--color-text-medium)">
@@ -1040,176 +1023,70 @@ const DeferralDetailModal = ({
         </div>
       </div>
 
-      {approvalConfirmVisible ? (
-        <div className={confirmOverlayClassName} role="presentation">
-          <div
-            className={confirmDialogClassName}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="checker-approval-dialog-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className={confirmHeroClassName}>
-              <div className={confirmHeroIconClassName}><CheckCircleOutlined /></div>
-              <h2 className="m-0 text-xl font-semibold" id="checker-approval-dialog-title">
-                {isCloseRequestAction ? "Submit Close Request Review" : "Confirm Acceptance"}
-              </h2>
-              <p className="mt-2 mb-0 text-sm leading-6 text-white/80">
-                {isCloseRequestAction
-                  ? "Review the checker decisions and submit this close request using the same admin modal layout used elsewhere in the workspace."
-                  : "Confirm this deferral decision using the same admin modal layout used across the application."}
-              </p>
-              <button
-                type="button"
-                className={confirmCloseClassName}
-                onClick={onApprovalCancel}
-                aria-label="Close approval dialog"
-              >
-                ×
-              </button>
-            </div>
+      <DeferralDecisionModal
+        open={approvalConfirmVisible}
+        onCancel={onApprovalCancel}
+        title={
+          isCloseRequestAction
+            ? `Submit Close Request Review: ${deferral.deferralNumber || ""}`
+            : `Approve Deferral: ${deferral.deferralNumber || ""}`
+        }
+        subtitle={
+          isCloseRequestAction
+            ? "Review and submit the close-request decision for this deferral."
+            : "Confirm the request and advance it to the next workflow stage."
+        }
+        titleIcon={<CheckOutlined />}
+        deferralNumber={deferral.deferralNumber}
+        customerName={deferral.customerName}
+        summaryCopy={checkerApprovalSummaryCopy}
+        inputLabel={isCloseRequestAction ? "Review comment" : "Approval comments"}
+        inputRequired={false}
+        inputValue={creatorComment}
+        onInputChange={(value) => onCreatorCommentChange?.(value)}
+        inputPlaceholder="Enter any additional comments..."
+        confirmText={isCloseRequestAction ? "Submit Review" : "Approve"}
+        onConfirm={() =>
+          onApprovalConfirm?.({
+            comment: creatorComment,
+            checkerDocumentDecisions: closeRequestDocuments.map((document) => {
+              const key = normalizeCloseRequestDecisionKey(document.documentName || document.key);
+              const decision = checkerDocumentDecisions[key] || {};
+              return {
+                documentName: document.documentName,
+                status: decision.status || "pending",
+                comment: decision.comment || "",
+              };
+            }),
+          })
+        }
+        confirmLoading={Boolean(actionLoading)}
+        confirmDisabled={
+          Boolean(actionLoading) || (isCloseRequestAction && pendingCheckerDecisions > 0)
+        }
+        zIndex={1650}
+      />
 
-            <div className={confirmBodyClassName}>
-              <div className={confirmBodyCardClassName}>
-                <div className={confirmSummaryClassName}>
-                  <div className="text-sm font-bold text-(--color-text-dark)">
-                    {deferral.deferralNumber || (isCloseRequestAction ? "Close request review" : "Deferral acceptance")}
-                  </div>
-                  <div className="mt-1 text-xs leading-6 text-(--color-text-medium)">
-                    {isCloseRequestAction
-                      ? "Review and submit the close-request decision for this deferral."
-                      : "Accept this deferral using the same controlled review flow as the other system modals."}
-                  </div>
-                  <div className="mt-1 text-xs leading-6 text-(--color-text-medium)">
-                    {isCloseRequestAction
-                      ? pendingCheckerDecisions > 0
-                        ? `Review ${pendingCheckerDecisions} remaining close-request document${pendingCheckerDecisions === 1 ? "" : "s"} before you submit.`
-                        : "Approving this review will advance the close request and publish your decision to the workflow trail."
-                      : "Approving this request will advance it in the workflow and publish your decision to the review trail."}
-                  </div>
-                </div>
-
-                <label className={confirmLabelClassName} htmlFor="checker-approval-comment">
-                  {isCloseRequestAction ? "Review comment" : "Approval comments"}
-                </label>
-                <TextArea
-                  id="checker-approval-comment"
-                  rows={4}
-                  placeholder="Enter any additional comments..."
-                  value={creatorComment}
-                  onChange={(event) => onCreatorCommentChange?.(event.target.value)}
-                  className={confirmTextareaClassName}
-                />
-              </div>
-
-              <div className={modalFooterClassName}>
-                <Button
-                  onClick={onApprovalCancel}
-                  disabled={Boolean(actionLoading)}
-                  className={modalSecondaryButtonClassName}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => onApprovalConfirm?.({
-                    comment: creatorComment,
-                    checkerDocumentDecisions: closeRequestDocuments.map((document) => {
-                      const key = normalizeCloseRequestDecisionKey(document.documentName || document.key);
-                      const decision = checkerDocumentDecisions[key] || {};
-                      return {
-                        documentName: document.documentName,
-                        status: decision.status || "pending",
-                        comment: decision.comment || "",
-                      };
-                    }),
-                  })}
-                  loading={Boolean(actionLoading)}
-                  disabled={Boolean(actionLoading) || (isCloseRequestAction && pendingCheckerDecisions > 0)}
-                  className={modalPrimaryButtonClassName}
-                >
-                  {isCloseRequestAction ? "Yes, Submit Review" : "Yes, Approve"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {reworkConfirmVisible ? (
-        <div className={confirmOverlayClassName} role="presentation">
-          <div
-            className={confirmDialogClassName}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="checker-rework-dialog-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className={confirmHeroClassName}>
-              <div className={confirmHeroIconClassName}><RedoOutlined /></div>
-              <h2 className="m-0 text-xl font-semibold" id="checker-rework-dialog-title">
-                Return for Rework
-              </h2>
-              <p className="mt-2 mb-0 text-sm leading-6 text-white/80">
-                Send the request back with corrective guidance using the same admin modal layout as the other system dialogs.
-              </p>
-              <button
-                type="button"
-                className={confirmCloseClassName}
-                onClick={onReworkCancel}
-                aria-label="Close rework dialog"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className={confirmBodyClassName}>
-              <div className={confirmBodyCardClassName}>
-                <div className={confirmSummaryClassName}>
-                  <div className="text-sm font-bold text-(--color-text-dark)">
-                    {deferral.deferralNumber || "Return for rework"}
-                  </div>
-                  <div className="mt-1 text-xs leading-6 text-(--color-text-medium)">
-                    Send the request back with clear corrective instructions.
-                  </div>
-                  <div className="mt-1 text-xs leading-6 text-(--color-text-medium)">
-                    Returning this request will send it back with your instructions so the originating team can correct it.
-                  </div>
-                </div>
-
-                <label className={confirmLabelClassName} htmlFor="checker-rework-comment">
-                  Rework instructions (Required)
-                </label>
-                <TextArea
-                  id="checker-rework-comment"
-                  rows={4}
-                  placeholder="Enter rework instructions..."
-                  value={reworkComment}
-                  onChange={(event) => onReworkCommentChange?.(event.target.value)}
-                  className={confirmTextareaClassName}
-                />
-              </div>
-
-              <div className={modalFooterClassName}>
-                <Button
-                  onClick={onReworkCancel}
-                  disabled={Boolean(actionLoading)}
-                  className={modalSecondaryButtonClassName}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={onReworkConfirm}
-                  loading={Boolean(actionLoading)}
-                  disabled={!String(reworkComment || "").trim()}
-                  className={modalPrimaryButtonClassName}
-                >
-                  Yes, Return for Rework
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <DeferralDecisionModal
+        open={reworkConfirmVisible}
+        onCancel={onReworkCancel}
+        title={`Return for Rework: ${deferral.deferralNumber || ""}`}
+        subtitle="Send the request back with clear corrective instructions."
+        titleIcon={<RedoOutlined />}
+        deferralNumber={deferral.deferralNumber}
+        customerName={deferral.customerName}
+        summaryCopy="Returning this request will send it back with your instructions so the originating team can correct it."
+        inputLabel="Rework instructions"
+        inputRequired
+        inputValue={reworkComment}
+        onInputChange={(value) => onReworkCommentChange?.(value)}
+        inputPlaceholder="Enter rework instructions..."
+        confirmText="Return for Rework"
+        onConfirm={onReworkConfirm}
+        confirmLoading={Boolean(actionLoading)}
+        confirmDisabled={!String(reworkComment || "").trim()}
+        zIndex={1650}
+      />
     </>
   );
 };

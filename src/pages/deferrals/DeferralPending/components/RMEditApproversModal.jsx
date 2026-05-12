@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Input, Select, Spin } from "antd";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Button, Input, Select, Spin, Typography } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useLazySearchAdUsersQuery } from "../../../../api/adSearchApi";
 import { WARNING_ORANGE } from "../utils/constants";
 import "../../../../styles/creatorDesignSystem.css";
+
+const { Text } = Typography;
 
 const RMEditApproversModal = ({
   open,
@@ -18,32 +20,72 @@ const RMEditApproversModal = ({
   confirmingApprovers,
   onCancel,
   onConfirm,
+  /** Hide hero + “Approval Flow Setup” intro (e.g. embedded in Resubmit modal). */
+  suppressIntro = false,
+  /** Hide Cancel / Confirm Approvers footer. */
+  suppressFooter = false,
+  /** Hide the orange note block. */
+  suppressNote = false,
+  /** Show a trailing “+” to append an approver (Resubmit modal parity). */
+  showTrailingInsert = false,
 }) => {
   const [directoryApprovers, setDirectoryApprovers] = useState([]);
   const debounceRef = useRef(null);
+  const directorySearchCacheRef = useRef(new Map());
+  const directorySearchRequestIdRef = useRef(0);
   const [directoryHint, setDirectoryHint] = useState(
-    "Open the list or type at least 2 characters to search Active Directory staff",
+    "Open the list or type at least 1 character to search Active Directory staff",
   );
+  const [directorySearchText, setDirectorySearchText] = useState("");
   const [triggerDirectorySearch, { isFetching: isSearchingDirectory }] =
     useLazySearchAdUsersQuery();
 
   const upsertDirectoryApprovers = (users = []) => {
-    const normalizedUsers = users
+    const normalizedUsers = (users || [])
       .map((user) => {
-        const id = String(
-          user?._id || user?.id || user?.samAccountName || user?.email || "",
+        const identifier = String(
+          user?.id ??
+            user?._id ??
+            user?.userId ??
+            user?.UserIdentifier ??
+            user?.userIdentifier ??
+            user?.samAccountName ??
+            user?.samAccount ??
+            user?.email ??
+            user?.mail ??
+            user?.userPrincipalName ??
+            user?.accountName ??
+            "",
         ).trim();
 
-        if (!id) return null;
+        if (!identifier) return null;
 
         return {
-          id,
-          name: user?.displayName || user?.name || user?.email || user?.samAccountName || "Unknown Staff",
-          email: user?.email || "",
-          samAccountName: user?.samAccountName || "",
-          department: user?.department || "",
-          title: user?.title || user?.position || "",
-          position: user?.title || user?.position || "",
+          id: identifier,
+          name:
+            user?.displayName ??
+            user?.name ??
+            user?.fullName ??
+            user?.commonName ??
+            user?.cn ??
+            user?.email ??
+            user?.mail ??
+            user?.samAccountName ??
+            user?.samAccount ??
+            "Unknown Staff",
+          email: user?.email ?? user?.mail ?? "",
+          samAccountName: user?.samAccountName ?? user?.samAccount ?? "",
+          department:
+            user?.department ?? user?.Department ?? user?.division ?? "",
+          title:
+            user?.title ??
+            user?.jobTitle ??
+            user?.position ??
+            user?.role ??
+            "",
+          position:
+            user?.position ?? user?.jobTitle ?? user?.title ?? user?.role ?? "",
+          role: user?.role ?? user?.Role ?? "",
         };
       })
       .filter(Boolean);
@@ -71,7 +113,9 @@ const RMEditApproversModal = ({
         email: user?.email || "",
         samAccountName: user?.samAccountName || "",
         department: user?.department || "",
+        title: user?.title || user?.position || "",
         position: user?.position || user?.title || "",
+        role: user?.role || "",
       });
     });
 
@@ -85,11 +129,57 @@ const RMEditApproversModal = ({
         department: approver.department || "",
         title: "",
         position: approver.position || approver.role || "",
+        role: approver.role || "",
       });
     });
 
     return Array.from(map.values());
   }, [approversFromDb, directoryApprovers, editedApprovers]);
+
+  const getAvailableApproversForStep = useCallback(
+    (stepIndex, stepApprover) => {
+      const normalizedQuery = String(directorySearchText || "").trim().toLowerCase();
+
+      const matchesQuery = (user) => {
+        const haystack = [
+          user?.name,
+          user?.email,
+          user?.samAccountName,
+          user?.department,
+          user?.title,
+          user?.position,
+          user?.role,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(normalizedQuery);
+      };
+
+      const list = (allDirectoryApprovers || []).filter((user) => {
+        const userId = user.id;
+        if (String(userId) === String(stepApprover?.userId)) {
+          return true;
+        }
+        if (normalizedQuery && !matchesQuery(user)) {
+          return false;
+        }
+        return !editedApprovers.some(
+          (a, i) =>
+            i !== stepIndex &&
+            a.userId &&
+            String(a.userId) === String(userId),
+        );
+      });
+
+      return [...list].sort((a, b) =>
+        String(a?.name || "").localeCompare(String(b?.name || ""), undefined, {
+          sensitivity: "base",
+        }),
+      );
+    },
+    [allDirectoryApprovers, directorySearchText, editedApprovers],
+  );
 
   useEffect(() => () => {
     if (debounceRef.current) {
@@ -97,41 +187,89 @@ const RMEditApproversModal = ({
     }
   }, []);
 
-  const runDirectorySearch = async (query, maxResults = 25) => {
+  const searchDirectoryOnServer = async (rawQuery, { openDropdown = false } = {}) => {
+    const trimmed = String(rawQuery || "").trim();
+    const shouldLoadAllStaff = openDropdown || trimmed.length === 1;
+    const effectiveQuery = shouldLoadAllStaff ? "*" : trimmed;
+    const effectiveMaxResults = shouldLoadAllStaff ? 1000 : 200;
+
+    if (!openDropdown && !trimmed) {
+      return;
+    }
+
+    const normalizedKey = shouldLoadAllStaff ? "__all__" : trimmed.toLowerCase();
+    if (directorySearchCacheRef.current.has(normalizedKey)) {
+      const cachedUsers = directorySearchCacheRef.current.get(normalizedKey) || [];
+      upsertDirectoryApprovers(cachedUsers);
+      setDirectoryHint("");
+      return;
+    }
+
+    const requestId = ++directorySearchRequestIdRef.current;
+    setDirectoryHint("Searching Active Directory...");
+
     try {
-      const users = await triggerDirectorySearch({ query, maxResults }, true).unwrap();
-      upsertDirectoryApprovers(users || []);
-      setDirectoryHint(users?.length ? "" : query ? "No matching staff found in Active Directory" : "No staff returned from Active Directory");
-    } catch {
-      setDirectoryHint("Active Directory search failed. Try again.");
+      const users = await triggerDirectorySearch(
+        { query: effectiveQuery, maxResults: effectiveMaxResults },
+        true,
+      ).unwrap();
+
+      if (requestId !== directorySearchRequestIdRef.current) return;
+
+      const arr = Array.isArray(users) ? users : [];
+      directorySearchCacheRef.current.set(normalizedKey, arr);
+      upsertDirectoryApprovers(arr);
+      setDirectoryHint(arr.length ? "" : "No matching staff found in Active Directory");
+    } catch (error) {
+      if (requestId !== directorySearchRequestIdRef.current) return;
+      const status = Number(error?.status ?? error?.originalStatus);
+      if (status === 503) {
+        setDirectoryHint("Active Directory service is unavailable right now.");
+      } else if (status === 504) {
+        setDirectoryHint("Active Directory request timed out. Please retry.");
+      } else {
+        setDirectoryHint("Active Directory search failed. Try again.");
+      }
     }
   };
 
   const handleDirectorySearch = (rawQuery) => {
+    const trimmed = String(rawQuery || "").trim();
+    setDirectorySearchText(trimmed);
+
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
 
-    const query = String(rawQuery || "").trim();
-
-    if (!query) {
+    if (trimmed.length >= 1) {
       debounceRef.current = setTimeout(() => {
-        setDirectoryHint("Loading staff from Active Directory...");
-        runDirectorySearch("", 200);
-      }, 150);
+        searchDirectoryOnServer(trimmed);
+      }, 120);
       return;
     }
 
-    if (query.length < 2) {
-      setDirectoryHint("Type at least 2 characters to search Active Directory staff");
-      return;
-    }
-
-    debounceRef.current = setTimeout(() => {
-      setDirectoryHint("Searching Active Directory...");
-      runDirectorySearch(query, 200);
-    }, 300);
+    setDirectoryHint(
+      "Type at least 1 character to search Active Directory staff",
+    );
   };
+
+  const notFoundText = useMemo(() => {
+    if (isSearchingDirectory) return "";
+    const normalizedQuery = String(directorySearchText || "").trim();
+    const hintLooksLikeError = /unavailable|timed out|failed/i.test(
+      String(directoryHint || ""),
+    );
+    if (!normalizedQuery) {
+      return (
+        directoryHint ||
+        "Type at least 1 character to search Active Directory staff"
+      );
+    }
+    if (hintLooksLikeError) {
+      return directoryHint;
+    }
+    return "No matching staff found in Active Directory";
+  }, [directoryHint, directorySearchText, isSearchingDirectory]);
 
   if (!open) {
     return null;
@@ -385,22 +523,27 @@ const RMEditApproversModal = ({
         }
       `}</style>
       <div className={`rm-edit-approvers-panel ${embedded ? "rm-edit-approvers-panel--embedded" : ""}`}>
-      <div className="rm-edit-approvers-modal-hero">
-        <div className="rm-edit-approvers-modal-hero-copy">
-          <h2>Edit Approvers</h2>
-          <p>Review each step below, assign the right approver, and keep the existing sequence intact.</p>
-        </div>
-      </div>
-      <div className="rm-edit-approvers-modal-shell">
-        <div className="rm-edit-approvers-modal-heading">
-          <h3>Approval Flow Setup</h3>
-          <p>
-            Review each step below, assign the right approver, and keep the
-            existing sequence intact.
-          </p>
-        </div>
+        {!suppressIntro ? (
+          <div className="rm-edit-approvers-modal-hero">
+            <div className="rm-edit-approvers-modal-hero-copy">
+              <h2>Edit Approvers</h2>
+              <p>Review each step below, assign the right approver, and keep the existing sequence intact.</p>
+            </div>
+          </div>
+        ) : null}
 
-        <div className="rm-edit-approvers-modal-list">
+        <div className="rm-edit-approvers-modal-shell">
+          {!suppressIntro ? (
+            <div className="rm-edit-approvers-modal-heading">
+              <h3>Approval Flow Setup</h3>
+              <p>
+                Review each step below, assign the right approver, and keep the
+                existing sequence intact.
+              </p>
+            </div>
+          ) : null}
+
+          <div className="rm-edit-approvers-modal-list">
           {editedApprovers.map((approver, idx) => {
             const hasApproved = approver.approved || approver.approvalStatus === "approved";
             const nextApproverApproved =
@@ -429,23 +572,40 @@ const RMEditApproversModal = ({
                     <div className="rm-edit-approvers-modal-field">
                       <span className="rm-edit-approvers-modal-label">Approver</span>
                       <Select
-                        labelInValue
-                        placeholder="Select Approver"
-                        value={
-                          approver.userId
-                            ? {
-                                label: approver.name,
-                                value: approver.userId,
-                              }
-                            : undefined
-                        }
-                        onChange={(option) => {
-                          handleApproverSelection(idx, option);
+                        optionLabelProp="label"
+                        placeholder="Search Active Directory staff"
+                        value={approver.userId != null ? approver.userId : undefined}
+                        onChange={(userId, option) => {
+                          const id = userId;
+                          const user =
+                            (option && option.directoryApprover) ||
+                            allDirectoryApprovers.find(
+                              (u) => String(u.id) === String(id),
+                            );
+                          const displayName =
+                            user?.name ||
+                            (typeof option?.label === "string" ? option.label : "") ||
+                            "";
+                          setDirectorySearchText("");
+                          handleApproverSelection(idx, {
+                            value: id,
+                            label: displayName,
+                            directoryApprover: user || null,
+                          });
                         }}
                         onSearch={handleDirectorySearch}
                         onDropdownVisibleChange={(openDropdown) => {
                           if (openDropdown) {
-                            handleDirectorySearch("");
+                            setDirectorySearchText("");
+                            setDirectoryHint(
+                              "Type at least 1 character to search Active Directory staff",
+                            );
+                            if (debounceRef.current) {
+                              clearTimeout(debounceRef.current);
+                            }
+                            debounceRef.current = setTimeout(() => {
+                              searchDirectoryOnServer("", { openDropdown: true });
+                            }, 120);
                           }
                         }}
                         style={{ width: "100%" }}
@@ -458,15 +618,16 @@ const RMEditApproversModal = ({
                             <div style={{ textAlign: "center", padding: "10px 0" }}>
                               <Spin size="small" />
                             </div>
-                          ) : directoryHint ? directoryHint : "No staff available"
+                          ) : (
+                            <Text type="secondary">{notFoundText}</Text>
+                          )
                         }
                       >
                         {(() => {
-                          const availableApprovers = allDirectoryApprovers.filter(user => {
-                            const userId = user.id;
-                            if (userId === approver.userId) return true;
-                            return !editedApprovers.some(a => a.userId === userId);
-                          });
+                          const availableApprovers = getAvailableApproversForStep(
+                            idx,
+                            approver,
+                          );
 
                           return availableApprovers.length > 0 ? (
                             availableApprovers.map((user) => (
@@ -477,7 +638,10 @@ const RMEditApproversModal = ({
                                 directoryApprover={user}
                               >
                                 {user.name}
-                                {(user.title || user.position) ? ` — ${user.title || user.position}` : ""}
+                                {user.role ? ` [${user.role}]` : ""}
+                                {(user.title || user.position)
+                                  ? ` — ${user.title || user.position}`
+                                  : ""}
                                 {user.department ? ` (${user.department})` : ""}
                               </Select.Option>
                             ))
@@ -515,30 +679,46 @@ const RMEditApproversModal = ({
               </div>
             );
           })}
+          </div>
+
+          {showTrailingInsert ? (
+            <div className="rm-edit-approvers-modal-insert">
+              <Button
+                type="text"
+                shape="circle"
+                icon={<PlusOutlined />}
+                className="rm-edit-approvers-modal-insert-btn"
+                onClick={() => handleAddApprover(undefined)}
+              />
+            </div>
+          ) : null}
+
+          {!suppressNote ? (
+            <div className="rm-edit-approvers-modal-note">
+              <strong>Note:</strong> Any approver who has already approved is locked,
+              greyed out, and cannot be removed or replaced. You also cannot insert a
+              new approver before an already-approved step.
+            </div>
+          ) : null}
         </div>
 
-        <div className="rm-edit-approvers-modal-note">
-          <strong>Note:</strong> Any approver who has already approved is locked,
-          greyed out, and cannot be removed or replaced. You also cannot insert a
-          new approver before an already-approved step.
-        </div>
+        {!suppressFooter ? (
+          <div className="rm-edit-approvers-modal-actions">
+            <Button className="rm-edit-approvers-modal-cancel" onClick={onCancel} disabled={confirmingApprovers}>
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              className="rm-edit-approvers-modal-confirm"
+              onClick={onConfirm}
+              loading={confirmingApprovers}
+              disabled={confirmingApprovers}
+            >
+              Confirm Approvers
+            </Button>
+          </div>
+        ) : null}
       </div>
-
-      <div className="rm-edit-approvers-modal-actions">
-        <Button className="rm-edit-approvers-modal-cancel" onClick={onCancel} disabled={confirmingApprovers}>
-          Cancel
-        </Button>
-        <Button
-          type="primary"
-          className="rm-edit-approvers-modal-confirm"
-          onClick={onConfirm}
-          loading={confirmingApprovers}
-          disabled={confirmingApprovers}
-        >
-          Confirm Approvers
-        </Button>
-      </div>
-    </div>
     </>
   );
 };

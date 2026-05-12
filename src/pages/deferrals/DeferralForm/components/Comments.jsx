@@ -11,6 +11,7 @@ import {
 import { UserOutlined } from "@ant-design/icons";
 import { validateComment } from "../utils/validation";
 import { showSuccessToast } from "../../../../utils/authToast";
+import { formatCommentTimestamp } from "../../../../utils/checklistUtils";
 import "../../../../styles/creatorDesignSystem.css";
 
 const { TextArea } = Input;
@@ -192,7 +193,9 @@ export default function Comments({
                         {item.message}
                       </div>
                       <div className="deferral-form-comments-date">
-                        {new Date(item.createdAt).toLocaleString()}
+                        {item.createdAt
+                          ? formatCommentTimestamp(item.createdAt)
+                          : ""}
                       </div>
                     </div>
                   }
