@@ -2,11 +2,6 @@ import React from "react";
 import { Table, Empty, Spin } from "antd";
 import { getExtensionColumns } from "../utils/tableColumns";
 
-/**
- * ExtensionApplicationsTab Component
- * Displays pending extension applications in a table
- * Allows users to click rows to view extension details
- */
 const ExtensionApplicationsTab = ({
   extensions = [],
   loading = false,

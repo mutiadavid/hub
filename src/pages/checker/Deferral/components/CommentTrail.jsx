@@ -2,17 +2,7 @@ import React from "react";
 import { Empty, Spin } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-
-const formatTimestamp = (value) => {
-  if (!value) return "Unknown time";
-
-  const parsed = dayjs(value);
-  if (!parsed.isValid()) {
-    return String(value);
-  }
-
-  return parsed.format("DD MMM YYYY HH:mm");
-};
+import { formatCommentTimestamp } from "../../../../utils/checklistUtils";
 
 const getRoleTone = (role) => {
   const normalizedRole = String(role || "comment").trim().toUpperCase();
@@ -110,7 +100,9 @@ const CommentTrail = ({ comments = [], isLoading = false }) => {
                 </span>
 
                 <span className="ml-auto shrink-0 whitespace-nowrap text-[11px] leading-[1.35] text-[#64748b]">
-                    {formatTimestamp(comment.createdAt || comment.timestamp)}
+                    {formatCommentTimestamp(
+                      comment.createdAt || comment.timestamp || "",
+                    ) || "—"}
                 </span>
               </div>
 

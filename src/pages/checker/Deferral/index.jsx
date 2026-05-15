@@ -123,6 +123,8 @@ const DeferralIndex = ({ userId }) => {
     fetchDeferrals: apiFetchDeferrals,
     loadPendingExtensions: apiLoadExtensions,
     approveExtension,
+    rejectExtension,
+    returnExtension,
   } = useDeferralAPI(token);
 
   // State
@@ -850,7 +852,26 @@ const DeferralIndex = ({ userId }) => {
               setSelectedExtension(null);
             }}
             onApprove={async (_extensionId, comment) => {
-              const success = await approveExtension(selectedExtension.id, comment);
+              const extId = selectedExtension?._id || selectedExtension?.id;
+              const success = await approveExtension(extId, comment);
+              if (success) {
+                loadPendingExtensions();
+                setExtensionModalOpen(false);
+                setSelectedExtension(null);
+              }
+            }}
+            onReject={async (_extensionId, reason) => {
+              const extId = selectedExtension?._id || selectedExtension?.id;
+              const success = await rejectExtension(extId, reason);
+              if (success) {
+                loadPendingExtensions();
+                setExtensionModalOpen(false);
+                setSelectedExtension(null);
+              }
+            }}
+            onReturnForRework={async (_extensionId, reason) => {
+              const extId = selectedExtension?._id || selectedExtension?.id;
+              const success = await returnExtension(extId, reason);
               if (success) {
                 loadPendingExtensions();
                 setExtensionModalOpen(false);

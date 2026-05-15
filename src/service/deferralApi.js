@@ -238,15 +238,29 @@ const parseStatusCode = (value) => {
   return 500;
 };
 
-const createSanitizedApiError = (status, message) => {
+const createSanitizedApiError = (status, message, data) => {
   const normalizedStatus = parseStatusCode(status);
   const resolvedMessage = String(message || "").trim() || String(normalizedStatus);
   const error = new Error(resolvedMessage);
   error.status = normalizedStatus;
+  error.data = data;
   return error;
 };
 
-const sanitizeThrownApiError = (error) => {
+const sanitizeThrownApiError = async (error) => {
+  if (error instanceof Response) {
+    const status = error.status;
+    let data = null;
+    try {
+      data = await error.json();
+    // eslint-disable-next-line no-unused-vars
+    } catch (e) {
+      // Not JSON
+    }
+    const message = data?.message || data?.error || error.statusText;
+    return createSanitizedApiError(status, message, data);
+  }
+
   const status = error?.status || error?.data?.status || error?.originalStatus || error?.message;
   const backendMessage =
     error?.data?.error ||
@@ -254,7 +268,7 @@ const sanitizeThrownApiError = (error) => {
     error?.error ||
     error?.message;
 
-  return createSanitizedApiError(status, backendMessage);
+  return createSanitizedApiError(status, backendMessage, error?.data);
 };
 
 async function sendViaLocalEmailServer(payload) {
@@ -1245,11 +1259,19 @@ const deferralApi = {
       : mappedFileUrls;
 
     const payload = {
+      // Redundant keys for backend compatibility
+      DeferralId: deferralId,
       deferralId: deferralId,
-      requestedDaysSought: Number(extensionData.requestedDaysSought) || 0,
-      extensionReason: extensionData.extensionReason || extensionData.comment || "",
+      RequestedDaysSought: Number(extensionData.RequestedDaysSought || extensionData.requestedDaysSought) || 0,
+      requestedDaysSought: Number(extensionData.RequestedDaysSought || extensionData.requestedDaysSought) || 0,
+      ExtensionReason: extensionData.ExtensionReason || extensionData.extensionReason || extensionData.comment || extensionData.Comment || "",
+      extensionReason: extensionData.ExtensionReason || extensionData.extensionReason || extensionData.comment || extensionData.Comment || "",
+      ExtensionDaysByDoc: extensionDaysObj,
       extensionDaysByDoc: extensionDaysObj,
-      additionalFiles,
+      AdditionalFiles: additionalFiles,
+      additionalFiles: additionalFiles,
+      ApproverFlow: extensionData.ApproverFlow || extensionData.approverFlow,
+      approverFlow: extensionData.ApproverFlow || extensionData.approverFlow,
     };
 
     const jsonBody = JSON.stringify(payload);
@@ -1261,7 +1283,7 @@ const deferralApi = {
     });
 
     if (!res.ok) {
-      throw createSanitizedApiError(res.status);
+      throw res; // Throw the response to be handled by sanitizeThrownApiError
     }
 
     return res.json();
@@ -1358,9 +1380,9 @@ const deferralApi = {
     return res.json();
   },
 
-  approveExtensionAsCreator: async (extensionId, comment, token) => {
+  acceptExtensionAsCreator: async (extensionId, comment, token) => {
     const payload = { comment };
-    const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/approve-creator`, {
+    const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/accept-creator`, {
       method: "PUT",
       headers: getAuthHeaders(token),
       body: JSON.stringify(payload),
@@ -1368,7 +1390,23 @@ const deferralApi = {
 
     if (!res.ok) {
       const error = await res.text();
-      throw new Error(error || "Failed to approve extension as creator");
+      throw new Error(error || "Failed to accept extension as creator");
+    }
+
+    return res.json();
+  },
+
+  returnExtensionAsCreator: async (extensionId, reason, token) => {
+    const payload = { reason };
+    const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/return-creator`, {
+      method: "PUT",
+      headers: getAuthHeaders(token),
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const error = await res.text();
+      throw new Error(error || "Failed to return extension as creator");
     }
 
     return res.json();
@@ -1415,6 +1453,22 @@ const deferralApi = {
     if (!res.ok) {
       const error = await res.text();
       throw new Error(error || "Failed to approve extension as checker");
+    }
+
+    return res.json();
+  },
+
+  returnExtensionAsChecker: async (extensionId, reason, token) => {
+    const payload = { reason };
+    const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/return-checker`, {
+      method: "PUT",
+      headers: getAuthHeaders(token),
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const error = await res.text();
+      throw new Error(error || "Failed to return extension as checker");
     }
 
     return res.json();
@@ -1523,6 +1577,80 @@ const deferralApi = {
       return [];
     }
   },
+
+  sendExtensionReminder: async (extensionId, token) => {
+    const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/reminder`, {
+      method: "POST",
+      headers: getAuthHeaders(token),
+    });
+
+    if (!res.ok) {
+      const error = await res.text();
+      throw new Error(error || "Failed to send extension reminder");
+    }
+
+    return res.json();
+  },
+
+  updateExtensionApprovers: async (extensionId, approvers, token) => {
+    const guidPattern = /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$|^[0-9a-fA-F]{24}$/;
+    const normalizedApprovers = Array.isArray(approvers)
+      ? approvers.map((approver) => {
+          const rawUserId = approver?.userId ?? approver?.user ?? null;
+          const normalizedUserId =
+            typeof rawUserId === "string" && guidPattern.test(rawUserId)
+              ? rawUserId
+              : null;
+
+          return {
+            name: approver?.name || "",
+            role: approver?.role || "",
+            userId: normalizedUserId,
+            email: approver?.email || "",
+            samAccountName: approver?.samAccountName || "",
+            department: approver?.department || "",
+            position: approver?.position || "",
+            approved: approver?.approved || approver?.approvalStatus === "approved",
+            approvalStatus: approver?.approvalStatus || (approver?.approved ? "approved" : "pending"),
+          };
+        })
+      : [];
+
+    const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/approvers`, {
+      method: "PUT",
+      headers: getAuthHeaders(token),
+      body: JSON.stringify(normalizedApprovers),
+    });
+
+    if (!res.ok) {
+      const errorPayload = await res.json().catch(() => null);
+      const errorMessage =
+        errorPayload?.error ||
+        errorPayload?.message ||
+        errorPayload?.title ||
+        (typeof errorPayload === "string" ? errorPayload : "") ||
+        "Failed to update extension approvers";
+      throw new Error(errorMessage);
+    }
+
+    return res.json();
+  },
+
+
+  returnExtensionForRework: async (extensionId, reason, token) => {
+    const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/return-for-rework`, {
+      method: "PUT",
+      headers: getAuthHeaders(token),
+      body: JSON.stringify({ reason }),
+    });
+
+    if (!res.ok) {
+      const error = await res.text();
+      throw new Error(error || "Failed to return extension for rework");
+    }
+
+    return res.json();
+  },
 };
 
 const wrappedDeferralApi = Object.fromEntries(
@@ -1537,7 +1665,7 @@ const wrappedDeferralApi = Object.fromEntries(
         try {
           return await value(...args);
         } catch (error) {
-          throw sanitizeThrownApiError(error);
+          throw await sanitizeThrownApiError(error);
         }
       },
     ];

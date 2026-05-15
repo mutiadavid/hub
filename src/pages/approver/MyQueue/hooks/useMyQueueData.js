@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { message } from "antd";
 import deferralApi from "../../../../service/deferralApi";
@@ -13,7 +13,7 @@ export const useMyQueueData = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [queueExtensions, setQueueExtensions] = useState([]);
   const [extensionsLoading, setExtensionsLoading] = useState(false);
-  
+ 
   const token = useSelector((state) => state.auth.token);
 
   // Fetch pending deferrals for current approver
@@ -192,7 +192,12 @@ export const useMyQueueModal = () => {
       try {
         const freshExtension = await deferralApi.getExtensionById(extensionId, token);
         if (freshExtension) {
-          const fullDeferral = await fetchFullDeferralForExtension(freshExtension);
+          // Only fetch full deferral if we don't have it or if it's explicitly needed
+          let fullDeferral = selectedExtension?.deferral || selectedExtension?.linkedDeferral;
+          if (!fullDeferral) {
+            fullDeferral = await fetchFullDeferralForExtension(freshExtension);
+          }
+         
           const mergedExtension = {
             ...freshExtension,
             deferral: fullDeferral || freshExtension.deferral || null,
@@ -305,7 +310,7 @@ export const useMyQueueModal = () => {
     };
 
     syncSelectedExtension();
-    const intervalId = window.setInterval(syncSelectedExtension, 5000);
+    const intervalId = window.setInterval(syncSelectedExtension, 10000);
 
     const handleExtensionEvent = (event) => {
       const updatedExtension = event?.detail;

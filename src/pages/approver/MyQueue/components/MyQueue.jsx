@@ -267,11 +267,13 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
 
       if (!res.ok) {
         let errorMsg = "Failed to return extension for rework";
+        const responseText = await res.text().catch(() => "");
+       
         try {
-          const body = await res.json();
+          const body = JSON.parse(responseText);
           errorMsg = body?.message || body?.error || errorMsg;
         } catch {
-          errorMsg = await res.text();
+          errorMsg = responseText || errorMsg;
         }
 
         if (res.status === 403) {

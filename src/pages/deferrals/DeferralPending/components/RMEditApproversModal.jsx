@@ -3,7 +3,6 @@ import { Button, Input, Select, Spin, Typography } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useLazySearchAdUsersQuery } from "../../../../api/adSearchApi";
 import { WARNING_ORANGE } from "../utils/constants";
-import "../../../../styles/creatorDesignSystem.css";
 
 const { Text } = Typography;
 
@@ -20,13 +19,9 @@ const RMEditApproversModal = ({
   confirmingApprovers,
   onCancel,
   onConfirm,
-  /** Hide hero + “Approval Flow Setup” intro (e.g. embedded in Resubmit modal). */
   suppressIntro = false,
-  /** Hide Cancel / Confirm Approvers footer. */
   suppressFooter = false,
-  /** Hide the orange note block. */
   suppressNote = false,
-  /** Show a trailing “+” to append an approver (Resubmit modal parity). */
   showTrailingInsert = false,
 }) => {
   const [directoryApprovers, setDirectoryApprovers] = useState([]);
@@ -276,274 +271,35 @@ const RMEditApproversModal = ({
   }
 
   return (
-    <>
-      <style>{`
-        .rm-edit-approvers-panel {
-          background: var(--color-white);
-          border: 1px solid rgba(214, 189, 152, 0.2);
-          border-radius: 12px;
-          box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
-          padding: 24px;
-        }
-        .rm-edit-approvers-modal-hero {
-          display: flex;
-          align-items: flex-start;
-          gap: 16px;
-          padding-right: 0;
-          margin-bottom: 24px;
-        }
-        .rm-edit-approvers-modal-hero-copy h2 {
-          margin: 0;
-          color: var(--color-heading);
-          font-size: 16px;
-          font-weight: 700;
-          line-height: 1.3;
-          letter-spacing: -0.02em;
-        }
-        .rm-edit-approvers-modal-hero-copy p {
-          margin: 6px 0 0;
-          color: var(--color-text-light);
-          font-size: 13px;
-          line-height: 1.45;
-        }
-        .rm-edit-approvers-modal-shell {
-          margin-bottom: 26px;
-        }
-        .rm-edit-approvers-modal-heading {
-          margin-bottom: 20px;
-        }
-        .rm-edit-approvers-modal-heading h3 {
-          margin: 0;
-          color: var(--color-text-dark);
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-        }
-        .rm-edit-approvers-modal-heading p {
-          margin: 10px 0 0;
-          color: #667085;
-          font-size: 13px;
-          line-height: 1.55;
-        }
-        .rm-edit-approvers-modal-list {
-          display: flex;
-          flex-direction: column;
-          gap: 18px;
-        }
-        .rm-edit-approvers-modal-step {
-          display: flex;
-          gap: 16px;
-          padding: 18px 18px 16px;
-          background: rgba(255, 255, 255, 0.98);
-          border-radius: 14px;
-          border: 1px solid rgba(214, 189, 152, 0.18);
-          align-items: flex-start;
-          box-shadow: 0 10px 28px rgba(26, 54, 54, 0.06);
-        }
-        .rm-edit-approvers-modal-step--locked {
-          background: #f2f4f7;
-          border-color: rgba(208, 213, 221, 0.9);
-        }
-        .rm-edit-approvers-modal-step-index {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 42px;
-          height: 42px;
-          min-width: 42px;
-          border-radius: 999px;
-          background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%);
-          color: var(--color-white);
-          font-weight: 700;
-          font-size: 14px;
-          box-shadow: 0 8px 18px rgba(26, 54, 54, 0.16);
-        }
-        .rm-edit-approvers-modal-step-fields {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-        .rm-edit-approvers-modal-field {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .rm-edit-approvers-modal-label {
-          color: var(--color-text-medium);
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-        }
-        .rm-edit-approvers-modal-step-fields .ant-input,
-        .rm-edit-approvers-modal-step-fields .ant-select-selector {
-          border: 1px solid #eaecf0 !important;
-          border-radius: 10px !important;
-          box-shadow: none !important;
-          min-height: 46px !important;
-          background: var(--color-white) !important;
-          padding-inline: 14px !important;
-        }
-        .rm-edit-approvers-modal-step-fields .ant-input {
-          color: var(--color-text-dark);
-          font-size: 13px;
-        }
-        .rm-edit-approvers-modal-step-fields .ant-input::placeholder,
-        .rm-edit-approvers-modal-step-fields .ant-select-selection-placeholder {
-          color: #98a2b3 !important;
-        }
-        .rm-edit-approvers-modal-step-fields .ant-select-selection-item,
-        .rm-edit-approvers-modal-step-fields .ant-select-selection-placeholder,
-        .rm-edit-approvers-modal-step-fields .ant-input,
-        .rm-edit-approvers-modal-note {
-          font-size: 13px !important;
-        }
-        .rm-edit-approvers-modal-step-fields .ant-select-selection-item {
-          color: var(--color-text-dark) !important;
-          line-height: 44px !important;
-        }
-        .rm-edit-approvers-modal-step-fields .ant-input:hover,
-        .rm-edit-approvers-modal-step-fields .ant-input:focus,
-        .rm-edit-approvers-modal-step-fields .ant-select-selector:hover,
-        .rm-edit-approvers-modal-step-fields .ant-select-focused .ant-select-selector {
-          border-color: var(--color-primary-dark) !important;
-          box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
-        }
-        .rm-edit-approvers-modal-delete.ant-btn {
-          color: #b42318 !important;
-          border-radius: 10px !important;
-          margin-top: 24px;
-          border: 1px solid transparent !important;
-        }
-        .rm-edit-approvers-modal-delete.ant-btn:hover,
-        .rm-edit-approvers-modal-delete.ant-btn:focus {
-          background: rgba(180, 35, 24, 0.06) !important;
-          border-color: rgba(180, 35, 24, 0.12) !important;
-        }
-        .rm-edit-approvers-modal-insert {
-          display: flex;
-          justify-content: center;
-          padding: 0;
-        }
-        .rm-edit-approvers-modal-insert-btn.ant-btn {
-          width: 38px;
-          height: 38px;
-          border-radius: 999px !important;
-          border: 1px dashed rgba(52, 80, 76, 0.3) !important;
-          background: transparent !important;
-          color: var(--color-primary-medium) !important;
-          box-shadow: none !important;
-        }
-        .rm-edit-approvers-modal-note {
-          margin-top: 24px;
-          padding: 15px 16px;
-          background: #fffaf0;
-          border: 1px solid rgba(214, 189, 152, 0.42);
-          border-left: 4px solid ${WARNING_ORANGE};
-          border-radius: 12px;
-          font-size: 12px;
-          color: var(--color-text-medium);
-          line-height: 1.6;
-        }
-        .rm-edit-approvers-modal-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-          margin-top: 0;
-          padding-top: 20px;
-          border-top: 1px solid rgba(214, 189, 152, 0.16);
-        }
-        .rm-edit-approvers-modal-cancel.ant-btn {
-          min-width: 92px;
-          height: 44px;
-          border-radius: 10px !important;
-          border: 1px solid #d0d5dd !important;
-          background: var(--color-white) !important;
-          color: var(--color-text-medium) !important;
-          box-shadow: none !important;
-          font-weight: 600 !important;
-        }
-        .rm-edit-approvers-modal-cancel.ant-btn:disabled,
-        .rm-edit-approvers-modal-cancel.ant-btn[disabled] {
-          background: #d1d5db !important;
-          border-color: #d1d5db !important;
-          color: #374151 !important;
-        }
-        .rm-edit-approvers-modal-confirm.ant-btn {
-          min-width: 156px;
-          height: 44px;
-          border-radius: 10px !important;
-          border: none !important;
-          background: var(--ncb-primary-500) !important;
-          color: var(--color-white) !important;
-          box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
-          font-weight: 700 !important;
-        }
-        .rm-edit-approvers-modal-confirm.ant-btn,
-        .rm-edit-approvers-modal-confirm.ant-btn span,
-        .rm-edit-approvers-modal-confirm.ant-btn .anticon,
-        .rm-edit-approvers-modal-confirm.ant-btn * {
-          color: #ffffff !important;
-        }
-        .rm-edit-approvers-modal-confirm.ant-btn:disabled,
-        .rm-edit-approvers-modal-confirm.ant-btn[disabled] {
-          background: #d1d5db !important;
-          border-color: #d1d5db !important;
-          box-shadow: none !important;
-          color: #374151 !important;
-        }
-        .rm-edit-approvers-modal-confirm.ant-btn:disabled span,
-        .rm-edit-approvers-modal-confirm.ant-btn[disabled] span,
-        .rm-edit-approvers-modal-confirm.ant-btn:disabled .anticon,
-        .rm-edit-approvers-modal-confirm.ant-btn[disabled] .anticon,
-        .rm-edit-approvers-modal-confirm.ant-btn:disabled *,
-        .rm-edit-approvers-modal-confirm.ant-btn[disabled] * {
-          color: #374151 !important;
-        }
-        @media (max-width: 640px) {
-          .rm-edit-approvers-panel {
-            padding: 18px;
-          }
-          .rm-edit-approvers-modal-step {
-            flex-direction: column;
-          }
-          .rm-edit-approvers-modal-delete.ant-btn {
-            margin-top: 0;
-            align-self: flex-end;
-          }
-          .rm-edit-approvers-modal-actions {
-            flex-direction: column-reverse;
-          }
-          .rm-edit-approvers-modal-cancel.ant-btn,
-          .rm-edit-approvers-modal-confirm.ant-btn {
-            width: 100%;
-          }
-        }
-      `}</style>
-      <div className={`rm-edit-approvers-panel ${embedded ? "rm-edit-approvers-panel--embedded" : ""}`}>
-        {!suppressIntro ? (
-          <div className="rm-edit-approvers-modal-hero">
-            <div className="rm-edit-approvers-modal-hero-copy">
-              <h2>Edit Approvers</h2>
-              <p>Review each step below, assign the right approver, and keep the existing sequence intact.</p>
-            </div>
+    <div className={`bg-white border border-[rgba(214,189,152,0.2)] rounded-xl shadow-sm p-6 ${embedded ? "" : ""}`}>
+      {/* Hero Section */}
+      {!suppressIntro && (
+        <div className="flex items-start gap-4 pr-0 mb-6">
+          <div className="flex-1">
+            <h2 className="m-0 text-[#164679] text-base font-bold tracking-tight">Edit Approvers</h2>
+            <p className="mt-1.5 m-0 text-gray-500 text-sm leading-relaxed">
+              Review each step below, assign the right approver, and keep the existing sequence intact.
+            </p>
           </div>
-        ) : null}
+        </div>
+      )}
 
-        <div className="rm-edit-approvers-modal-shell">
-          {!suppressIntro ? (
-            <div className="rm-edit-approvers-modal-heading">
-              <h3>Approval Flow Setup</h3>
-              <p>
-                Review each step below, assign the right approver, and keep the
-                existing sequence intact.
-              </p>
-            </div>
-          ) : null}
+      <div className="mb-6">
+        {/* Approval Flow Setup Header */}
+        {!suppressIntro && (
+          <div className="mb-5">
+            <h3 className="m-0 text-gray-700 text-[11px] font-bold tracking-[0.18em] uppercase">
+              Approval Flow Setup
+            </h3>
+            <p className="mt-2.5 m-0 text-gray-500 text-sm leading-relaxed">
+              Review each step below, assign the right approver, and keep the
+              existing sequence intact.
+            </p>
+          </div>
+        )}
 
-          <div className="rm-edit-approvers-modal-list">
+        {/* Approvers List */}
+        <div className="flex flex-col gap-4">
           {editedApprovers.map((approver, idx) => {
             const hasApproved = approver.approved || approver.approvalStatus === "approved";
             const nextApproverApproved =
@@ -553,24 +309,32 @@ const RMEditApproversModal = ({
             return (
               <div key={approver._id || idx}>
                 <div
-                  className={`rm-edit-approvers-modal-step ${hasApproved ? "rm-edit-approvers-modal-step--locked" : ""}`}
+                  className={`flex gap-4 p-4 bg-white/98 rounded-xl border ${hasApproved ? "bg-gray-50 border-gray-300" : "border-[rgba(214,189,152,0.18)] shadow-[0_10px_28px_rgba(26,54,54,0.06)]"}`}
                 >
-                  <div className="rm-edit-approvers-modal-step-index">
+                  {/* Step Number Badge */}
+                  <div className="flex items-center justify-center w-[42px] h-[42px] min-w-[42px] rounded-full bg-gradient-to-b from-[#164679] to-[#2a8cb5] text-white font-bold text-sm shadow-md">
                     {idx + 1}
                   </div>
 
-                  <div className="rm-edit-approvers-modal-step-fields">
-                    <div className="rm-edit-approvers-modal-field">
-                      <span className="rm-edit-approvers-modal-label">Role</span>
+                  {/* Form Fields */}
+                  <div className="flex-1 flex flex-col gap-3.5">
+                    <div className="flex flex-col gap-2">
+                      <span className="text-gray-600 text-[11px] font-bold tracking-[0.16em] uppercase">
+                        Role
+                      </span>
                       <Input
                         placeholder="Role/Designation"
                         value={approver.role || ""}
                         onChange={(e) => handleApproverChange(idx, "role", e.target.value)}
                         disabled={hasApproved}
+                        className="border border-[#eaecf0] rounded-lg shadow-none hover:border-[#164679] focus:border-[#164679] focus:ring-2 focus:ring-[rgba(22,70,121,0.08)]"
                       />
                     </div>
-                    <div className="rm-edit-approvers-modal-field">
-                      <span className="rm-edit-approvers-modal-label">Approver</span>
+
+                    <div className="flex flex-col gap-2">
+                      <span className="text-gray-600 text-[11px] font-bold tracking-[0.16em] uppercase">
+                        Approver
+                      </span>
                       <Select
                         optionLabelProp="label"
                         placeholder="Search Active Directory staff"
@@ -608,18 +372,18 @@ const RMEditApproversModal = ({
                             }, 120);
                           }
                         }}
-                        style={{ width: "100%" }}
+                        className="w-full"
                         showSearch
                         filterOption={false}
                         loading={loadingApprovers || isSearchingDirectory}
                         disabled={hasApproved}
                         notFoundContent={
                           loadingApprovers || isSearchingDirectory ? (
-                            <div style={{ textAlign: "center", padding: "10px 0" }}>
+                            <div className="text-center py-2.5">
                               <Spin size="small" />
                             </div>
                           ) : (
-                            <Text type="secondary">{notFoundText}</Text>
+                            <Text className="text-gray-400">{notFoundText}</Text>
                           )
                         }
                       >
@@ -655,71 +419,79 @@ const RMEditApproversModal = ({
                     </div>
                   </div>
 
+                  {/* Delete Button */}
                   <Button
                     type="text"
-                    className="rm-edit-approvers-modal-delete"
                     icon={<DeleteOutlined />}
                     onClick={() => handleRemoveApprover(idx)}
                     disabled={hasApproved || editedApprovers.length <= 1}
+                    className="text-red-700 rounded-lg mt-6 border border-transparent hover:bg-red-50 hover:border-red-200"
                   />
                 </div>
 
+                {/* Insert Button Between Steps */}
                 {idx < editedApprovers.length - 1 && (
-                  <div className="rm-edit-approvers-modal-insert">
+                  <div className="flex justify-center py-0">
                     <Button
                       type="text"
                       shape="circle"
                       icon={<PlusOutlined />}
-                      className="rm-edit-approvers-modal-insert-btn"
                       onClick={() => handleAddApprover(idx)}
                       disabled={nextApproverApproved}
+                      className="w-[38px] h-[38px] rounded-full border border-dashed border-[rgba(52,80,76,0.3)] bg-transparent text-[#2a8cb5] shadow-none hover:bg-gray-50"
                     />
                   </div>
                 )}
               </div>
             );
           })}
-          </div>
-
-          {showTrailingInsert ? (
-            <div className="rm-edit-approvers-modal-insert">
-              <Button
-                type="text"
-                shape="circle"
-                icon={<PlusOutlined />}
-                className="rm-edit-approvers-modal-insert-btn"
-                onClick={() => handleAddApprover(undefined)}
-              />
-            </div>
-          ) : null}
-
-          {!suppressNote ? (
-            <div className="rm-edit-approvers-modal-note">
-              <strong>Note:</strong> Any approver who has already approved is locked,
-              greyed out, and cannot be removed or replaced. You also cannot insert a
-              new approver before an already-approved step.
-            </div>
-          ) : null}
         </div>
 
-        {!suppressFooter ? (
-          <div className="rm-edit-approvers-modal-actions">
-            <Button className="rm-edit-approvers-modal-cancel" onClick={onCancel} disabled={confirmingApprovers}>
-              Cancel
-            </Button>
+        {/* Trailing Insert Button */}
+        {showTrailingInsert && (
+          <div className="flex justify-center py-0 mt-2">
             <Button
-              type="primary"
-              className="rm-edit-approvers-modal-confirm"
-              onClick={onConfirm}
-              loading={confirmingApprovers}
-              disabled={confirmingApprovers}
-            >
-              Confirm Approvers
-            </Button>
+              type="text"
+              shape="circle"
+              icon={<PlusOutlined />}
+              onClick={() => handleAddApprover(undefined)}
+              className="w-[38px] h-[38px] rounded-full border border-dashed border-[rgba(52,80,76,0.3)] bg-transparent text-[#2a8cb5] shadow-none hover:bg-gray-50"
+            />
           </div>
-        ) : null}
+        )}
+
+        {/* Note Section */}
+        {!suppressNote && (
+          <div className="mt-6 p-4 bg-amber-50 border border-[rgba(214,189,152,0.42)] border-l-4 rounded-xl text-gray-600 text-sm leading-relaxed" style={{ borderLeftColor: WARNING_ORANGE }}>
+            <strong>Note:</strong> Any approver who has already approved is locked,
+            greyed out, and cannot be removed or replaced. You also cannot insert a
+            new approver before an already-approved step.
+          </div>
+        )}
       </div>
-    </>
+
+      {/* Footer Actions */}
+      {!suppressFooter && (
+        <div className="flex justify-end gap-3 pt-5 border-t border-[rgba(214,189,152,0.16)]">
+          <Button
+            onClick={onCancel}
+            disabled={confirmingApprovers}
+            className="min-w-[92px] h-11 rounded-xl border border-[#d0d5dd] bg-white text-gray-600 shadow-none font-semibold hover:bg-gray-50 disabled:bg-gray-300 disabled:text-gray-600"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            onClick={onConfirm}
+            loading={confirmingApprovers}
+            disabled={confirmingApprovers}
+            className="min-w-[156px] h-11 rounded-xl border-none bg-[#3ab3e5] text-white shadow-md font-bold hover:bg-[#2a8cb5] disabled:bg-gray-300 disabled:text-gray-600 disabled:shadow-none"
+          >
+            Confirm Approvers
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

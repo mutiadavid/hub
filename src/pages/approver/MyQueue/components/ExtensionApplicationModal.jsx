@@ -33,6 +33,8 @@ import {
 import { downloadFile, openFileInNewTab } from "../../../../utils/fileUtils";
 import { PRIMARY_BLUE, SUCCESS_GREEN, ERROR_RED } from "../utils/constants";
 import CommentTrail from "./CommentTrail";
+import DeferralDecisionModal from "../../../../components/deferrals/DeferralDecisionModal";
+
  
 
 const TABS = [
@@ -48,11 +50,6 @@ const primaryButtonClassName = "rounded-lg! border-0! bg-(--ncb-primary-500)! te
 
 const secondaryButtonClassName = "rounded-lg! border-(--color-primary-soft)! bg-transparent! text-(--color-primary-medium)! shadow-none! hover:border-(--color-primary-soft)! hover:bg-[rgba(214,189,152,0.1)]! hover:text-(--color-primary-dark)! focus:border-(--color-primary-soft)! focus:bg-[rgba(214,189,152,0.1)]! focus:text-(--color-primary-dark)! active:border-(--color-primary-soft)! active:bg-[rgba(214,189,152,0.1)]! active:text-(--color-primary-dark)! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-white! disabled:[&>span]:text-white!";
 
-const editDecisionModalWrapClassName = "approver-extension-decision-modal [&_.ant-modal-content]:overflow-hidden [&_.ant-modal-content]:border-0 [&_.ant-modal-content]:bg-white [&_.ant-modal-content]:p-0 [&_.ant-modal-content]:shadow-[0_32px_72px_rgba(18,36,36,0.24)] [&_.ant-modal-header]:mb-0 [&_.ant-modal-header]:border-b-0 [&_.ant-modal-header]:bg-[linear-gradient(180deg,#34504c_0%,#2b4541_100%)] [&_.ant-modal-header]:px-[26px] [&_.ant-modal-header]:pb-[18px] [&_.ant-modal-header]:pt-[22px] [&_.ant-modal-title]:text-white [&_.ant-modal-close]:top-5 [&_.ant-modal-close]:end-5 [&_.ant-modal-close]:h-8 [&_.ant-modal-close]:w-8 [&_.ant-modal-close]:text-[rgba(255,255,255,0.88)] hover:[&_.ant-modal-close]:bg-[rgba(255,255,255,0.12)] hover:[&_.ant-modal-close]:text-white [&_.ant-modal-body]:max-h-[70vh] [&_.ant-modal-body]:overflow-y-auto [&_.ant-modal-body]:bg-[#f7f6f2] [&_.ant-modal-body]:px-[26px] [&_.ant-modal-body]:pb-6 [&_.ant-modal-body]:pt-7 [&_.ant-modal-footer]:m-0 [&_.ant-modal-footer]:bg-[#f7f6f2] [&_.ant-modal-footer]:px-[26px] [&_.ant-modal-footer]:pb-6 [&_.ant-modal-footer]:pt-0";
-
-const decisionSecondaryButtonClassName = "min-w-[92px]! h-11! rounded-[10px]! border-[#d0d5dd]! bg-white! text-(--color-text-medium)! shadow-none! font-semibold! hover:border-[#d0d5dd]! hover:bg-white! hover:text-(--color-text-medium)! focus:border-[#d0d5dd]! focus:bg-white! focus:text-(--color-text-medium)! active:border-[#d0d5dd]! active:bg-white! active:text-(--color-text-medium)! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! disabled:[&>span]:text-[#6b7280]!";
-
-const decisionPrimaryButtonClassName = "min-w-[156px]! h-11! rounded-[10px]! border-0! bg-(--ncb-primary-500)! text-white! shadow-[0_10px_20px_rgba(58,179,229,0.18)]! font-bold! hover:bg-(--ncb-primary-700)! hover:text-white! focus:bg-(--ncb-primary-700)! focus:text-white! active:bg-(--ncb-primary-700)! active:text-white! [&>span]:text-white! disabled:bg-[#D1D5DB]! disabled:border-[#D1D5DB]! disabled:text-[#6b7280]! disabled:[&>span]:text-[#6b7280]!";
 
 const getNormalizedApprovalStatus = (approver) =>
   String(
@@ -125,7 +122,7 @@ const ExtensionApplicationModal = ({
   rejectLoading = false,
   reworkLoading = false,
   showActions = true,
-  noHeaderGradient = false,
+  approveText = "Approve",
 }) => {
   const [activeTab, setActiveTab] = useState("details");
   const [approveModalVisible, setApproveModalVisible] = useState(false);
@@ -176,11 +173,6 @@ const ExtensionApplicationModal = ({
     };
   });
 
-  const noHeaderStyles = `
-    .no-header-gradient .ant-modal-header{ background: #ffffff !important; border-bottom: 1px solid rgba(214,189,152,0.2) !important; }
-    .no-header-gradient .ant-modal-title{ color: var(--color-text-dark) !important; }
-    .no-header-gradient .ant-modal-close{ color: var(--color-text-dark) !important; background: transparent !important; }
-  `;
 
   const handleReject = () => {
     if (!rejectReason.trim()) {
@@ -327,101 +319,9 @@ const ExtensionApplicationModal = ({
 
   const detailsSubtitle = `${currentExtension.customerName || linkedDeferral.customerName || "Customer"} • ${currentExtension.deferralNumber || linkedDeferral.deferralNumber || "No Deferral"}`;
 
-  const renderDecisionModal = ({
-    title,
-    subtitle,
-    titleIcon,
-    open: modalOpen,
-    onCancel,
-    onConfirm,
-    confirmText,
-    confirmLoading,
-    confirmDisabled = false,
-    confirmClassName,
-    summaryCopy,
-    inputLabel,
-    inputRequired = false,
-    inputValue,
-    onInputChange,
-    inputPlaceholder,
-    modalClassName,
-    titleClassName,
-    titleIconClassName,
-    titleCopyClassName,
-    cardClassName,
-    summaryClassName,
-    labelClassName,
-    cancelButtonClassName,
-    confirmButtonClassName,
-  }) => (
-    <Modal
-      title={(
-        <div className={`flex items-start gap-4 pr-9 text-white ${titleClassName || ""}`.trim()}>
-          <span className={`inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[14px] border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.92)] [&_svg]:h-[26px] [&_svg]:w-[26px] ${titleIconClassName || ""}`.trim()}>{titleIcon}</span>
-          <span className={`flex flex-col gap-0.5 ${titleCopyClassName || ""}`.trim()}>
-            <span className="font-bold text-white">{title}</span>
-            {/* Moved subtitle to summary body */}
-          </span>
-        </div>
-      )}
-      open={modalOpen}
-      onCancel={onCancel}
-      maskClosable={false}
-      wrapClassName={`${modalClassName || editDecisionModalWrapClassName}`.trim()}
-      footer={[
-        <Button
-          key="cancel"
-          className={`${decisionSecondaryButtonClassName} ${cancelButtonClassName || ""}`.trim()}
-          onClick={onCancel}
-          disabled={confirmLoading}
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="confirm"
-          className={`${decisionPrimaryButtonClassName} ${confirmClassName || ""} ${confirmButtonClassName || ""}`.trim()}
-          loading={confirmLoading}
-          onClick={onConfirm}
-          disabled={confirmDisabled}
-        >
-          {confirmText}
-        </Button>,
-      ]}
-    >
-      <div className={`rounded-xl border border-[rgba(214,189,152,0.22)] bg-white p-3.5 ${cardClassName || ""}`.trim()}>
-        <div className={`mb-3 rounded-[14px] border border-[rgba(214,189,152,0.18)] bg-[rgba(255,255,255,0.98)] px-[18px] pb-4 pt-[18px] shadow-[0_10px_28px_rgba(26,54,54,0.06)] ${summaryClassName || ""}`.trim()}>
-          <div className="font-normal text-(--color-text-dark)">
-            {extensionLabel || "Extension request"}
-          </div>
-          <div className="mt-1 text-xs text-(--color-text-dark)">
-            {currentExtension.customerName || linkedDeferral.customerName || "Customer"}
-          </div>
-          <div className="mt-2 text-xs text-(--color-text-dark)">
-            {subtitle}
-          </div>
-          <div className="mt-2 text-xs text-(--color-text-dark)">
-            {summaryCopy}
-          </div>
-        </div>
-
-        <label className={`mb-2 block text-[11px] font-bold uppercase tracking-[0.16em] text-(--color-text-medium) ${labelClassName || ""}`.trim()}>
-          {inputLabel}
-          {inputRequired ? " (Required)" : ""}
-        </label>
-        <Input.TextArea
-          rows={4}
-          value={inputValue}
-          onChange={(event) => onInputChange(event.target.value)}
-          placeholder={inputPlaceholder}
-          className="[&.ant-input]:min-h-[120px] [&.ant-input]:rounded-[10px] [&.ant-input]:border-[#eaecf0] [&.ant-input]:bg-white [&.ant-input]:p-3.5 [&.ant-input]:text-[15px] [&.ant-input]:text-(--color-text-dark) [&.ant-input]:shadow-none [&.ant-input]:placeholder:text-[#98a2b3] hover:[&.ant-input]:border-(--color-primary-dark) focus:[&.ant-input]:border-(--color-primary-dark) focus:[&.ant-input]:shadow-[0_0_0_2px_rgba(26,54,54,0.08)]"
-        />
-      </div>
-    </Modal>
-  );
 
   return (
     <>
-      <style>{noHeaderStyles}</style>
       <div className={reviewShellClassName}>
         <div className="flex flex-col gap-4 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3 max-md:flex-col max-md:items-stretch">
@@ -463,6 +363,14 @@ const ExtensionApplicationModal = ({
               <>
                 <Button
                   className={primaryButtonClassName}
+                  icon={<RedoOutlined />}
+                  onClick={() => setReworkModalVisible(true)}
+                  loading={reworkLoading}
+                >
+                  Return for Rework
+                </Button>
+                <Button
+                  className={primaryButtonClassName}
                   icon={<CloseOutlined />}
                   onClick={() => setRejectModalVisible(true)}
                   loading={rejectLoading}
@@ -475,7 +383,7 @@ const ExtensionApplicationModal = ({
                   onClick={() => setApproveModalVisible(true)}
                   loading={approveLoading}
                 >
-                  Approve
+                  {approveText || "Approve"}
                 </Button>
               </>
             ) : null}
@@ -654,98 +562,75 @@ const ExtensionApplicationModal = ({
 
         </div>
       </div>
-
-      {renderDecisionModal({
-        title: "Confirm Approval",
-        subtitle: "Approve this extension using the same review flow as the other workspaces.",
-        titleIcon: <CheckOutlined />,
-        open: approveModalVisible,
-        onCancel: () => {
+      <DeferralDecisionModal
+        title={`Confirm ${approveText || "Approval"}`}
+        subtitle="Confirm the request and advance it to the next workflow stage."
+        titleIcon={<CheckOutlined />}
+        open={approveModalVisible}
+        onCancel={() => {
           setApproveModalVisible(false);
           setApproveComment("");
-        },
-        onConfirm: handleApprove,
-        confirmText: "Approve",
-        confirmLoading: approveLoading,
-        summaryCopy: "Approving this request will move the extension forward in the workflow and capture your comments in context.",
-        inputLabel: "Approval comments",
-        inputValue: approveComment,
-        onInputChange: setApproveComment,
-        inputPlaceholder: "Enter approval comments...",
-        modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
-        titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
-        titleIconClassName: "",
-        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
-        cardClassName: "border-0 bg-transparent p-0 shadow-none",
-        summaryClassName: "mb-6",
-        labelClassName: "mb-2 text-(--color-text-medium)",
-        cancelButtonClassName: "",
-        confirmButtonClassName: "",
-      })}
+        }}
+        onConfirm={handleApprove}
+        confirmText={approveText || "Approve"}
+        confirmLoading={approveLoading}
+        summaryCopy={`Approving this request will move the extension forward in the workflow and capture your comments in context.`}
+        inputLabel="Approval comments"
+        inputValue={approveComment}
+        onInputChange={setApproveComment}
+        inputPlaceholder="Enter approval comments..."
+        deferralNumber={extensionLabel}
+        customerName={currentExtension.customerName || linkedDeferral.customerName}
+      />
 
-      {renderDecisionModal({
-        title: "Return for Rework",
-        subtitle: "Send this extension back to the RM with the exact corrections required before resubmission.",
-        titleIcon: <RedoOutlined />,
-        open: reworkModalVisible,
-        onCancel: () => {
+      <DeferralDecisionModal
+        title="Return for Rework"
+        subtitle="Send the request back with clear corrective instructions."
+        titleIcon={<RedoOutlined />}
+        open={reworkModalVisible}
+        onCancel={() => {
           setReworkModalVisible(false);
           setReworkReason("");
-        },
-        onConfirm: handleReturnForRework,
-        confirmText: "Return for Rework",
-        confirmLoading: reworkLoading,
-        confirmDisabled: !reworkReason.trim(),
-        confirmClassName: "",
-        summaryCopy: "Returning for rework pauses the current extension review and routes the resubmission back to you after the RM corrects it.",
-        inputLabel: "Rework instructions",
-        inputRequired: true,
-        inputValue: reworkReason,
-        onInputChange: setReworkReason,
-        inputPlaceholder: "Enter rework instructions...",
-        modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
-        titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
-        titleIconClassName: "",
-        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
-        cardClassName: "border-0 bg-transparent p-0 shadow-none",
-        summaryClassName: "mb-6",
-        labelClassName: "mb-2 text-(--color-text-medium)",
-        cancelButtonClassName: "",
-        confirmButtonClassName: "",
-      })}
+        }}
+        onConfirm={handleReturnForRework}
+        confirmText="Return for Rework"
+        confirmLoading={reworkLoading}
+        confirmDisabled={!reworkReason.trim()}
+        summaryCopy="Returning for rework pauses the current extension review and routes the resubmission back to you after the RM corrects it."
+        inputLabel="Rework instructions"
+        inputRequired
+        inputValue={reworkReason}
+        onInputChange={setReworkReason}
+        inputPlaceholder="Enter rework instructions..."
+        deferralNumber={extensionLabel}
+        customerName={currentExtension.customerName || linkedDeferral.customerName}
+      />
 
-      {renderDecisionModal({
-        title: "Confirm Rejection",
-        subtitle: "Provide a concise rationale before rejecting this extension request.",
-        titleIcon: <ExclamationCircleOutlined />,
-        open: rejectModalVisible,
-        onCancel: () => {
+      <DeferralDecisionModal
+        title="Confirm Rejection"
+        subtitle="Provide a concise rationale before rejecting this extension request."
+        titleIcon={<ExclamationCircleOutlined />}
+        open={rejectModalVisible}
+        onCancel={() => {
           setRejectModalVisible(false);
           setRejectReason("");
-        },
-        onConfirm: handleReject,
-        confirmText: "Reject",
-        confirmLoading: rejectLoading,
-        confirmDisabled: !rejectReason.trim(),
-        confirmClassName: "",
-        summaryCopy: "Rejecting this request will stop the extension review and record your reason for the originating team.",
-        inputLabel: "Rejection reason",
-        inputRequired: true,
-        inputValue: rejectReason,
-        onInputChange: setRejectReason,
-        inputPlaceholder: "Enter rejection reason...",
-        modalClassName: noHeaderGradient ? "no-header-gradient" : editDecisionModalWrapClassName,
-        titleClassName: noHeaderGradient ? "text-(--color-text-dark)" : "text-white",
-        titleIconClassName: "",
-        titleCopyClassName: "[&>span]:text-[20px] [&>span]:font-bold",
-        cardClassName: "border-0 bg-transparent p-0 shadow-none",
-        summaryClassName: "mb-6",
-        labelClassName: "mb-2 text-(--color-text-medium)",
-        cancelButtonClassName: "",
-        confirmButtonClassName: "",
-      })}
+        }}
+        onConfirm={handleReject}
+        confirmText="Reject"
+        confirmLoading={rejectLoading}
+        confirmDisabled={!rejectReason.trim()}
+        summaryCopy="Rejecting this request will stop the extension review and record your reason for the originating team."
+        inputLabel="Rejection reason"
+        inputRequired
+        inputValue={rejectReason}
+        onInputChange={setRejectReason}
+        inputPlaceholder="Enter rejection reason..."
+        deferralNumber={extensionLabel}
+        customerName={currentExtension.customerName || linkedDeferral.customerName}
+      />
     </>
   );
 };
 
 export default ExtensionApplicationModal;
+

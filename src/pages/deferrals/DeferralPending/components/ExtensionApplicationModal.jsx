@@ -18,6 +18,9 @@ import dayjs from "dayjs";
 import { PRIMARY_BLUE, SUCCESS_GREEN } from "../utils/constants";
 import ExtensionWorkflowProgress from "../../../../components/common/ExtensionWorkflowProgress";
 import { getDeferralDocumentBuckets } from "../../../../utils/deferralDocuments";
+import RMEditApproversModal from "./RMEditApproversModal";
+import deferralApi from "../../../../service/deferralApi";
+import { message } from "antd";
 
 const TABS = [
   { key: "request", label: "Extension Request" },
@@ -453,8 +456,18 @@ const ExtensionApplicationModal = ({
   onClose,
   onSubmit,
   onSuccessViewExtensions,
+  onApproverFlowUpdate, // New prop to notify parent of approver changes
 }) => {
   const [activeTab, setActiveTab] = useState("request");
+
+  // Edit Approvers State
+  const [isEditApproversModalOpen, setIsEditApproversModalOpen] = useState(false);
+  const [editedApprovers, setEditedApprovers] = useState([]);
+  const [confirmingApprovers, setConfirmingApprovers] = useState(false);
+
+  // Reminder State
+  const [remindingApprover, setRemindingApprover] = useState(false);
+  const [lastRemindTime, setLastRemindTime] = useState({});
 
   useEffect(() => {
     if (open && selectedDeferral) {
@@ -528,6 +541,110 @@ const ExtensionApplicationModal = ({
       value: selectedDeferral.customerName || "-",
     },
   ];
+
+  // Edit Approvers Handlers
+  const handleOpenEditApprovers = () => {
+    if (!currentExtension?.approvers) return;
+    setEditedApprovers(
+      currentExtension.approvers.map((a) => ({
+        ...a,
+        userId: a.userId || a.user?.id || a.user?._id || null,
+        name: a.name || a.user?.name || "",
+        email: a.email || a.user?.email || "",
+      })),
+    );
+    setIsEditApproversModalOpen(true);
+  };
+
+  const handleApproverChange = (index, field, value) => {
+    const next = [...editedApprovers];
+    next[index] = { ...next[index], [field]: value };
+    setEditedApprovers(next);
+  };
+
+  const handleApproverSelection = (index, selection) => {
+    const next = [...editedApprovers];
+    next[index] = {
+      ...next[index],
+      userId: selection.value,
+      name: selection.label,
+      email: selection.directoryApprover?.email || "",
+      samAccountName: selection.directoryApprover?.samAccountName || "",
+      department: selection.directoryApprover?.department || "",
+      position: selection.directoryApprover?.position || "",
+    };
+    setEditedApprovers(next);
+  };
+
+  const handleAddApprover = (index) => {
+    const next = [...editedApprovers];
+    const newApprover = {
+      role: "",
+      name: "",
+      userId: null,
+      approved: false,
+      approvalStatus: "pending",
+    };
+    if (typeof index === "number") {
+      next.splice(index + 1, 0, newApprover);
+    } else {
+      next.push(newApprover);
+    }
+    setEditedApprovers(next);
+  };
+
+  const handleRemoveApprover = (index) => {
+    const next = [...editedApprovers];
+    next.splice(index, 1);
+    setEditedApprovers(next);
+  };
+
+  const handleConfirmApprovers = async () => {
+    const token = localStorage.getItem("token");
+    if (!token || !currentExtension?.id) return;
+
+    setConfirmingApprovers(true);
+    try {
+      await deferralApi.updateExtensionApprovers(
+        currentExtension.id,
+        editedApprovers,
+        token,
+      );
+      message.success("Extension approval flow updated successfully");
+      setIsEditApproversModalOpen(false);
+      if (onApproverFlowUpdate) onApproverFlowUpdate();
+    } catch (err) {
+      console.error("Failed to update extension approvers:", err);
+      message.error(err.message || "Failed to update approval flow");
+    } finally {
+      setConfirmingApprovers(false);
+    }
+  };
+
+  // Reminder Handler
+  const handleRemindApprover = async () => {
+    const extensionId = currentExtension?.id;
+    if (!extensionId) return;
+
+    const lastSent = lastRemindTime[extensionId];
+    if (lastSent && Date.now() - lastSent < 3600000) {
+      message.warning("A reminder was sent recently. Please wait an hour before sending another.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    setRemindingApprover(true);
+    try {
+      await deferralApi.sendExtensionReminder(extensionId, token);
+      message.success("Reminder sent successfully to the current approver");
+      setLastRemindTime({ ...lastRemindTime, [extensionId]: Date.now() });
+    } catch (err) {
+      console.error("Failed to send extension reminder:", err);
+      message.error(err.message || "Failed to send reminder");
+    } finally {
+      setRemindingApprover(false);
+    }
+  };
 
   const wrapperProps = embedded
     ? {
@@ -689,6 +806,31 @@ const ExtensionApplicationModal = ({
             )
           : null}
 
+        {currentExtension &&
+          ["returnedforrework", "returned_for_rework"].includes(
+            String(currentExtension.status || "").toLowerCase(),
+          ) &&
+          renderCard(
+            "Rework Instructions",
+            "Please address the following comments from the approver before resubmitting.",
+            <div
+              style={{
+                padding: "12px",
+                background: "#fff7ed",
+                border: "1px solid #ffedd5",
+                borderRadius: "6px",
+                color: "#9a3412",
+                fontSize: "13px",
+                lineHeight: "1.5",
+              }}
+            >
+              {currentExtension.reworkReason ||
+                currentExtension.rejectionReason ||
+                currentExtension.reason ||
+                "No specific instructions provided."}
+            </div>,
+          )}
+
         {(activeTab === "request" || activeTab === "details") &&
           renderCard(
             "Extension Request Setup",
@@ -795,6 +937,23 @@ const ExtensionApplicationModal = ({
             </Button>
           ) : (
             <>
+              {currentExtension && (
+                <>
+                  <Button
+                    onClick={handleOpenEditApprovers}
+                    disabled={extensionSubmitting}
+                  >
+                    Edit Approvers
+                  </Button>
+                  <Button
+                    loading={remindingApprover}
+                    onClick={handleRemindApprover}
+                    disabled={extensionSubmitting}
+                  >
+                    Remind
+                  </Button>
+                </>
+              )}
               <Button onClick={onClose} disabled={extensionSubmitting}>
                 Cancel
               </Button>
@@ -834,6 +993,31 @@ const ExtensionApplicationModal = ({
       footer={null}
     >
       {content}
+
+      <Modal
+        title={null}
+        open={isEditApproversModalOpen}
+        onCancel={() => setIsEditApproversModalOpen(false)}
+        footer={null}
+        width={720}
+        zIndex={3000}
+        styles={{
+          body: { padding: 0, borderRadius: 12, overflow: "hidden" },
+        }}
+      >
+        <RMEditApproversModal
+          open={isEditApproversModalOpen}
+          editedApprovers={editedApprovers}
+          handleApproverChange={handleApproverChange}
+          handleApproverSelection={handleApproverSelection}
+          handleRemoveApprover={handleRemoveApprover}
+          handleAddApprover={handleAddApprover}
+          onCancel={() => setIsEditApproversModalOpen(false)}
+          onConfirm={handleConfirmApprovers}
+          confirmingApprovers={confirmingApprovers}
+          showTrailingInsert={true}
+        />
+      </Modal>
     </Modal>
   );
 };

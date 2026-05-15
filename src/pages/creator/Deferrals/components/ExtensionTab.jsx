@@ -6,11 +6,13 @@ import ExtensionApprovalModal from "../../../../components/modals/ExtensionAppro
  * Handles extension application reviews and approvals
  */
 const ExtensionTab = ({
-  extensionsLoading,
   extensionModalOpen,
   selectedExtension,
   onModalClose,
   onApprove,
+  onReturnForRework,
+  onReject,
+  approveText = "Approve",
 }) => {
   return (
     <>
@@ -20,7 +22,10 @@ const ExtensionTab = ({
           open={extensionModalOpen}
           embedded
           onApprove={onApprove}
+          onReturnForRework={onReturnForRework}
+          onReject={onReject}
           onClose={onModalClose}
+          approveText={approveText}
         />
       )}
     </>

@@ -1351,7 +1351,7 @@ const Deferrals = ({ userId }) => {
     }
   };
 
-  const handleApproveExtension = async (extensionId, comment) => {
+  const handleAcceptExtension = async (extensionId, comment) => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "null");
       const token = user?.token;
@@ -1361,7 +1361,7 @@ const Deferrals = ({ userId }) => {
         return;
       }
 
-      const response = await deferralApi.approveExtensionAsCreator(
+      const response = await deferralApi.acceptExtensionAsCreator(
         extensionId,
         comment,
         token,
@@ -1373,7 +1373,7 @@ const Deferrals = ({ userId }) => {
         updatedExtension?.linkedDeferral ||
         null;
 
-      message.success(response?.message || "Extension approved successfully");
+      message.success(response?.message || "Extension accepted successfully");
       try {
         window.dispatchEvent(
           new CustomEvent("extension:updated", { detail: updatedExtension }),
@@ -1384,15 +1384,60 @@ const Deferrals = ({ userId }) => {
           );
         }
       } catch (eventError) {
-        console.debug("Failed to dispatch extension approval events", eventError);
+        console.debug("Failed to dispatch extension acceptance events", eventError);
       }
 
       setExtensionModalOpen(false);
       setSelectedExtension(null);
       await loadPendingExtensions();
     } catch (error) {
-      console.error("Error approving extension:", error);
-      message.error(error.message || "Failed to approve extension");
+      console.error("Error accepting extension:", error);
+      message.error(error.message || "Failed to accept extension");
+    }
+  };
+
+  const handleReturnExtensionForRework = async (extensionId, reason) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      const token = user?.token;
+
+      if (!token) {
+        message.error("Authentication token not found");
+        return;
+      }
+
+      const response = await deferralApi.returnExtensionAsCreator(
+        extensionId,
+        reason,
+        token,
+      );
+      const updatedExtension = response?.extension || response;
+      const updatedDeferral =
+        response?.deferral ||
+        updatedExtension?.deferral ||
+        updatedExtension?.linkedDeferral ||
+        null;
+
+      message.success(response?.message || "Extension returned for rework successfully");
+      try {
+        window.dispatchEvent(
+          new CustomEvent("extension:updated", { detail: updatedExtension }),
+        );
+        if (updatedDeferral?._id || updatedDeferral?.id) {
+          window.dispatchEvent(
+            new CustomEvent("deferral:updated", { detail: updatedDeferral }),
+          );
+        }
+      } catch (eventError) {
+        console.debug("Failed to dispatch extension return events", eventError);
+      }
+
+      setExtensionModalOpen(false);
+      setSelectedExtension(null);
+      await loadPendingExtensions();
+    } catch (error) {
+      console.error("Error returning extension:", error);
+      message.error(error.message || "Failed to return extension for rework");
     }
   };
 
@@ -1651,15 +1696,18 @@ const Deferrals = ({ userId }) => {
 
             {showingExtensionReview && (
               <ExtensionTab
+                extensions={pendingExtensions}
+                extensionsLoading={extensionsLoading}
                 extensionModalOpen={extensionModalOpen}
                 selectedExtension={selectedExtension}
-                extensionsLoading={extensionDetailsLoading}
-                onApprove={handleApproveExtension}
-                onReject={handleRejectExtension}
                 onModalClose={() => {
                   setExtensionModalOpen(false);
                   setSelectedExtension(null);
                 }}
+                onApprove={handleAcceptExtension}
+                onReturnForRework={handleReturnExtensionForRework}
+                onReject={handleRejectExtension}
+                approveText="Accept"
               />
             )}
           </>

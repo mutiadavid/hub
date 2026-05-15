@@ -133,7 +133,7 @@ export const useDeferralAPI = (token) => {
     }
   }, []);
 
-  const rejectExtension = useCallback(async (extensionId, reason) => {
+  const returnExtension = useCallback(async (extensionId, reason) => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "null");
       const userToken = user?.token;
@@ -142,7 +142,7 @@ export const useDeferralAPI = (token) => {
         return null;
       }
 
-      const response = await deferralApi.rejectExtensionAsChecker(
+      const response = await deferralApi.returnExtensionAsChecker(
         extensionId,
         reason,
         userToken,
@@ -164,19 +164,19 @@ export const useDeferralAPI = (token) => {
           );
         }
       } catch (eventError) {
-        console.debug("Failed to dispatch checker extension rejection events", eventError);
+        console.debug("Failed to dispatch checker extension return events", eventError);
       }
 
-      message.success(response?.message || "Extension rejected successfully");
+      message.success(response?.message || "Extension returned for rework successfully");
       return response;
     } catch (error) {
-      console.error("Error rejecting extension:", error);
-      message.error(error.message || "Failed to reject extension");
+      console.error("Error returning extension:", error);
+      message.error(error.message || "Failed to return extension for rework");
       return false;
     }
   }, []);
 
-  return { loading, fetchDeferrals, loadPendingExtensions, approveExtension, rejectExtension };
+  return { loading, fetchDeferrals, loadPendingExtensions, approveExtension, rejectExtension, returnExtension };
 };
 
 export default useDeferralAPI;

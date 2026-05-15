@@ -17,6 +17,7 @@ import { useExtensionModal } from "./hooks/useExtensionModal";
 import DeferralTableSection from "./components/DeferralTable";
 import DeferralDetailsModal from "./components/DeferralDetailsModal";
 import ExtensionApplicationModal from "./components/ExtensionApplicationModal";
+import ExtensionReturnForReworkModal from "./components/ExtensionReturnForReworkModal";
 
 // Styles
 import { getDeferralCustomStyles, getTableCustomStyles } from "./styles/deferralPendingStyles";
@@ -161,7 +162,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
     if (payload.action === "apply_extension" && payload.deferral) {
       const def = payload.deferral;
       extensionModal.setSelectedDeferralForExtension(def);
-      
+     
       try {
         const { requestedDocs = [] } = getDeferralDocumentBuckets(def) || {};
         const init = {};
@@ -175,9 +176,17 @@ const DeferralPending = ({ userId = "rm_current" }) => {
       } catch {
         extensionModal.setExtensionDaysByDoc({});
       }
-      
+     
       extensionModal.setExtensionModalOpen(true);
       extensionModal.setExtensionSubmissionSuccess(false);
+      return;
+    }
+
+    // Handle resubmit extension (open dedicated rework modal)
+    if (payload.action === "resubmitExtension" && payload.deferral) {
+      const def = payload.deferral;
+      extensionModal.setSelectedDeferralForExtension(def);
+      extensionModal.setExtensionReworkModalOpen(true);
       return;
     }
 
@@ -185,7 +194,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
     if (payload.action === "remindApprover" && payload.deferral) {
       const deferral = payload.deferral;
       const deferralId = deferral._id || deferral.id;
-      
+     
       (async () => {
         try {
           const token = localStorage.getItem("token");
@@ -196,7 +205,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
           showErrorToast(error.message || "Failed to send reminder");
         }
       })();
-      
+     
       return;
     }
 
@@ -204,7 +213,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
     if (payload.action === "resubmitDeferral" && payload.deferral) {
       const deferral = payload.deferral;
       const deferralId = deferral._id || deferral.id;
-      
+     
       // Navigate to the deferral request page with the deferral ID to edit and resubmit
       navigate(`/rm/deferrals/request?resubmit=${deferralId}`);
       return;
@@ -610,6 +619,15 @@ const DeferralPending = ({ userId = "rm_current" }) => {
         }}
         onSuccessViewExtensions={() => {
           extensionModal.resetExtensionState();
+          setActiveTab("extensions");
+        }}
+      />
+      <ExtensionReturnForReworkModal
+        open={extensionModal.extensionReworkModalOpen}
+        deferral={extensionModal.selectedDeferralForExtension}
+        onClose={() => extensionModal.setExtensionReworkModalOpen(false)}
+        onUpdate={() => {
+          loadDeferrals();
           setActiveTab("extensions");
         }}
       />

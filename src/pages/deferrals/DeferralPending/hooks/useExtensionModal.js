@@ -16,10 +16,12 @@ export const useExtensionModal = () => {
   const [extensionSubmissionSuccess, setExtensionSubmissionSuccess] =
     useState(false);
   const [extensionDetails, setExtensionDetails] = useState(null);
+  const [extensionReworkModalOpen, setExtensionReworkModalOpen] = useState(false);
   const extensionPollRef = useRef(null);
 
   const resetExtensionState = () => {
     setExtensionModalOpen(false);
+    setExtensionReworkModalOpen(false);
     setSelectedDeferralForExtension(null);
     setExtensionDays("");
     setExtensionComment("");
@@ -33,6 +35,8 @@ export const useExtensionModal = () => {
     setSelectedDeferralForExtension,
     extensionModalOpen,
     setExtensionModalOpen,
+    extensionReworkModalOpen,
+    setExtensionReworkModalOpen,
     extensionDays,
     setExtensionDays,
     extensionDaysByDoc,

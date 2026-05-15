@@ -41,26 +41,10 @@ const LoginPage = () => {
       });
     } catch (err) {
       const errMsg = getAuthErrorMessage(err);
-      setLoginError(errMsg);
-      const serverMessage = err?.data?.message || err?.message;
+      // Robustly extract the server message, handling both objects and plain strings
+      const serverMessage = (err?.data && typeof err.data === 'object' ? err.data.message : err?.data) || err?.message;
+      setLoginError(serverMessage || errMsg);
       toast.error(serverMessage || errMsg);
-
-      try {
-        const usersResult = await refetchUsers();
-        const fetched = usersResult?.data || [];
-        const found = fetched.find(
-          (u) => String(u.email || "").toLowerCase() === String(form.email || "").toLowerCase()
-        );
-        if (found) {
-          if (!found.active) {
-            toast.error(found.disableReason || "Your account has been deactivated.");
-          } else {
-            toast.info(`Failed attempts: ${found.failedLoginAttempts || 0}`);
-          }
-        }
-      } catch (e) {
-        // ignore failures to fetch users
-      }
     }
   };
 
@@ -89,10 +73,10 @@ const LoginPage = () => {
               <rect x="26" y="19" width="8" height="12" fill={ncbBlue} />
               <rect x="38" y="19" width="8" height="12" fill={ncbBlue} />
               <polygon points="8,25 28,14 48,25" fill={brownText} />
-              
+
               {/* NCBA Text */}
               <text x="60" y="30" fontFamily="Century Gothic" fontSize="24" fontWeight="bold" fill={ncbBlue}>NCBA BANK</text>
-              
+
               {/* DCL & Deferral Tagline */}
               <text x="60" y="52" fontFamily="Century Gothic" fontSize="16" fontWeight="600" fill={brownText} letterSpacing="1">DCL & DEFERRAL</text>
             </svg>
