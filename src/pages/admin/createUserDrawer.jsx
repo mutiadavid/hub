@@ -10,7 +10,7 @@ const roleOptions = [
   { value: "rm", label: "Relationship Manager" },
   { value: "cocreator", label: "CO Creator" },
   { value: "cochecker", label: "CO Checker" },
-  { value: "admin", label: "Admin" },
+  { value: "admin", label: "System Administrator" },
   { value: "customer", label: "Customer" },
 ];
 

@@ -25,21 +25,21 @@ const COLORS = {
 // ============================================
 const addProfessionalHeader = (doc, title, subtitle = "") => {
   const pageWidth = doc.internal.pageSize.getWidth();
- 
+
   // Gradient-like header background
   doc.setFillColor(...COLORS.primary);
   doc.rect(0, 0, pageWidth, 40, "F");
- 
+
   // Accent line
   doc.setFillColor(...COLORS.secondary);
   doc.rect(0, 38, pageWidth, 2, "F");
- 
+
   // Title
   doc.setTextColor(...COLORS.white);
   doc.setFontSize(22);
   doc.setFont(undefined, "bold");
   doc.text(title, 15, 20);
- 
+
   // Subtitle if provided
   if (subtitle) {
     doc.setFontSize(11);
@@ -56,32 +56,32 @@ const addProfessionalFooter = (doc) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const totalPages = doc.internal.getNumberOfPages();
- 
+
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-   
+
     // Footer line
     doc.setDrawColor(...COLORS.border);
     doc.setLineWidth(0.5);
     doc.line(10, pageHeight - 15, pageWidth - 10, pageHeight - 15);
-   
+
     // Footer text
     doc.setFontSize(8);
     doc.setTextColor(...COLORS.textLight);
     doc.setFont(undefined, "normal");
-   
+
     doc.text(
       `Generated: ${dayjs().format("DD MMM YYYY HH:mm")}`,
       15,
       pageHeight - 9
     );
-   
+
     doc.text(
       `Page ${i} of ${totalPages}`,
       pageWidth - 25,
       pageHeight - 9
     );
-   
+
     // Company info
     doc.setTextColor(150, 160, 170);
     doc.setFontSize(7);
@@ -101,7 +101,7 @@ export const generatePDFReport = (data, reportType, filters = {}) => {
 
   const title = reportType === "deferrals" ? "Deferrals Report" : "DCL Status Report";
   const subtitle = `Prepared: ${dayjs().format("DD MMM YYYY")}`;
- 
+
   addProfessionalHeader(doc, title, subtitle);
 
   // Report Summary Section
@@ -109,12 +109,12 @@ export const generatePDFReport = (data, reportType, filters = {}) => {
   doc.setFont(undefined, "bold");
   doc.setTextColor(...COLORS.primary);
   doc.text("Report Summary", margin, yPosition);
- 
+
   yPosition += 8;
   doc.setFontSize(9);
   doc.setFont(undefined, "normal");
   doc.setTextColor(...COLORS.text);
- 
+
   const summaryItems = [
     [`Total Records`, `${data?.length || 0}`],
     [`Report Type`, reportType === "deferrals" ? "Deferrals" : "All DCLs"],
@@ -762,38 +762,47 @@ export const generateChecklistPDF = (
 
   const { documentStats: normalizedStats, comments: normalizedComments } = normalizeChecklistPdfArgs(documentStats, comments);
 
+  const resolveExactStatus = (doc) => {
+    if (!doc) return "pending";
+    const fields = [doc.coStatus, doc.action, doc.status, doc.rmStatus, doc.checkerStatus];
+    for (const field of fields) {
+      if (field) {
+        const normalized = String(field).trim().toLowerCase();
+        if (normalized === "pendingrm" || normalized === "pendingco" || normalized === "submitted" ||
+          normalized === "waived" || normalized === "sighted" || normalized === "deferred" ||
+          normalized === "tbo" || normalized === "approved" || normalized === "completed" ||
+          normalized === "rejected") {
+          return normalized;
+        }
+      }
+    }
+    const rawStatus = doc.coStatus || doc.action || doc.status || doc.rmStatus || doc.checkerStatus || "pending";
+    return String(rawStatus).trim().toLowerCase();
+  };
+
   const stats = {
     total: normalizedStats.total ?? docs.length,
     submitted:
       normalizedStats.submitted ??
-      docs.filter((item) => {
-        const status = String(item.status || item.coStatus || item.action || "").toLowerCase();
-        return status.includes("submitted");
-      }).length,
+      docs.filter((item) => ["submitted", "approved", "completed", "sighted", "waived", "tbo"].includes(resolveExactStatus(item))).length,
     pendingFromRM:
       normalizedStats.pendingFromRM ??
-      docs.filter((item) => {
-        const status = String(item.rmStatus || "").toLowerCase();
-        return status.includes("pending");
-      }).length,
+      docs.filter((item) => resolveExactStatus(item) === "pendingrm").length,
     pendingFromCo:
       normalizedStats.pendingFromCo ??
-      docs.filter((item) => {
-        const status = String(item.status || item.coStatus || item.action || "").toLowerCase();
-        return status === "pendingco" || status.includes("pending co");
-      }).length,
+      docs.filter((item) => resolveExactStatus(item) === "pendingco").length,
     deferred:
       normalizedStats.deferred ??
-      docs.filter((item) => String(item.status || item.coStatus || item.action || "").toLowerCase().includes("defer")).length,
+      docs.filter((item) => resolveExactStatus(item) === "deferred").length,
     sighted:
       normalizedStats.sighted ??
-      docs.filter((item) => String(item.status || item.coStatus || item.action || "").toLowerCase().includes("sighted")).length,
+      docs.filter((item) => resolveExactStatus(item) === "sighted").length,
     waived:
       normalizedStats.waived ??
-      docs.filter((item) => String(item.status || item.coStatus || item.action || "").toLowerCase().includes("waived")).length,
+      docs.filter((item) => resolveExactStatus(item) === "waived").length,
     tbo:
       normalizedStats.tbo ??
-      docs.filter((item) => String(item.status || item.coStatus || item.action || "").toLowerCase().includes("tbo")).length,
+      docs.filter((item) => resolveExactStatus(item) === "tbo").length,
   };
 
   const supportingDocs = docs.filter((item) => item.fileUrl || item.url);
@@ -850,10 +859,20 @@ export const generateChecklistPDF = (
 
   const formatStatusForDisplay = (value) => {
     if (!value) return "Pending";
-    const normalized = String(value).toLowerCase();
+    const normalized = String(value).toLowerCase().trim();
     if (normalized.includes("pendinggrm")) return "Pending";
     if (normalized === "pendingfromcustomer") return "Pending from customer";
     if (normalized === "submittedforreview") return "Submitted for review";
+    if (normalized === "pendingrm") return "Pending RM";
+    if (normalized === "pendingco") return "Pending CO";
+    if (normalized === "submitted") return "Submitted";
+    if (normalized === "waived") return "Waived";
+    if (normalized === "sighted") return "Sighted";
+    if (normalized === "deferred") return "Deferred";
+    if (normalized === "tbo") return "Tbo";
+    if (normalized === "approved") return "Approved";
+    if (normalized === "completed") return "Completed";
+    if (normalized === "rejected") return "Rejected";
     return formatText(value);
   };
 
@@ -969,8 +988,8 @@ export const generateChecklistPDF = (
   const documentRows = docs.map((item) => [
     (item.category || "N/A").toUpperCase(),
     item.name || item.documentName || "N/A",
-    formatStatusForDisplay(item.status || item.coStatus || "PENDING"),
-    formatStatusForDisplay(item.rmStatus || item.action || "COMPLETED"),
+    formatStatusForDisplay(resolveExactStatus(item)),
+    formatStatusForDisplay(item.rmStatus || "pending_from_customer"),
     formatStatusForDisplay(item.checkerStatus || item.finalCheckerStatus || "PENDING"),
     formatText(item.coComment || item.comment || "OK"),
     formatExpiryStatusForPdf(item),

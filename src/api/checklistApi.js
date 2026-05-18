@@ -184,6 +184,15 @@ export const checklistApi = createApi({
       invalidatesTags: ["Checklist", "Comment"],
     }),
 
+    updateChecklistStatusDirect: builder.mutation({
+      query: ({ checklistId, status }) => ({
+        url: `cocreatorChecklist/${checklistId}/checklist-status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      invalidatesTags: ["Checklist", "Comment"],
+    }),
+
     updateCheckerStatus: builder.mutation({
       query: (payload) => {
         return {
@@ -541,6 +550,7 @@ export const {
   useGetRevivalHistoryQuery,
 
   useUpdateChecklistStatusMutation,
+  useUpdateChecklistStatusDirectMutation,
 
   // CHECKER
   useGetCheckerActiveDCLsQuery,

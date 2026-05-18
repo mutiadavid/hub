@@ -23,7 +23,7 @@ export const normalizeRoleKey = (role) => {
 export const formatRoleLabel = (role) => {
   switch (normalizeRoleKey(role)) {
     case "admin":
-      return "Admin";
+      return "System Administrator";
     case "approver":
       return "Approver";
     case "customer":

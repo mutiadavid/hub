@@ -19,7 +19,8 @@ import {
 } from "../../../api/checklistApi";
 import { useDocumentHandlers } from "../../../hooks/useDocumentHandlers";
 import { useChecklistOperations } from "../../../hooks/useChecklistOperations";
-import { getUniqueCategories } from "../../../utils/checklistUtils";
+import { getUniqueCategories, MAX_FILE_UPLOAD_SIZE_MB } from "../../../utils/checklistUtils";
+import { uploadFileToBackend } from "../../../utils/uploadUtils";
 import {
   saveDraft as saveDraftToStorage,
   deleteDraft,
@@ -296,6 +297,69 @@ const ReviewChecklistPage = ({
     keepLockOnCloseRef.current = true;
     setHasLocalEdits((prev) => (prev ? prev : true));
   }, [readOnly]);
+
+  const handleFileUpload = async (docIdx, file) => {
+    const document = docs[docIdx];
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      message.error("Please upload only images, PDFs, Word, or Excel files");
+      return false;
+    }
+
+    if (file.size > MAX_FILE_UPLOAD_SIZE_MB * 1024 * 1024) {
+      message.error(`File size exceeds ${MAX_FILE_UPLOAD_SIZE_MB}MB limit`);
+      return false;
+    }
+
+    markChecklistEdited();
+
+    try {
+      const resolvedChecklistId = checklist?.id || checklist?._id;
+      const resolvedDocumentId = document?.id || document?._id;
+
+      const uploadResult = await uploadFileToBackend(
+        file,
+        resolvedChecklistId,
+        resolvedDocumentId,
+        document.name,
+        document.category,
+        token,
+      );
+
+      setDocs((prev) =>
+        prev.map((d, idx) => {
+          if (idx === docIdx) {
+            const currentUploads = d.uploads || [];
+            return {
+              ...d,
+              uploads: [...currentUploads, uploadResult],
+              fileUrl: uploadResult.fileUrl,
+              uploadData: uploadResult,
+              isUploading: false,
+            };
+          }
+          return d;
+        })
+      );
+
+      showSuccessToast(`"${file.name}" uploaded successfully.`);
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+
+    return false;
+  };
 
   const [addDocumentMutation] = useAddDocumentMutation();
   const [deleteDocumentMutation] = useDeleteDocumentMutation();
@@ -713,8 +777,10 @@ const ReviewChecklistPage = ({
     isSubmittingToRM,
     isCheckerSubmitting,
     isSavingDraft,
+    isDiscarding,
     submitToRM,
     submitToCheckers,
+    discardChecklist,
   } = useChecklistOperations(
     checklist,
     docs,
@@ -750,6 +816,21 @@ const ReviewChecklistPage = ({
         activeLockChecklistIdRef.current = null;
       } catch (error) {
         console.warn("Failed to unlock DCL after RM submission:", error);
+      }
+    }
+    return result;
+  };
+
+  const discardChecklistWithUnlock = async () => {
+    const result = await discardChecklist();
+    submittedRef.current = true;
+    if (checklistId) {
+      deleteDraft(checklistId);
+      try {
+        await unlockDcl(checklistId).unwrap();
+        activeLockChecklistIdRef.current = null;
+      } catch (error) {
+        console.warn("Failed to unlock DCL after discarding:", error);
       }
     }
     return result;
@@ -869,6 +950,7 @@ const ReviewChecklistPage = ({
           result?.id ||
           result?._id,
         status: result?.document?.status || newDoc.status || "pending",
+        rmStatus: result?.document?.rmStatus || newDoc.rmStatus || "pending_from_customer",
       };
 
       setDocs((prevDocs) => [...prevDocs, savedDoc]);
@@ -886,6 +968,7 @@ const ReviewChecklistPage = ({
           ...newDoc,
           docIdx: prevDocs.length,
           isNew: true,
+          rmStatus: newDoc.rmStatus || "pending_from_customer",
         },
       ]);
     }
@@ -1107,7 +1190,7 @@ const ReviewChecklistPage = ({
           expiryDate: doc.expiryDate || doc.ExpiryDate || null,
           deferralNumber: doc.deferralNumber || doc.deferralNo || "",
           deferralNo: doc.deferralNo || doc.deferralNumber || "",
-          rmStatus: doc.rmStatus || "",
+          rmStatus: doc.rmStatus || "pending_from_customer",
         }))
         .filter(
           (doc) =>
@@ -1194,7 +1277,16 @@ const ReviewChecklistPage = ({
   }, [readOnly, checklistId, persistDraft]);
 
   const uploadedDocumentCount = useMemo(() => {
-    const mainDocumentCount = docs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
+    let mainDocumentCount = 0;
+    docs.forEach((doc) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        mainDocumentCount += uploads.length;
+      } else if (doc.fileUrl || doc.uploadData?.fileUrl) {
+        mainDocumentCount += 1;
+      }
+    });
+
     const supportingDocumentCount = supportingDocs.filter((doc) => doc.fileUrl).length;
     return mainDocumentCount + supportingDocumentCount;
   }, [docs, supportingDocs]);
@@ -1463,6 +1555,8 @@ const ReviewChecklistPage = ({
             isSubmittingToRM={isSubmittingToRM}
             isCheckerSubmitting={isCheckerSubmitting}
             isSavingDraft={isSavingDraft}
+            isDiscarding={isDiscarding}
+            onDiscard={discardChecklistWithUnlock}
             checklist={checklist}
             docs={docs}
             supportingDocs={supportingDocs}
@@ -1560,6 +1654,9 @@ const ReviewChecklistPage = ({
                     checklistStatus={checklist.status}
                     deferralValidationByDoc={deferralValidationByDoc}
                     onValidateDeferralNo={validateDeferredDocument}
+                    token={token}
+                    handleFileUpload={handleFileUpload}
+                    setDocs={setDocs}
                   />
                 </div>
 

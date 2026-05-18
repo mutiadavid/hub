@@ -8,11 +8,16 @@ import {
   Input,
   Tooltip,
   Popover,
+  message,
+  Modal,
+  List,
+  Popconfirm,
 } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import { openFileInNewTab } from "../../../utils/fileUtils";
 import { getExpiryMeta, getExpiryStatus } from "../../../utils/documentStats";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
+import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
 const cardFontFamily = "'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif";
@@ -82,9 +87,12 @@ const DocumentTable = ({
   onValidateDeferralNumber,
   onDeferralNumberEdit,
   onClearDeferralValidation,
+  token,
+  checklist,
 }) => {
   const [openDeferralPopoverDoc, setOpenDeferralPopoverDoc] = React.useState(null);
   const [transientValidationByDoc, setTransientValidationByDoc] = React.useState({});
+  const [viewModalFiles, setViewModalFiles] = React.useState(null);
   const transientValidationTimersRef = React.useRef({});
   const previousValidationRef = React.useRef({});
 
@@ -109,10 +117,10 @@ const DocumentTable = ({
       });
       const previousSignature = previousValidation
         ? JSON.stringify({
-            status: previousValidation.status,
-            message: previousValidation.message,
-            expiryDateText: previousValidation.expiryDateText,
-          })
+          status: previousValidation.status,
+          message: previousValidation.message,
+          expiryDateText: previousValidation.expiryDateText,
+        })
         : null;
 
       if (
@@ -481,73 +489,92 @@ const DocumentTable = ({
                 />
               </Popover>
 
-              {!readOnly && !record.fileUrl && !record.uploadData?.fileUrl && (
-                <Upload
-                  showUploadList={false}
-                  beforeUpload={(file) => handleFileUpload(record.docIdx, file)}
-                  disabled={!isActionAllowed || isRestrictedCOStatus}
-                >
-                  <Button
-                    size="small"
-                    icon={<UploadOutlined />}
-                    style={{
-                      borderRadius: 6,
-                      opacity:
-                        !isActionAllowed || isRestrictedCOStatus ? 0.5 : 1,
-                      padding: "0 8px",
-                      fontSize: 11,
-                      height: 26,
-                    }}
-                    disabled={!isActionAllowed || isRestrictedCOStatus}
-                  >
-                    Upload
-                  </Button>
-                </Upload>
-              )}
+              {/* Files view and Upload */}
+              <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 4 }}>
+                {(() => {
+                  const uploads = Array.isArray(record.uploads) ? record.uploads : [];
+                  const files = [...uploads];
 
-              {(record.fileUrl || record.uploadData?.fileUrl) && (
-                <>
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      openFileInNewTab(record.fileUrl || record.uploadData?.fileUrl);
-                    }}
-                    style={{
-                      backgroundColor: "#ffffff",
-                      borderColor: "#d9d9d9",
-                      color: "#333",
-                      borderRadius: 6,
-                      padding: "0 8px",
-                      fontSize: 11,
-                      height: 26,
-                    }}
-                  >
-                    View
-                  </Button>
-                  {!readOnly && (
+                  if (files.length === 0 && record.fileUrl) {
+                    files.push({
+                      id: "legacy",
+                      fileUrl: record.fileUrl,
+                      fileName: record.fileName || record.name || "Document File",
+                      uploadedBy: record.uploadedBy,
+                      uploadedByRole: record.uploadedByRole,
+                      createdAt: record.uploadedAt,
+                    });
+                  }
+
+                  if (files.length === 0) {
+                    return <span style={{ color: "#94a3b8", fontSize: 11 }}>No files uploaded</span>;
+                  }
+
+                  if (files.length === 1) {
+                    return (
+                      <Button
+                        size="small"
+                        onClick={() => openFileInNewTab(files[0].fileUrl)}
+                        style={{
+                          backgroundColor: "#ffffff",
+                          borderColor: "#d9d9d9",
+                          color: "#333",
+                          borderRadius: 6,
+                          padding: "0 8px",
+                          fontSize: 11,
+                          height: 26,
+                        }}
+                      >
+                        View
+                      </Button>
+                    );
+                  }
+
+                  return (
                     <Button
                       size="small"
-                      danger
-                      onClick={() =>
-                        setDocs((prev) =>
-                          prev.map((doc, idx) =>
-                            idx === record.docIdx ? { ...doc, fileUrl: null } : doc,
-                          ),
-                        )
-                      }
-                      disabled={!canActOnDoc(record)}
+                      onClick={() => setViewModalFiles({ files, record })}
                       style={{
+                        backgroundColor: "#ffffff",
+                        borderColor: "#10b981",
+                        color: "#10b981",
+                        borderRadius: 6,
                         padding: "0 8px",
                         fontSize: 11,
                         height: 26,
-                        borderRadius: 6,
                       }}
                     >
-                      Delete
+                      View ({files.length} Files)
                     </Button>
-                  )}
-                </>
-              )}
+                  );
+                })()}
+
+                {!readOnly && (
+                  <Upload
+                    showUploadList={false}
+                    beforeUpload={(file) => {
+                      handleFileUpload(record.docIdx, file);
+                      return false;
+                    }}
+                    disabled={!isActionAllowed || isRestrictedCOStatus}
+                  >
+                    <Button
+                      size="small"
+                      icon={<UploadOutlined />}
+                      style={{
+                        borderRadius: 6,
+                        opacity: !isActionAllowed || isRestrictedCOStatus ? 0.5 : 1,
+                        padding: "0 8px",
+                        fontSize: 11,
+                        height: 26,
+                      }}
+                      disabled={!isActionAllowed || isRestrictedCOStatus}
+                    >
+                      Upload File
+                    </Button>
+                  </Upload>
+                )}
+              </div>
             </div>
 
             {showNaHint && (
@@ -626,6 +653,10 @@ const DocumentTable = ({
       },
     },
   ];
+
+
+
+  const viewModalData = viewModalFiles || { files: [], record: null };
 
   return (
     <div
@@ -747,6 +778,75 @@ const DocumentTable = ({
           tableLayout="auto"
           scroll={{ x: 1700 }}
         />
+        <Modal
+          title={<div style={{ fontFamily: cardFontFamily, fontWeight: 600, color: "#1e293b" }}>Associated Files</div>}
+          open={!!viewModalFiles}
+          onCancel={() => setViewModalFiles(null)}
+          footer={[
+            <Button key="close" onClick={() => setViewModalFiles(null)} style={{ fontFamily: cardFontFamily }}>
+              Close
+            </Button>
+          ]}
+          width={480}
+          centered
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 8 }}>
+            <p style={{ fontSize: 13, color: "#64748b", margin: 0, fontFamily: cardFontFamily }}>
+              This document has multiple uploads. Click on any file to view it:
+            </p>
+            <List
+              dataSource={viewModalData.files || []}
+              renderItem={(file, idx) => (
+                <List.Item
+                  style={{
+                    padding: "10px 12px",
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 8,
+                    marginBottom: 8,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
+                    <span
+                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        fontFamily: cardFontFamily,
+                      }}
+                      title={file.fileName}
+                    >
+                      {file.fileName || `Attachment ${idx + 1}`}
+                    </span>
+                    {file.uploadedBy && (
+                      <span style={{ fontSize: 11, color: "#64748b", marginTop: 2, fontFamily: cardFontFamily }}>
+                        Uploaded by: {file.uploadedBy} ({file.uploadedByRole || "Unknown"})
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <Button
+                      size="small"
+                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      style={{ fontFamily: cardFontFamily }}
+                    >
+                      View
+                    </Button>
+                  </div>
+                </List.Item>
+              )}
+            />
+          </div>
+        </Modal>
       </div>
     </div>
   );

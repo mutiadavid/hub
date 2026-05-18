@@ -149,9 +149,15 @@ const CreatorCompletedChecklistPage = ({
   }, [id]);
 
   const uploadedDocumentCount = React.useMemo(() => {
-    const mainDocs = safeDocs.filter(
-      (doc) => doc.fileUrl || doc.uploadData?.fileUrl,
-    ).length;
+    let mainDocs = 0;
+    safeDocs.forEach((doc) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        mainDocs += uploads.length;
+      } else if (doc.fileUrl || doc.uploadData?.fileUrl) {
+        mainDocs += 1;
+      }
+    });
 
     return mainDocs + supportingDocs.length;
   }, [safeDocs, supportingDocs]);

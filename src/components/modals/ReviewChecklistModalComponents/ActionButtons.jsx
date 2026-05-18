@@ -1,10 +1,11 @@
 import React from "react";
-import { Button, Space, Upload, message } from "antd";
+import { Button, Space, Upload, message, Modal } from "antd";
 import {
   SaveOutlined,
   UploadOutlined,
   SendOutlined,
   CheckCircleOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import PDFGenerator from "./PDFGenerator";
 import dayjs from "dayjs";
@@ -37,6 +38,8 @@ const ActionButtons = ({
   isLockedBySomeoneElse = false,
   lockedByUserName = "",
   hasBlockingDeferredValidation = false,
+  onDiscard,
+  isDiscarding = false,
 }) => {
   // Check if any compliance document has expired
   const hasExpiredDocuments = React.useMemo(() => {
@@ -80,6 +83,12 @@ const ActionButtons = ({
       ].includes(docStatus);
     });
 
+  const canDiscard = React.useMemo(() => {
+    if (!checklist?.status) return false;
+    const statusLower = checklist.status.toLowerCase();
+    return ["pending", "revived"].includes(statusLower);
+  }, [checklist]);
+
   // const allDocsApproved = docs.length > 0 && docs.every((doc) => doc.action === "submitted"); // Unused
 
   const canSubmitToRM =
@@ -107,6 +116,24 @@ const ActionButtons = ({
         onClose();
       }
     }
+  };
+
+  const handleDiscard = () => {
+    Modal.confirm({
+      title: "Discard this DCL?",
+      content: "Are you sure you want to discard this DCL? This action cannot be undone and this DCL will become read-only under the 'Discarded DCLs' section.",
+      okText: "Yes, Discard",
+      okType: "danger",
+      cancelText: "No, Keep It",
+      async onOk() {
+        if (onDiscard) {
+          const result = await onDiscard();
+          if (result !== false) {
+            onClose();
+          }
+        }
+      },
+    });
   };
 
   // Fixed: Wrapper functions that handle close after submission
@@ -245,6 +272,17 @@ const ActionButtons = ({
         .review-action-buttons .ant-btn .anticon {
           font-size: 13px;
         }
+        .review-action-buttons .review-action-button.discard-dcl-btn.ant-btn,
+        .review-action-buttons .review-action-button.discard-dcl-btn.ant-btn:hover,
+        .review-action-buttons .review-action-button.discard-dcl-btn.ant-btn:focus,
+        .review-action-buttons .review-action-button.discard-dcl-btn.ant-btn:active {
+          background: #EF4444 !important;
+          border-color: transparent !important;
+          color: #FFFFFF !important;
+        }
+        .review-action-buttons .review-action-button.discard-dcl-btn.ant-btn span {
+          color: #FFFFFF !important;
+        }
       `}</style>
       <div
         className="review-action-buttons"
@@ -315,8 +353,28 @@ const ActionButtons = ({
           />
         </Space>
 
-        {/* Right Buttons - 2 buttons */}
+        {/* Right Buttons - 3 buttons */}
         <Space wrap>
+          {/* Discard DCL */}
+          {!readOnly && canDiscard && (
+            <Button
+              key="discard"
+              className="review-action-button discard-dcl-btn"
+              danger
+              type="primary"
+              disabled={isActionDisabled || shouldGrayOut || isLockedBySomeoneElse}
+              loading={isDiscarding}
+              onClick={handleDiscard}
+              icon={<DeleteOutlined />}
+              style={{
+                borderRadius: "6px",
+                fontWeight: 600,
+              }}
+            >
+              Discard DCL
+            </Button>
+          )}
+
           {/* Submit to RM */}
           {!readOnly && (
             <Button
@@ -339,9 +397,9 @@ const ActionButtons = ({
               }
               style={
                 isActionDisabled ||
-                !canSubmitToRM ||
-                shouldGrayOut ||
-                isLockedBySomeoneElse
+                  !canSubmitToRM ||
+                  shouldGrayOut ||
+                  isLockedBySomeoneElse
                   ? buttonDisabledStyle
                   : undefined
               }

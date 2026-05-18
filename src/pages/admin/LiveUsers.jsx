@@ -128,7 +128,7 @@ const LiveUsers = () => {
       dataIndex: "role",
       key: "role",
       filters: [
-        { text: "Admin", value: "admin" },
+        { text: "System Administrator", value: "admin" },
         { text: "CO Creator", value: "cocreator" },
         { text: "CO Checker", value: "cochecker" },
         { text: "Customer", value: "customer" },

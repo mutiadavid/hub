@@ -120,6 +120,7 @@ const AdminLayout = () => {
         collapsed={sidebarCollapsed}
         toggleCollapse={toggleSidebar}
         menuItems={menuItems}
+        title="Admin Workspace"
       />
 
       <div className={`creator-layout-main ${!isMobile && !sidebarCollapsed ? "creator-layout-main--with-sidebar" : ""}`}>

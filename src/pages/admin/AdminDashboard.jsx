@@ -81,7 +81,7 @@ const AdminDashboard = () => {
       },
       {
         key: "admins",
-        label: "Admins",
+        label: "System Administrators",
         value: adminUsers,
         note: "System administrators",
         accent: "#8f1d2c",

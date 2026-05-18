@@ -918,16 +918,19 @@ const RmReviewChecklistModal = ({
       );
 
       setDocs((prev) =>
-        prev.map((d, idx) =>
-          idx === docIdx
-            ? {
-                ...d,
-                uploadData: uploadResult,
-                fileUrl: uploadResult.fileUrl,
-                isUploading: false,
-              }
-            : d,
-        ),
+        prev.map((d, idx) => {
+          if (idx === docIdx) {
+            const currentUploads = d.uploads || [];
+            return {
+              ...d,
+              uploads: [...currentUploads, uploadResult],
+              uploadData: uploadResult,
+              fileUrl: uploadResult.fileUrl,
+              isUploading: false,
+            };
+          }
+          return d;
+        })
       );
 
       showSuccessToast(`"${file.name}" uploaded successfully.`);
@@ -1123,7 +1126,16 @@ const RmReviewChecklistModal = ({
   };
 
   const uploadedDocumentCount = useMemo(() => {
-    const mainDocumentCount = docs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
+    let mainDocumentCount = 0;
+    (docs || []).forEach((doc) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        mainDocumentCount += uploads.length;
+      } else if (doc.fileUrl || doc.uploadData?.fileUrl) {
+        mainDocumentCount += 1;
+      }
+    });
+
     const supportingDocumentCount = (supportingDocs || []).filter((doc) => doc.fileUrl).length;
     return mainDocumentCount + supportingDocumentCount;
   }, [docs, supportingDocs]);
@@ -1617,6 +1629,7 @@ const RmReviewChecklistModal = ({
                   onValidateDeferralNumber={validateDeferralNumberForDoc}
                   onDeferralNumberEdit={markDeferralValidationPending}
                   onClearDeferralValidation={clearDeferralValidation}
+                  token={token}
                 />
               </div>
             </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import "../../styles/creatorDesignSystem.css";
+import ncbalogo from "../../assets/ncba-logo.png";
 
 const SharedSidebar = ({
   selectedKey,
@@ -7,7 +8,7 @@ const SharedSidebar = ({
   onMenuItemClick,
   collapsed,
   menuItems,
-  brandLabel = "DCL & DEFERRAL",
+  title = "NCBA Bank",
 }) => {
   const handleClick = (key) => {
     const event = { key };
@@ -21,8 +22,17 @@ const SharedSidebar = ({
 
   return (
     <aside className={`creator-sidebar creator-theme ${collapsed ? "creator-sidebar--hidden" : ""}`}>
-      <div className="creator-sidebar__brand">
-        <span className="creator-sidebar__brand-text">{brandLabel}</span>
+      <div className="creator-sidebar__brand" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 24px" }}>
+        <img 
+          src={ncbalogo} 
+          alt="NCBA Logo" 
+          style={{ 
+            height: "28px", 
+            width: "auto", 
+            objectFit: "contain",
+            flexShrink: 0
+          }} 
+        />
       </div>
 
       <div className="creator-sidebar__menu">

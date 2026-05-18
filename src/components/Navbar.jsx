@@ -30,7 +30,7 @@ const Navbar = ({ toggleSidebar }) => {
       creator: { path: "/cocreator", label: "Creator Dashboard" },
       rm: { path: "/rm", label: "RM Dashboard" },
       checker: { path: "/cochecker", label: "Checker Dashboard" },
-      admin: { path: "/admin", label: "Admin Dashboard" },
+      admin: { path: "/admin", label: "System Administrator Dashboard" },
       approver: { path: "/approver", label: "Approver Dashboard" },
     };
 
@@ -102,6 +102,17 @@ const Navbar = ({ toggleSidebar }) => {
     .map((part) => part[0]?.toUpperCase())
     .join("");
 
+  const formatRole = (role) => {
+    if (!role) return "";
+    const key = role.toLowerCase().trim();
+    if (key === "admin") return "System Administrator";
+    if (key === "cocreator" || key === "co_creator" || key === "creator") return "CO Creator";
+    if (key === "cochecker" || key === "checker") return "CO Checker";
+    if (key === "rm") return "RM";
+    if (key === "approver") return "Approver";
+    return role;
+  };
+
   return (
     <header className="creator-header creator-theme">
       <div className="creator-header__left">
@@ -133,7 +144,7 @@ const Navbar = ({ toggleSidebar }) => {
             {!isMobile && (
               <span className="creator-header__user-meta">
                 <span className="creator-header__user-name">{user?.name || "User"}</span>
-                <span className="creator-header__user-role">{user?.role || "user"}</span>
+                <span className="creator-header__user-role">{formatRole(user?.role)}</span>
               </span>
             )}
             <DownOutlined className="creator-header__chevron" style={{ fontSize: 10 }} />

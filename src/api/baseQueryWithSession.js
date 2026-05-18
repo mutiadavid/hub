@@ -67,7 +67,11 @@ export const sanitizeApiError = (error) => {
     status,
     originalStatus: null,
     error: null,
-    data: { status },
+    data: {
+      status,
+      message: error.data?.message || error.data?.error || error.message || "",
+      code: error.data?.code || ""
+    },
   };
 };
 

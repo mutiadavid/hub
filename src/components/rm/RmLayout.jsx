@@ -140,6 +140,7 @@ const RmLayout = ({ userId }) => {
         collapsed={sidebarCollapsed}
         toggleCollapse={toggleSidebar}
         menuItems={menuItems}
+        title="RM Workspace"
       />
 
       <div className={`creator-layout-main ${!isMobile && !sidebarCollapsed ? "creator-layout-main--with-sidebar" : ""}`}>

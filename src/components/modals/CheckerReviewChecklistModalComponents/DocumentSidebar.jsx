@@ -165,40 +165,51 @@ const DocumentSidebar = ({
   };
 
   const allDocs = useMemo(() => {
-    const processedDocs = documents
-      .filter(
-        (doc) =>
-          (doc.uploadData && doc.uploadData.status !== "deleted") ||
-          doc.fileUrl ||
-          doc.url ||
-          doc.uploadData?.fileUrl ||
-          doc.uploadData?.url,
-      )
-      .map((doc, index) => {
-        const uploaderInfo = resolveUploaderInfo(doc);
+    const processedDocs = [];
+    (Array.isArray(documents) ? documents : []).forEach((doc, index) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        uploads.forEach((upload, uploadIndex) => {
+          processedDocs.push({
+            id: upload.id || `main-${index}-${uploadIndex}`,
+            title: doc.name || `Document ${index + 1}`,
+            category: doc.category || "Main Documents",
+            fileName: upload.fileName || `Attachment ${uploadIndex + 1}`,
+            fileUrl: upload.fileUrl,
+            uploadedBy: upload.uploadedBy || "Unknown User",
+            uploadedByRole: upload.uploadedByRole || "RM",
+            uploadDate: upload.createdAt,
+            modifiedDate: upload.createdAt,
+            isSupporting: false,
+          });
+        });
+      } else {
         const fileUrl = doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url;
-        const fallbackFileName = fileUrl ? String(fileUrl).split("/").pop() : null;
+        if (fileUrl) {
+          const uploaderInfo = resolveUploaderInfo(doc);
+          const fallbackFileName = fileUrl ? String(fileUrl).split("/").pop() : null;
+          processedDocs.push({
+            id: doc.id || doc._id || `main-${index}`,
+            title: doc.name || `Document ${index + 1}`,
+            category: doc.category || "Main Documents",
+            fileName:
+              doc.fileName ||
+              doc.uploadData?.fileName ||
+              fallbackFileName ||
+              doc.name ||
+              `Document ${index + 1}`,
+            fileUrl,
+            uploadedBy: uploaderInfo.uploadedBy,
+            uploadedByRole: uploaderInfo.uploadedByRole,
+            uploadDate: resolveUploadDate(doc),
+            modifiedDate: doc.modifiedDate || doc.updatedAt || null,
+            isSupporting: false,
+          });
+        }
+      }
+    });
 
-        return {
-          id: doc.id || doc._id || `main-${index}`,
-          title: doc.name || `Document ${index + 1}`,
-          category: doc.category || "Main Documents",
-          fileName:
-            doc.fileName ||
-            doc.uploadData?.fileName ||
-            fallbackFileName ||
-            doc.name ||
-            `Document ${index + 1}`,
-          fileUrl,
-          uploadedBy: uploaderInfo.uploadedBy,
-          uploadedByRole: uploaderInfo.uploadedByRole,
-          uploadDate: resolveUploadDate(doc),
-          modifiedDate: doc.modifiedDate || doc.updatedAt || null,
-          isSupporting: false,
-        };
-      });
-
-    const processedSupportingDocs = supportingDocs
+    const processedSupportingDocs = (Array.isArray(supportingDocs) ? supportingDocs : [])
       .filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url)
       .map((doc, index) => {
         const uploaderInfo = resolveUploaderInfo(doc);
@@ -234,7 +245,7 @@ const DocumentSidebar = ({
 
   return (
     <>
-       <style>{`
+      <style>{`
         .${DRAWER_CLASS}.ant-drawer {
           z-index: 2000 !important;
         }
@@ -340,17 +351,17 @@ const DocumentSidebar = ({
 
       <Drawer
         className={DRAWER_CLASS}
-         title={
-                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                     <span style={{ color: "#1f2937", fontWeight: 700, fontSize: 15 }}>Documents</span>
-                     <span style={{ color: "#64748b", fontSize: 11 }}>
-                       Uploaded checklist and supporting files
-                     </span>
-                   </div>
-                   <Tag className={`${DRAWER_CLASS}__badge`}>{allDocs.length}</Tag>
-                 </div>
-               }
+        title={
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ color: "#1f2937", fontWeight: 700, fontSize: 15 }}>Documents</span>
+              <span style={{ color: "#64748b", fontSize: 11 }}>
+                Uploaded checklist and supporting files
+              </span>
+            </div>
+            <Tag className={`${DRAWER_CLASS}__badge`}>{allDocs.length}</Tag>
+          </div>
+        }
         placement="right"
         width={400}
         open={open}

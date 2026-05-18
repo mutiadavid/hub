@@ -194,19 +194,19 @@ const DeactivatedUsers = () => {
         { text: "CO Checker", value: "cochecker" },
         { text: "Approver", value: "approver" },
         { text: "Customer", value: "customer" },
-        { text: "Admin", value: "admin" },
+        { text: "System Administrator", value: "admin" },
       ],
       onFilter: (value, record) => normalizeRoleKey(record.role) === value,
       render: (role) => {
         const roleKey = normalizeRoleKey(role);
 
         return (
-        <span
-          className="admin-page__status-text"
-          style={{ color: ROLE_COLORS[roleKey] || "var(--color-text-medium)" }}
-        >
-          {formatRoleLabel(role)}
-        </span>
+          <span
+            className="admin-page__status-text"
+            style={{ color: ROLE_COLORS[roleKey] || "var(--color-text-medium)" }}
+          >
+            {formatRoleLabel(role)}
+          </span>
         );
       },
     },

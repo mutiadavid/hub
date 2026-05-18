@@ -197,7 +197,7 @@ const humanizeName = (raw) => {
 const formatRole = (role) => {
   const normalized = String(role || "System").trim().toLowerCase();
   const roleMap = {
-    admin: "Admin", rm: "RM", approver: "Approver",
+    admin: "System Administrator", rm: "RM", approver: "Approver",
     cocreator: "CoCreator", cochecker: "CoChecker",
     customer: "Customer", system: "System",
   };

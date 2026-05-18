@@ -9,11 +9,16 @@ import {
   DatePicker,
   Tooltip,
   Popover,
+  Upload,
+  message,
+  Modal,
+  List,
 } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import { getExpiryMeta, getExpiryStatus } from "../../../utils/documentUtils";
 import { openFileInNewTab } from "../../../utils/fileUtils";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
+import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
 const { Option } = Select;
@@ -55,12 +60,16 @@ const DocumentTable = ({
   checklistStatus, // ✅ Accept checklist status as prop
   deferralValidationByDoc = {},
   onValidateDeferralNo,
+  token,
+  handleFileUpload,
+  setDocs,
 }) => {
   const safeDocs = Array.isArray(docs) ? docs : [];
   const pageSize = 6;
   const verticalScrollHeight = 360;
   const [openDeferralPopoverDoc, setOpenDeferralPopoverDoc] = React.useState(null);
   const [transientValidationByDoc, setTransientValidationByDoc] = React.useState({});
+  const [viewModalFiles, setViewModalFiles] = React.useState(null);
   const transientValidationTimersRef = React.useRef({});
   const previousValidationRef = React.useRef({});
 
@@ -80,10 +89,10 @@ const DocumentTable = ({
       });
       const previousSignature = previousValidation
         ? JSON.stringify({
-            status: previousValidation.status,
-            message: previousValidation.message,
-            approvedAtText: previousValidation.approvedAtText,
-          })
+          status: previousValidation.status,
+          message: previousValidation.message,
+          approvedAtText: previousValidation.approvedAtText,
+        })
         : null;
 
       if (
@@ -604,70 +613,104 @@ const DocumentTable = ({
         );
       },
     },
-    // DocumentTable.jsx - In the "View" column render function
     {
       title: "View",
       key: "view",
-      width: 104,
+      width: 150,
       className: "doc-table-view-cell",
-      render: (_, record) =>
-        record.fileUrl || record.uploadData?.fileUrl ? (
-          <Button
-            onClick={() => {
-              // ✅ Add null check
-              if (typeof onViewFile === "function") {
-                onViewFile(record);
-              } else {
-                console.error("onViewFile is not a function");
-                const fileUrl = record.fileUrl || record.uploadData?.fileUrl;
-                if (fileUrl) {
-                  openFileInNewTab(fileUrl);
+      render: (_, record) => {
+        const uploads = Array.isArray(record.uploads) ? record.uploads : [];
+        const files = [...uploads];
+
+        if (files.length === 0 && record.fileUrl) {
+          files.push({
+            id: "legacy",
+            fileUrl: record.fileUrl,
+            fileName: record.fileName || record.name || "Document File",
+            uploadedBy: record.uploadedBy,
+            uploadedByRole: record.uploadedByRole,
+            createdAt: record.uploadedAt,
+          });
+        }
+
+        if (files.length === 0) {
+          return <span style={{ color: "var(--color-text-light)", fontSize: 12 }}>No file</span>;
+        }
+
+        if (files.length === 1) {
+          return (
+            <Button
+              onClick={() => {
+                if (typeof onViewFile === "function") {
+                  onViewFile({ ...record, fileUrl: files[0].fileUrl });
+                } else {
+                  openFileInNewTab(files[0].fileUrl);
                 }
-              }
-            }}
+              }}
+              size="small"
+              style={{
+                backgroundColor: "#ffffff",
+                borderColor: "#d9d9d9",
+                color: "#333",
+                borderRadius: 6,
+                fontSize: 12,
+                height: 28,
+                padding: "0 12px",
+              }}
+            >
+              View
+            </Button>
+          );
+        }
+
+        return (
+          <Button
+            onClick={() => setViewModalFiles(files)}
             size="small"
             style={{
               backgroundColor: "#ffffff",
-              borderColor: "#d9d9d9",
-              color: "#333",
+              borderColor: "#10b981",
+              color: "#10b981",
               borderRadius: 6,
               fontSize: 12,
               height: 28,
               padding: "0 12px",
             }}
           >
-            View
+            View ({files.length} Files)
           </Button>
-        ) : (
-          <span style={{ color: "var(--color-text-light)", fontSize: 12 }}>No file</span>
-        ),
+        );
+      },
     },
     {
       title: "Del",
       key: "delete",
       width: 72,
       className: "doc-table-delete-cell",
-      render: (_, record) => (
-        <Popconfirm
-          title="Delete document?"
-          description="This action cannot be undone."
-          okText="Yes"
-          cancelText="Cancel"
-          okButtonProps={{ danger: true }}
-          onConfirm={() => onDelete(record.docIdx)}
-          disabled={!canActOnDoc(record)}
-        >
-          <Button
-            type="text"
-            danger
-            size="small"
-            disabled={!canActOnDoc(record)}
-            style={{ fontSize: 12, padding: 0, width: 28, height: 28 }}
+      render: (_, record) => {
+        const isPending = ["pending", "revived"].includes((checklistStatus || "").toLowerCase());
+        if (!isPending) return null;
+
+        return (
+          <Popconfirm
+            title="Delete document?"
+            description="This action cannot be undone."
+            okText="Yes"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+            onConfirm={() => onDelete(record.docIdx)}
           >
-            <DeleteOutlined />
-          </Button>
-        </Popconfirm>
-      ),
+            <Button
+              type="text"
+              danger
+              size="small"
+              style={{ fontSize: 12, padding: 0, width: 28, height: 28 }}
+            >
+              <DeleteOutlined />
+            </Button>
+          </Popconfirm>
+        );
+      },
     },
   ];
 
@@ -688,7 +731,7 @@ const DocumentTable = ({
           overflow: "hidden",
         }}
       >
-      <style>{`
+        <style>{`
         .creator-completed-docs-card .creator-card__header {
           border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
         }
@@ -821,29 +864,93 @@ const DocumentTable = ({
           background: rgba(148, 163, 184, 0.06) !important;
         }
       `}</style>
-      <Table
-        className="doc-table"
-        columns={columns}
-        dataSource={safeDocs}
-        pagination={{
-          pageSize,
-          hideOnSinglePage: false,
-          size: "small",
-          position: ["bottomRight"],
-          showSizeChanger: false,
-        }}
-        rowKey="docIdx"
-        size="small"
-        tableLayout="fixed"
-        scroll={safeDocs.length > 5 ? { x: 1700, y: verticalScrollHeight } : { x: 1700 }}
-        locale={{
-          emptyText: "No documents available",
-        }}
-      />
+        <Table
+          className="doc-table"
+          columns={columns}
+          dataSource={safeDocs}
+          pagination={{
+            pageSize,
+            hideOnSinglePage: false,
+            size: "small",
+            position: ["bottomRight"],
+            showSizeChanger: false,
+          }}
+          rowKey="docIdx"
+          size="small"
+          tableLayout="fixed"
+          scroll={safeDocs.length > 5 ? { x: 1700, y: verticalScrollHeight } : { x: 1700 }}
+          locale={{
+            emptyText: "No documents available",
+          }}
+        />
+        <Modal
+          title={<div style={{ fontFamily: "inherit", fontWeight: 600, color: "#1e293b" }}>Associated Files</div>}
+          open={!!viewModalFiles}
+          onCancel={() => setViewModalFiles(null)}
+          footer={[
+            <Button key="close" onClick={() => setViewModalFiles(null)}>
+              Close
+            </Button>
+          ]}
+          width={480}
+          centered
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 8 }}>
+            <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+              This document has multiple uploads. Click on any file to view it:
+            </p>
+            <List
+              dataSource={viewModalFiles || []}
+              renderItem={(file, idx) => (
+                <List.Item
+                  style={{
+                    padding: "10px 12px",
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 8,
+                    marginBottom: 8,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
+                    <span
+                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                      title={file.fileName}
+                    >
+                      {file.fileName || `Attachment ${idx + 1}`}
+                    </span>
+                    {file.uploadedBy && (
+                      <span style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>
+                        Uploaded by: {file.uploadedBy} ({file.uploadedByRole || "Unknown"})
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    size="small"
+                    onClick={() => openFileInNewTab(file.fileUrl)}
+                  >
+                    View
+                  </Button>
+                </List.Item>
+              )}
+            />
+          </div>
+        </Modal>
       </div>
     </div>
   );
 };
 
 export default DocumentTable;
-  

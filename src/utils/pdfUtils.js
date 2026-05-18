@@ -26,12 +26,33 @@ export const generatePDFHtml = ({
     textLight: "#64748b",
   };
 
+  const resolveExactStatus = (doc) => {
+    if (!doc) return "pending";
+    const fields = [doc.coStatus, doc.action, doc.status, doc.rmStatus, doc.checkerStatus];
+    for (const field of fields) {
+      if (field) {
+        const normalized = String(field).trim().toLowerCase();
+        if (normalized === "pendingrm" || normalized === "pendingco" || normalized === "submitted" || 
+            normalized === "waived" || normalized === "sighted" || normalized === "deferred" || 
+            normalized === "tbo" || normalized === "approved" || normalized === "completed" ||
+            normalized === "rejected") {
+          return normalized;
+        }
+      }
+    }
+    const rawStatus = doc.coStatus || doc.action || doc.status || doc.rmStatus || doc.checkerStatus || "pending";
+    return String(rawStatus).trim().toLowerCase();
+  };
+
   const getStatusColor = (status) => {
     const statusLower = (status || "").toLowerCase();
     switch (statusLower) {
       case "submitted":
+      case "approved":
+      case "completed":
         return { bg: "#d1fae5", color: "#065f46", border: "#10b981" };
       case "pendingrm":
+      case "pending":
         return { bg: "#fee2e2", color: "#991b1b", border: "#ef4444" };
       case "pendingco":
         return { bg: "#fef3c7", color: "#92400e", border: "#f59e0b" };
@@ -57,29 +78,29 @@ export const generatePDFHtml = ({
   const calculateStats = (docs) => {
     const total = docs.length;
     const submitted = docs.filter(d => 
-      ["submitted", "sighted", "waived", "tbo"].includes((d.status || "").toLowerCase())
+      ["submitted", "sighted", "waived", "tbo", "approved", "completed"].includes(resolveExactStatus(d))
     ).length;
     const pendingFromRM = docs.filter(d => 
-      (d.status || "").toLowerCase() === "pendingrm"
+      resolveExactStatus(d) === "pendingrm"
     ).length;
     const pendingFromCo = docs.filter(d => 
-      (d.status || "").toLowerCase() === "pendingco"
+      resolveExactStatus(d) === "pendingco"
     ).length;
     const deferred = docs.filter(d => 
-      (d.status || "").toLowerCase() === "deferred"
+      resolveExactStatus(d) === "deferred"
     ).length;
     const sighted = docs.filter(d => 
-      (d.status || "").toLowerCase() === "sighted"
+      resolveExactStatus(d) === "sighted"
     ).length;
     const waived = docs.filter(d => 
-      (d.status || "").toLowerCase() === "waived"
+      resolveExactStatus(d) === "waived"
     ).length;
     const tbo = docs.filter(d => 
-      (d.status || "").toLowerCase() === "tbo"
+      resolveExactStatus(d) === "tbo"
     ).length;
 
     const totalRelevantDocs = docs.filter(d => 
-      !["pendingco"].includes((d.status || "").toLowerCase())
+      !["pendingco"].includes(resolveExactStatus(d))
     ).length;
     
     const progressPercent = totalRelevantDocs === 0 ? 0 : 
@@ -596,10 +617,11 @@ export const generatePDFHtml = ({
           </thead>
           <tbody>
             ${documents.map((doc) => {
-              const statusColor = getStatusColor(doc.status);
-              const statusLabel = doc.status === "deferred" && doc.deferralNo
+              const exactStatus = resolveExactStatus(doc);
+              const statusColor = getStatusColor(exactStatus);
+              const statusLabel = exactStatus === "deferred" && doc.deferralNo
                 ? `Deferred (${doc.deferralNo})`
-                : (doc.status || "N/A").toUpperCase();
+                : exactStatus.toUpperCase();
               
               const checkerStatusLabel = doc.checkerStatus || doc.finalCheckerStatus
                 ? (doc.checkerStatus || doc.finalCheckerStatus || "N/A").toUpperCase()

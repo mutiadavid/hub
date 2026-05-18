@@ -107,10 +107,17 @@ const CheckerReviewChecklistModal = ({
     });
 
   const uploadedDocsCount = useMemo(() => {
-    const mainDocsCount = docs.filter(
-      (doc) => doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url
-    ).length;
-    const supportingDocsCount = supportingDocs.filter(
+    let mainDocsCount = 0;
+    (docs || []).forEach((doc) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        mainDocsCount += uploads.length;
+      } else if (doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url) {
+        mainDocsCount += 1;
+      }
+    });
+
+    const supportingDocsCount = (supportingDocs || []).filter(
       (doc) => doc.fileUrl || doc.uploadData?.fileUrl || doc.url || doc.uploadData?.url
     ).length;
     return mainDocsCount + supportingDocsCount;

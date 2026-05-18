@@ -4,6 +4,7 @@ import { message } from "antd";
 import {
   useSubmitChecklistToRMMutation,
   useUpdateChecklistStatusMutation,
+  useUpdateChecklistStatusDirectMutation,
 } from "../../src/api/checklistApi";
 import { API_BASE_URL } from "../utils/constants";
 import { saveDraft as saveDraftToStorage } from "../utils/draftsUtils";
@@ -46,6 +47,8 @@ export const useChecklistOperations = (
     useSubmitChecklistToRMMutation();
   const [updateChecklistStatus, { isLoading: isCheckerSubmitting }] =
     useUpdateChecklistStatusMutation();
+  const [updateChecklistStatusDirect, { isLoading: isDiscarding }] =
+    useUpdateChecklistStatusDirectMutation();
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [uploadingSupportingDoc, setUploadingSupportingDoc] = useState(false);
 
@@ -443,14 +446,56 @@ export const useChecklistOperations = (
     }
   };
 
+  const discardChecklist = async () => {
+    try {
+      const checklistId = checklist?.id || checklist?._id;
+      if (!checklistId) {
+        throw new Error("Checklist ID missing");
+      }
+
+      message.loading({
+        content: "Discarding checklist...",
+        key: "discardChecklist",
+      });
+
+      const result = await updateChecklistStatusDirect({
+        checklistId,
+        status: "Discarded",
+      }).unwrap();
+
+      showSuccessToast("Checklist discarded successfully!");
+
+      if (onChecklistUpdate) {
+        onChecklistUpdate({
+          ...checklist,
+          status: "Discarded",
+        });
+      }
+
+      if (onRefetchNeeded) {
+        onRefetchNeeded();
+      }
+
+      return result;
+    } catch (err) {
+      console.error("Discard checklist error:", err);
+      showErrorToast(
+        err?.data?.message || err?.data?.error || err?.message || "Failed to discard checklist.",
+      );
+      throw err;
+    }
+  };
+
   return {
     isSubmittingToRM,
     isCheckerSubmitting,
     isSavingDraft,
+    isDiscarding,
     uploadingSupportingDoc,
     submitToRM,
     submitToCheckers,
     saveDraft: saveDraftHandler,
     uploadSupportingDoc,
+    discardChecklist,
   };
 };

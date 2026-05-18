@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Tag, Button, Tooltip } from "antd";
+import { Table, Tag, Button, Tooltip, Modal, List } from "antd";
 import {
   CheckOutlined,
   CloseOutlined,
@@ -54,6 +54,9 @@ const DocumentTable = ({
   handleDocReject,
   handleDocReset,
 }) => {
+  const [viewModalFiles, setViewModalFiles] = React.useState(null);
+  const viewModalData = viewModalFiles || { files: [], record: null };
+
   const rowButtonBaseStyle = {
     minWidth: 84,
     borderRadius: 6,
@@ -321,34 +324,56 @@ const DocumentTable = ({
     {
       title: "View",
       key: "view",
-      width: 60,
-      render: (_, record) =>
-        record.fileUrl || record.uploadData?.fileUrl ? (
+      width: 100,
+      render: (_, record) => {
+        const files = [];
+        if (Array.isArray(record.uploads) && record.uploads.length > 0) {
+          files.push(...record.uploads);
+        } else if (record.fileUrl || record.uploadData?.fileUrl) {
+          files.push({
+            id: "legacy",
+            fileUrl: record.fileUrl || record.uploadData?.fileUrl,
+            fileName: record.fileName || record.name || "Document File",
+            uploadedBy: record.uploadedBy,
+            uploadedByRole: record.uploadedByRole,
+            createdAt: record.uploadedAt,
+          });
+        }
+
+        if (files.length === 0) {
+          return <span style={{ color: "#94a3b8", fontSize: 11, fontFamily: cardFontFamily }}>No files uploaded</span>;
+        }
+
+        if (files.length === 1) {
+          return (
+            <Button
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => openFileInNewTab(files[0].fileUrl)}
+              className="checker-modal-action"
+              style={neutralButtonStyle}
+            >
+              View
+            </Button>
+          );
+        }
+
+        return (
           <Button
-            icon={<EyeOutlined />}
-            onClick={() => {
-              if (typeof onViewFile === "function") {
-                onViewFile(record);
-              } else {
-                const fileUrl = record.fileUrl || record.uploadData?.fileUrl;
-                if (fileUrl) {
-                  openFileInNewTab(fileUrl);
-                }
-              }
-            }}
             size="small"
+            icon={<EyeOutlined />}
+            onClick={() => setViewModalFiles({ files, record })}
             className="checker-modal-action"
-            style={neutralButtonStyle}
+            style={{
+              ...neutralButtonStyle,
+              borderColor: "#10b981",
+              color: "#10b981",
+            }}
           >
-            View
+            View ({files.length} Files)
           </Button>
-        ) : (
-          <Tooltip title="No file uploaded">
-            <Tag color="default" style={{ backgroundColor: "#F3F4F6", color: "#6B7280", borderColor: "#E5E7EB" }}>
-              No File
-            </Tag>
-          </Tooltip>
-        ),
+        );
+      },
     },
   ];
 
@@ -491,6 +516,75 @@ const DocumentTable = ({
             ),
           }}
         />
+        <Modal
+          title={<div style={{ fontFamily: cardFontFamily, fontWeight: 600, color: "#1e293b" }}>Associated Files</div>}
+          open={!!viewModalFiles}
+          onCancel={() => setViewModalFiles(null)}
+          footer={[
+            <Button key="close" onClick={() => setViewModalFiles(null)} style={{ fontFamily: cardFontFamily }}>
+              Close
+            </Button>
+          ]}
+          width={480}
+          centered
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 8 }}>
+            <p style={{ fontSize: 13, color: "#64748b", margin: 0, fontFamily: cardFontFamily }}>
+              This document has multiple uploads. Click on any file to view it:
+            </p>
+            <List
+              dataSource={viewModalData.files || []}
+              renderItem={(file, idx) => (
+                <List.Item
+                  style={{
+                    padding: "10px 12px",
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 8,
+                    marginBottom: 8,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
+                    <span
+                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: "#0f172a",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        fontFamily: cardFontFamily,
+                      }}
+                      title={file.fileName}
+                    >
+                      {file.fileName || `Attachment ${idx + 1}`}
+                    </span>
+                    {file.uploadedBy && (
+                      <span style={{ fontSize: 11, color: "#64748b", marginTop: 2, fontFamily: cardFontFamily }}>
+                        Uploaded by: {file.uploadedBy} ({file.uploadedByRole || "Unknown"})
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <Button
+                      size="small"
+                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      style={{ fontFamily: cardFontFamily }}
+                    >
+                      View
+                    </Button>
+                  </div>
+                </List.Item>
+              )}
+            />
+          </div>
+        </Modal>
       </div>
     </div>
   );

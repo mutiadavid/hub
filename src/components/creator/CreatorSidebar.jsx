@@ -5,6 +5,7 @@ import {
   InboxOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
+  DeleteOutlined,
   BarChartOutlined,
   SnippetsOutlined,
 } from "@ant-design/icons";
@@ -43,6 +44,11 @@ const CreatorSidebar = ({
       label: "Completed",
     },
     {
+      key: "discarded",
+      icon: <DeleteOutlined />,
+      label: "Discarded DCLs",
+    },
+    {
       key: "report",
       icon: <BarChartOutlined />,
       label: "Reports",
@@ -56,7 +62,7 @@ const CreatorSidebar = ({
       collapsed={collapsed}
       onMenuItemClick={onMenuItemClick}
       menuItems={menuItems}
-      brandLabel="NCBA Bank"
+      title="CO-Creator"
     />
   );
 };

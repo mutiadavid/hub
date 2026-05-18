@@ -18,6 +18,10 @@ const ChecklistInfoCard = ({ checklist }) => {
       return "approved";
     }
 
+    if (normalized.includes("discarded")) {
+      return "discarded";
+    }
+
     if (normalized.includes("rejected")) {
       return "rework";
     }

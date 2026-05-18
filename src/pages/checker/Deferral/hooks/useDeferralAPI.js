@@ -176,6 +176,49 @@ export const useDeferralAPI = (token) => {
     }
   }, []);
 
+  const rejectExtension = useCallback(async (extensionId, reason) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      const userToken = user?.token;
+      if (!userToken) {
+        message.error("Authentication token not found");
+        return null;
+      }
+
+      const response = await deferralApi.rejectExtensionAsChecker(
+        extensionId,
+        reason,
+        userToken,
+      );
+      const updatedExtension = response?.extension || response;
+      const updatedDeferral =
+        response?.deferral ||
+        updatedExtension?.deferral ||
+        updatedExtension?.linkedDeferral ||
+        null;
+
+      try {
+        window.dispatchEvent(
+          new CustomEvent("extension:updated", { detail: updatedExtension }),
+        );
+        if (updatedDeferral?._id || updatedDeferral?.id) {
+          window.dispatchEvent(
+            new CustomEvent("deferral:updated", { detail: updatedDeferral }),
+          );
+        }
+      } catch (eventError) {
+        console.debug("Failed to dispatch checker extension rejection events", eventError);
+      }
+
+      message.success(response?.message || "Extension rejected successfully");
+      return response;
+    } catch (error) {
+      console.error("Error rejecting extension:", error);
+      message.error(error.message || "Failed to reject extension");
+      return false;
+    }
+  }, []);
+
   return { loading, fetchDeferrals, loadPendingExtensions, approveExtension, rejectExtension, returnExtension };
 };
 

@@ -79,7 +79,7 @@ const ApproverLayout = ({ userId }) => {
         collapsed={sidebarCollapsed}
         toggleCollapse={toggleSidebar}
         menuItems={menuItems}
-        brandLabel="DCL & DEFERRAL"
+        title="Approver Workspace"
       />
 
       <div

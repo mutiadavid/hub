@@ -231,7 +231,7 @@ export default function FacilityTable({ facilities, setFacilities }) {
       dataIndex: "sanctioned",
       key: "sanctioned",
       align: "right",
-      width: 180,
+      width: 220,
       render: (value, record, index) => {
         if (record.isSubtotal) {
           return (
@@ -246,6 +246,7 @@ export default function FacilityTable({ facilities, setFacilities }) {
             value={value}
             onChange={(val) => updateRow(index, "sanctioned", val)}
             className="w-full rounded-lg border border-[rgba(214,189,152,0.2)] focus:border-[#164679] focus:ring-2 focus:ring-[rgba(22,70,121,0.08)]"
+            style={{ width: "100%" }}
             size="middle"
             min={0}
             step={1000}
@@ -263,7 +264,7 @@ export default function FacilityTable({ facilities, setFacilities }) {
       dataIndex: "balance",
       key: "balance",
       align: "right",
-      width: 180,
+      width: 220,
       render: (value, record, index) => {
         if (record.isSubtotal) {
           return (
@@ -278,6 +279,7 @@ export default function FacilityTable({ facilities, setFacilities }) {
             value={value}
             onChange={(val) => updateRow(index, "balance", val)}
             className="w-full rounded-lg border border-[rgba(214,189,152,0.2)] focus:border-[#164679] focus:ring-2 focus:ring-[rgba(22,70,121,0.08)]"
+            style={{ width: "100%" }}
             size="middle"
             min={0}
             step={1000}

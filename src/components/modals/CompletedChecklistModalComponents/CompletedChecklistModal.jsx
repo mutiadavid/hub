@@ -171,8 +171,17 @@ const CompletedChecklistModal = ({
   );
 
   const uploadedDocumentCount = useMemo(() => {
-    const mainDocumentCount = docs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
-    const supportingDocumentCount = supportingDocs.filter((doc) => doc.fileUrl).length;
+    let mainDocumentCount = 0;
+    (docs || []).forEach((doc) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        mainDocumentCount += uploads.length;
+      } else if (doc.fileUrl || doc.uploadData?.fileUrl) {
+        mainDocumentCount += 1;
+      }
+    });
+
+    const supportingDocumentCount = (supportingDocs || []).filter((doc) => doc.fileUrl).length;
     return mainDocumentCount + supportingDocumentCount;
   }, [docs, supportingDocs]);
 

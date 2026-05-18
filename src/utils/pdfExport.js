@@ -845,21 +845,78 @@ export const downloadChecklistAsPDF = async ({
     const jsPDF = (await import("jspdf")).default;
     const html2canvas = await import("html2canvas");
 
-    // FIX: Add default values for documentStats
-    const safeDocumentStats = documentStats || {
-      total: docs.length || 0,
-      submitted: 0,
-      pendingFromRM: 0,
-      pendingFromCo: 0,
-      deferred: 0,
-      sighted: 0,
-      waived: 0,
-      tbo: 0,
-      progressPercent: 100, // Always 100% for completed checklists
-    };
-
     // Also ensure docs is an array
     const safeDocs = Array.isArray(docs) ? docs : [];
+
+    const resolveExactStatus = (doc) => {
+      if (!doc) return "pending";
+      const fields = [doc.coStatus, doc.action, doc.status, doc.rmStatus, doc.checkerStatus];
+      for (const field of fields) {
+        if (field) {
+          const normalized = String(field).trim().toLowerCase();
+          if (normalized === "pendingrm" || normalized === "pendingco" || normalized === "submitted" || 
+              normalized === "waived" || normalized === "sighted" || normalized === "deferred" || 
+              normalized === "tbo" || normalized === "approved" || normalized === "completed" ||
+              normalized === "rejected") {
+            return normalized;
+          }
+        }
+      }
+      const rawStatus = doc.coStatus || doc.action || doc.status || doc.rmStatus || doc.checkerStatus || "pending";
+      return String(rawStatus).trim().toLowerCase();
+    };
+
+    const calculatedStats = (() => {
+      const total = safeDocs.length;
+      const submitted = safeDocs.filter(d => 
+        ["submitted", "sighted", "waived", "tbo", "approved", "completed"].includes(resolveExactStatus(d))
+      ).length;
+      const pendingFromRM = safeDocs.filter(d => 
+        resolveExactStatus(d) === "pendingrm"
+      ).length;
+      const pendingFromCo = safeDocs.filter(d => 
+        resolveExactStatus(d) === "pendingco"
+      ).length;
+      const deferred = safeDocs.filter(d => 
+        resolveExactStatus(d) === "deferred"
+      ).length;
+      const sighted = safeDocs.filter(d => 
+        resolveExactStatus(d) === "sighted"
+      ).length;
+      const waived = safeDocs.filter(d => 
+        resolveExactStatus(d) === "waived"
+      ).length;
+      const tbo = safeDocs.filter(d => 
+        resolveExactStatus(d) === "tbo"
+      ).length;
+      const approved = safeDocs.filter(d =>
+        ["approved", "completed"].includes(resolveExactStatus(d))
+      ).length;
+
+      const totalRelevantDocs = safeDocs.filter(d => 
+        !["pendingco"].includes(resolveExactStatus(d))
+      ).length;
+      
+      const progressPercent = totalRelevantDocs === 0 ? 0 : 
+        Math.round((submitted / totalRelevantDocs) * 100);
+
+      return {
+        total,
+        submitted,
+        pendingFromRM,
+        pendingFromCo,
+        deferred,
+        sighted,
+        waived,
+        tbo,
+        approved,
+        progressPercent,
+        totalRelevantDocs
+      };
+    })();
+
+    // FIX: Add default values for documentStats
+    const safeDocumentStats = documentStats || calculatedStats;
 
     // Create a temporary container for PDF generation
     const pdfContainer = document.createElement("div");
@@ -1507,16 +1564,16 @@ export const downloadChecklistAsPDF = async ({
             <tbody>
               ${safeDocs
                 .map((doc, index) => {
-                  const statusColor = getStatusColor(doc.status || doc.action);
+                  const exactStatus = resolveExactStatus(doc);
+                  const statusColor = getStatusColor(exactStatus);
                   const checkerStatusColor = getStatusColor(doc.checkerStatus || doc.finalCheckerStatus);
 
                   let statusLabel = "N/A";
-                  if (doc.status || doc.action) {
-                    const status = doc.status || doc.action;
-                    if (status === "deferred" && doc.deferralNumber) {
+                  if (exactStatus) {
+                    if (exactStatus === "deferred" && doc.deferralNumber) {
                       statusLabel = `DEFERRED (${doc.deferralNumber})`;
                     } else {
-                      statusLabel = status.toUpperCase();
+                      statusLabel = exactStatus.toUpperCase();
                     }
                   }
 

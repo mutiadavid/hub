@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   isValidFileType,
   isValidFileSize,
@@ -83,7 +83,7 @@ export const useDocuments = () => {
       selectedDocuments.forEach((doc, idx) => {
         const key =
           doc && (doc._id || doc.name) ? doc._id || doc.name : String(idx);
-        next[key] = prev[key] ?? 0;
+        next[key] = prev[key] ?? null;
       });
 
       const prevKeys = Object.keys(prev);

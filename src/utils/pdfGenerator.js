@@ -32,15 +32,36 @@ export const generateChecklistPDF = async (checklist, documents, comments = []) 
       textLight: "#64748b", // Medium gray
     };
 
+    const resolveExactStatus = (doc) => {
+      if (!doc) return "pending";
+      const fields = [doc.coStatus, doc.action, doc.status, doc.rmStatus, doc.checkerStatus];
+      for (const field of fields) {
+        if (field) {
+          const normalized = String(field).trim().toLowerCase();
+          if (normalized === "pendingrm" || normalized === "pendingco" || normalized === "submitted" ||
+            normalized === "waived" || normalized === "sighted" || normalized === "deferred" ||
+            normalized === "tbo" || normalized === "approved" || normalized === "completed" ||
+            normalized === "rejected") {
+            return normalized;
+          }
+        }
+      }
+      const rawStatus = doc.coStatus || doc.action || doc.status || doc.rmStatus || doc.checkerStatus || "pending";
+      return String(rawStatus).trim().toLowerCase();
+    };
+
     // Calculate status colors for PDF
     const getStatusColor = (status) => {
       const statusLower = (status || "").toLowerCase();
       switch (statusLower) {
         case "submitted":
         case "submitted_for_review":
+        case "approved":
+        case "completed":
           return { bg: "#d1fae5", color: "#065f46", border: "#10b981" };
         case "pendingrm":
         case "pending_from_customer":
+        case "pending":
           return { bg: "#fee2e2", color: "#991b1b", border: "#ef4444" };
         case "pendingco":
           return { bg: "#fef3c7", color: "#92400e", border: "#f59e0b" };
@@ -52,8 +73,6 @@ export const generateChecklistPDF = async (checklist, documents, comments = []) 
         case "deferral":
         case "defferal_requested":
           return { bg: "#e0e7ff", color: "#3730a3", border: "#6366f1" };
-        case "approved":
-          return { bg: "#d4edda", color: "#155724", border: "#28a745" };
         case "rejected":
           return { bg: "#f8d7da", color: "#721c24", border: "#dc3545" };
         case "tbo":
@@ -286,7 +305,8 @@ export const generateChecklistPDF = async (checklist, documents, comments = []) 
         <tbody>
           ${documents
         .map((doc) => {
-          const statusColor = getStatusColor(doc.status || doc.rmStatus || doc.checkerStatus);
+          const exactStatus = resolveExactStatus(doc);
+          const statusColor = getStatusColor(exactStatus);
           const expiryMeta = getExpiryMeta(doc.expiryDate);
           const isComplianceDocument = (doc.category || "").toLowerCase().trim() === "compliance documents";
           const hasFile = doc.fileUrl ? "Yes" : "No";
@@ -297,7 +317,7 @@ export const generateChecklistPDF = async (checklist, documents, comments = []) 
                 <td>${doc.name || "—"}</td>
                 <td>
                   <span class="status-badge" style="background:${statusColor.bg}; color:${statusColor.color}; border-color:${statusColor.border}">
-                    ${(doc.status || doc.rmStatus || doc.checkerStatus || "Pending").toUpperCase()}
+                    ${exactStatus.toUpperCase()}
                   </span>
                 </td>
                 <td style="line-height: 1.35; font-size: 8px; font-weight: 600; color: ${expiryMeta?.isExpired ? "#991b1b" : "#166534"};">

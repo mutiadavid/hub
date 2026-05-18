@@ -15,6 +15,7 @@ const Deferrals = lazy(() => import("../../pages/creator/Deferrals/index.jsx"));
 const Queue = lazy(() => import("../../pages/creator/Queue"));
 const CompletedQueue = lazy(() => import("../../pages/creator/CompletedQueue"));
 const Completed = lazy(() => import("../../pages/creator/Completed"));
+const Discarded = lazy(() => import("../../pages/creator/Discarded"));
 const DraftsPage = lazy(() => import("../shared/DraftsPage"));
 
 // ❌ Remove lazy from modals → use normal import
@@ -40,6 +41,9 @@ const getSelectedKeyFromPath = (pathname) => {
   }
   if (pathname.includes("/completed")) {
     return "completed";
+  }
+  if (pathname.includes("/discarded")) {
+    return "discarded";
   }
   if (pathname.includes("/reports")) {
     return "report";
@@ -117,6 +121,7 @@ const MainLayout = () => {
             drafts: "/cocreator/drafts",
             myqueue: "/cocreator/myqueue",
             completed: "/cocreator/completed",
+            discarded: "/cocreator/discarded",
             deferrals: "/cocreator/deferrals",
             report: "/cocreator/reports",
           };
@@ -158,11 +163,13 @@ const MainLayout = () => {
                 />
               }
             />
-            <Route path="/completed" element={<Completed />} />
+             <Route path="/completed" element={<Completed />} />
+            <Route path="/discarded" element={<Discarded />} />
             <Route path="/deferrals" element={<Deferrals />} />
             <Route path="/reports" element={<Reportss userId={userId} />} />
             <Route path="review/:id" element={<ReviewChecklistPage />} />
             <Route path="completed/:id" element={<CreatorCompletedChecklistPage />} />
+            <Route path="discarded/:id" element={<CreatorCompletedChecklistPage readOnly={true} />} />
             <Route
               path="/reports/stats"
               element={

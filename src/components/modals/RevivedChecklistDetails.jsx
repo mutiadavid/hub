@@ -63,8 +63,19 @@ const RevivedChecklistDetails = ({ checklist, onBack, onClose }) => {
   );
 
   const uploadedDocumentCount = React.useMemo(() => {
-    const mainDocs = docs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
-    const supportingDocCount = supportingDocs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
+    let mainDocs = 0;
+    (docs || []).forEach((doc) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        mainDocs += uploads.length;
+      } else if (doc.fileUrl || doc.uploadData?.fileUrl) {
+        mainDocs += 1;
+      }
+    });
+
+    const supportingDocCount = (supportingDocs || []).filter(
+      (doc) => doc.fileUrl || doc.uploadData?.fileUrl,
+    ).length;
     return mainDocs + supportingDocCount;
   }, [docs, supportingDocs]);
 

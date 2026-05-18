@@ -162,43 +162,54 @@ const DocumentSidebarComponent = ({
   };
 
   const allDocs = useMemo(() => {
-    const processedDocs = (Array.isArray(documents) ? documents : [])
-      .filter(
-        (doc) =>
-          (doc.uploadData && doc.uploadData.status !== "deleted") ||
-          doc.fileUrl ||
-          doc.uploadData?.fileUrl ||
-          doc.filePath ||
-          doc.url,
-      )
-      .map((doc, index) => {
-        const uploaderInfo = resolveUploaderInfo(doc);
+    const processedDocs = [];
+    (Array.isArray(documents) ? documents : []).forEach((doc, index) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        uploads.forEach((upload, uploadIndex) => {
+          processedDocs.push({
+            id: upload.id || `main-${index}-${uploadIndex}`,
+            title: doc.name || doc.fileName || `Document ${index + 1}`,
+            category: doc.category || "Main Documents",
+            fileName: upload.fileName || `Attachment ${uploadIndex + 1}`,
+            fileUrl: upload.fileUrl,
+            uploadedBy: upload.uploadedBy || "Unknown User",
+            uploadedByRole: upload.uploadedByRole || "RM",
+            uploadDate: upload.createdAt,
+            modifiedDate: upload.createdAt,
+            isSupporting: false,
+          });
+        });
+      } else {
         const fileUrl =
           doc.fileUrl ||
           doc.uploadData?.fileUrl ||
           doc.filePath ||
           doc.url ||
           null;
-        const fallbackFileName = fileUrl ? fileUrl.split("/").pop() : null;
-
-        return {
-          id: doc.id || doc._id || `main-${index}`,
-          title: doc.name || doc.fileName || `Document ${index + 1}`,
-          category: doc.category || "Main Documents",
-          fileName:
-            doc.uploadData?.fileName ||
-            doc.fileName ||
-            fallbackFileName ||
-            doc.name ||
-            `Document ${index + 1}`,
-          fileUrl,
-          uploadedBy: uploaderInfo.uploadedBy,
-          uploadedByRole: uploaderInfo.uploadedByRole,
-          uploadDate: resolveUploadDate(doc),
-          modifiedDate: doc.modifiedDate || doc.updatedAt || null,
-          isSupporting: false,
-        };
-      });
+        if (fileUrl) {
+          const uploaderInfo = resolveUploaderInfo(doc);
+          const fallbackFileName = fileUrl.split("/").pop();
+          processedDocs.push({
+            id: doc.id || doc._id || `main-${index}`,
+            title: doc.name || doc.fileName || `Document ${index + 1}`,
+            category: doc.category || "Main Documents",
+            fileName:
+              doc.uploadData?.fileName ||
+              doc.fileName ||
+              fallbackFileName ||
+              doc.name ||
+              `Document ${index + 1}`,
+            fileUrl,
+            uploadedBy: uploaderInfo.uploadedBy,
+            uploadedByRole: uploaderInfo.uploadedByRole,
+            uploadDate: resolveUploadDate(doc),
+            modifiedDate: doc.modifiedDate || doc.updatedAt || null,
+            isSupporting: false,
+          });
+        }
+      }
+    });
 
     const processedSupportingDocs = (Array.isArray(supportingDocs) ? supportingDocs : []).map(
       (doc, index) => {

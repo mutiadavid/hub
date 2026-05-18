@@ -137,8 +137,17 @@ const CompletedChecklistPage = ({
   }, [id, location.state]);
 
   const uploadedDocumentCount = React.useMemo(() => {
-    const mainDocs = docs.filter((doc) => doc.fileUrl || doc.uploadData?.fileUrl).length;
-    const supportingDocumentCount = supportingDocs.filter((doc) => doc.fileUrl).length;
+    let mainDocs = 0;
+    (docs || []).forEach((doc) => {
+      const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
+      if (uploads.length > 0) {
+        mainDocs += uploads.length;
+      } else if (doc.fileUrl || doc.uploadData?.fileUrl) {
+        mainDocs += 1;
+      }
+    });
+
+    const supportingDocumentCount = (supportingDocs || []).filter((doc) => doc.fileUrl).length;
     return mainDocs + supportingDocumentCount;
   }, [docs, supportingDocs]);
 

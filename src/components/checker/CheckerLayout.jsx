@@ -142,42 +142,42 @@ const CheckerLayout = () => {
         <Navbar toggleSidebar={toggleSidebar} />
 
         <div className="creator-layout-content">
-          <Suspense fallback={<div style={{padding:24,textAlign:"center"}}>Loading...</div>}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <AllChecklists
-                  userId={userId}
-                  draftToRestore={draftToRestore}
-                  setDraftToRestore={setDraftToRestore}
-                />
-              }
-            />
-            <Route
-              path="/myQueue"
-              element={
-                <AllChecklists
-                  userId={userId}
-                  draftToRestore={draftToRestore}
-                  setDraftToRestore={setDraftToRestore}
-                />
-              }
-            />
-            <Route
-              path="/completed"
-              element={<CompletedChecklists userId={userId} />}
-            />
-            <Route path="/completed/:id" element={<CompletedChecklistPage />} />
-            <Route path="/deferrals" element={<Deferrals userId={userId} />} />
-            <Route
-              path="/drafts"
-              element={
-                <DraftsPage type="checker" onSelectDraft={handleRestoreDraft} />
-              }
-            />
-            <Route path="/reports" element={<Reportss />} />
-          </Routes>
+          <Suspense fallback={<div style={{ padding: 24, textAlign: "center" }}>Loading...</div>}>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <AllChecklists
+                    userId={userId}
+                    draftToRestore={draftToRestore}
+                    setDraftToRestore={setDraftToRestore}
+                  />
+                }
+              />
+              <Route
+                path="/myQueue"
+                element={
+                  <AllChecklists
+                    userId={userId}
+                    draftToRestore={draftToRestore}
+                    setDraftToRestore={setDraftToRestore}
+                  />
+                }
+              />
+              <Route
+                path="/completed"
+                element={<CompletedChecklists userId={userId} />}
+              />
+              <Route path="/completed/:id" element={<CompletedChecklistPage />} />
+              <Route path="/deferrals" element={<Deferrals userId={userId} />} />
+              <Route
+                path="/drafts"
+                element={
+                  <DraftsPage type="checker" onSelectDraft={handleRestoreDraft} />
+                }
+              />
+              <Route path="/reports" element={<Reportss />} />
+            </Routes>
           </Suspense>
         </div>
       </div>

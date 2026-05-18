@@ -8,6 +8,33 @@ import ncbaLogo from '../assets/NCBA Logo.png';
 import { getExpiryMeta } from '../utils/documentUtils';
 import { PRIMARY_BLUE, ACCENT_LIME, SECONDARY_PURPLE } from '../utils/constants';
 
+const formatText = (value) => {
+  if (!value) return "N/A";
+  let normalized = String(value).trim();
+  normalized = normalized.replace(/([a-z])([A-Z])/g, "$1 $2");
+  normalized = normalized.replace(/_/g, " ");
+  if (!normalized) return "N/A";
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
+};
+
+const resolveExactStatus = (doc) => {
+  if (!doc) return "pending";
+  const fields = [doc.coStatus, doc.action, doc.status, doc.rmStatus, doc.checkerStatus];
+  for (const field of fields) {
+    if (field) {
+      const normalized = String(field).trim().toLowerCase();
+      if (normalized === "pendingrm" || normalized === "pendingco" || normalized === "submitted" ||
+        normalized === "waived" || normalized === "sighted" || normalized === "deferred" ||
+        normalized === "tbo" || normalized === "approved" || normalized === "completed" ||
+        normalized === "rejected") {
+        return normalized;
+      }
+    }
+  }
+  const rawStatus = doc.coStatus || doc.action || doc.status || doc.rmStatus || doc.checkerStatus || "pending";
+  return String(rawStatus).trim().toLowerCase();
+};
+
 const usePDFGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -32,16 +59,34 @@ const usePDFGenerator = () => {
     };
 
     documents.forEach(d => {
-      const status = (d.status || "").toLowerCase();
+      const status = resolveExactStatus(d);
       switch (status) {
-        case "submitted": statusCounts.submitted++; break;
-        case "pendingrm": statusCounts.pendingrm++; break;
-        case "pendingco": statusCounts.pendingco++; break;
-        case "deferred": statusCounts.deferred++; break;
-        case "sighted": statusCounts.sighted++; break;
-        case "waived": statusCounts.waived++; break;
-        case "tbo": statusCounts.tbo++; break;
-        default: statusCounts.other++; break;
+        case "submitted":
+        case "approved":
+        case "completed":
+          statusCounts.submitted++;
+          break;
+        case "pendingrm":
+          statusCounts.pendingrm++;
+          break;
+        case "pendingco":
+          statusCounts.pendingco++;
+          break;
+        case "deferred":
+          statusCounts.deferred++;
+          break;
+        case "sighted":
+          statusCounts.sighted++;
+          break;
+        case "waived":
+          statusCounts.waived++;
+          break;
+        case "tbo":
+          statusCounts.tbo++;
+          break;
+        default:
+          statusCounts.other++;
+          break;
       }
     });
 
@@ -161,21 +206,23 @@ const usePDFGenerator = () => {
    */
   const formatStatusForDisplay = useCallback((status) => {
     if (!status) return "N/A";
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes("pendinggrm")) return "PENDING";
+    const statusLower = String(status).toLowerCase().trim();
+    if (statusLower.includes("pendinggrm")) return "Pending";
     switch (statusLower) {
-      case "submitted": return "SUBMITTED";
-      case "pendingrm": return "PENDING";
-      case "pendingco": return "PENDING";
-      case "waived": return "WAIVED";
-      case "sighted": return "SIGHTED";
-      case "deferred": return "DEFERRED";
-      case "tbo": return "TBO";
-      case "pendingfromcustomer": return "PENDING FROM CUSTOMER";
-      case "submittedforreview": return "SUBMITTED FOR REVIEW";
-      default: 
-        // Return raw case for formatText to handle
-        return status;
+      case "submitted": return "Submitted";
+      case "pendingrm": return "Pending RM";
+      case "pendingco": return "Pending CO";
+      case "waived": return "Waived";
+      case "sighted": return "Sighted";
+      case "deferred": return "Deferred";
+      case "tbo": return "Tbo";
+      case "pendingfromcustomer": return "Pending from customer";
+      case "submittedforreview": return "Submitted for review";
+      case "approved": return "Approved";
+      case "completed": return "Completed";
+      case "rejected": return "Rejected";
+      default:
+        return formatText(status);
     }
   }, []);
 
@@ -638,29 +685,29 @@ const usePDFGenerator = () => {
             </thead>
             <tbody>
               ${docs.map((doc, index) => {
-                const isAlternate = index % 2 === 1;
-                const bgColor = isAlternate ? '#f3f4f6' : colors.white;
-               
-                const docName = doc.name || doc.documentName || "N/A";
-                const category = doc.category || "N/A";
-                const coAction = doc.action || doc.coAction || "N/A";
-                const rmStatus = doc.rmStatus || "PENDING";
-                const checkerStatus = doc.checkerStatus || doc.finalCheckerStatus || "APPROVED";
-                const coComment = doc.comment || doc.coComment || "—";
-                const expiryMeta = getExpiryMeta(doc.expiryDate);
-                const isComplianceDocument = (category || "").toLowerCase().trim() === "compliance documents";
-                // Get status color
-                const getStatusBg = (status) => {
-                  const s = (status || "").toLowerCase();
-                  if (s.includes("submitted")) return "#dbeafe";
-                  if (s.includes("approved")) return "#dcfce7";
-                  if (s.includes("pending")) return "#fef3c7";
-                  if (s.includes("expired")) return "#fee2e2";
-                  if (s.includes("rejected")) return "#fee2e2";
-                  return "transparent";
-                };
+        const isAlternate = index % 2 === 1;
+        const bgColor = isAlternate ? '#f3f4f6' : colors.white;
 
-                return `
+        const docName = doc.name || doc.documentName || "N/A";
+        const category = doc.category || "N/A";
+        const coAction = resolveExactStatus(doc);
+        const rmStatus = doc.rmStatus || "pending_from_customer";
+        const checkerStatus = doc.checkerStatus || doc.finalCheckerStatus || "APPROVED";
+        const coComment = doc.comment || doc.coComment || "—";
+        const expiryMeta = getExpiryMeta(doc.expiryDate);
+        const isComplianceDocument = (category || "").toLowerCase().trim() === "compliance documents";
+        // Get status color
+        const getStatusBg = (status) => {
+          const s = (status || "").toLowerCase();
+          if (s.includes("submitted")) return "#dbeafe";
+          if (s.includes("approved")) return "#dcfce7";
+          if (s.includes("pending")) return "#fef3c7";
+          if (s.includes("expired")) return "#fee2e2";
+          if (s.includes("rejected")) return "#fee2e2";
+          return "transparent";
+        };
+
+        return `
                   <tr style="background: ${bgColor}; border-bottom: 1px solid ${colors.subtleBorder};">
                     <td style="padding: 10px 8px; border-right: 1px solid ${colors.subtleBorder}; color: ${colors.primary}; font-weight: 500;">
                       ${truncateText(category, 25)}
@@ -712,7 +759,7 @@ const usePDFGenerator = () => {
                     </td>
                   </tr>
                 `;
-              }).join("")}
+      }).join("")}
             </tbody>
           </table>
         </div>
@@ -1004,13 +1051,13 @@ const usePDFGenerator = () => {
           doc.setFontSize(7);
           doc.setTextColor(...NCBA_MID);
           doc.setFont('helvetica', 'normal');
-         
+
           const generatedBy = formatUserName(currentUser?.name || checklist?.createdBy?.name) || "System";
           const generatedOn = dayjs().format("DD/MM/YYYY HH:mm:ss");
-         
+
           // Center
           doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
-         
+
           // Right
           doc.text(`Generated by ${generatedBy} on ${generatedOn}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
         }
@@ -1036,23 +1083,23 @@ const usePDFGenerator = () => {
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.text("DOCUMENT CHECKLIST REVIEW REPORT", pageWidth / 2, 22, { align: 'center' });
-     
+
       // Status (Centered)
       const statusValue = (checklist?.status || 'UNKNOWN').replace(/_/g, " ").toUpperCase();
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60, 60, 60); // Dark Gray for status labels
-     
+
       const statusLabel = "CURRENT STATUS: ";
       const statusBlue = [0, 81, 158]; // GeoBuild Status Blue
       const fullStatusLine = statusLabel + statusValue;
       const lineWidth = doc.getTextWidth(fullStatusLine);
       const startX = (pageWidth - lineWidth) / 2;
-      
+
       doc.text(statusLabel, startX, 30);
       doc.setTextColor(statusBlue[0], statusBlue[1], statusBlue[2]); // Blue for status value
       doc.text(statusValue, startX + doc.getTextWidth(statusLabel), 30);
-     
+
       let yPos = 42;
 
       // 1. Checklist Information Section
@@ -1064,7 +1111,7 @@ const usePDFGenerator = () => {
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(...NCBA_DARK);
         doc.text(label, margin + 5, yPos + 4);
-       
+
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...NCBA_MID);
         doc.text(value || 'N/A', margin + 65, yPos + 4);
@@ -1090,18 +1137,18 @@ const usePDFGenerator = () => {
         startY: yPos,
         margin: { left: margin, right: margin },
         theme: 'grid',
-        headStyles: { 
+        headStyles: {
           fillColor: [230, 230, 230], // Light Gray (GeoBuild style)
-          textColor: [...NCBA_DARK], 
-          fontStyle: 'bold', 
-          lineWidth: 0.1, 
+          textColor: [...NCBA_DARK],
+          fontStyle: 'bold',
+          lineWidth: 0.1,
           lineColor: [224, 224, 224],
           halign: 'center',
           fontSize: 8
         },
-        styles: { 
-          fontSize: 9, 
-          cellPadding: 3, 
+        styles: {
+          fontSize: 9,
+          cellPadding: 3,
           halign: 'center',
           textColor: [...NCBA_MID]
         },
@@ -1155,9 +1202,9 @@ const usePDFGenerator = () => {
       const docRows = documents.map(d => [
         (d.category || 'N/A').toUpperCase(),
         d.name || d.documentName || 'N/A',
-        formatText(formatStatusForDisplay(d.status || d.coStatus || 'PENDING')),
-        formatText(formatStatusForDisplay(d.rmStatus || 'COMPLETED')),
-        formatText(formatStatusForDisplay(d.checkerStatus || d.finalCheckerStatus || 'PENDING')),
+        formatStatusForDisplay(resolveExactStatus(d)),
+        formatStatusForDisplay(d.rmStatus || 'pending_from_customer'),
+        formatStatusForDisplay(d.checkerStatus || d.finalCheckerStatus || 'PENDING'),
         formatText(d.coComment || d.comment || 'OK'),
         (() => {
           const isComplianceDocument = (d.category || '').toLowerCase().trim() === 'compliance documents';
@@ -1175,16 +1222,16 @@ const usePDFGenerator = () => {
         head: [['CATEGORY', 'DOCUMENT NAME', 'CO STATUS', 'RM STATUS', 'CHECKER STATUS', 'CO COMMENT', 'EXPIRY STATUS']],
         body: docRows,
         theme: 'grid',
-        headStyles: { 
+        headStyles: {
           fillColor: [230, 230, 230], // Light Gray (GeoBuild style)
-          textColor: [...NCBA_DARK], 
+          textColor: [...NCBA_DARK],
           fontSize: 7,
           fontStyle: 'bold',
           halign: 'center'
         },
-        styles: { 
-          fontSize: 8, 
-          cellPadding: 3, 
+        styles: {
+          fontSize: 8,
+          cellPadding: 3,
           overflow: 'linebreak',
           font: 'helvetica',
           valign: 'middle',
@@ -1228,11 +1275,11 @@ const usePDFGenerator = () => {
           head: [['Document Name', 'Uploaded At', 'Status']],
           body: supportingDocs.map(d => [d.name, dayjs(d.uploadedAt).format("YYYY-MM-DD HH:mm"), '✓ Uploaded']),
           theme: 'grid',
-          headStyles: { 
+          headStyles: {
             fillColor: [230, 230, 230], // Light Gray (GeoBuild style)
-            textColor: [...NCBA_DARK], 
-            fontSize: 8, 
-            fontStyle: 'bold' 
+            textColor: [...NCBA_DARK],
+            fontSize: 8,
+            fontStyle: 'bold'
           },
           styles: { fontSize: 8, cellPadding: 3 },
           columnStyles: {
@@ -1263,9 +1310,9 @@ const usePDFGenerator = () => {
       }
 
       // Add current review comment (RM's new comment)
-      if (rmComment && 
-          rmComment !== originalRemarks && 
-          !userComments.some(c => (c.message || c.content || c.comment) === rmComment)) {
+      if (rmComment &&
+        rmComment !== originalRemarks &&
+        !userComments.some(c => (c.message || c.content || c.comment) === rmComment)) {
         userComments.push({
           user: { name: currentUser?.name || "Current User" },
           role: currentUser?.role || "RM",
@@ -1291,7 +1338,7 @@ const usePDFGenerator = () => {
             if (role === 'rm') formattedRole = 'RM';
 
             const userName = c.userId?.name || c.user?.name || c.createdBy?.name || "N/A";
-            
+
             let rawMessage = c.message || c.content || c.comment || "";
             // Remove common role prefixes and system activity prefixes that wrap comments
             let cleanMessage = rawMessage
@@ -1315,16 +1362,16 @@ const usePDFGenerator = () => {
             ];
           }),
           theme: 'striped',
-          headStyles: { 
+          headStyles: {
             fillColor: [230, 230, 230], // Light Gray (GeoBuild style)
-            textColor: [...NCBA_DARK], 
-            fontSize: 8, 
+            textColor: [...NCBA_DARK],
+            fontSize: 8,
             fontStyle: 'bold',
             halign: 'left',
             lineWidth: 0
           },
-          styles: { 
-            fontSize: 8, 
+          styles: {
+            fontSize: 8,
             cellPadding: 3,
             lineWidth: 0,
             textColor: [...NCBA_MID]
