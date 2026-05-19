@@ -63,9 +63,9 @@ const toolbarClassName =
   "flex flex-col gap-3 border-b border-[#d6bd9833] bg-white p-4 md:flex-row md:flex-wrap md:items-center md:justify-between";
 const titleBlockClassName = "flex min-w-[260px] flex-col gap-1";
 const titleClassName = "m-0 text-[15px] font-bold leading-tight tracking-[-0.02em] text-[#1f2933]";
-const actionsClassName = "flex flex-1 flex-wrap items-center justify-end gap-2.5";
+const actionsClassName = "flex items-center justify-end gap-5 md:flex-nowrap";
 const tabsClassName =
-  "min-w-0 flex-1 [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:rounded-none [&_.ant-tabs-ink-bar]:bg-[#164679] [&_.ant-tabs-nav]:m-0 [&_.ant-tabs-nav]:border-b-0 [&_.ant-tabs-nav-wrap]:overflow-auto [&_.ant-tabs-nav:before]:hidden [&_.ant-tabs-tab]:mr-6 [&_.ant-tabs-tab]:rounded-none [&_.ant-tabs-tab]:border-0 [&_.ant-tabs-tab]:bg-transparent [&_.ant-tabs-tab]:px-2 [&_.ant-tabs-tab]:pb-3 [&_.ant-tabs-tab]:pt-3.5 [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-[#6b7280] [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-[#164679] [&_.ant-tabs-tab-btn]:text-[13px] [&_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-btn]:leading-tight [&_.ant-tabs-tab-btn]:text-[#4b5563] max-md:[&_.ant-tabs-tab]:mr-[22px] max-md:[&_.ant-tabs-tab]:pb-2.5 max-md:[&_.ant-tabs-tab]:pt-3";
+  "min-w-0 flex-initial [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:rounded-none [&_.ant-tabs-ink-bar]:bg-[#164679] [&_.ant-tabs-nav]:m-0 [&_.ant-tabs-nav]:border-b-0 [&_.ant-tabs-nav-wrap]:overflow-auto [&_.ant-tabs-nav:before]:hidden [&_.ant-tabs-tab]:mr-8 [&_.ant-tabs-tab]:ml-2 [&_.ant-tabs-tab]:rounded-none [&_.ant-tabs-tab]:border-0 [&_.ant-tabs-tab]:bg-transparent [&_.ant-tabs-tab]:px-3 [&_.ant-tabs-tab]:pb-3 [&_.ant-tabs-tab]:pt-3.5 [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-[#6b7280] [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-[#164679] [&_.ant-tabs-tab-btn]:text-[13px] [&_.ant-tabs-tab-btn]:font-semibold [&_.ant-tabs-tab-btn]:leading-tight [&_.ant-tabs-tab-btn]:text-[#4b5563] max-md:[&_.ant-tabs-tab]:mr-[24px] max-md:[&_.ant-tabs-tab]:pb-2.5 max-md:[&_.ant-tabs-tab]:pt-3";
 const exportButtonClassName =
   "h-10 min-h-10 w-10 min-w-10 shrink-0 rounded-md border border-[#d6bd9833] bg-white text-[#4b5563] shadow-none hover:border-[#164679] hover:bg-white hover:text-[#164679] focus:border-[#164679] focus:bg-white focus:text-[#164679]";
 const contentClassName =
@@ -1065,54 +1065,54 @@ export default function Reports() {
                 setActiveTab(key);
                 clearFilters();
               }}
-              type="card"
+              type="line"
               items={[
                 {
                   key: "deferrals",
                   label: (
-                    <>
+                    <span className="flex items-center gap-2">
                       <CheckCircleOutlined /> Deferrals
-                    </>
+                    </span>
                   ),
                 },
                 {
                   key: "allDCLs",
                   label: (
-                    <>
+                    <span className="flex items-center gap-2">
                       <FileTextOutlined /> All {DCL_PLURAL_DISPLAY_NAME}
-                    </>
+                    </span>
                   ),
                 },
                 {
                   key: "deferralCharts",
                   label: (
-                    <>
+                    <span className="flex items-center gap-2">
                       <BarChartOutlined /> Deferral Charts
-                    </>
+                    </span>
                   ),
                 },
                 {
                   key: "dclCharts",
                   label: (
-                    <>
+                    <span className="flex items-center gap-2">
                       <BarChartOutlined /> {DCL_DISPLAY_NAME} Charts
-                    </>
+                    </span>
                   ),
                 },
                 {
                   key: "tatConsumed",
                   label: (
-                    <>
+                    <span className="flex items-center gap-2">
                       <ClockCircleOutlined /> TAT Consumed
-                    </>
+                    </span>
                   ),
                 },
                 {
                   key: "tatConsumedCharts",
                   label: (
-                    <>
+                    <span className="flex items-center gap-2">
                       <BarChartOutlined /> TAT Charts
-                    </>
+                    </span>
                   ),
                 },
               ]}

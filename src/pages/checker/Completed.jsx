@@ -239,6 +239,7 @@ const Completed = ({ userId }) => {
         <RealTimeSlaTag
           slaExpiry={slaExpiry}
           startedAt={record?.createdAt}
+          endedAt={record?.completionDate || record?.updatedAt || record?.approvedAt || null}
           emptyLabel="N/A"
           minWidth={60}
           fontSize={12}

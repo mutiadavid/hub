@@ -20,9 +20,11 @@ export const useDeferralFiltering = (deferrals) => {
         a === "approved" ||
         a === "pending" ||
         a === "closeRequests" ||
-        a === "extensions"
+        a === "extensions" ||
+        a === "extensionRework"
       )
         return a;
+    // eslint-disable-next-line no-unused-vars
     } catch (e) {
       // Ignore any errors
     }
@@ -53,5 +55,6 @@ export const useDeferralFiltering = (deferrals) => {
     rejectedData: dataByTab.rejected,
     closeRequestsData: dataByTab.closeRequests,
     extensionsData: dataByTab.extensions,
+    extensionReworkData: dataByTab.extensionRework,
   };
 };

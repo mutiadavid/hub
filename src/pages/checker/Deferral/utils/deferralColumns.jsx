@@ -127,6 +127,7 @@ export const getDeferralTableColumns = () => [
         <RealTimeSlaTag
           slaExpiry={s}
           startedAt={record?.createdAt}
+          endedAt={["approved", "rejected", "deferral_approved", "deferral_rejected"].includes(String(record?.status).toLowerCase()) ? (record?.updatedAt || record?.approvedAt || null) : null}
           emptyLabel="Not set"
           minWidth={0}
           displayStyle="text"

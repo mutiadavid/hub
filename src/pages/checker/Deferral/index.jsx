@@ -959,6 +959,7 @@ const DeferralIndex = ({ userId }) => {
                           <RealTimeSlaTag
                             slaExpiry={s || record?.slaExpiry || record?.deferral?.slaExpiry}
                             startedAt={record?.createdAt || record?.deferral?.createdAt}
+                            endedAt={["approved", "rejected", "completed", "closed"].includes(String(record?.status).toLowerCase()) ? (record?.updatedAt || record?.approvedAt || null) : null}
                             emptyLabel="Not set"
                             minWidth={76}
                             displayStyle="text"

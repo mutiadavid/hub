@@ -26,6 +26,7 @@ const ActiveDCLs = () => {
       setLoading(true);
       const res = await api.get("/dcls/checker/pending");
       setDcls(res.data);
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       message.error("Failed to load reviewed DCLs");
     } finally {
@@ -44,6 +45,7 @@ const ActiveDCLs = () => {
       message.success("DCL approved and sent to Disbursement");
       setDrawerOpen(false);
       fetchReviewedDCLs();
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       message.error("Failed to approve DCL");
     }
@@ -60,6 +62,7 @@ const ActiveDCLs = () => {
       setDrawerOpen(false);
       setRejectComment("");
       fetchReviewedDCLs();
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       message.error("Failed to reject DCL");
     }

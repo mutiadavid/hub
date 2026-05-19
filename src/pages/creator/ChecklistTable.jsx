@@ -126,6 +126,7 @@ const ChecklistTable = ({ data, onView, showTat = false }) => {
               <RealTimeSlaTag
                 slaExpiry={date}
                 startedAt={record?.createdAt}
+                endedAt={["approved", "rejected", "completed", "discarded"].includes(String(record?.status).toLowerCase()) ? (record?.updatedAt || record?.approvedAt || null) : null}
                 emptyLabel="N/A"
                 minWidth={60}
                 fontSize={12}

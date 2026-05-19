@@ -92,9 +92,9 @@ const DeferralTable = ({
       width: 130,
     },
     {
-      title: "SLA",
+      title: "TAT Consumed",
       dataIndex: "dueDate",
-      key: "sla",
+      key: "TAT",
       render: (dueDate) => {
         if (!dueDate) return <span>N/A</span>;
         const days = dayjs(dueDate).diff(dayjs(), "days");

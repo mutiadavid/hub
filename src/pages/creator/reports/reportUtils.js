@@ -369,7 +369,7 @@ export function buildDeferralsAnalytics(rows) {
     const created = row.createdAt ? dayjs(row.createdAt) : null;
     if (!created || !created.isValid()) return;
     const key = created.startOf("month").format("YYYY-MM");
-    const monthLabel = created.format("MMM-YY");
+    const monthLabel = created.format("MMM YYYY");
     if (!monthMap.has(key)) {
       monthMap.set(key, {
         key,
@@ -619,9 +619,7 @@ const createStageMetric = ({ startAt, completedAt, nowAt = dayjs(), liveWhenInPr
   const effectiveEnd = hasCompleted ? completedAt : hasStarted ? nowAt : null;
   const minutes = !hasStarted
     ? 0
-    : hasCompleted || !liveWhenInProgress
-      ? minutesBetween(startAt, effectiveEnd) ?? 0
-      : elapsedMinutesBetween(startAt, effectiveEnd) ?? 0;
+    : minutesBetween(startAt, effectiveEnd) ?? 0;
   const state = !hasStarted ? "not_started" : hasCompleted ? "completed" : "in_progress";
 
   return {

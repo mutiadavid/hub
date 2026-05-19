@@ -16,6 +16,7 @@ import {
   Tag,
   Tooltip,
   Typography,
+  message,
 } from "antd";
 import {
   CalendarOutlined,
@@ -547,12 +548,13 @@ const AuditDashboard = ({ logs, stats, users, totalCount }) => {
   const actionTypeData = useMemo(() => {
     const actionCounts = {};
     logs.forEach(log => {
-      const action = log.actionCategory;
+      const action = log.actionLabel;
       actionCounts[action] = (actionCounts[action] || 0) + 1;
     });
     return Object.entries(actionCounts)
       .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
   }, [logs]);
 
   // User activity distribution - using the filtered logs
@@ -668,12 +670,12 @@ const AuditDashboard = ({ logs, stats, users, totalCount }) => {
         {/* Bar Chart - Actions by Type */}
         <Card bordered={false} title="Action Distribution" className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border }}>
           <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={actionTypeData} layout="vertical" margin={{ left: 80 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
-              <XAxis type="number" axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 500 }} width={80} />
+            <BarChart data={actionTypeData} margin={{ bottom: 35 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+              <XAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, angle: -25, textAnchor: 'end' }} height={55} />
+              <YAxis type="number" axisLine={false} tickLine={false} />
               <RechartsTooltip />
-              <Bar dataKey="value" fill={NCBA_COLORS.primary} radius={[0, 6, 6, 0]} barSize={28} />
+              <Bar dataKey="value" fill={NCBA_COLORS.primary} radius={[6, 6, 0, 0]} barSize={32} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -681,12 +683,12 @@ const AuditDashboard = ({ logs, stats, users, totalCount }) => {
         {/* User Activity */}
         <Card bordered={false} title="Top Users by Activity" className="rounded-2xl border" style={{ borderColor: NCBA_COLORS.border }}>
           <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={userActivityData} layout="vertical" margin={{ left: 100 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
-              <XAxis type="number" axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} width={100} />
+            <BarChart data={userActivityData} margin={{ bottom: 35 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+              <XAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, angle: -25, textAnchor: 'end' }} height={55} />
+              <YAxis type="number" axisLine={false} tickLine={false} />
               <RechartsTooltip />
-              <Bar dataKey="actions" fill={NCBA_COLORS.secondary} radius={[0, 6, 6, 0]} barSize={28} />
+              <Bar dataKey="actions" fill={NCBA_COLORS.secondary} radius={[6, 6, 0, 0]} barSize={32} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -785,100 +787,98 @@ const AuditLogsPage = () => {
   const { data: statsData, refetch: refetchStats } = useGetAuditLogStatsQuery();
   const [triggerFetchAuditLogs] = useLazyGetAuditLogsQuery();
 
-  const auditListFilterParams = useMemo(
-    () => ({
-      userId: selectedUserId,
-      action: selectedAction,
-      resource: selectedEntity,
-      search: debouncedSearch || undefined,
-      startDate: dateRange?.[0] ? dateRange[0].startOf("day").toISOString() : undefined,
-      endDate: dateRange?.[1] ? dateRange[1].endOf("day").toISOString() : undefined,
-    }),
-    [selectedUserId, selectedAction, selectedEntity, debouncedSearch, dateRange],
-  );
-
+  // Reset page when filters are changed
   useEffect(() => {
     setCurrentPage(1);
-  }, [auditListFilterParams, activeView]);
+  }, [selectedUserId, selectedAction, selectedEntity, debouncedSearch, dateRange, activeView]);
 
-  // Compute fetch parameters reactively for RTK Query caching
-  const fetchParams = useMemo(() => {
-    const params = {
-      ...auditListFilterParams,
-    };
-    if (activeView === "dashboard") {
-      params.page = 1;
-      params.limit = 1000;
-    } else {
-      params.page = currentPage;
-      params.limit = AUDIT_LOGS_PAGE_SIZE;
-    }
-    return params;
-  }, [auditListFilterParams, currentPage, activeView]);
-
-  // RTK Query with native browser caching, automatic background updates, and focus-tracking
+  // Fetch up to 1000 latest audit logs in one swift query, mimicking the seamless and snappy performance of the Users page
   const {
     data: auditLogsResult,
     isLoading: isLogsLoading,
     isFetching: isLogsFetching,
     error: logsFetchError,
     refetch: refetchAuditLogs,
-  } = useGetAuditLogsQuery(fetchParams, {
-    refetchOnMountOrArgChange: true,
+  } = useGetAuditLogsQuery({ limit: 1000 }, {
     refetchOnFocus: true,
   });
 
   const users = useMemo(() => getUsersArray(usersData), [usersData]);
 
-  const rawLogs = useMemo(() => {
-    return Array.isArray(auditLogsResult?.logs) ? auditLogsResult.logs : [];
+  // Map and normalize all loaded logs
+  const allNormalizedLogs = useMemo(() => {
+    const raw = Array.isArray(auditLogsResult?.logs) ? auditLogsResult.logs : [];
+    return raw.map((log, index) => normalizeAuditLog(log, index));
   }, [auditLogsResult]);
 
-  const totalCount = useMemo(() => {
-    return auditLogsResult?.total != null ? Number(auditLogsResult.total) : rawLogs.length;
-  }, [auditLogsResult, rawLogs.length]);
+  // Filter to business logs only (exclude login/logout, etc.)
+  const allBusinessLogs = useMemo(() => filterBusinessLogs(allNormalizedLogs), [allNormalizedLogs]);
 
-  const auditLogs = useMemo(() => rawLogs.map((log, index) => normalizeAuditLog(log, index)), [rawLogs]);
+  // Filter options: dynamic list of actions actually present in our business logs
+  const actionOptions = useMemo(() => {
+    const actions = [...new Set(allBusinessLogs.map((log) => log.actionCategory))];
+    return actions.filter(Boolean).map((value) => ({ value, label: titleize(value) })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [allBusinessLogs]);
 
-  // Filter to business logs only (exclude login/logout)
-  const businessLogs = useMemo(() => filterBusinessLogs(auditLogs), [auditLogs]);
+  // Filter options: dynamic list of entities actually present in our business logs
+  const entityOptions = useMemo(() => {
+    const entities = [...new Set(allBusinessLogs.map((log) => log.entityLabel))];
+    return entities.filter(Boolean).map((value) => ({ value, label: value })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [allBusinessLogs]);
 
-  const sortedAuditLogs = useMemo(() => {
-    const direction = timeSortOrder === "ascend" ? 1 : -1;
-    return [...businessLogs].sort((left, right) => (left.createdAtMs - right.createdAtMs) * direction);
-  }, [businessLogs, timeSortOrder]);
+  // Perform fully responsive client-side filtering, searching, and sorting
+  const filteredAuditLogs = useMemo(() => {
+    let result = [...allBusinessLogs];
 
-  const pagedAuditLogs = useMemo(() => {
-    if (activeView === "logs") {
-      // The API already returns exactly the paginated set, so we do not slice locally
-      return sortedAuditLogs;
-    } else {
-      const start = (currentPage - 1) * AUDIT_LOGS_PAGE_SIZE;
-      return sortedAuditLogs.slice(start, start + AUDIT_LOGS_PAGE_SIZE);
+    // User filter
+    if (selectedUserId) {
+      result = result.filter(log => log.raw?.performedById === selectedUserId);
     }
-  }, [sortedAuditLogs, currentPage, activeView]);
 
-  useEffect(() => {
-    if (activeView === "logs") return;
-    const maxPage = Math.max(1, Math.ceil(sortedAuditLogs.length / AUDIT_LOGS_PAGE_SIZE) || 1);
-    if (currentPage > maxPage) setCurrentPage(maxPage);
-  }, [sortedAuditLogs.length, currentPage, activeView]);
+    // Action filter
+    if (selectedAction) {
+      result = result.filter(log => log.actionCategory === selectedAction);
+    }
+
+    // Entity filter
+    if (selectedEntity) {
+      result = result.filter(log => log.entityLabel === selectedEntity);
+    }
+
+    // Search filter
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
+      result = result.filter(log =>
+        log.userName.toLowerCase().includes(query) ||
+        log.userRole.toLowerCase().includes(query) ||
+        log.actionLabel.toLowerCase().includes(query) ||
+        log.entityLabel.toLowerCase().includes(query) ||
+        log.description.toLowerCase().includes(query) ||
+        log.referenceNumber.toLowerCase().includes(query) ||
+        log.ipAddress.toLowerCase().includes(query)
+      );
+    }
+
+    // Date range filter
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      const startMs = dateRange[0].startOf("day").valueOf();
+      const endMs = dateRange[1].endOf("day").valueOf();
+      result = result.filter(log => log.createdAtMs >= startMs && log.createdAtMs <= endMs);
+    }
+
+    // Time sort ordering
+    const direction = timeSortOrder === "ascend" ? 1 : -1;
+    return result.sort((left, right) => (left.createdAtMs - right.createdAtMs) * direction);
+  }, [allBusinessLogs, selectedUserId, selectedAction, selectedEntity, debouncedSearch, dateRange, timeSortOrder]);
+
+  const totalCount = filteredAuditLogs.length;
+
+  const isTableLoading = isLogsLoading || isLogsFetching;
 
   const userOptions = useMemo(
     () => users.filter((user) => user?._id && user?.name).map((user) => ({ label: `${user.name}`, value: user._id })).sort((a, b) => a.label.localeCompare(b.label)),
     [users],
   );
-
-  // Get unique actions from business logs only
-  const actionOptions = useMemo(() => {
-    const actions = [...new Set(businessLogs.map((log) => log.actionCategory))];
-    return actions.filter(Boolean).map((value) => ({ value, label: titleize(value) })).sort((a, b) => a.label.localeCompare(b.label));
-  }, [businessLogs]);
-
-  const entityOptions = useMemo(() => {
-    const entities = [...new Set(businessLogs.map((log) => log.entityLabel))];
-    return entities.filter(Boolean).map((value) => ({ value, label: value })).sort((a, b) => a.label.localeCompare(b.label));
-  }, [businessLogs]);
 
   const isBusy = isLogsLoading || isLogsFetching || isUsersLoading;
   const auditError = logsFetchError;
@@ -901,28 +901,19 @@ const AuditLogsPage = () => {
 
   const handleExportFormat = (format) => { setExportScope("100"); setExportModal({ open: true, format }); };
   const handleExportConfirm = async () => {
-    const requestedCount = exportScope === "all" ? 10000 : parseInt(exportScope, 10);
+    const requestedCount = exportScope === "all" ? filteredAuditLogs.length : parseInt(exportScope, 10);
     const format = exportModal.format;
     setExportModal({ open: false, format: null });
     if (!format) return;
 
     setIsExporting(true);
     try {
-      // Optimized query: fetch exactly the requested count in one swift call without polluting UI table state
-      const res = await triggerFetchAuditLogs({
-        ...auditListFilterParams,
-        page: 1,
-        limit: requestedCount,
-      }).unwrap();
-      const rawExportLogs = Array.isArray(res?.logs) ? res.logs : [];
-      const normalizedExportLogs = rawExportLogs.map((log, index) => normalizeAuditLog(log, index));
-      const filteredExportLogs = filterBusinessLogs(normalizedExportLogs);
-
-      const finalExportLogs = filteredExportLogs.slice(0, requestedCount);
+      // Export exactly the requested count from the already filtered in-memory logs
+      const finalExportLogs = filteredAuditLogs.slice(0, requestedCount);
       const fn = EXPORT_DISPATCH[format];
       if (fn) fn(finalExportLogs);
     } catch (err) {
-      console.error("Failed to fetch logs for export:", err);
+      console.error("Failed to export logs:", err);
       message.error("Failed to export logs");
     } finally {
       setIsExporting(false);
@@ -945,9 +936,9 @@ const AuditLogsPage = () => {
       }
     },
     {
-      title: "Action", key: "action", width: 130, render: (_, record) => {
+      title: "Action", key: "action", width: 175, render: (_, record) => {
         const actionStyle = ACTION_STYLES[record.actionCategory] || ACTION_STYLES.OTHER;
-        return <Tag className="border-none" style={{ background: actionStyle.background, color: actionStyle.color }}>{record.actionCategory}</Tag>;
+        return <Tag className="border-none font-semibold px-2 py-0.5 rounded" style={{ background: actionStyle.background, color: actionStyle.color }}>{record.actionLabel}</Tag>;
       }
     },
     { title: "Entity", dataIndex: "entityLabel", key: "entityLabel", width: 120, render: (value) => <Text strong>{value}</Text> },
@@ -1030,7 +1021,7 @@ const AuditLogsPage = () => {
       </div>
 
       {activeView === "dashboard" ? (
-        <AuditDashboard logs={sortedAuditLogs} stats={statsData} users={users} totalCount={totalCount} />
+        <AuditDashboard logs={filteredAuditLogs} stats={statsData} users={users} totalCount={totalCount} />
       ) : (
         <>
           {/* Filters */}
@@ -1076,8 +1067,8 @@ const AuditLogsPage = () => {
               <Alert type="error" showIcon message="Sync Error" description={errorMessage} action={<Button size="small" onClick={handleRefresh}>Retry</Button>} className="rounded-xl" />
             ) : (
               <AuditTable
-                logs={pagedAuditLogs}
-                loading={isBusy}
+                logs={filteredAuditLogs}
+                loading={isTableLoading}
                 columns={columns}
                 pagination={{
                   current: currentPage,

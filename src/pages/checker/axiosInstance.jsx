@@ -1,7 +1,3 @@
-
-// Shared axios instance with JWT header injection.
-// Adjust baseURL if your API is at a different host/port.
-
 import axios from "axios";
 import { API_BASE_URL } from "../../config/runtimeConfig";
 
@@ -15,6 +11,7 @@ api.interceptors.request.use((config) => {
   try {
     const token = localStorage.getItem("token"); // change storage key if different
     if (token) config.headers.Authorization = `Bearer ${token}`;
+  // eslint-disable-next-line no-unused-vars
   } catch (e) {
     // ignore
   }

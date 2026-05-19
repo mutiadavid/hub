@@ -11,6 +11,8 @@ import { DeleteOutlined } from "@ant-design/icons";
 import deferralApi from "../../../../service/deferralApi";
 import RMEditApproversModal from "./RMEditApproversModal";
 import { showErrorToast, showSuccessToast } from "../../../../utils/authToast";
+import { getDeferralDocumentBuckets } from "../../../../utils/deferralDocuments";
+import { getReturnedForReworkReason } from "../utils/helpers.jsx";
 
 const toNullableIsoDate = (value) => {
   if (!value) return null;
@@ -39,87 +41,87 @@ const normalizeDocumentDays = (document) =>
 const sanitizeSelectedDocuments = (documents) =>
   Array.isArray(documents)
     ? documents
-      .map((document) => {
-        const name = String(document?.name || document?.label || "").trim();
-        if (!name) return null;
+        .map((document) => {
+          const name = String(document?.name || document?.label || "").trim();
+          if (!name) return null;
 
-        return {
-          name,
-          type: String(document?.type || document?.documentType || "").trim() || null,
-          category:
-            String(
-              document?.category ||
-              document?.documentCategory ||
-              document?.classification ||
-              "",
-            ).trim() || null,
-          daysSought: toNullablePositiveInteger(
-            document?.daysSought ?? document?.requestedDaysSought,
-          ),
-          nextDocumentDueDate: toNullableIsoDate(
-            document?.nextDocumentDueDate ?? document?.nextDueDate,
-          ),
-        };
-      })
-      .filter(Boolean)
+          return {
+            name,
+            type: String(document?.type || document?.documentType || "").trim() || null,
+            category:
+              String(
+                document?.category ||
+                  document?.documentCategory ||
+                  document?.classification ||
+                  "",
+              ).trim() || null,
+            daysSought: toNullablePositiveInteger(
+              document?.daysSought ?? document?.requestedDaysSought,
+            ),
+            nextDocumentDueDate: toNullableIsoDate(
+              document?.nextDocumentDueDate ?? document?.nextDueDate,
+            ),
+          };
+        })
+        .filter(Boolean)
     : [];
 
 const sanitizeApproverFlow = (approvers) =>
   Array.isArray(approvers)
     ? approvers
-      .map((approver) => {
-        const role = String(approver?.role || approver?.designation || approver?.Role || "").trim();
-        const name = String(
-          approver?.name ||
-          approver?.Name ||
-          approver?.userName ||
-          approver?.UserName ||
-          approver?.displayName ||
-          approver?.DisplayName ||
-          approver?.approverName ||
-          approver?.ApproverName ||
-          approver?.fullName ||
-          approver?.FullName ||
-          approver?.user?.name ||
-          approver?.User?.Name ||
-          approver?.user?.userName ||
-          approver?.User?.UserName ||
-          approver?.user?.displayName ||
-          approver?.User?.DisplayName ||
-          "",
-        ).trim();
-        const userId = String(
-          approver?.userId ||
-          approver?.UserId ||
-          approver?.user?.id ||
-          approver?.User?.Id ||
-          approver?.user?.userId ||
-          approver?.User?.UserId ||
-          approver?.id ||
-          approver?.Id ||
-          (typeof approver?.user === "string" ? approver?.user : "") ||
-          "",
-        ).trim();
+        .map((approver) => {
+          const role = String(approver?.role || approver?.designation || approver?.Role || "").trim();
+          const name = String(
+            approver?.name ||
+              approver?.Name ||
+              approver?.userName ||
+              approver?.UserName ||
+              approver?.displayName ||
+              approver?.DisplayName ||
+              approver?.approverName ||
+              approver?.ApproverName ||
+              approver?.fullName ||
+              approver?.FullName ||
+              approver?.user?.name ||
+              approver?.User?.Name ||
+              approver?.user?.userName ||
+              approver?.User?.UserName ||
+              approver?.user?.displayName ||
+              approver?.User?.DisplayName ||
+              "",
+          ).trim();
+          const userId = String(
+            approver?.userId ||
+              approver?.UserId ||
+              approver?.user?.id ||
+              approver?.User?.Id ||
+              approver?.user?.userId ||
+              approver?.User?.UserId ||
+              approver?.id ||
+              approver?.Id ||
+              (typeof approver?.user === "string" ? approver?.user : "") ||
+              "",
+          ).trim();
 
-        if (!role || !name || !userId) return null;
+          if (!role || !name || !userId) return null;
 
-        return {
-          Role: role,
-          role: role,
-          UserName: name,
-          userName: name,
-          name: name,
-          UserId: userId,
-          userId: userId,
-          Email: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
-          UserEmail: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
-          userEmail: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
-          SamAccountName: String(approver?.samAccountName || "").trim() || null,
-          Department: String(approver?.department || "").trim() || null,
-          Position: String(approver?.position || "").trim() || null,
-        };
-      })
-      .filter(Boolean)
+          return {
+            Role: role,
+            role: role,
+            UserName: name,
+            userName: name,
+            name: name,
+            UserId: userId,
+            userId: userId,
+            Email: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
+            UserEmail: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
+            userEmail: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
+            SamAccountName: String(approver?.samAccountName || "").trim() || null,
+            Department: String(approver?.department || "").trim() || null,
+            Position: String(approver?.position || "").trim() || null,
+          };
+        })
+        .filter(Boolean)
     : [];
 
 const MODAL_STYLES = `
@@ -311,62 +313,48 @@ const MODAL_STYLES = `
   }
 `;
 
-const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) => {
+const ReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [editedApprovers, setEditedApprovers] = useState([]);
   const [editingApprovers, setEditingApprovers] = useState(false);
   const [confirmingApprovers, setConfirmingApprovers] = useState(false);
-  const [currentExtension, setCurrentExtension] = useState(null);
 
   const MIN_DAYS = 1;
   const MAX_DAYS = 90;
 
   useEffect(() => {
     if (open && deferral) {
-      // Find the extension in rework status
-      const extensionRecords = Array.isArray(deferral.extensions) ? deferral.extensions : [];
-      const extension = [...extensionRecords].reverse().find(ext => {
-        const status = String(ext.status || ext.Status || "").toLowerCase();
-        return status === "returnedforrework" || status === "returned_for_rework";
-      }) || extensionRecords[extensionRecords.length - 1];
+      // Extract requested documents using helper
+      const { requestedDocs } = getDeferralDocumentBuckets(deferral);
+     
+      const docs = requestedDocs.map(doc => ({
+        name: doc.name || doc.label || "",
+        type: doc.type || doc.documentType || "",
+        category: doc.category || doc.documentCategory || "",
+        daysSought: doc.daysSought || doc.requestedDays || 0,
+        nextDocumentDueDate: doc.nextDocumentDueDate || doc.newDueDate || doc.nextDueDate || null,
+      }));
+      setSelectedDocuments(docs);
 
-      setCurrentExtension(extension);
+      // Extract approvers directly from the deferral itself
+      const initialApprovers = (deferral.approverFlow || deferral.approvers || deferral.Approvers || []).map(a => ({
+        ...a,
+        userId: a.userId || a.UserId || a.user?.id || a.User?.Id || a.user?.userId || a.User?.UserId || a.id || a.Id || (typeof a.user === 'string' ? a.user : ""),
+        name: a.name || a.Name || a.userName || a.UserName || a.displayName || a.DisplayName || a.approverName || a.ApproverName || a.user?.name || a.User?.Name || a.user?.displayName || a.User?.DisplayName || "",
+        email: a.email || a.Email || a.user?.email || a.User?.Email || "",
+        samAccountName: a.samAccountName || a.SamAccountName || a.user?.samAccountName || a.User?.SamAccountName || "",
+        department: a.department || a.Department || a.user?.department || a.User?.Department || "",
+        position: a.position || a.Position || a.role || a.Role || a.user?.position || a.User?.Position || ""
+      }));
+      setEditedApprovers(initialApprovers);
 
-      if (extension) {
-        form.setFieldsValue({
-          comments: extension.extensionReason || extension.reason || "",
-        });
-
-        // Initialize documents from extension
-        if (extension.selectedDocuments) {
-          setSelectedDocuments(extension.selectedDocuments);
-        } else if (extension.requestedDocuments) {
-          setSelectedDocuments(extension.requestedDocuments);
-        } else if (extension.extensionDaysByDoc) {
-          // Fallback if we only have the map
-          const docs = Object.entries(extension.extensionDaysByDoc).map(([name, days]) => ({
-            name,
-            daysSought: days
-          }));
-          setSelectedDocuments(docs);
-        }
-
-        // Initialize approvers from extension
-        const initialApprovers = (extension.approvers || extension.Approvers || extension.approverFlow || extension.extensionApprovers || []).map(a => ({
-          ...a,
-          userId: a.userId || a.UserId || a.user?.id || a.User?.Id || a.user?.userId || a.User?.UserId || a.id || a.Id || (typeof a.user === 'string' ? a.user : ""),
-          name: a.name || a.Name || a.userName || a.UserName || a.displayName || a.DisplayName || a.approverName || a.ApproverName || a.user?.name || a.User?.Name || a.user?.displayName || a.User?.DisplayName || ""
-        }));
-
-        // Populate comments from previous extension reason
-        form.setFieldsValue({
-          comments: extension.extensionReason || extension.ExtensionReason || ""
-        });
-
-        setEditedApprovers(initialApprovers);
-      }
+      // Populate comments from previous rework reason
+      const prevReworkReason = getReturnedForReworkReason(deferral);
+      form.setFieldsValue({
+        comments: prevReworkReason || "",
+      });
     }
   }, [open, deferral, form]);
 
@@ -447,52 +435,29 @@ const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) =>
       const sanitizedSelectedDocuments = sanitizeSelectedDocuments(selectedDocuments);
       const sanitizedApproverFlow = sanitizeApproverFlow(editedApprovers);
 
-      const extensionDaysByDoc = {};
-      sanitizedSelectedDocuments.forEach(doc => {
-        extensionDaysByDoc[doc.name.toLowerCase()] = Number(doc.daysSought) || 0;
-      });
-
-      const extensionRecords = Array.isArray(deferral?.extensions) ? deferral.extensions : [];
-      const extension = [...extensionRecords].reverse().find(ext => {
-        const status = String(ext.status || ext.Status || "").toLowerCase();
-        return status === "returnedforrework" || status === "returned_for_rework";
-      }) || extensionRecords[extensionRecords.length - 1];
-
-      const currentExtensionDays = Number(extension?.requestedDaysSought || extension?.RequestedDaysSought) || 0;
-      const calculatedMaxDays = sanitizedSelectedDocuments.length > 0
-        ? Math.max(...sanitizedSelectedDocuments.map(d => Number(d.daysSought) || 0))
-        : 0;
-
-      const maxDays = calculatedMaxDays > 0 ? calculatedMaxDays : currentExtensionDays;
-
-      const extensionData = {
-        // Redundant keys to handle various backend serialization settings (PascalCase and camelCase)
-        DeferralId: deferral.id || deferral._id || deferral.Id,
-        deferralId: deferral.id || deferral._id || deferral.Id,
-        RequestedDaysSought: maxDays,
-        requestedDaysSought: maxDays,
-        ExtensionReason: values.comments || "",
-        extensionReason: values.comments || "",
-        Comment: values.comments || "",
-        comment: values.comments || "",
-        ExtensionDaysByDoc: Object.keys(extensionDaysByDoc).length > 0 ? extensionDaysByDoc : null,
-        extensionDaysByDoc: Object.keys(extensionDaysByDoc).length > 0 ? extensionDaysByDoc : null,
-        ApproverFlow: sanitizedApproverFlow,
+      const resubmitData = {
+        status: "Pending",
+        Status: "Pending",
+        resubmissionComments: values.comments || "",
+        ResubmissionComments: values.comments || "",
+        selectedDocuments: sanitizedSelectedDocuments,
+        SelectedDocuments: sanitizedSelectedDocuments,
         approverFlow: sanitizedApproverFlow,
+        ApproverFlow: sanitizedApproverFlow,
       };
 
-      const response = await deferralApi.submitExtension(
+      const response = await deferralApi.updateDeferral(
         deferral.id || deferral._id || deferral.Id,
-        extensionData
+        resubmitData
       );
 
       if (response) {
-        showSuccessToast("Extension resubmitted successfully");
+        showSuccessToast("Deferral request resubmitted successfully");
         onUpdate?.(response.deferral || response);
         onClose?.();
       }
     } catch (error) {
-      console.error("Failed to resubmit extension:", error);
+      console.error("Failed to resubmit deferral request:", error);
       const detail = error.data?.message || error.message || "Unknown error";
       showErrorToast(`Failed to resubmit: ${detail}`);
     } finally {
@@ -508,7 +473,7 @@ const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) =>
   const modalTitle = (
     <div className="rm-resubmit-modal-hero">
       <div className="rm-resubmit-modal-hero-copy">
-        <h2>Resubmit Extension for Review</h2>
+        <h2>Resubmit Deferral for Review</h2>
       </div>
     </div>
   );
@@ -535,14 +500,14 @@ const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) =>
             <div className="rm-resubmit-modal-heading">
               <h3>Resubmission Review</h3>
               <p>
-                Review the extension days per document, confirm the approval flow, and add any
-                updates before routing this extension back for review.
+                Review the deferral days per document, confirm the approval flow, and add any
+                updates before routing this deferral request back for review.
               </p>
             </div>
 
             <div className="rm-resubmit-modal-section">
               <div className="rm-resubmit-modal-section-head">
-                <h4>Documents Requested for Extension</h4>
+                <h4>Documents Requested for Deferral</h4>
               </div>
               {selectedDocuments.length > 0 ? (
                 <div className="rm-resubmit-modal-doc-list">
@@ -554,7 +519,7 @@ const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) =>
                         </div>
                         <div className="rm-resubmit-modal-doc-meta">
                           <div className="rm-resubmit-modal-doc-days">
-                            <span className="rm-resubmit-modal-label">Extension Days Requested</span>
+                            <span className="rm-resubmit-modal-label">Deferral Days Requested</span>
                             <InputNumber
                               min={MIN_DAYS}
                               max={MAX_DAYS}
@@ -619,7 +584,7 @@ const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) =>
               )}
 
               <div className="rm-resubmit-modal-note">
-                <strong>Note:</strong> You can modify the approval flow for this extension resubmission. Any changes here will only apply to this extension request.
+                <strong>Note:</strong> You can modify the approval flow for this deferral resubmission. Any changes here will only apply to this deferral request.
               </div>
             </div>
 
@@ -650,7 +615,7 @@ const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) =>
             loading={loading}
             onClick={() => form.submit()}
           >
-            Resubmit Extension
+            Resubmit Deferral
           </Button>
         </div>
       </Modal>
@@ -658,4 +623,4 @@ const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) =>
   );
 };
 
-export default ExtensionReturnForReworkModal;
+export default ReturnForReworkModal;

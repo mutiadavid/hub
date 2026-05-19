@@ -270,6 +270,7 @@ function getSlaPresentation({
 const RealTimeSlaTag = ({
   slaExpiry,
   startedAt,
+  endedAt,
   emptyLabel = "N/A",
   minWidth = 64,
   fontSize = 11,
@@ -279,15 +280,19 @@ const RealTimeSlaTag = ({
   businessEndHour = BUSINESS_END_HOUR,
   excludeWeekends = true,
 }) => {
-  const [now, setNow] = useState(() => dayjs());
+  const [now, setNow] = useState(() => (endedAt ? dayjs(endedAt) : dayjs()));
 
   useEffect(() => {
+    if (endedAt) {
+      setNow(dayjs(endedAt));
+      return;
+    }
     const intervalId = window.setInterval(() => {
       setNow(dayjs());
     }, TICK_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [endedAt]);
 
   const presentation = getSlaPresentation({
     slaExpiry,

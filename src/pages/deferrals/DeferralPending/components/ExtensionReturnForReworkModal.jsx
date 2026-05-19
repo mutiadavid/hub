@@ -101,8 +101,7 @@ const sanitizeApproverFlow = (approvers) =>
               "",
           ).trim();
 
-          const validUserId = isGuid(userId) ? userId : null;
-          if (!role || !name || !validUserId) return null;
+          if (!role || !name || !userId) return null;
 
           return {
             Role: role,
@@ -110,8 +109,8 @@ const sanitizeApproverFlow = (approvers) =>
             UserName: name,
             userName: name,
             name: name,
-            UserId: validUserId,
-            userId: validUserId,
+            UserId: userId,
+            userId: userId,
             Email: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
             UserEmail: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
             userEmail: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
@@ -392,16 +391,24 @@ const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) =>
     setEditedApprovers(next);
   };
 
-  const handleApproverSelection = (index, user) => {
+  const handleApproverSelection = (index, option) => {
+    if (option == null) return;
+
+    const selectedApprover = option?.directoryApprover || null;
+    const resolvedName =
+      selectedApprover?.name ||
+      (typeof option?.label === "string" ? option.label : "") ||
+      "";
+
     const next = [...editedApprovers];
     next[index] = {
       ...next[index],
-      userId: user._id || user.id,
-      name: user.name,
-      email: user.email,
-      samAccountName: user.samAccountName,
-      department: user.department,
-      position: user.position || user.role,
+      userId: option.value || "",
+      name: resolvedName,
+      email: selectedApprover?.email || "",
+      samAccountName: selectedApprover?.samAccountName || "",
+      department: selectedApprover?.department || "",
+      position: next[index]?.role || selectedApprover?.position || selectedApprover?.role || "",
     };
     setEditedApprovers(next);
   };

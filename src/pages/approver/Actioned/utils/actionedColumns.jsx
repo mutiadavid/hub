@@ -148,14 +148,14 @@ export const getActionedColumns = () => [
     width: 100,
     render: (date, record) => {
       const slaDate = date || record?.slaExpiry || record?.deferral?.slaExpiry || null;
-      if (!slaDate) return <div style={{ fontSize: 11, color: "#999" }}>N/A</div>;
-
-      const startedAt = record?.createdAt || record?.deferral?.createdAt || record?.deferral?.createdAt;
+      const startedAt = record?.__extension?.createdAt || record?.createdAt || record?.deferral?.createdAt || null;
+      const endedAt = record?.__extension?.updatedAt || record?.__extension?.approvedAt || record?.updatedAt || record?.approvedAt || record?.closedAt || null;
 
       return (
         <RealTimeSlaTag
           slaExpiry={slaDate}
           startedAt={startedAt}
+          endedAt={endedAt}
           emptyLabel="Not set"
           minWidth={76}
           displayStyle="text"

@@ -57,7 +57,7 @@ const RMDeferralReviewActionBar = ({
           </Button>
         )}
 
-        {!readOnly && activeTab === "rejected" && (
+        {!readOnly && (activeTab === "rejected" || activeTab === "extensionRework" || isExtensionRework) && (
           <Button
             className="deferral-review-actionbar__button"
             onClick={onResubmit}

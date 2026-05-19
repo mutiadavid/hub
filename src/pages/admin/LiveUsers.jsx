@@ -20,10 +20,12 @@ import {
 } from "recharts";
 import { useGetOnlineUsersQuery } from "../../api/userApi";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { formatRoleLabel, normalizeRoleKey } from "./adminRoleUtils";
 import "../../styles/creatorDesignSystem.css";
 
+dayjs.extend(utc);
 dayjs.extend(relativeTime);
 
 const { Text } = Typography;
@@ -74,7 +76,7 @@ const LiveUsers = () => {
     return Array.from({ length: 11 }, (_, index) => {
       const minute = now.subtract(10 - index, "minute");
       const users = onlineUsers.filter((user) => {
-        const seenAt = user?.lastSeen ? dayjs(user.lastSeen) : null;
+        const seenAt = user?.lastSeen ? dayjs.utc(user.lastSeen).local() : null;
         return seenAt && seenAt.isValid() && !seenAt.isBefore(minute);
       }).length;
 
@@ -114,16 +116,6 @@ const LiveUsers = () => {
       render: (email) => <span className="admin-page__value admin-page__value--muted">{email}</span>,
     },
     {
-      title: "Customer #",
-      dataIndex: "customerNumber",
-      key: "customerNumber",
-      render: (customerNumber) => (
-        <span className="admin-page__value admin-page__value--mono admin-page__value--muted">
-          {customerNumber || "N/A"}
-        </span>
-      ),
-    },
-    {
       title: "Role",
       dataIndex: "role",
       key: "role",
@@ -139,12 +131,12 @@ const LiveUsers = () => {
         const roleKey = normalizeRoleKey(role);
 
         return (
-        <span
-          className="admin-page__status-text"
-          style={{ color: ROLE_COLORS[roleKey] || "var(--color-text-medium)" }}
-        >
-          {formatRoleLabel(role)}
-        </span>
+          <span
+            className="admin-page__status-text"
+            style={{ color: ROLE_COLORS[roleKey] || "var(--color-text-medium)" }}
+          >
+            {formatRoleLabel(role)}
+          </span>
         );
       },
     },
@@ -153,23 +145,17 @@ const LiveUsers = () => {
       dataIndex: "loginTime",
       key: "loginTime",
       sorter: (a, b) => new Date(a.loginTime) - new Date(b.loginTime),
-      render: (loginTime) => (
-        <Tooltip title={dayjs(loginTime).format("YYYY-MM-DD HH:mm:ss")}>
-          <span className="admin-page__value admin-page__value--muted">{dayjs(loginTime).fromNow()}</span>
-        </Tooltip>
-      ),
+      render: (loginTime) => {
+        if (!loginTime) return <span className="admin-page__value admin-page__value--muted">-</span>;
+        const localTime = dayjs.utc(loginTime).local();
+        return (
+          <Tooltip title={localTime.format("YYYY-MM-DD HH:mm:ss")}>
+            <span className="admin-page__value admin-page__value--muted">{localTime.fromNow()}</span>
+          </Tooltip>
+        );
+      },
     },
-    {
-      title: "Last Activity",
-      dataIndex: "lastSeen",
-      key: "lastSeen",
-      sorter: (a, b) => new Date(a.lastSeen) - new Date(b.lastSeen),
-      render: (lastSeen) => (
-        <Tooltip title={dayjs(lastSeen).format("YYYY-MM-DD HH:mm:ss")}>
-          <span className="admin-page__value admin-page__value--muted">{dayjs(lastSeen).fromNow()}</span>
-        </Tooltip>
-      ),
-    },
+
     {
       title: "Status",
       key: "status",
@@ -194,7 +180,7 @@ const LiveUsers = () => {
           <span className="admin-page__eyebrow">Realtime Monitoring</span>
           <div className="admin-page__title-row">
             <h1 className="admin-page__title">Live Users</h1>
-              <span className="admin-page__count">{onlineCount} users currently online</span>
+            <span className="admin-page__count">{onlineCount} users currently online</span>
           </div>
           <p className="admin-page__subtitle">
             Monitor users who are currently online and see when they logged in and last interacted.
@@ -300,17 +286,17 @@ const LiveUsers = () => {
           </Space>
         </div>
         <div className="creator-table-shell" style={{ border: "none", borderRadius: 0, boxShadow: "none" }}>
-              <Table
-                columns={columns}
-                dataSource={onlineUsers}
-                rowKey="_id"
-                loading={isLoading}
-                pagination={{
-                  pageSize: 10,
-                  showSizeChanger: true,
-                  showTotal: (total) => `Total ${total} currently online`,
-                }}
-              />
+          <Table
+            columns={columns}
+            dataSource={onlineUsers}
+            rowKey="_id"
+            loading={isLoading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `Total ${total} currently online`,
+            }}
+          />
         </div>
       </section>
     </div>

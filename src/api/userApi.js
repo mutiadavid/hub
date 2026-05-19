@@ -9,7 +9,7 @@ const normalizeRole = (role) => {
   if (!role) return role;
   const key = String(role).trim().toLowerCase();
   const roleMap = {
-    admin: "System Administrator",
+    admin: "Admin",
     rm: "RM",
     approver: "Approver",
     cocreator: "CoCreator",

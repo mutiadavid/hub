@@ -180,13 +180,15 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
 
       handleCloseExtensionModal();
       refetchDeferrals();
+      refetchExtensions();
+      navigate("/approver/actioned");
     } catch (error) {
       console.error("Extension approval error:", error);
       message.error(error.message || "Failed to approve extension");
     } finally {
       setExtensionApproveLoading(false);
     }
-  }, [handleCloseExtensionModal, refetchDeferrals, selectedExtension, token]);
+  }, [handleCloseExtensionModal, refetchDeferrals, refetchExtensions, navigate, selectedExtension, token]);
 
   const handleRejectExtension = useCallback(async (reason) => {
     if (!selectedExtension || (!selectedExtension._id && !selectedExtension.id)) {
@@ -266,13 +268,15 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
 
       handleCloseExtensionModal();
       refetchDeferrals();
+      refetchExtensions();
+      navigate("/approver/actioned");
     } catch (error) {
       console.error("Extension rejection error:", error);
       message.error(error.message || "Failed to reject extension");
     } finally {
       setExtensionRejectLoading(false);
     }
-  }, [handleCloseExtensionModal, refetchDeferrals, selectedExtension, token]);
+  }, [handleCloseExtensionModal, refetchDeferrals, refetchExtensions, navigate, selectedExtension, token]);
 
   const handleReturnExtensionForRework = useCallback(async (reason) => {
     if (!selectedExtension || (!selectedExtension._id && !selectedExtension.id)) {
@@ -354,13 +358,15 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
 
       handleCloseExtensionModal();
       refetchDeferrals();
+      refetchExtensions();
+      navigate("/approver/actioned");
     } catch (error) {
       console.error("Extension return-for-rework error:", error);
       message.error(error.message || "Failed to return extension for rework");
     } finally {
       setExtensionReworkLoading(false);
     }
-  }, [handleCloseExtensionModal, refetchDeferrals, selectedExtension, token]);
+  }, [handleCloseExtensionModal, refetchDeferrals, refetchExtensions, navigate, selectedExtension, token]);
 
   const handleModalAction = (action) => {
     switch (action) {

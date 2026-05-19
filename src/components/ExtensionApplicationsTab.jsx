@@ -458,6 +458,7 @@ const ExtensionApplicationsTab = ({
           <RealTimeSlaTag
             slaExpiry={slaDate}
             startedAt={record?.deferral?.createdAt || record?.createdAt}
+            endedAt={record?.updatedAt || record?.approvedAt || record?.closedAt || null}
             emptyLabel="N/A"
             minWidth={60}
             displayStyle="text"

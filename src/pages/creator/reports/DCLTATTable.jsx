@@ -409,15 +409,18 @@ TATStageCell.displayName = "TATStageCell";
 /**
  * Renders total TAT with days approximation
  */
-const TotalTATCell = React.memo(({ record, now, days }) => (
-  <Tooltip title={`≈ ${days} days`}>
-    <div className={styles.tatCellCenter}>
-      <div className={styles.tatStageMetric}>
-      {getLiveTotalLabel(record, now)}
+const TotalTATCell = React.memo(({ record, now, days }) => {
+  const totalLabel = getLiveTotalLabel(record, now);
+  return (
+    <Tooltip title={`Total Business TAT consumed: ${totalLabel.replace(/\s*\(in progress\)$/i, "")} (≈ ${days} business days)`}>
+      <div className={styles.tatCellCenter}>
+        <div className={styles.tatStageMetric}>
+          {totalLabel}
+        </div>
       </div>
-    </div>
-  </Tooltip>
-));
+    </Tooltip>
+  );
+});
 
 TotalTATCell.displayName = "TotalTATCell";
 

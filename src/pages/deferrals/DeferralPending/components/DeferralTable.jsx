@@ -1,4 +1,4 @@
-import React from "react";
+  import React from "react";
 import {
   Tabs,
   Table,
@@ -20,7 +20,40 @@ const renderTabLabel = (label, count) => (
   </span>
 );
 
-const getStatusPresentation = (status, record) => {
+const getStatusPresentation = (status, record, isExtensionTab = false) => {
+  if (isExtensionTab) {
+    const extensionRecords = Array.isArray(record?.extensions) ? record.extensions : [];
+    const currentExtension = extensionRecords[extensionRecords.length - 1];
+    const rawStatus = currentExtension?.status || currentExtension?.Status || record?.extensionStatus || status || "PendingApproval";
+    const normalizedStatus = String(rawStatus).trim().replace(/_/g, "").toLowerCase();
+
+    if (["pendingapproval", "pending_approval", "pending"].includes(normalizedStatus)) {
+      return { label: "Pending Approval", tone: "pending" };
+    }
+    if (["inreview", "in_review"].includes(normalizedStatus)) {
+      return { label: "In Review", tone: "qs-review" };
+    }
+    if (["approved"].includes(normalizedStatus)) {
+      return { label: "Approved", tone: "approved" };
+    }
+    if (["rejected"].includes(normalizedStatus)) {
+      return { label: "Rejected", tone: "rework" };
+    }
+    if (["returnedforrework", "returned_for_rework"].includes(normalizedStatus)) {
+      return { label: "Returned for Rework", tone: "rework" };
+    }
+    if (["withdrawn"].includes(normalizedStatus)) {
+      return { label: "Withdrawn", tone: "draft" };
+    }
+
+    return {
+      label: String(rawStatus)
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (character) => character.toUpperCase()),
+      tone: "draft",
+    };
+  }
+
   const withdrawnBy =
     record?.closedByName ||
     record?.ClosedByName ||
@@ -77,6 +110,7 @@ const DeferralTable = ({
   rejectedCount = 0,
   closeRequestsCount = 0,
   extensionsCount = 0,
+  extensionReworkCount = 0,
   isLoading = false,
   currentData = [],
   onRowClick,
@@ -125,7 +159,8 @@ const DeferralTable = ({
       align: "center",
       title: <span className="deferral-table__header-center">Status</span>,
       render: (status, record) => {
-        const statusPresentation = getStatusPresentation(status, record);
+        const isExtensionTab = activeTab === "extensions" || activeTab === "extensionRework";
+        const statusPresentation = getStatusPresentation(status, record, isExtensionTab);
 
         return (
           <span className="deferral-table__cell-center">
@@ -146,9 +181,18 @@ const DeferralTable = ({
       render: (date, record) => {
         return (
           <span className="deferral-table__cell-center">
+            {/* <RealTimeSlaTag
+              slaExpiry={date}
+              startedAt={record?.createdAt}
+              emptyLabel="N/A"
+              minWidth={60}
+              displayStyle="text"
+              businessHoursOnly
+            /> */}
             <RealTimeSlaTag
               slaExpiry={date}
               startedAt={record?.createdAt}
+              endedAt={["approved", "rejected", "completed", "closed"].includes(String(record?.status).toLowerCase()) ? (record?.updatedAt || record?.approvedAt || null) : null}
               emptyLabel="N/A"
               minWidth={60}
               displayStyle="text"
@@ -400,6 +444,10 @@ const DeferralTable = ({
               label: renderTabLabel("Extension Applications", extensionsCount),
             },
             {
+              key: "extensionRework",
+              label: renderTabLabel("Extension Rework", extensionReworkCount),
+            },
+            {
               key: "rejected",
               label: renderTabLabel("Re-work Deferrals", rejectedCount),
             },
@@ -418,9 +466,11 @@ const DeferralTable = ({
               ? "Approved Deferrals"
               : activeTab === "extensions"
                 ? "Extension Applications"
-                : activeTab === "rejected"
-                  ? "Re-work Deferrals"
-                  : "Close Requests"}{" "}
+                : activeTab === "extensionRework"
+                  ? "Extension Rework"
+                  : activeTab === "rejected"
+                    ? "Re-work Deferrals"
+                    : "Close Requests"}{" "}
               ({currentData.length} items)
           </div>
 
@@ -441,7 +491,9 @@ const DeferralTable = ({
                           ? "No approved deferrals found"
                           : activeTab === "rejected"
                             ? "No re-work deferrals found"
-                          : "No close requests found"}
+                            : activeTab === "extensionRework"
+                              ? "No extension rework found"
+                              : "No close requests found"}
                     </p>
                     <p style={{ color: "#999" }}>
                       {activeTab === "pending"
@@ -450,7 +502,9 @@ const DeferralTable = ({
                           ? "No deferrals have been approved yet"
                           : activeTab === "rejected"
                             ? "No deferrals have been rejected"
-                          : "No close requests currently"}
+                            : activeTab === "extensionRework"
+                              ? "No extension requests are currently returned for rework"
+                              : "No close requests currently"}
                     </p>
                   </div>
                 }

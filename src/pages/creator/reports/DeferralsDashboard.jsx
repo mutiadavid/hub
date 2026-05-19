@@ -125,7 +125,7 @@ export default function DeferralsDashboard({ rows }) {
       </Row>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} xl={10}>
+        <Col xs={24} xl={12}>
           <Card title="Overdue Status Mix" size="small" style={{ borderRadius: 14 }}>
             <div style={{ width: "100%", height: 280 }}>
               <ResponsiveContainer>
@@ -165,35 +165,6 @@ export default function DeferralsDashboard({ rows }) {
           </Card>
         </Col>
 
-        <Col xs={24} xl={14}>
-          <Card title="Consumer Deferral Movement" size="small" style={{ borderRadius: 14, height: "100%" }}>
-            <div style={{ width: "100%", height: 280 }}>
-              <ResponsiveContainer>
-                <ComposedChart data={computed.movementData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} interval={0} />
-                  <YAxis tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
-                  <RechartsTooltip
-                    contentStyle={TOOLTIP_STYLE}
-                    formatter={(value, name) => {
-                      if (name === "total") return [`${formatNumber(value)} deferrals`, "Total Portfolio"];
-                      if (name === "historical") return [`${formatNumber(value)} deferrals`, "Historical Deferrals"];
-                      if (name === "newlyDeferred") return [`${formatNumber(value)} deferrals`, "New Deferrals"];
-                      return [formatNumber(value), name];
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="total" fill={DEFERRAL_LINE_COLORS.total} name="Total" barSize={24} />
-                  <Line type="monotone" dataKey="historical" stroke={DEFERRAL_LINE_COLORS.historical} strokeWidth={3} name="Historical Deferrals" />
-                  <Line type="monotone" dataKey="newlyDeferred" stroke={DEFERRAL_LINE_COLORS.newlyDeferred} strokeWidth={3} name="New Deferrals" />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[16, 16]}>
         <Col xs={24} xl={12}>
           <Card title="Overdue Bucket Trend" size="small" style={{ borderRadius: 14 }}>
             <div style={{ width: "100%", height: 280 }}>
@@ -230,36 +201,6 @@ export default function DeferralsDashboard({ rows }) {
             </div>
           </Card>
         </Col>
-
-        <Col xs={24} xl={12}>
-          <Card title="Risk Exposure Mix" size="small" style={{ borderRadius: 14 }}>
-            <div style={{ width: "100%", height: 280 }}>
-              <ResponsiveContainer>
-                <BarChart data={computed.riskClassificationChartData} layout="vertical" margin={{ top: 8, right: 16, left: 18, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={NCBA_REPORT_THEME.line} />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
-                  <YAxis type="category" dataKey="classification" width={84} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
-                  <RechartsTooltip
-                    contentStyle={TOOLTIP_STYLE}
-                    formatter={(value, _name, item) => [
-                      formatNumber(value),
-                      `${item?.payload?.classification || "Risk"} Exposure`,
-                    ]}
-                  />
-                  <Bar dataKey="exposure" radius={[0, 8, 8, 0]} barSize={22}>
-                    {computed.riskClassificationChartData.map((entry, index) => (
-                      <Cell
-                        key={`${entry.classification}-${index}`}
-                        fill={DEFERRAL_RISK_COLORS[entry.classification] || DEFERRAL_RISK_COLORS.unknown}
-                      />
-                    ))}
-                    <LabelList dataKey="exposure" position="right" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} formatter={(value) => formatNumber(value)} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </Col>
       </Row>
 
       <Row gutter={[16, 16]}>
@@ -267,10 +208,10 @@ export default function DeferralsDashboard({ rows }) {
           <Card title="Top Relationship Managers" size="small" style={{ borderRadius: 14 }}>
             <div style={{ width: "100%", height: 280 }}>
               <ResponsiveContainer>
-                <BarChart data={computed.rmChartData} layout="vertical" margin={{ top: 8, right: 16, left: 20, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={NCBA_REPORT_THEME.line} />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
-                  <YAxis type="category" dataKey="rm" width={120} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                <BarChart data={computed.rmChartData} margin={{ top: 24, right: 16, left: 16, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis dataKey="rm" tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
                   <RechartsTooltip
                     contentStyle={TOOLTIP_STYLE}
                     formatter={(value, _name, item) => [
@@ -278,14 +219,14 @@ export default function DeferralsDashboard({ rows }) {
                       item?.payload?.rm || "Relationship Manager",
                     ]}
                   />
-                  <Bar dataKey="total" radius={[0, 8, 8, 0]} barSize={22}>
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={32}>
                     {computed.rmChartData.map((entry, index) => (
                       <Cell
                         key={`${entry.rm}-${index}`}
                         fill={DEFERRAL_BAR_COLORS[index % DEFERRAL_BAR_COLORS.length]}
                       />
                     ))}
-                    <LabelList dataKey="total" position="right" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                    <LabelList dataKey="total" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -297,10 +238,10 @@ export default function DeferralsDashboard({ rows }) {
           <Card title="Top Deferred Items" size="small" style={{ borderRadius: 14 }}>
             <div style={{ width: "100%", height: 280 }}>
               <ResponsiveContainer>
-                <BarChart data={computed.deferredItemChartData} layout="vertical" margin={{ top: 8, right: 16, left: 24, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={NCBA_REPORT_THEME.line} />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
-                  <YAxis type="category" dataKey="item" width={140} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                <BarChart data={computed.deferredItemChartData} margin={{ top: 24, right: 16, left: 16, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis dataKey="item" tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
                   <RechartsTooltip
                     contentStyle={TOOLTIP_STYLE}
                     formatter={(value, _name, item) => [
@@ -308,7 +249,7 @@ export default function DeferralsDashboard({ rows }) {
                       item?.payload?.item || "Deferred Item",
                     ]}
                   />
-                  <Bar dataKey="total" radius={[0, 8, 8, 0]} barSize={22}>
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={32}>
                     {computed.deferredItemChartData.map((entry, index) => (
                       <Cell
                         key={`${entry.item}-${index}`}
@@ -321,7 +262,7 @@ export default function DeferralsDashboard({ rows }) {
                         ][index % 5]}
                       />
                     ))}
-                    <LabelList dataKey="total" position="right" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                    <LabelList dataKey="total" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

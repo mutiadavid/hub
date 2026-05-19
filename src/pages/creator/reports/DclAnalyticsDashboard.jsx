@@ -186,10 +186,10 @@ export default function DclAnalyticsDashboard({ rows }) {
       <Card title="Top Relationship Managers" size="small" style={{ borderRadius: 14 }}>
         <div style={{ width: "100%", height: 280 }}>
           <ResponsiveContainer>
-            <BarChart data={computed.rmRows} layout="vertical" margin={{ top: 8, right: 16, left: 20, bottom: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={NCBA_REPORT_THEME.line} />
-              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
-              <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+            <BarChart data={computed.rmRows} margin={{ top: 24, right: 16, left: 16, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
               <RechartsTooltip
                 contentStyle={TOOLTIP_STYLE}
                 formatter={(value, _name, item) => [
@@ -197,7 +197,7 @@ export default function DclAnalyticsDashboard({ rows }) {
                   item?.payload?.name || "Relationship Manager",
                 ]}
               />
-              <Bar dataKey="value" radius={[0, 8, 8, 8]} barSize={22}>
+              <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32}>
                 {computed.rmRows.map((entry, index) => (
                   <Cell
                     key={`${entry.name}-${index}`}
@@ -209,7 +209,7 @@ export default function DclAnalyticsDashboard({ rows }) {
                     ][index % 4]}
                   />
                 ))}
-                <LabelList dataKey="value" position="right" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                <LabelList dataKey="value" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>

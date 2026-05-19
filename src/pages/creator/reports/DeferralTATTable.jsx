@@ -296,9 +296,7 @@ const createStageMetric = ({ startAt, completedAt, nowAt = dayjs(), liveWhenInPr
   const effectiveEnd = hasCompleted ? completedAt : hasStarted ? nowAt : null;
   const minutes = !hasStarted
     ? 0
-    : hasCompleted || !liveWhenInProgress
-      ? calculateBusinessMinutes(startAt, effectiveEnd)
-      : Math.max(0, effectiveEnd.diff(startAt, "minute", true));
+    : calculateBusinessMinutes(startAt, effectiveEnd);
   const roundedMinutes = Math.round(minutes);
   const state = !hasStarted ? "not_started" : hasCompleted ? "completed" : "in_progress";
 
@@ -748,13 +746,16 @@ function DeferralTATTable({ deferralRows = [] }) {
       key: "totalTatLabel",
       width: 130,
       align: "center",
-      render: (value, record) => (
-        <Tooltip title={`≈ ${record.totalTatDays} days`}>
-          <div className={styles.tatStageMetric}>
-            {getLiveTotalLabel(record, now)}
-          </div>
-        </Tooltip>
-      ),
+      render: (value, record) => {
+        const totalLabel = getLiveTotalLabel(record, now);
+        return (
+          <Tooltip title={`Total Business Deferral TAT: ${totalLabel.replace(/\s*\(in progress\)$/i, "")} (≈ ${record.totalTatDays} business days)`}>
+            <div className={styles.tatStageMetric}>
+              {totalLabel}
+            </div>
+          </Tooltip>
+        );
+      },
       sorter: (a, b) => (a.totalTatMinutes || 0) - (b.totalTatMinutes || 0),
     },
     {

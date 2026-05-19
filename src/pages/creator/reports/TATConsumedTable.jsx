@@ -364,7 +364,7 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
       width: 170,
       align: "center",
       render: (value, record) => (
-        <Tooltip title={`Approx. ${record.totalTatDays} days`}>
+        <Tooltip title={`Total Business TAT consumed: ${record.totalTatLabel.replace(/\s*\(in progress\)$/i, "")} (≈ ${record.totalTatDays} business days)`}>
           <div className="tat-consumed-metric">
             {value}
           </div>

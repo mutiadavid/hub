@@ -455,6 +455,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
               rejectedCount={dataByTab.rejected?.length || 0}
               closeRequestsCount={dataByTab.closeRequests?.length || 0}
               extensionsCount={dataByTab.extensions?.length || 0}
+              extensionReworkCount={dataByTab.extensionRework?.length || 0}
               isLoading={loading}
               currentData={currentData}
               onRowClick={async (record) => {
