@@ -4,6 +4,7 @@ import { ReloadOutlined, DownloadOutlined } from "@ant-design/icons";
 
 const DeferralHeader = ({
   deferrals,
+  totalCount,
   onRefresh,
   onExport,
   loading,
@@ -18,7 +19,7 @@ const DeferralHeader = ({
               Deferral Requests
             </h2>
             <span className="inline-flex min-w-10 items-center justify-center rounded-full border border-[rgba(214,189,152,0.24)] bg-white px-3 py-1 text-sm font-semibold text-(--color-primary-dark)">
-              {deferrals.length}
+              {totalCount !== undefined ? totalCount : deferrals.length}
             </span>
           </div>
           <p className="mt-2 mb-0 text-sm text-(--color-text-medium)">

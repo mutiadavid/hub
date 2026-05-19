@@ -91,18 +91,16 @@ export const useDeferralData = (token) => {
   const fetchDeferrals = async () => {
     setLoading(true);
     try {
-      const pending = await deferralApi.getPendingDeferrals(token);
+      const [pending, my, approvedDeferrals, closeWorkflowDeferrals] = await Promise.all([
+        deferralApi.getPendingDeferrals(token).catch(() => []),
+        deferralApi.getMyDeferrals(token).catch(() => []),
+        deferralApi.getApprovedDeferrals(token).catch(() => []),
+        deferralApi.getCloseWorkflowDeferrals(token).catch(() => []),
+      ]);
+
       const all = Array.isArray(pending) ? pending : [];
-
-      const my = await deferralApi.getMyDeferrals(token);
       const myDeferrals = Array.isArray(my) ? my : [];
-
-      const approvedDeferrals = await deferralApi.getApprovedDeferrals(token);
       const allApproved = Array.isArray(approvedDeferrals) ? approvedDeferrals : [];
-
-      const closeWorkflowDeferrals = await deferralApi
-        .getCloseWorkflowDeferrals(token)
-        .catch(() => []);
       const closeWorkflow = Array.isArray(closeWorkflowDeferrals)
         ? closeWorkflowDeferrals
         : [];

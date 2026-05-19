@@ -154,7 +154,7 @@ const buildAttachedDocuments = (deferral, closeRequestDocumentsOverride) => {
     ? closeRequestDocumentsOverride
     : getCloseRequestDocumentGroups(deferral || {});
   const resolveUploadDate = (doc) =>
-    doc?.uploadDate || doc?.UploadDate || doc?.uploadedAt || doc?.UploadedAt || doc?.createdAt || doc?.CreatedAt || null;
+    doc?.uploadDate || doc?.UploadDate || doc?.uploadedAt || doc?.UploadedAt || doc?.createdAt || doc?.CreatedAt || deferral?.createdAt || deferral?.CreatedAt || deferral?.dateCreated || deferral?.DateCreated || null;
   const documents = [];
   dclDocs.forEach((doc) => { documents.push({ label: doc?.name || "DCL Document", category: "DCL Upload", uploadedAt: resolveUploadDate(doc) }); });
   uploadedDocs.filter((doc) => !doc?.isCloseRequestEvidence).forEach((doc) => { documents.push({ label: doc?.name || "Supporting Document", category: "Additional Document", uploadedAt: resolveUploadDate(doc) }); });
@@ -306,7 +306,6 @@ export const downloadDeferralPdf = async (deferral, options = {}) => {
   renderInfoLine("Days Sought:", `${deferral?.daysSought || deferral?.DaysSought || 0} days`);
   renderInfoLine("Next Due Date:", formatDateOnly(resolveNextDueDate(deferral, options?.requestedDocsWithDates)));
   renderInfoLine("Created At:", formatDateOnly(deferral?.createdAt || deferral?.CreatedAt || deferral?.dateCreated || deferral?.DateCreated));
-  renderInfoLine("SLA Expiry:", formatDateTime(deferral?.slaExpiry));
   renderInfoLine("Approver Status:", getApproverSummary(approvalFlow));
   
   if (deferral?.deferralDescription || deferral?.description) {

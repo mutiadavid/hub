@@ -401,6 +401,7 @@ const DeferralIndex = ({ userId }) => {
   const columns = getDeferralTableColumns();
   const showDeferralReview = modalVisible && !!selectedDeferral;
   const showExtensionReview = extensionModalOpen && !!selectedExtension;
+  const activeCount = getTabCount("pending") + getTabCount("approved") + getTabCount("closeRequests");
 
   return (
     <div className="creator-theme checker-deferrals-page" style={{ padding: 24, background: "var(--color-bg)", minHeight: "100%" }}>
@@ -885,6 +886,7 @@ const DeferralIndex = ({ userId }) => {
         <div className="checker-deferrals-shell">
           <DeferralHeader
             deferrals={deferrals}
+            totalCount={activeCount}
             onRefresh={loadDeferrals}
             onExport={() => handleExportCSV(filteredDeferrals)}
             loading={loading}
@@ -993,7 +995,7 @@ const DeferralIndex = ({ userId }) => {
                   dataSource={filteredDeferrals}
                   rowKey={(r) => r._id}
                   pagination={{ pageSize: 10, showSizeChanger: true }}
-                  scroll={{ x: 1300 }}
+                  scroll={{ x: 1100 }}
                   onRow={(record) => ({
                     onClick: () => handleRowClick(record),
                     style: { cursor: "pointer" },

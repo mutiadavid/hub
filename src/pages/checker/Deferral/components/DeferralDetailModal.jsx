@@ -749,7 +749,7 @@ const DeferralDetailModal = ({
               <button
                 key={tab.key}
                 type="button"
-                className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2 text-[11px] font-semibold ${activeTab === tab.key ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
+                className={`whitespace-nowrap border-b-[2.5px] bg-transparent px-4 py-2.5 text-[15px] font-bold ${activeTab === tab.key ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
                 onClick={() => setActiveTab(tab.key)}
               >
                 {tab.label}

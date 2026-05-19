@@ -10,7 +10,7 @@ export const getDeferralTableColumns = () => [
   {
     title: "Deferral No",
     dataIndex: "deferralNumber",
-    width: 150,
+    width: 160,
     render: (text) => (
       <div className="creator-table-primary-cell">
         <span className="creator-table-primary-value">{text || "-"}</span>
@@ -20,7 +20,7 @@ export const getDeferralTableColumns = () => [
   {
     title: "DCL No",
     dataIndex: "dclNo",
-    width: 140,
+    width: 160,
     render: (text, record) => {
       const value = record.dclNo || record.dclNumber;
       return value ? (
@@ -43,13 +43,13 @@ export const getDeferralTableColumns = () => [
   {
     title: "Loan Type",
     dataIndex: "loanType",
-    width: 120,
+    width: 150,
     render: (t) => <span className="creator-table-muted">{t || "-"}</span>,
   },
   {
-    title: <span className="deferral-table__header-center">Status</span>,
+    title: "Status",
     dataIndex: "status",
-    width: 120,
+    width: 130,
     align: "center",
     render: (status, record) => {
       const hasCreatorApproved = record.creatorApprovalStatus === "approved";
@@ -77,64 +77,52 @@ export const getDeferralTableColumns = () => [
 
       if (isFullyApproved) {
         return (
-          <span className="deferral-table__cell-center">
-            <span className="creator-badge creator-badge--approved">Approved</span>
-          </span>
+          <span className="creator-badge creator-badge--approved">Approved</span>
         );
       }
 
       if (isPartiallyApproved) {
         return (
-          <span className="deferral-table__cell-center">
-            <span className="creator-badge creator-badge--qs-review">Pending</span>
-          </span>
+          <span className="creator-badge creator-badge--qs-review">Pending</span>
         );
       }
 
       if (isRejected) {
         return (
-          <span className="deferral-table__cell-center">
-            <span className="creator-badge creator-badge--rework">Rejected</span>
-          </span>
+          <span className="creator-badge creator-badge--rework">Rejected</span>
         );
       }
 
       return (
-        <span className="deferral-table__cell-center">
-          <span className="creator-badge creator-badge--qs-review">Pending</span>
-        </span>
+        <span className="creator-badge creator-badge--qs-review">Pending</span>
       );
     },
   },
   {
-    title: <span className="deferral-table__header-center">Days Sought</span>,
+    title: "Days Sought",
     dataIndex: "daysSought",
-    width: 110,
+    width: 120,
     align: "center",
     render: (d) => (
-      <span className="deferral-table__cell-center">
-        <span className="creator-table-primary-value">{d || 0} days</span>
-      </span>
+      <span className="creator-table-primary-value">{d || 0} days</span>
     ),
   },
   {
-    title: <span className="deferral-table__header-center">SLA</span>,
+    title: "TAT Consumed",
     dataIndex: "slaExpiry",
     width: 160,
     align: "center",
     render: (s, record) => (
-      <span className="deferral-table__cell-center">
-        <RealTimeSlaTag
-          slaExpiry={s}
-          startedAt={record?.createdAt}
-          endedAt={["approved", "rejected", "deferral_approved", "deferral_rejected"].includes(String(record?.status).toLowerCase()) ? (record?.updatedAt || record?.approvedAt || null) : null}
-          emptyLabel="Not set"
-          minWidth={0}
-          displayStyle="text"
-          fontSize={12}
-          businessHoursOnly
-        />
-      </span>
+      <RealTimeSlaTag
+        slaExpiry={s}
+        startedAt={record?.createdAt}
+        endedAt={["approved", "rejected", "deferral_approved", "deferral_rejected"].includes(String(record?.status).toLowerCase()) ? (record?.updatedAt || record?.approvedAt || null) : null}
+        emptyLabel="Not set"
+        minWidth={0}
+        displayStyle="text"
+        fontSize={12}
+        businessHoursOnly
+      />
     ),
   },
 ];

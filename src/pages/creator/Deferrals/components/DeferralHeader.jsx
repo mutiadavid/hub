@@ -8,6 +8,7 @@ import { ReloadOutlined, DownloadOutlined } from "@ant-design/icons";
  */
 const DeferralHeader = ({
   deferrals,
+  totalCount,
   onRefresh,
   loading,
 }) => {
@@ -19,7 +20,7 @@ const DeferralHeader = ({
             Deferral Requests
           </h2>
           <p className="text-xs text-gray-500 m-0">
-            {deferrals.length} records across active deferral workflows
+            {totalCount !== undefined ? totalCount : deferrals.length} records across active deferral workflows
           </p>
         </div>
 

@@ -34,35 +34,10 @@ export const useDeferralData = (userId) => {
         return;
       }
 
-      // Get my deferrals
+      // Get my deferrals (this includes all pending, approved, and actioned deferrals created by the RM)
       const myData = await deferralApi.getMyDeferrals(token);
 
-      let approvedAssigned = [];
-      try {
-        const approvedData = await deferralApi.getApprovedDeferrals(token);
-
-        if (Array.isArray(approvedData)) {
-          approvedAssigned = approvedData.filter(
-            (d) =>
-              d.assignedRM &&
-              (String(d.assignedRM._id) === String(userId) ||
-                String(d.assignedRM) === String(userId)),
-          );
-        }
-      } catch (e) {
-        console.warn(
-          "[DEFERRAL_LOAD] WARNING: Failed to load approved deferrals for RM",
-          e,
-        );
-      }
-
-      // Combine data
-      const combined = Array.isArray(myData) ? [...myData] : [];
-      const existingIds = new Set(combined.map((d) => d._id));
-      for (const a of approvedAssigned) {
-        if (!existingIds.has(a._id)) combined.push(a);
-      }
-
+      const combined = Array.isArray(myData) ? myData : [];
       setDeferrals(combined);
     } catch (err) {
       console.error("[DEFERRAL_LOAD] ========== ERROR LOADING DEFERRALS ==========");

@@ -14,24 +14,17 @@ export const useDeferralData = (token) => {
 
     setLoading(true);
     try {
-      // Get pending deferrals (awaiting checker approval)
-      const pending = await deferralApi.getPendingDeferrals(token);
+      // Fetch all deferrals in parallel
+      const [pending, myDeferrals, approvedDeferrals, closeWorkflowDeferrals] = await Promise.all([
+        deferralApi.getPendingDeferrals(token).catch(() => []),
+        deferralApi.getMyDeferrals(token).catch(() => []),
+        deferralApi.getApprovedDeferrals(token).catch(() => []),
+        deferralApi.getCloseWorkflowDeferrals(token).catch(() => []),
+      ]);
+
       const allPending = Array.isArray(pending) ? pending : [];
-
-      // Get user's own deferrals (approved by checker, rejected, closed)
-      const myDeferrals = await deferralApi.getMyDeferrals(token);
       const allMy = Array.isArray(myDeferrals) ? myDeferrals : [];
-
-      // Get approved deferrals
-      const approvedDeferrals = await deferralApi.getApprovedDeferrals(token);
-      const allApproved = Array.isArray(approvedDeferrals)
-        ? approvedDeferrals
-        : [];
-
-      // Get close workflow deferrals
-      const closeWorkflowDeferrals = await deferralApi
-        .getCloseWorkflowDeferrals(token)
-        .catch(() => []);
+      const allApproved = Array.isArray(approvedDeferrals) ? approvedDeferrals : [];
       const closeWorkflow = Array.isArray(closeWorkflowDeferrals)
         ? closeWorkflowDeferrals
         : [];

@@ -1511,6 +1511,8 @@ const Deferrals = ({ userId }) => {
       (s === "close_requested" && !hasAnyCloseRequestDocumentState(d));
   }).length;
 
+  const activeCount = pendingCount + approvedCount + closeRequestsCount;
+
   // Column definitions for deferral table
   const columns = useMemo(() => {
     return [
@@ -1705,6 +1707,7 @@ const Deferrals = ({ userId }) => {
             <div className="creator-deferrals-toolbar">
               <DeferralHeader
                 deferrals={deferrals}
+                totalCount={activeCount}
                 onRefresh={loadDeferrals}
                 onExport={() => {
                   message.info("Export functionality coming soon");
