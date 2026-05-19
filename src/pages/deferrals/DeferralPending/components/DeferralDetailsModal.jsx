@@ -885,6 +885,24 @@ const DeferralDetailsModal = ({
       showErrorToast("No deferral selected");
       return;
     }
+    const displayDeferral = fullDeferral || deferral;
+    const isExtensionRework = Boolean(
+      String(displayDeferral?.extensionStatus || "").trim().toLowerCase() === "returnedforrework" ||
+        String(displayDeferral?.extensionStatus || "").trim().toLowerCase() === "returned_for_rework" ||
+        (Array.isArray(displayDeferral?.extensions) && displayDeferral.extensions.some((ext) => {
+          const s = String(ext?.status || ext?.Status || "").trim().toLowerCase();
+          return s === "returnedforrework" || s === "returned_for_rework";
+        }))
+    );
+
+    if (isExtensionRework) {
+      if (onAction) {
+        onAction({ action: "resubmitExtension", deferral: displayDeferral });
+        onClose();
+      }
+      return;
+    }
+
     setResubmitModalVisible(true);
   };
 
@@ -1250,6 +1268,14 @@ const DeferralDetailsModal = ({
       String(displayDeferral?.deferralApprovalStatus || "").toLowerCase() ===
         "returned",
   );
+  const isExtensionRework = Boolean(
+    String(displayDeferral?.extensionStatus || "").trim().toLowerCase() === "returnedforrework" ||
+      String(displayDeferral?.extensionStatus || "").trim().toLowerCase() === "returned_for_rework" ||
+      (Array.isArray(displayDeferral?.extensions) && displayDeferral.extensions.some((ext) => {
+        const s = String(ext?.status || ext?.Status || "").trim().toLowerCase();
+        return s === "returnedforrework" || s === "returned_for_rework";
+      }))
+  );
   const isRejectedDeferral = Boolean(
     normalizedStatus === "rejected" ||
       normalizedStatus === "deferral_rejected" ||
@@ -1311,6 +1337,7 @@ const DeferralDetailsModal = ({
   const isApprovedTabContext = activeTab === "approved";
   const isCloseRequestContext = activeTab === "closeRequests";
   const isExtensionTabContext = activeTab === "extensions";
+  const isExtensionContext = isExtensionTabContext || isExtensionRework;
   const extensionRecords = Array.isArray(displayDeferral?.extensions)
     ? displayDeferral.extensions
     : [];
@@ -1360,14 +1387,16 @@ const DeferralDetailsModal = ({
     ? "Withdrawn"
     : isRejectedDeferral
       ? "Rejected"
-      : isExtensionTabContext
+      : isExtensionContext
         ? normalizedExtensionStatus === "approved"
           ? "Approved"
           : normalizedExtensionStatus === "rejected"
             ? "Rejected"
             : normalizedExtensionStatus === "withdrawn"
               ? "Withdrawn"
-              : "Pending"
+              : normalizedExtensionStatus === "returnedforrework" || normalizedExtensionStatus === "returned_for_rework"
+                ? "Returned for Rework"
+                : "Pending"
       : isApprovedTabContext
         ? "Approved"
       : displayDeferral?.status
@@ -1377,18 +1406,20 @@ const DeferralDetailsModal = ({
         : "Pending";
   const deferralStatusColor = isWithdrawnDeferral || isRejectedDeferral
     ? ERROR_RED
-    : isExtensionTabContext
+    : isExtensionContext
       ? normalizedExtensionStatus === "approved"
         ? SUCCESS_GREEN
         : normalizedExtensionStatus === "rejected" || normalizedExtensionStatus === "withdrawn"
           ? ERROR_RED
-          : PRIMARY_BLUE
+          : normalizedExtensionStatus === "returnedforrework" || normalizedExtensionStatus === "returned_for_rework"
+            ? WARNING_ORANGE
+            : PRIMARY_BLUE
     : isApprovedTabContext
       ? SUCCESS_GREEN
     : normalizedStatus === "approved" || normalizedStatus === "deferral_approved"
       ? SUCCESS_GREEN
       : PRIMARY_BLUE;
-  const approvalFlow = isExtensionTabContext
+  const approvalFlow = isExtensionContext
     ? extensionApprovalFlow
     : Array.isArray(displayDeferral?.approverFlow)
       ? displayDeferral.approverFlow
@@ -1438,11 +1469,11 @@ const DeferralDetailsModal = ({
     .trim()
     .toLowerCase();
   const creatorApproved =
-    isExtensionTabContext
+    isExtensionContext
       ? normalizedExtensionCreatorApprovalStatus === "approved"
       : isApprovedTabContext || normalizedCreatorApprovalStatus === "approved";
   const checkerApproved =
-    isExtensionTabContext
+    isExtensionContext
       ? normalizedExtensionCheckerApprovalStatus === "approved"
       : isApprovedTabContext || normalizedCheckerApprovalStatus === "approved";
   const pendingFinalApproversLabel = creatorApproved && !checkerApproved
@@ -1452,7 +1483,7 @@ const DeferralDetailsModal = ({
       : "creator and checker";
 
   const requestedDocsWithDates = requestedDocs.map((doc) => {
-    const extensionDocumentData = isExtensionTabContext && currentExtension
+    const extensionDocumentData = isExtensionContext && currentExtension
       ? resolveDocumentDaysAndDateWithExtension(doc, displayDeferral, currentExtension)
       : null;
     const requestedDays =
@@ -1837,6 +1868,7 @@ const DeferralDetailsModal = ({
               onDownloadPDF={downloadDeferralAsPDF}
               downloadLoading={downloadLoading}
               onClose={onClose}
+              isExtensionRework={isExtensionRework}
             />
 
             <div className="deferral-review-body" onClick={(e) => e.stopPropagation()}>
@@ -1909,6 +1941,7 @@ const DeferralDetailsModal = ({
                       approvalFlowExpanded={approvalFlowExpanded}
                       onToggleApprovalFlow={() => setApprovalFlowExpanded(!approvalFlowExpanded)}
                       approvalFlowColumns={approvalFlowColumns}
+                      isExtensionRework={isExtensionRework}
                     />
                   )}
 

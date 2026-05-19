@@ -272,7 +272,8 @@ const DeferralDetailsModal = ({
       );
 
       if (onAction) {
-        onAction("returnForRework", safeDeferral._id || safeDeferral.id, updatedDeferral);
+        onAction("refreshQueue");
+        onAction("gotoActioned");
       }
 
       try {

@@ -570,7 +570,7 @@ const Deferrals = ({ userId }) => {
         a === "extensions"
       )
         return a;
-    } catch (e) {}
+    } catch (e) { }
     return "pending";
   });
 
@@ -1056,8 +1056,8 @@ const Deferrals = ({ userId }) => {
               "deferral:update",
               JSON.stringify({ id: response.deferral?._id, ts: Date.now() }),
             );
-          } catch (e) {}
-        } catch (e) {}
+          } catch (e) { }
+        } catch (e) { }
       } else {
         throw new Error(response?.message || "Failed to reject deferral");
       }
@@ -1194,7 +1194,7 @@ const Deferrals = ({ userId }) => {
               detail: returnedDeferral,
             }),
           );
-        } catch (e) {}
+        } catch (e) { }
       } else {
         throw new Error(
           response?.message || "Failed to return deferral for rework",
@@ -1261,7 +1261,7 @@ const Deferrals = ({ userId }) => {
               detail: response.deferral,
             }),
           );
-        } catch (e) {}
+        } catch (e) { }
       } else {
         throw new Error(response?.message || "Failed to close deferral");
       }
@@ -1609,18 +1609,7 @@ const Deferrals = ({ userId }) => {
       dataIndex: "customerName",
       key: "customerName",
     },
-    {
-      title: "Current Days",
-      dataIndex: "currentDaysSought",
-      key: "currentDaysSought",
-      render: (days) => <span className="deferrals-table__muted">{days} days</span>,
-    },
-    {
-      title: "Requested Days",
-      dataIndex: "requestedDaysSought",
-      key: "requestedDaysSought",
-      render: (days) => <span className="deferrals-table__days">{days} days</span>,
-    },
+
     {
       title: "Status",
       dataIndex: "status",
@@ -1787,9 +1776,9 @@ const Deferrals = ({ userId }) => {
         summaryCopy={
           activeTab === "closeRequests"
             ? [
-                "Review and submit the close-request decision for this deferral.",
-                "Submit the creator review for these close request documents?",
-              ]
+              "Review and submit the close-request decision for this deferral.",
+              "Submit the creator review for these close request documents?",
+            ]
             : "Approving this request will advance it in the workflow and publish your decision to the review trail."
         }
         inputLabel={activeTab === "closeRequests" ? "Review comment" : "Approval comments"}

@@ -21,6 +21,7 @@ const RMDeferralReviewActionBar = ({
   onDownloadPDF,
   downloadLoading,
   onClose,
+  isExtensionRework = false, // <--- NEW PROP
 }) => {
   const showApprovedActionSet = !readOnly && activeTab === "approved";
   const canApplyExtension =
@@ -62,7 +63,7 @@ const RMDeferralReviewActionBar = ({
             onClick={onResubmit}
             loading={resubmitLoading}
           >
-            Resubmit Deferral
+            {isExtensionRework ? "Resubmit Extension" : "Resubmit Deferral"}
           </Button>
         )}
       </div>

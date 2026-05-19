@@ -38,13 +38,14 @@ const RMDeferralReviewDetails = ({
   approvalFlowExpanded,
   onToggleApprovalFlow,
   approvalFlowColumns,
+  isExtensionRework = false, // <--- NEW PROP
 }) => {
   return (
     <>
       <Card
         style={{
           marginBottom: 18,
-          borderLeft: `4px solid ${isWithdrawnDeferral || isRejectedDeferral ? "#ff4d4f" : isReturnedForReworkDeferral ? warningOrange : isApprovedTabContext ? successGreen : primaryBlue}`,
+          borderLeft: `4px solid ${isWithdrawnDeferral || isRejectedDeferral ? "#ff4d4f" : (isReturnedForReworkDeferral || isExtensionRework) ? warningOrange : isApprovedTabContext ? successGreen : primaryBlue}`,
         }}
       >
         {isWithdrawnDeferral ? (
@@ -69,6 +70,27 @@ const RMDeferralReviewDetails = ({
             </div>
             <div style={{ fontSize: 13, color: "#666", marginTop: 8, fontStyle: "italic", lineHeight: 1.45 }}>
               <b>Rejection Reason:</b> {rejectionReasonText}
+            </div>
+          </>
+        ) : isExtensionRework ? (
+          <>
+            <div style={{ color: warningOrange, fontWeight: 600, fontSize: 14 }}>
+              Extension Returned for Rework
+            </div>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 4, lineHeight: 1.45 }}>
+              The extension request for this deferral has been returned for rework by {
+                displayDeferral?.extensions?.[displayDeferral.extensions.length - 1]?.returnedByName ||
+                displayDeferral?.extensions?.[displayDeferral.extensions.length - 1]?.lastActionedBy ||
+                "the approver"
+              }.
+            </div>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 8, fontStyle: "italic", lineHeight: 1.45 }}>
+              <b>Rework Comments:</b> {
+                displayDeferral?.extensions?.[displayDeferral.extensions.length - 1]?.reworkComment ||
+                displayDeferral?.extensions?.[displayDeferral.extensions.length - 1]?.rejectionReason ||
+                displayDeferral?.extensions?.[displayDeferral.extensions.length - 1]?.comments ||
+                "No comments captured."
+              }
             </div>
           </>
         ) : isReturnedForReworkDeferral ? (

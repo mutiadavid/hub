@@ -162,7 +162,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
     if (payload.action === "apply_extension" && payload.deferral) {
       const def = payload.deferral;
       extensionModal.setSelectedDeferralForExtension(def);
-     
+
       try {
         const { requestedDocs = [] } = getDeferralDocumentBuckets(def) || {};
         const init = {};
@@ -176,7 +176,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
       } catch {
         extensionModal.setExtensionDaysByDoc({});
       }
-     
+
       extensionModal.setExtensionModalOpen(true);
       extensionModal.setExtensionSubmissionSuccess(false);
       return;
@@ -194,7 +194,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
     if (payload.action === "remindApprover" && payload.deferral) {
       const deferral = payload.deferral;
       const deferralId = deferral._id || deferral.id;
-     
+
       (async () => {
         try {
           const token = localStorage.getItem("token");
@@ -205,7 +205,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
           showErrorToast(error.message || "Failed to send reminder");
         }
       })();
-     
+
       return;
     }
 
@@ -213,7 +213,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
     if (payload.action === "resubmitDeferral" && payload.deferral) {
       const deferral = payload.deferral;
       const deferralId = deferral._id || deferral.id;
-     
+
       // Navigate to the deferral request page with the deferral ID to edit and resubmit
       navigate(`/rm/deferrals/request?resubmit=${deferralId}`);
       return;
@@ -547,32 +547,14 @@ const DeferralPending = ({ userId = "rm_current" }) => {
           try {
             const stored = JSON.parse(localStorage.getItem("user") || "null");
             const token = stored?.token;
-            const { requestedDocs = [] } = getDeferralDocumentBuckets(
-              extensionModal.selectedDeferralForExtension,
-            ) || {};
-            const requestedDaysByDoc = requestedDocs.reduce((accumulator, doc) => {
-              const key = String((doc && (doc.name || doc.label)) || doc || "")
-                .trim()
-                .toLowerCase();
-              const currentRequestedDays = Number(
-                doc?.daysSought ?? doc?.requestedDaysSought ?? 0,
-              );
-
-              accumulator[key] = Number.isFinite(currentRequestedDays)
-                ? currentRequestedDays
-                : 0;
-              return accumulator;
-            }, {});
-            const requestedAbsoluteValues = Object.entries(extensionModal.extensionDaysByDoc)
-              .map(([key, extensionDays]) => {
+            const requestedAbsoluteValues = Object.values(extensionModal.extensionDaysByDoc)
+              .map((extensionDays) => {
                 const normalizedExtensionDays = Number(extensionDays);
-                if (!Number.isFinite(normalizedExtensionDays) || normalizedExtensionDays <= 0) {
-                  return null;
-                }
-
-                return (requestedDaysByDoc[key] || 0) + normalizedExtensionDays;
+                return Number.isFinite(normalizedExtensionDays) && normalizedExtensionDays > 0
+                  ? normalizedExtensionDays
+                  : null;
               })
-              .filter((days) => Number.isFinite(days) && days > 0);
+              .filter(Boolean);
 
             if (requestedAbsoluteValues.length === 0) {
               showErrorToast("Please enter valid extension days");

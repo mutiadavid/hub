@@ -116,14 +116,30 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
     setExtensionApproveLoading(true);
     try {
       const extId = selectedExtension._id || selectedExtension.id;
-      const res = await fetch(`${API_BASE_URL}/extensions/${extId}/approve`, {
+      let res = await fetch(`${API_BASE_URL}/extensions/${extId}/approve`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-          body: JSON.stringify({ comment }),
+        body: JSON.stringify({ comment }),
       });
+
+      // Try relative URL fallback if absolute fails
+      if (!res.ok) {
+        try {
+          res = await fetch(`/api/extensions/${extId}/approve`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ comment }),
+          });
+        } catch (e) {
+          console.error("Fallback fetch failed:", e);
+        }
+      }
 
       if (!res.ok) {
         let errorMsg = "Failed to approve extension";
@@ -186,7 +202,7 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
     setExtensionRejectLoading(true);
     try {
       const extId = selectedExtension._id || selectedExtension.id;
-      const res = await fetch(`${API_BASE_URL}/extensions/${extId}/reject`, {
+      let res = await fetch(`${API_BASE_URL}/extensions/${extId}/reject`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -194,6 +210,22 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
         },
         body: JSON.stringify({ reason }),
       });
+
+      // Try relative URL fallback if absolute fails
+      if (!res.ok) {
+        try {
+          res = await fetch(`/api/extensions/${extId}/reject`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ reason }),
+          });
+        } catch (e) {
+          console.error("Fallback fetch failed:", e);
+        }
+      }
 
       if (!res.ok) {
         let errorMsg = "Failed to reject extension";
@@ -256,7 +288,7 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
     setExtensionReworkLoading(true);
     try {
       const extId = selectedExtension._id || selectedExtension.id;
-      const res = await fetch(`${API_BASE_URL}/extensions/${extId}/return-for-rework`, {
+      let res = await fetch(`${API_BASE_URL}/extensions/${extId}/return-for-rework`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -264,6 +296,22 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
         },
         body: JSON.stringify({ reason }),
       });
+
+      // Try relative URL fallback if absolute fails
+      if (!res.ok) {
+        try {
+          res = await fetch(`/api/extensions/${extId}/return-for-rework`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ reason }),
+          });
+        } catch (e) {
+          console.error("Fallback fetch failed:", e);
+        }
+      }
 
       if (!res.ok) {
         let errorMsg = "Failed to return extension for rework";

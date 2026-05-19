@@ -11,10 +11,6 @@ import { DeleteOutlined } from "@ant-design/icons";
 import deferralApi from "../../../../service/deferralApi";
 import RMEditApproversModal from "./RMEditApproversModal";
 import { showErrorToast, showSuccessToast } from "../../../../utils/authToast";
-import {
-  WARNING_ORANGE,
-  SUCCESS_GREEN,
-} from "../utils/constants";
 
 const toNullableIsoDate = (value) => {
   if (!value) return null;
@@ -22,7 +18,7 @@ const toNullableIsoDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 };
 
-const MIN_DOCUMENT_DAYS = 10;
+const MIN_DOCUMENT_DAYS = 1;
 const MAX_DOCUMENT_DAYS = 90;
 
 const toNullablePositiveInteger = (value) => {
@@ -31,58 +27,99 @@ const toNullablePositiveInteger = (value) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 };
 
+const isGuid = (value) => {
+  if (!value || typeof value !== "string") return false;
+  const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return guidRegex.test(value.trim());
+};
+
 const normalizeDocumentDays = (document) =>
   toNullablePositiveInteger(document?.daysSought ?? document?.requestedDaysSought);
 
 const sanitizeSelectedDocuments = (documents) =>
   Array.isArray(documents)
     ? documents
-        .map((document) => {
-          const name = String(document?.name || document?.label || "").trim();
-          if (!name) return null;
+      .map((document) => {
+        const name = String(document?.name || document?.label || "").trim();
+        if (!name) return null;
 
-          return {
-            name,
-            type: String(document?.type || document?.documentType || "").trim() || null,
-            category:
-              String(
-                document?.category ||
-                  document?.documentCategory ||
-                  document?.classification ||
-                  "",
-              ).trim() || null,
-            daysSought: toNullablePositiveInteger(
-              document?.daysSought ?? document?.requestedDaysSought,
-            ),
-            nextDocumentDueDate: toNullableIsoDate(
-              document?.nextDocumentDueDate ?? document?.nextDueDate,
-            ),
-          };
-        })
-        .filter(Boolean)
+        return {
+          name,
+          type: String(document?.type || document?.documentType || "").trim() || null,
+          category:
+            String(
+              document?.category ||
+              document?.documentCategory ||
+              document?.classification ||
+              "",
+            ).trim() || null,
+          daysSought: toNullablePositiveInteger(
+            document?.daysSought ?? document?.requestedDaysSought,
+          ),
+          nextDocumentDueDate: toNullableIsoDate(
+            document?.nextDocumentDueDate ?? document?.nextDueDate,
+          ),
+        };
+      })
+      .filter(Boolean)
     : [];
 
 const sanitizeApproverFlow = (approvers) =>
   Array.isArray(approvers)
     ? approvers
-        .map((approver) => {
-          const role = String(approver?.role || approver?.designation || "").trim();
-          const name = String(approver?.name || approver?.approverName || "").trim();
-          const userId = String(approver?.userId || approver?.user || "").trim();
+      .map((approver) => {
+        const role = String(approver?.role || approver?.designation || approver?.Role || "").trim();
+        const name = String(
+          approver?.name ||
+          approver?.Name ||
+          approver?.userName ||
+          approver?.UserName ||
+          approver?.displayName ||
+          approver?.DisplayName ||
+          approver?.approverName ||
+          approver?.ApproverName ||
+          approver?.fullName ||
+          approver?.FullName ||
+          approver?.user?.name ||
+          approver?.User?.Name ||
+          approver?.user?.userName ||
+          approver?.User?.UserName ||
+          approver?.user?.displayName ||
+          approver?.User?.DisplayName ||
+          "",
+        ).trim();
+        const userId = String(
+          approver?.userId ||
+          approver?.UserId ||
+          approver?.user?.id ||
+          approver?.User?.Id ||
+          approver?.user?.userId ||
+          approver?.User?.UserId ||
+          approver?.id ||
+          approver?.Id ||
+          (typeof approver?.user === "string" ? approver?.user : "") ||
+          "",
+        ).trim();
 
-          if (!role || !name || !userId) return null;
+        if (!role || !name || !userId) return null;
 
-          return {
-            role,
-            name,
-            userId,
-            email: String(approver?.email || "").trim() || null,
-            samAccountName: String(approver?.samAccountName || "").trim() || null,
-            department: String(approver?.department || "").trim() || null,
-            position: String(approver?.position || "").trim() || null,
-          };
-        })
-        .filter(Boolean)
+        return {
+          Role: role,
+          role: role,
+          UserName: name,
+          userName: name,
+          name: name,
+          UserId: userId,
+          userId: userId,
+          Email: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
+          UserEmail: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
+          userEmail: String(approver?.email || approver?.Email || approver?.userEmail || approver?.UserEmail || "").trim() || null,
+          SamAccountName: String(approver?.samAccountName || "").trim() || null,
+          Department: String(approver?.department || "").trim() || null,
+          Position: String(approver?.position || "").trim() || null,
+        };
+      })
+      .filter(Boolean)
     : [];
 
 const MODAL_STYLES = `
@@ -198,460 +235,199 @@ const MODAL_STYLES = `
     justify-content: center;
     width: 42px;
     height: 42px;
-    min-width: 42px;
-    border-radius: 999px;
-    background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-primary-medium) 100%);
-    color: var(--color-white);
-    font-weight: 700;
+    background: rgba(214, 189, 152, 0.12);
+    border-radius: 12px;
+    color: var(--color-text-dark);
     font-size: 14px;
-    box-shadow: 0 8px 18px rgba(26, 54, 54, 0.16);
+    font-weight: 700;
+    flex-shrink: 0;
   }
-  .rm-resubmit-modal-step-index--approved {
-    background: linear-gradient(180deg, ${SUCCESS_GREEN} 0%, #3d9c1b 100%);
+  .rm-resubmit-modal-doc-body {
+    flex-grow: 1;
   }
-  .rm-resubmit-modal-doc-body,
-  .rm-resubmit-modal-flow-fields,
-  .rm-resubmit-modal-flow-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .rm-resubmit-modal-doc-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: flex-end;
-  }
-  .rm-resubmit-modal-doc-days {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 180px;
-  }
-  .rm-resubmit-modal-days-input.ant-input-number {
-    width: 100%;
-    border-radius: 10px !important;
-    border: 1px solid #eaecf0 !important;
-    box-shadow: none !important;
-    background: var(--color-white) !important;
-  }
-  .rm-resubmit-modal-days-input.ant-input-number:hover,
-  .rm-resubmit-modal-days-input.ant-input-number-focused {
-    border-color: var(--color-primary-dark) !important;
-    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
-  }
-  .rm-resubmit-modal-days-input .ant-input-number-input {
-    height: 44px;
-    color: var(--color-text-dark) !important;
-  }
-  .rm-resubmit-modal-doc-hint,
-  .rm-resubmit-modal-doc-error {
-    font-size: 12px;
-    line-height: 1.4;
-  }
-  .rm-resubmit-modal-doc-hint {
-    color: #667085;
-  }
-  .rm-resubmit-modal-doc-error {
-    color: #b42318;
-  }
-  .rm-resubmit-modal-doc-name,
-  .rm-resubmit-modal-flow-role {
+  .rm-resubmit-modal-doc-name {
     color: var(--color-text-dark);
     font-size: 15px;
     font-weight: 600;
-    line-height: 1.5;
+    margin-bottom: 8px;
   }
-  .rm-resubmit-modal-flow-name,
-  .rm-resubmit-modal-flow-state {
-    color: #667085;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-  .rm-resubmit-modal-flow-state {
-    color: #98a2b3;
-  }
-  .rm-resubmit-modal-field {
+  .rm-resubmit-modal-doc-meta {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    gap: 24px;
+    align-items: center;
   }
   .rm-resubmit-modal-label {
-    color: var(--color-text-medium);
+    display: block;
+    color: #667085;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
+    font-weight: 600;
     text-transform: uppercase;
+    margin-bottom: 6px;
   }
-  .rm-resubmit-modal .ant-input,
-  .rm-resubmit-modal .ant-select-selector,
-  .rm-resubmit-modal .ant-input-textarea textarea {
-    border: 1px solid #eaecf0 !important;
-    border-radius: 10px !important;
-    box-shadow: none !important;
-    background: var(--color-white) !important;
-    color: var(--color-text-dark) !important;
+  .rm-resubmit-modal-days-input {
+    width: 120px !important;
   }
-  .rm-resubmit-modal .ant-input,
-  .rm-resubmit-modal .ant-select-selector {
-    min-height: 46px !important;
-    padding-inline: 14px !important;
+  .rm-resubmit-modal-remove {
+    color: #f04438 !important;
+    font-size: 13px !important;
+    padding: 4px 8px !important;
   }
-  .rm-resubmit-modal .ant-select-selection-item {
-    line-height: 44px !important;
-    color: var(--color-text-dark) !important;
-  }
-  .rm-resubmit-modal .ant-input::placeholder,
-  .rm-resubmit-modal .ant-select-selection-placeholder,
-  .rm-resubmit-modal .ant-input-textarea textarea::placeholder {
-    color: #98a2b3 !important;
-  }
-  .rm-resubmit-modal .ant-input:hover,
-  .rm-resubmit-modal .ant-input:focus,
-  .rm-resubmit-modal .ant-input-textarea textarea:hover,
-  .rm-resubmit-modal .ant-input-textarea textarea:focus,
-  .rm-resubmit-modal .ant-select-selector:hover,
-  .rm-resubmit-modal .ant-select-focused .ant-select-selector {
-    border-color: var(--color-primary-dark) !important;
-    box-shadow: 0 0 0 2px rgba(26, 54, 54, 0.08) !important;
-  }
-  .rm-resubmit-modal-remove.ant-btn,
-  .rm-resubmit-modal-delete.ant-btn {
-    color: #b42318 !important;
-    border-radius: 10px !important;
-    border: 1px solid transparent !important;
-    box-shadow: none !important;
-  }
-  .rm-resubmit-modal-remove.ant-btn:hover,
-  .rm-resubmit-modal-remove.ant-btn:focus,
-  .rm-resubmit-modal-delete.ant-btn:hover,
-  .rm-resubmit-modal-delete.ant-btn:focus {
-    background: rgba(180, 35, 24, 0.06) !important;
-    border-color: rgba(180, 35, 24, 0.12) !important;
-  }
-  .rm-resubmit-modal-edit.ant-btn,
-  .rm-resubmit-modal-insert-btn.ant-btn {
-    border-radius: 10px !important;
-    box-shadow: none !important;
-  }
-  .rm-resubmit-modal-edit.ant-btn {
-    border: none !important;
-    background: var(--ncb-primary-500) !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
-  }
-  .rm-resubmit-modal-insert {
-    display: flex;
-    justify-content: center;
-    padding: 0;
-  }
-  .rm-resubmit-modal-insert-btn.ant-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 999px !important;
-    border: 1px dashed rgba(52, 80, 76, 0.3) !important;
-    background: transparent !important;
-    color: var(--color-primary-medium) !important;
-  }
-  .rm-resubmit-modal-empty {
-    padding: 18px 20px;
-    background: rgba(255, 255, 255, 0.86);
-    border: 1px dashed rgba(208, 213, 221, 0.9);
-    border-radius: 12px;
-    text-align: center;
-    color: #98a2b3;
-    font-size: 13px;
+  .rm-resubmit-modal-remove:hover {
+    background: #fef3f2 !important;
   }
   .rm-resubmit-modal-note {
-    margin-top: 24px;
-    padding: 15px 16px;
-    background: #fffaf0;
-    border: 1px solid rgba(214, 189, 152, 0.42);
-    border-left: 4px solid ${WARNING_ORANGE};
-    border-radius: 12px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-radius: 10px;
+    color: #475467;
     font-size: 12px;
-    color: var(--color-text-medium);
-    line-height: 1.6;
+    line-height: 1.5;
   }
   .rm-resubmit-modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    margin-top: 0;
+    padding: 20px 26px;
+    background: #fcfcfd;
+    border-top: 1px solid rgba(214, 189, 152, 0.18);
   }
-  .rm-resubmit-modal-cancel.ant-btn {
-    min-width: 92px;
-    height: 44px;
-    border-radius: 10px !important;
-    border: 1px solid #d0d5dd !important;
-    background: var(--color-white) !important;
-    color: var(--color-text-medium) !important;
-    box-shadow: none !important;
+  .rm-resubmit-modal-confirm {
+    height: 44px !important;
+    padding: 0 24px !important;
+    border-radius: 8px !important;
     font-weight: 600 !important;
+    background: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
   }
-  .rm-resubmit-modal-confirm.ant-btn {
-    min-width: 176px;
-    height: 44px;
-    border-radius: 10px !important;
-    border: none !important;
-    background: var(--ncb-primary-500) !important;
-    color: var(--color-white) !important;
-    box-shadow: 0 10px 20px rgba(58, 179, 229, 0.18) !important;
-    font-weight: 700 !important;
-  }
-  @media (max-width: 640px) {
-    .rm-resubmit-modal .ant-modal {
-      max-width: calc(100vw - 24px) !important;
-      margin: 12px auto !important;
-    }
-    .rm-resubmit-modal .ant-modal-header {
-      padding: 18px 18px 16px !important;
-    }
-    .rm-resubmit-modal .ant-modal-body {
-      padding: 20px 18px !important;
-    }
-    .rm-resubmit-modal-doc-item,
-    .rm-resubmit-modal-flow-card {
-      flex-direction: column;
-    }
-    .rm-resubmit-modal-delete.ant-btn,
-    .rm-resubmit-modal-remove.ant-btn {
-      align-self: flex-end;
-    }
-    .rm-resubmit-modal-actions {
-      flex-direction: column-reverse;
-    }
-    .rm-resubmit-modal-cancel.ant-btn,
-    .rm-resubmit-modal-confirm.ant-btn,
-    .rm-resubmit-modal-edit.ant-btn {
-      width: 100%;
-    }
+  .rm-resubmit-modal-cancel {
+    height: 44px !important;
+    padding: 0 20px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    color: #344054 !important;
+    background: white !important;
+    border: 1px solid #d0d5dd !important;
   }
 `;
 
-const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
+const ExtensionReturnForReworkModal = ({ open, deferral, onClose, onUpdate }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
-  const [_editingApprovers, setEditingApprovers] = useState(false);
   const [editedApprovers, setEditedApprovers] = useState([]);
-  const [_confirmingApprovers, setConfirmingApprovers] = useState(false);
+  const [editingApprovers, setEditingApprovers] = useState(false);
+  const [confirmingApprovers, setConfirmingApprovers] = useState(false);
+  const [currentExtension, setCurrentExtension] = useState(null);
 
-  const getDocumentDaysValidationMessage = (document) => {
-    const documentName = String(document?.name || document?.label || "Document").trim() || "Document";
-    const daysSought = normalizeDocumentDays(document);
-
-    if (!Number.isInteger(daysSought)) {
-      return `${documentName}: days requested is required`;
-    }
-
-    if (daysSought < MIN_DOCUMENT_DAYS || daysSought > MAX_DOCUMENT_DAYS) {
-      return `${documentName}: days requested must be between ${MIN_DOCUMENT_DAYS} and ${MAX_DOCUMENT_DAYS}`;
-    }
-
-    return null;
-  };
+  const MIN_DAYS = 1;
+  const MAX_DAYS = 90;
 
   useEffect(() => {
     if (open && deferral) {
-      // Initialize form with deferral data
-      form.setFieldsValue({
-        deferralDescription: deferral?.deferralDescription || "",
-        comments: "",
-      });
+      // Find the extension in rework status
+      const extensionRecords = Array.isArray(deferral.extensions) ? deferral.extensions : [];
+      const extension = [...extensionRecords].reverse().find(ext => {
+        const status = String(ext.status || ext.Status || "").toLowerCase();
+        return status === "returnedforrework" || status === "returned_for_rework";
+      }) || extensionRecords[extensionRecords.length - 1];
 
-      // Initialize selected documents
-      if (deferral?.selectedDocuments) {
-        setSelectedDocuments(
-          deferral.selectedDocuments.map((document) => ({
-            ...document,
-            daysSought: normalizeDocumentDays(document),
-          })),
-        );
-      } else {
-        setSelectedDocuments([]);
+      setCurrentExtension(extension);
+
+      if (extension) {
+        form.setFieldsValue({
+          comments: extension.extensionReason || extension.reason || "",
+        });
+
+        // Initialize documents from extension
+        if (extension.selectedDocuments) {
+          setSelectedDocuments(extension.selectedDocuments);
+        } else if (extension.requestedDocuments) {
+          setSelectedDocuments(extension.requestedDocuments);
+        } else if (extension.extensionDaysByDoc) {
+          // Fallback if we only have the map
+          const docs = Object.entries(extension.extensionDaysByDoc).map(([name, days]) => ({
+            name,
+            daysSought: days
+          }));
+          setSelectedDocuments(docs);
+        }
+
+        // Initialize approvers from extension
+        const initialApprovers = (extension.approvers || extension.Approvers || extension.approverFlow || extension.extensionApprovers || []).map(a => ({
+          ...a,
+          userId: a.userId || a.UserId || a.user?.id || a.User?.Id || a.user?.userId || a.User?.UserId || a.id || a.Id || (typeof a.user === 'string' ? a.user : ""),
+          name: a.name || a.Name || a.userName || a.UserName || a.displayName || a.DisplayName || a.approverName || a.ApproverName || a.user?.name || a.User?.Name || a.user?.displayName || a.User?.DisplayName || ""
+        }));
+
+        // Populate comments from previous extension reason
+        form.setFieldsValue({
+          comments: extension.extensionReason || extension.ExtensionReason || ""
+        });
+
+        setEditedApprovers(initialApprovers);
       }
-
-      // Initialize edited approvers
-      setEditedApprovers(deferral.approverFlow ? [...deferral.approverFlow] : []);
     }
   }, [open, deferral, form]);
 
   const handleDocumentDaysChange = (index, value) => {
-    setSelectedDocuments((prev) =>
-      prev.map((document, currentIndex) =>
-        currentIndex === index
-          ? {
-              ...document,
-              daysSought: value === null || typeof value === "undefined" ? null : Number(value),
-            }
-          : document,
-      ),
-    );
+    const newDocs = [...selectedDocuments];
+    newDocs[index] = { ...newDocs[index], daysSought: value, requestedDaysSought: value };
+    setSelectedDocuments(newDocs);
   };
 
-  const _handleEditApproversClick = async () => {
-    setEditedApprovers(deferral.approverFlow ? [...deferral.approverFlow] : []);
-    setEditingApprovers(true);
+  const getDocumentDaysValidationMessage = (doc) => {
+    const days = normalizeDocumentDays(doc);
+    if (days === null) return "Days required";
+    if (days < MIN_DAYS) return `Min ${MIN_DAYS} days`;
+    if (days > MAX_DAYS) return `Max ${MAX_DAYS} days`;
+    return null;
   };
 
-  const handleAddApprover = (afterIndex) => {
-    if (
-      typeof afterIndex === "number" &&
-      editedApprovers[afterIndex + 1] &&
-      (editedApprovers[afterIndex + 1].approved ||
-        editedApprovers[afterIndex + 1].approvalStatus === "approved")
-    ) {
-      showErrorToast("You cannot insert a new approver before an approver who has already approved");
-      return;
-    }
-
-    const newApprover = {
-      _id: `temp-${Date.now()}`,
-      role: "",
-      name: "",
-      userId: "",
-      email: "",
-      samAccountName: "",
-      department: "",
-      position: "",
-      approved: false,
-      approvalStatus: "pending",
-    };
-
-    if (afterIndex === undefined || afterIndex === -1) {
-      setEditedApprovers((prev) => [...prev, newApprover]);
-    } else {
-      setEditedApprovers((prev) => {
-        const updated = [...prev];
-        updated.splice(afterIndex + 1, 0, newApprover);
-        return updated;
-      });
-    }
+  const handleApproverChange = (index, field, value) => {
+    const next = [...editedApprovers];
+    next[index] = { ...next[index], [field]: value };
+    setEditedApprovers(next);
   };
 
-  const handleRemoveApprover = (idx) => {
-    if (editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") {
-      showErrorToast("Approved approvers cannot be removed");
-      return;
-    }
+  const handleApproverSelection = (index, option) => {
+    if (option == null) return;
 
-    if (editedApprovers.length <= 1) {
-      showErrorToast("At least one approver is required");
-      return;
-    }
-    setEditedApprovers((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  const handleApproverChange = (idx, field, value) => {
-    if (editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") {
-      return;
-    }
-
-    setEditedApprovers((prev) => {
-      const updated = [...prev];
-      updated[idx] = { ...updated[idx], [field]: value };
-      return updated;
-    });
-  };
-
-  const handleApproverSelection = (idx, option) => {
-    if (option == null || editedApprovers[idx]?.approved || editedApprovers[idx]?.approvalStatus === "approved") return;
-
-    const selectedApprover =
-      option?.directoryApprover ||
-      approversFromDb.find(
-        (u) => String(u._id || u.id) === String(option.value),
-      ) ||
-      null;
-
+    const selectedApprover = option?.directoryApprover || null;
     const resolvedName =
       selectedApprover?.name ||
       (typeof option?.label === "string" ? option.label : "") ||
       "";
 
-    setEditedApprovers((prev) => {
-      const updated = [...prev];
-      updated[idx] = {
-        ...updated[idx],
-        userId: option.value,
-        name: resolvedName,
-        email: selectedApprover?.email || "",
-        samAccountName: selectedApprover?.samAccountName || "",
-        department: selectedApprover?.department || "",
-        position: updated[idx]?.role || updated[idx]?.position || "",
-      };
-      return updated;
-    });
+    const next = [...editedApprovers];
+    next[index] = {
+      ...next[index],
+      userId: option.value || "",
+      name: resolvedName,
+      email: selectedApprover?.email || "",
+      samAccountName: selectedApprover?.samAccountName || "",
+      department: selectedApprover?.department || "",
+      position: next[index]?.role || selectedApprover?.position || selectedApprover?.role || "",
+    };
+    setEditedApprovers(next);
   };
 
-  const _handleConfirmApprovers = async () => {
-    // Validate that all approvers have role, name, and a selected user
-    const allValid = editedApprovers.every(
-      (approver) => approver.role && approver.name && approver.userId,
-    );
+  const handleRemoveApprover = (index) => {
+    const next = editedApprovers.filter((_, i) => i !== index);
+    setEditedApprovers(next);
+  };
 
-    if (!allValid) {
-      showErrorToast("Please select a valid approver and role for every step");
-      return;
-    }
+  const handleAddApprover = (afterIndex) => {
+    const newApprover = { role: "", name: "", userId: "", email: "" };
 
-    setConfirmingApprovers(true);
-
-    try {
-      const approversToSave = editedApprovers.map((approver) => ({
-        userId: approver.userId,
-        role: approver.role,
-        name: approver.name,
-        email: approver.email,
-        samAccountName: approver.samAccountName,
-        department: approver.department,
-        position: approver.role || approver.position,
-        approved: false,
-        approvalStatus: "pending",
-      }));
-
-      const token = localStorage.getItem("token");
-
-      if (!deferral || !deferral._id) {
-        showErrorToast("No deferral selected");
-        return;
-      }
-
-      // Call API to update deferral approvers
-      const result = await deferralApi.updateApprovers(
-        deferral._id,
-        approversToSave,
-        token
-      );
-
-      const updatedDeferral = result?.deferral || result;
-
-      showSuccessToast("Approvers updated successfully");
-      setEditingApprovers(false);
-
-      if (updatedDeferral && (updatedDeferral._id || updatedDeferral.id)) {
-        try {
-          window.dispatchEvent(
-            new CustomEvent("deferral:updated", { detail: updatedDeferral }),
-          );
-        } catch (eventError) {
-          console.debug("Failed to dispatch deferral:updated", eventError);
-        }
-      }
-     
-      // Trigger parent refresh to sync approvers across all pages
-      if (onUpdate) {
-        onUpdate(updatedDeferral || {
-          approverFlow: editedApprovers,
-        });
-      }
-    } catch (error) {
-      console.error("Error updating approvers:", error);
-      showErrorToast(error.message || "Failed to update approvers");
-    } finally {
-      setConfirmingApprovers(false);
+    if (afterIndex === undefined || afterIndex === -1) {
+      // Add at the end
+      setEditedApprovers([...editedApprovers, newApprover]);
+    } else {
+      // Add after specific index
+      const updated = [...editedApprovers];
+      updated.splice(afterIndex + 1, 0, newApprover);
+      setEditedApprovers(updated);
     }
   };
 
@@ -669,36 +445,56 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
       }
 
       const sanitizedSelectedDocuments = sanitizeSelectedDocuments(selectedDocuments);
-      const sanitizedApproverFlow = sanitizeApproverFlow(
-        editedApprovers.length > 0 ? editedApprovers : deferral.approverFlow,
-      );
+      const sanitizedApproverFlow = sanitizeApproverFlow(editedApprovers);
 
-      const updateData = {
-        deferralDescription: values.deferralDescription,
-        resubmissionComments: values.comments,
-        selectedDocuments: sanitizedSelectedDocuments,
+      const extensionDaysByDoc = {};
+      sanitizedSelectedDocuments.forEach(doc => {
+        extensionDaysByDoc[doc.name.toLowerCase()] = Number(doc.daysSought) || 0;
+      });
+
+      const extensionRecords = Array.isArray(deferral?.extensions) ? deferral.extensions : [];
+      const extension = [...extensionRecords].reverse().find(ext => {
+        const status = String(ext.status || ext.Status || "").toLowerCase();
+        return status === "returnedforrework" || status === "returned_for_rework";
+      }) || extensionRecords[extensionRecords.length - 1];
+
+      const currentExtensionDays = Number(extension?.requestedDaysSought || extension?.RequestedDaysSought) || 0;
+      const calculatedMaxDays = sanitizedSelectedDocuments.length > 0
+        ? Math.max(...sanitizedSelectedDocuments.map(d => Number(d.daysSought) || 0))
+        : 0;
+
+      const maxDays = calculatedMaxDays > 0 ? calculatedMaxDays : currentExtensionDays;
+
+      const extensionData = {
+        // Redundant keys to handle various backend serialization settings (PascalCase and camelCase)
+        DeferralId: deferral.id || deferral._id || deferral.Id,
+        deferralId: deferral.id || deferral._id || deferral.Id,
+        RequestedDaysSought: maxDays,
+        requestedDaysSought: maxDays,
+        ExtensionReason: values.comments || "",
+        extensionReason: values.comments || "",
+        Comment: values.comments || "",
+        comment: values.comments || "",
+        ExtensionDaysByDoc: Object.keys(extensionDaysByDoc).length > 0 ? extensionDaysByDoc : null,
+        extensionDaysByDoc: Object.keys(extensionDaysByDoc).length > 0 ? extensionDaysByDoc : null,
+        ApproverFlow: sanitizedApproverFlow,
         approverFlow: sanitizedApproverFlow,
-        status: "Pending", // Change status back to Pending to route back to person who returned it
       };
 
-      // Call API to update deferral with filtered documents
-      const response = await deferralApi.updateDeferral?.(
-        deferral._id,
-        updateData
+      const response = await deferralApi.submitExtension(
+        deferral.id || deferral._id || deferral.Id,
+        extensionData
       );
 
-      const updatedDeferral = response?.deferral || response;
-
-      if (response?.success || response?.status === 200 || updatedDeferral?._id || updatedDeferral?.id) {
-        showSuccessToast("Deferral resubmitted successfully to reviewer");
-        onUpdate?.(updatedDeferral || updateData);
+      if (response) {
+        showSuccessToast("Extension resubmitted successfully");
+        onUpdate?.(response.deferral || response);
         onClose?.();
-      } else {
-        throw new Error(response?.message || "Failed to resubmit deferral");
       }
     } catch (error) {
-      console.error("Failed to resubmit deferral:", error);
-      showErrorToast(error.message || "Failed to resubmit deferral");
+      console.error("Failed to resubmit extension:", error);
+      const detail = error.data?.message || error.message || "Unknown error";
+      showErrorToast(`Failed to resubmit: ${detail}`);
     } finally {
       setLoading(false);
     }
@@ -712,7 +508,7 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
   const modalTitle = (
     <div className="rm-resubmit-modal-hero">
       <div className="rm-resubmit-modal-hero-copy">
-        <h2>Resubmit Deferral for Review</h2>
+        <h2>Resubmit Extension for Review</h2>
       </div>
     </div>
   );
@@ -729,147 +525,137 @@ const ReturnForReworkModal = ({ open, onClose, deferral, onUpdate }) => {
         footer={null}
         zIndex={1400}
       >
-      <Spin spinning={loading}>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          className="rm-resubmit-modal-shell"
-        >
-          <div className="rm-resubmit-modal-heading">
-            <h3>Resubmission Review</h3>
-            <p>
-              Review the requested documents, confirm the approval flow, and add any
-              updates before routing this deferral back for review.
-            </p>
-          </div>
-
-          <div className="rm-resubmit-modal-section">
-            <div className="rm-resubmit-modal-section-head">
-              <h4>Documents Requested for Deferrals</h4>
+        <Spin spinning={loading}>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            className="rm-resubmit-modal-shell"
+          >
+            <div className="rm-resubmit-modal-heading">
+              <h3>Resubmission Review</h3>
+              <p>
+                Review the extension days per document, confirm the approval flow, and add any
+                updates before routing this extension back for review.
+              </p>
             </div>
-            {selectedDocuments.length > 0 ? (
-              <div className="rm-resubmit-modal-doc-list">
-                {selectedDocuments.map((doc, idx) => (
-                  <div key={idx} className="rm-resubmit-modal-doc-item">
-                    <div className="rm-resubmit-modal-doc-body">
-                      <div className="rm-resubmit-modal-doc-name">
-                        {doc.name || `Document ${idx + 1}`}
-                      </div>
-                      <div className="rm-resubmit-modal-doc-meta">
-                        <div className="rm-resubmit-modal-doc-days">
-                          <span className="rm-resubmit-modal-label">Days Requested</span>
-                          <InputNumber
-                            min={MIN_DOCUMENT_DAYS}
-                            max={MAX_DOCUMENT_DAYS}
-                            precision={0}
-                            className="rm-resubmit-modal-days-input"
-                            value={normalizeDocumentDays(doc)}
-                            onChange={(value) => handleDocumentDaysChange(idx, value)}
-                            placeholder="Enter days"
-                          />
-                          {getDocumentDaysValidationMessage(doc) ? (
-                            <span className="rm-resubmit-modal-doc-error">
-                              {getDocumentDaysValidationMessage(doc)}
-                            </span>
-                          ) : null}
+
+            <div className="rm-resubmit-modal-section">
+              <div className="rm-resubmit-modal-section-head">
+                <h4>Documents Requested for Extension</h4>
+              </div>
+              {selectedDocuments.length > 0 ? (
+                <div className="rm-resubmit-modal-doc-list">
+                  {selectedDocuments.map((doc, idx) => (
+                    <div key={idx} className="rm-resubmit-modal-doc-item">
+                      <div className="rm-resubmit-modal-doc-body">
+                        <div className="rm-resubmit-modal-doc-name">
+                          {doc.name || `Document ${idx + 1}`}
+                        </div>
+                        <div className="rm-resubmit-modal-doc-meta">
+                          <div className="rm-resubmit-modal-doc-days">
+                            <span className="rm-resubmit-modal-label">Extension Days Requested</span>
+                            <InputNumber
+                              min={MIN_DAYS}
+                              max={MAX_DAYS}
+                              precision={0}
+                              className="rm-resubmit-modal-days-input"
+                              value={normalizeDocumentDays(doc)}
+                              onChange={(value) => handleDocumentDaysChange(idx, value)}
+                              placeholder={`1-${MAX_DAYS} days`}
+                            />
+                            {getDocumentDaysValidationMessage(doc) ? (
+                              <span className="rm-resubmit-modal-doc-error">
+                                {getDocumentDaysValidationMessage(doc)}
+                              </span>
+                            ) : null}
+                          </div>
                         </div>
                       </div>
+                      <Button
+                        type="text"
+                        className="rm-resubmit-modal-remove"
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleRemoveDocument(idx)}
+                      >
+                        Remove
+                      </Button>
                     </div>
-                    <Button
-                      type="text"
-                      className="rm-resubmit-modal-remove"
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleRemoveDocument(idx)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              ) : (
+                <div className="rm-resubmit-modal-empty">
+                  No documents requested
+                </div>
+              )}
+            </div>
+
+            <div className="rm-resubmit-modal-section">
+              <div className="rm-resubmit-modal-section-head">
+                <h4>Approval Flow</h4>
               </div>
-            ) : (
-              <div className="rm-resubmit-modal-empty">
-                No documents requested
+
+              {editedApprovers.length > 0 ? (
+                <RMEditApproversModal
+                  open={open}
+                  embedded
+                  suppressIntro
+                  suppressFooter
+                  suppressNote
+                  showTrailingInsert
+                  editedApprovers={editedApprovers}
+                  handleApproverChange={handleApproverChange}
+                  handleApproverSelection={handleApproverSelection}
+                  handleRemoveApprover={handleRemoveApprover}
+                  handleAddApprover={handleAddApprover}
+                  approversFromDb={[]}
+                  loadingApprovers={false}
+                  confirmingApprovers={false}
+                  onCancel={() => { }}
+                  onConfirm={() => { }}
+                />
+              ) : (
+                <div className="rm-resubmit-modal-empty">No approvers defined</div>
+              )}
+
+              <div className="rm-resubmit-modal-note">
+                <strong>Note:</strong> You can modify the approval flow for this extension resubmission. Any changes here will only apply to this extension request.
               </div>
-            )}
-          </div>
-
-          <div className="rm-resubmit-modal-section">
-            <div className="rm-resubmit-modal-section-head">
-              <h4>Approval Flow</h4>
             </div>
 
-            {editedApprovers.length > 0 ? (
-              <RMEditApproversModal
-                open={open}
-                embedded
-                suppressIntro
-                suppressFooter
-                suppressNote
-                showTrailingInsert
-                editedApprovers={editedApprovers}
-                handleApproverChange={handleApproverChange}
-                handleApproverSelection={handleApproverSelection}
-                handleRemoveApprover={handleRemoveApprover}
-                handleAddApprover={handleAddApprover}
-                approversFromDb={[]}
-                loadingApprovers={false}
-                confirmingApprovers={false}
-                onCancel={() => {}}
-                onConfirm={() => {}}
-              />
-            ) : (
-              <div className="rm-resubmit-modal-empty">No approvers defined</div>
-            )}
-
-            <div className="rm-resubmit-modal-note">
-              <strong>Note:</strong> Any approver who has already approved is locked,
-              greyed out, and cannot be removed or replaced. Keep the review flow
-              aligned to the intended approval sequence before resubmitting.
+            <div className="rm-resubmit-modal-section">
+              <div className="rm-resubmit-modal-section-head">
+                <h4>Comments for Resubmission</h4>
+              </div>
+              <Form.Item
+                name="comments"
+                style={{ marginBottom: 0 }}
+                rules={[{ required: true, message: "Please provide a reason for resubmission" }]}
+              >
+                <Input.TextArea
+                  rows={3}
+                  placeholder="Enter any additional comments or instructions"
+                />
+              </Form.Item>
             </div>
-          </div>
-
-          <div className="rm-resubmit-modal-section">
-            <div className="rm-resubmit-modal-section-head">
-              <h4>Deferral Description</h4>
-            </div>
-            <Form.Item name="deferralDescription" style={{ marginBottom: 0 }}>
-              <Input.TextArea
-                rows={3}
-                placeholder="Enter deferral description"
-              />
-            </Form.Item>
-          </div>
-
-          <div className="rm-resubmit-modal-section">
-            <div className="rm-resubmit-modal-section-head">
-              <h4>Comments for Resubmission</h4>
-            </div>
-            <Form.Item name="comments" style={{ marginBottom: 0 }}>
-              <Input.TextArea
-                rows={3}
-                placeholder="Enter any additional comments or instructions"
-              />
-            </Form.Item>
-          </div>
-        </Form>
-      </Spin>
-      <div className="rm-resubmit-modal-actions">
-        <Button className="rm-resubmit-modal-cancel" onClick={onClose} disabled={loading}>
-          Cancel
-        </Button>
-        <Button
-          type="primary"
-          className="rm-resubmit-modal-confirm"
-          loading={loading}
-          onClick={() => form.submit()}
-        >
-          Resubmit for Review
-        </Button>
-      </div>
-    </Modal>
+          </Form>
+        </Spin>
+        <div className="rm-resubmit-modal-actions">
+          <Button className="rm-resubmit-modal-cancel" onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            className="rm-resubmit-modal-confirm"
+            loading={loading}
+            onClick={() => form.submit()}
+          >
+            Resubmit Extension
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 };
 
-export default ReturnForReworkModal;
+export default ExtensionReturnForReworkModal;

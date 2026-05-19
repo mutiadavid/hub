@@ -59,7 +59,7 @@ import {
   AreaChart,
   Area,
 } from "recharts";
-import { useLazyGetAuditLogsQuery, useGetAuditLogStatsQuery } from "../../api/auditApi";
+import { useGetAuditLogsQuery, useLazyGetAuditLogsQuery, useGetAuditLogStatsQuery } from "../../api/auditApi";
 import { useGetUsersQuery } from "../../api/userApi";
 import "../../styles/creatorDesignSystem.css";
 import "./AuditLogsPage.css";
@@ -526,7 +526,7 @@ const runExportWebView = (logs) => {
 
 const EXPORT_DISPATCH = { pdf: runExportPDF, excel: runExportExcel, csv: runExportCSV, web: runExportWebView };
 
-const ExportMenu = ({ onExport }) => {
+const ExportMenu = ({ onExport, loading }) => {
   const menuItems = [
     { key: "pdf", label: "Export as PDF", icon: <FilePdfOutlined style={{ color: "#dc2626" }} />, onClick: () => onExport("pdf") },
     { key: "excel", label: "Export as Excel", icon: <FileExcelOutlined style={{ color: "#16a34a" }} />, onClick: () => onExport("excel") },
@@ -535,14 +535,14 @@ const ExportMenu = ({ onExport }) => {
     { key: "web", label: "Open Web View", icon: <GlobalOutlined style={{ color: "#7c3aed" }} />, onClick: () => onExport("web") },
   ];
   return (
-    <Dropdown menu={{ items: menuItems }} placement="bottomRight" trigger={["click"]}>
-      <Button icon={<DownloadOutlined />}>Export</Button>
+    <Dropdown menu={{ items: menuItems }} placement="bottomRight" trigger={["click"]} disabled={loading}>
+      <Button icon={<DownloadOutlined />} loading={loading}>Export</Button>
     </Dropdown>
   );
 };
 
 // Dashboard Component with User & Role Analytics
-const AuditDashboard = ({ logs, stats, users }) => {
+const AuditDashboard = ({ logs, stats, users, totalCount }) => {
   // Action distribution by category - using the filtered logs
   const actionTypeData = useMemo(() => {
     const actionCounts = {};
@@ -604,7 +604,7 @@ const AuditDashboard = ({ logs, stats, users }) => {
       .sort((a, b) => b.value - a.value);
   }, [logs]);
 
-  const totalBusinessActions = logs.length;
+  const totalBusinessActions = totalCount || logs.length;
   const uniqueUsers = new Set(logs.map(l => l.userName)).size;
 
   // Calculate today's activity count from the filtered logs
@@ -772,10 +772,7 @@ const AuditLogsPage = () => {
 
   const [exportModal, setExportModal] = useState({ open: false, format: null });
   const [exportScope, setExportScope] = useState("100");
-  const [allRawLogs, setAllRawLogs] = useState([]);
-  const [isFetchingAll, setIsFetchingAll] = useState(false);
-  const [fetchAllError, setFetchAllError] = useState(null);
-  const [refreshNonce, setRefreshNonce] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -802,45 +799,44 @@ const AuditLogsPage = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [auditListFilterParams]);
+  }, [auditListFilterParams, activeView]);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setAllRawLogs([]);
-      setFetchAllError(null);
-      setIsFetchingAll(true);
-      const merged = [];
-      try {
-        let page = 1;
-        while (!cancelled) {
-          const res = await triggerFetchAuditLogs({
-            ...auditListFilterParams,
-            page,
-            limit: AUDIT_LOGS_FETCH_BATCH,
-          }).unwrap();
-          const batch = Array.isArray(res?.logs) ? res.logs : [];
-          merged.push(...batch);
-          if (batch.length === 0) break;
-          const apiTotal = res?.total != null ? Number(res.total) : NaN;
-          const haveFullCount = Number.isFinite(apiTotal) && merged.length >= apiTotal;
-          if (haveFullCount || batch.length < AUDIT_LOGS_FETCH_BATCH) break;
-          page += 1;
-        }
-        if (!cancelled) setAllRawLogs(merged);
-      } catch (e) {
-        if (!cancelled) setFetchAllError(e);
-      } finally {
-        if (!cancelled) setIsFetchingAll(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
+  // Compute fetch parameters reactively for RTK Query caching
+  const fetchParams = useMemo(() => {
+    const params = {
+      ...auditListFilterParams,
     };
-  }, [auditListFilterParams, refreshNonce, triggerFetchAuditLogs]);
+    if (activeView === "dashboard") {
+      params.page = 1;
+      params.limit = 1000;
+    } else {
+      params.page = currentPage;
+      params.limit = AUDIT_LOGS_PAGE_SIZE;
+    }
+    return params;
+  }, [auditListFilterParams, currentPage, activeView]);
+
+  // RTK Query with native browser caching, automatic background updates, and focus-tracking
+  const {
+    data: auditLogsResult,
+    isLoading: isLogsLoading,
+    isFetching: isLogsFetching,
+    error: logsFetchError,
+    refetch: refetchAuditLogs,
+  } = useGetAuditLogsQuery(fetchParams, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+  });
 
   const users = useMemo(() => getUsersArray(usersData), [usersData]);
-  const rawLogs = allRawLogs;
+
+  const rawLogs = useMemo(() => {
+    return Array.isArray(auditLogsResult?.logs) ? auditLogsResult.logs : [];
+  }, [auditLogsResult]);
+
+  const totalCount = useMemo(() => {
+    return auditLogsResult?.total != null ? Number(auditLogsResult.total) : rawLogs.length;
+  }, [auditLogsResult, rawLogs.length]);
 
   const auditLogs = useMemo(() => rawLogs.map((log, index) => normalizeAuditLog(log, index)), [rawLogs]);
 
@@ -853,14 +849,20 @@ const AuditLogsPage = () => {
   }, [businessLogs, timeSortOrder]);
 
   const pagedAuditLogs = useMemo(() => {
-    const start = (currentPage - 1) * AUDIT_LOGS_PAGE_SIZE;
-    return sortedAuditLogs.slice(start, start + AUDIT_LOGS_PAGE_SIZE);
-  }, [sortedAuditLogs, currentPage]);
+    if (activeView === "logs") {
+      // The API already returns exactly the paginated set, so we do not slice locally
+      return sortedAuditLogs;
+    } else {
+      const start = (currentPage - 1) * AUDIT_LOGS_PAGE_SIZE;
+      return sortedAuditLogs.slice(start, start + AUDIT_LOGS_PAGE_SIZE);
+    }
+  }, [sortedAuditLogs, currentPage, activeView]);
 
   useEffect(() => {
+    if (activeView === "logs") return;
     const maxPage = Math.max(1, Math.ceil(sortedAuditLogs.length / AUDIT_LOGS_PAGE_SIZE) || 1);
     if (currentPage > maxPage) setCurrentPage(maxPage);
-  }, [sortedAuditLogs.length, currentPage]);
+  }, [sortedAuditLogs.length, currentPage, activeView]);
 
   const userOptions = useMemo(
     () => users.filter((user) => user?._id && user?.name).map((user) => ({ label: `${user.name}`, value: user._id })).sort((a, b) => a.label.localeCompare(b.label)),
@@ -878,12 +880,12 @@ const AuditLogsPage = () => {
     return entities.filter(Boolean).map((value) => ({ value, label: value })).sort((a, b) => a.label.localeCompare(b.label));
   }, [businessLogs]);
 
-  const isBusy = isFetchingAll;
-  const auditError = fetchAllError;
+  const isBusy = isLogsLoading || isLogsFetching || isUsersLoading;
+  const auditError = logsFetchError;
   const errorMessage = getErrorMessage(auditError);
 
   const handleRefresh = () => {
-    setRefreshNonce((n) => n + 1);
+    refetchAuditLogs();
     refetchStats();
     refetchUsers();
   };
@@ -898,15 +900,33 @@ const AuditLogsPage = () => {
   };
 
   const handleExportFormat = (format) => { setExportScope("100"); setExportModal({ open: true, format }); };
-  const handleExportConfirm = () => {
-    const requestedCount = exportScope === "all" ? null : parseInt(exportScope, 10);
+  const handleExportConfirm = async () => {
+    const requestedCount = exportScope === "all" ? 10000 : parseInt(exportScope, 10);
     const format = exportModal.format;
     setExportModal({ open: false, format: null });
     if (!format) return;
-    const logs =
-      requestedCount === null ? sortedAuditLogs : sortedAuditLogs.slice(0, requestedCount);
-    const fn = EXPORT_DISPATCH[format];
-    if (fn) fn(logs);
+
+    setIsExporting(true);
+    try {
+      // Optimized query: fetch exactly the requested count in one swift call without polluting UI table state
+      const res = await triggerFetchAuditLogs({
+        ...auditListFilterParams,
+        page: 1,
+        limit: requestedCount,
+      }).unwrap();
+      const rawExportLogs = Array.isArray(res?.logs) ? res.logs : [];
+      const normalizedExportLogs = rawExportLogs.map((log, index) => normalizeAuditLog(log, index));
+      const filteredExportLogs = filterBusinessLogs(normalizedExportLogs);
+
+      const finalExportLogs = filteredExportLogs.slice(0, requestedCount);
+      const fn = EXPORT_DISPATCH[format];
+      if (fn) fn(finalExportLogs);
+    } catch (err) {
+      console.error("Failed to fetch logs for export:", err);
+      message.error("Failed to export logs");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const columns = [
@@ -1010,7 +1030,7 @@ const AuditLogsPage = () => {
       </div>
 
       {activeView === "dashboard" ? (
-        <AuditDashboard logs={sortedAuditLogs} stats={statsData} users={users} />
+        <AuditDashboard logs={sortedAuditLogs} stats={statsData} users={users} totalCount={totalCount} />
       ) : (
         <>
           {/* Filters */}
@@ -1047,9 +1067,9 @@ const AuditLogsPage = () => {
             <div className="flex justify-between items-center mb-5">
               <div>
                 <Title level={4} className="m-0" style={{ color: "#15313a" }}>Business Event Log</Title>
-                <Text type="secondary" className="text-sm">Showing {sortedAuditLogs.length} business events</Text>
+                <Text type="secondary" className="text-sm">Showing {totalCount} business events</Text>
               </div>
-              <ExportMenu onExport={handleExportFormat} />
+              <ExportMenu onExport={handleExportFormat} loading={isExporting} />
             </div>
 
             {auditError ? (
@@ -1062,7 +1082,7 @@ const AuditLogsPage = () => {
                 pagination={{
                   current: currentPage,
                   pageSize: AUDIT_LOGS_PAGE_SIZE,
-                  total: sortedAuditLogs.length,
+                  total: totalCount,
                   showSizeChanger: false,
                 }}
                 onChange={(nextPagination, _filters, sorter) => {
@@ -1088,9 +1108,9 @@ const AuditLogsPage = () => {
       >
         <p style={{ color: "#62717f", marginBottom: 16 }}>
           Select the number of business records to include in the <strong>{exportModal.format?.toUpperCase()}</strong> export.
-          {sortedAuditLogs.length > 0 && (
+          {totalCount > 0 && (
             <span className="block mt-2 text-sm" style={{ color: NCBA_COLORS.primary }}>
-              {sortedAuditLogs.length} total business records match your filters.
+              {totalCount} total business records match your filters.
             </span>
           )}
         </p>
@@ -1098,7 +1118,7 @@ const AuditLogsPage = () => {
           <Radio value="50">First 50 records</Radio>
           <Radio value="100">First 100 records</Radio>
           <Radio value="500">First 500 records</Radio>
-          <Radio value="all">All available records ({sortedAuditLogs.length})</Radio>
+          <Radio value="all">All available records ({totalCount})</Radio>
         </Radio.Group>
       </Modal>
     </div>

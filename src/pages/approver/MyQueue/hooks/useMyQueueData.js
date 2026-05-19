@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { message } from "antd";
+import dayjs from "dayjs";
 import deferralApi from "../../../../service/deferralApi";
 import { API_ORIGIN } from "../../../../config/runtimeConfig";
 
@@ -139,6 +140,13 @@ export const useMyQueueModal = () => {
   const [extensionModalOpen, setExtensionModalOpen] = useState(false);
   const [detailOverrides, setDetailOverrides] = useState(null);
 
+  const selectedExtensionRef = useRef(selectedExtension);
+  useEffect(() => {
+    selectedExtensionRef.current = selectedExtension;
+  }, [selectedExtension]);
+
+  const selectedExtensionId = selectedExtension?._id || selectedExtension?.id;
+
   const token = useSelector((state) => state.auth.token);
 
   const fetchFullDeferralForExtension = useCallback(
@@ -179,11 +187,12 @@ export const useMyQueueModal = () => {
 
   const refreshSelectedExtension = useCallback(
     async (extensionCandidate) => {
+      const currentSelected = selectedExtensionRef.current;
       const extensionId =
         extensionCandidate?._id ||
         extensionCandidate?.id ||
-        selectedExtension?._id ||
-        selectedExtension?.id;
+        currentSelected?._id ||
+        currentSelected?.id;
 
       if (!extensionId || !token) {
         return null;
@@ -193,7 +202,7 @@ export const useMyQueueModal = () => {
         const freshExtension = await deferralApi.getExtensionById(extensionId, token);
         if (freshExtension) {
           // Only fetch full deferral if we don't have it or if it's explicitly needed
-          let fullDeferral = selectedExtension?.deferral || selectedExtension?.linkedDeferral;
+          let fullDeferral = currentSelected?.deferral || currentSelected?.linkedDeferral;
           if (!fullDeferral) {
             fullDeferral = await fetchFullDeferralForExtension(freshExtension);
           }
@@ -212,7 +221,7 @@ export const useMyQueueModal = () => {
 
       return null;
     },
-    [fetchFullDeferralForExtension, selectedExtension, token],
+    [fetchFullDeferralForExtension, token],
   );
 
   // Handle opening extension details
@@ -237,7 +246,7 @@ export const useMyQueueModal = () => {
       // Calculate override due date
       const overrideDueDate =
         freshExtension.requestedDaysSought && (approvedDeferral.nextDueDate || approvedDeferral.nextDocumentDueDate)
-          ? require("dayjs")(
+          ? dayjs(
               approvedDeferral.nextDueDate || approvedDeferral.nextDocumentDueDate
             )
               .add(freshExtension.requestedDaysSought, "day")
@@ -273,14 +282,17 @@ export const useMyQueueModal = () => {
   );
 
   useEffect(() => {
-    if (!extensionModalOpen || !selectedExtension) {
+    if (!extensionModalOpen || !selectedExtensionId) {
       return undefined;
     }
 
     let disposed = false;
 
     const syncSelectedExtension = async () => {
-      const freshExtension = await refreshSelectedExtension(selectedExtension);
+      const currentSelected = selectedExtensionRef.current;
+      if (!currentSelected) return;
+
+      const freshExtension = await refreshSelectedExtension(currentSelected);
       if (disposed || !freshExtension) {
         return;
       }
@@ -315,7 +327,7 @@ export const useMyQueueModal = () => {
     const handleExtensionEvent = (event) => {
       const updatedExtension = event?.detail;
       const updatedId = updatedExtension?._id || updatedExtension?.id;
-      const selectedId = selectedExtension?._id || selectedExtension?.id;
+      const selectedId = selectedExtensionRef.current?._id || selectedExtensionRef.current?.id;
 
       if (!updatedId || String(updatedId) !== String(selectedId)) {
         return;
@@ -331,7 +343,7 @@ export const useMyQueueModal = () => {
       window.clearInterval(intervalId);
       window.removeEventListener("extension:updated", handleExtensionEvent);
     };
-  }, [extensionModalOpen, refreshSelectedExtension, selectedExtension]);
+  }, [extensionModalOpen, selectedExtensionId, refreshSelectedExtension]);
 
   // Close modals
   const handleCloseModal = useCallback(() => {

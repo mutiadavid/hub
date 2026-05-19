@@ -8,6 +8,7 @@ const ExtensionApprovalModal = ({
   onClose,
   onApprove,
   onReject,
+  onReturnForRework,
   loading = false,
 }) => {
   if (!open || !extension) {
@@ -22,8 +23,10 @@ const ExtensionApprovalModal = ({
       onClose={onClose}
       onApprove={(comment) => onApprove?.(extension?._id || extension?.id, comment)}
       onReject={(reason) => onReject?.(extension?._id || extension?.id, reason)}
+      onReturnForRework={(reason) => onReturnForRework?.(extension?._id || extension?.id, reason)}
       approveLoading={loading}
       rejectLoading={loading}
+      reworkLoading={loading}
       showActions
     />
   );
