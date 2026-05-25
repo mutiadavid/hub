@@ -27,9 +27,8 @@ import {
   ReloadOutlined,
   BankOutlined,
   FilePdfOutlined,
-  ReloadOutlined as ReloadIcon,
   FileDoneOutlined,
-  PaperClipOutlined,
+  PaperClipOutlined,  
   FileTextOutlined,
   UploadOutlined,
   EyeOutlined,
@@ -1056,8 +1055,10 @@ const Deferrals = ({ userId }) => {
               "deferral:update",
               JSON.stringify({ id: response.deferral?._id, ts: Date.now() }),
             );
-          } catch (e) { }
-        } catch (e) { }
+          // eslint-disable-next-line no-unused-vars
+          } catch (e) { /* empty */ }
+        // eslint-disable-next-line no-unused-vars
+        } catch (e) { /* empty */ }
       } else {
         throw new Error(response?.message || "Failed to reject deferral");
       }
@@ -1194,7 +1195,8 @@ const Deferrals = ({ userId }) => {
               detail: returnedDeferral,
             }),
           );
-        } catch (e) { }
+         // eslint-disable-next-line no-unused-vars
+         } catch (e) { /* empty */ }
       } else {
         throw new Error(
           response?.message || "Failed to return deferral for rework",
@@ -1261,7 +1263,8 @@ const Deferrals = ({ userId }) => {
               detail: response.deferral,
             }),
           );
-        } catch (e) { }
+        // eslint-disable-next-line no-unused-vars
+        } catch (e) { /* empty */ }
       } else {
         throw new Error(response?.message || "Failed to close deferral");
       }
@@ -1825,8 +1828,8 @@ const Deferrals = ({ userId }) => {
             borderBottom: "1px solid rgba(214, 189, 152, 0.2)",
             padding: "18px 20px",
           },
-          body: { padding: 16 },
-          content: { padding: 0, borderRadius: 16 },
+          body: { padding: 16, maxHeight: "60vh", overflowY: "auto" },
+          content: { padding: 0, borderRadius: 16, zoom: 0.8 },
         }}
       >
         <div className="admin-page__modal-body">
@@ -1894,3 +1897,4 @@ const Deferrals = ({ userId }) => {
 };
 
 export default Deferrals;
+

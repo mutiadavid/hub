@@ -692,7 +692,7 @@ const DeferralDetailModal = ({
 
   return (
     <>
-      <div className={reviewShellClassName}>
+      <div className={reviewShellClassName} style={{ zoom: 0.8, maxHeight: "85vh", overflowY: "auto" }}>
         <div className="w-full max-w-full">
           <DeferralReviewHeader
             deferral={deferral}

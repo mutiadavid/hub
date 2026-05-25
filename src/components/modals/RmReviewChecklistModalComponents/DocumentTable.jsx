@@ -89,6 +89,7 @@ const DocumentTable = ({
   onClearDeferralValidation,
   token,
   checklist,
+  isReturned,
 }) => {
   const [openDeferralPopoverDoc, setOpenDeferralPopoverDoc] = React.useState(null);
   const [transientValidationByDoc, setTransientValidationByDoc] = React.useState({});
@@ -190,6 +191,37 @@ const DocumentTable = ({
     if (typeof onDeferralNumberEdit === "function") {
       onDeferralNumberEdit(docIdx, value);
     }
+  };
+
+  const handleDeleteFile = (docIdx, fileIdx = null) => {
+    if (typeof onEdit === "function") {
+      onEdit();
+    }
+    setDocs((prev) =>
+      prev.map((d, idx) => {
+        if (idx === docIdx) {
+          if (fileIdx !== null && Array.isArray(d.uploads) && d.uploads.length > 0) {
+            const newUploads = [...d.uploads];
+            newUploads.splice(fileIdx, 1);
+            return {
+              ...d,
+              uploads: newUploads,
+              uploadData: newUploads.length > 0 ? newUploads[newUploads.length - 1] : null,
+              fileUrl: newUploads.length > 0 ? newUploads[newUploads.length - 1].fileUrl : null,
+              rmTouched: true,
+            };
+          }
+          return {
+            ...d,
+            uploads: [],
+            uploadData: null,
+            fileUrl: null,
+            rmTouched: true,
+          };
+        }
+        return d;
+      })
+    );
   };
 
   const columns = [
@@ -511,41 +543,84 @@ const DocumentTable = ({
                   }
 
                   if (files.length === 1) {
+                    const canDelete = !isReturned || files[0].isNewUpload === true;
                     return (
+                      <>
+                        {!readOnly && isActionAllowed && !isRestrictedCOStatus && canDelete && (
+                          <Popconfirm
+                            title="Delete this file?"
+                            onConfirm={() => handleDeleteFile(record.docIdx)}
+                            okText="Yes"
+                            cancelText="No"
+                          >
+                            <Button
+                              size="small"
+                              danger
+                              icon={<DeleteOutlined />}
+                              style={{
+                                borderRadius: 6,
+                                padding: "0 8px",
+                                height: 26,
+                              }}
+                            />
+                          </Popconfirm>
+                        )}
+                        <Button
+                          size="small"
+                          onClick={() => openFileInNewTab(files[0].fileUrl)}
+                          style={{
+                            backgroundColor: "#ffffff",
+                            borderColor: "#d9d9d9",
+                            color: "#333",
+                            borderRadius: 6,
+                            padding: "0 8px",
+                            fontSize: 11,
+                            height: 26,
+                          }}
+                        >
+                          View
+                        </Button>
+                      </>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {!readOnly && isActionAllowed && !isRestrictedCOStatus && files.every(f => !isReturned || f.isNewUpload === true) && (
+                        <Popconfirm
+                          title="Delete all files?"
+                          onConfirm={() => handleDeleteFile(record.docIdx)}
+                          okText="Yes"
+                          cancelText="No"
+                        >
+                          <Button
+                            size="small"
+                            danger
+                            icon={<DeleteOutlined />}
+                            style={{
+                              borderRadius: 6,
+                              padding: "0 8px",
+                              height: 26,
+                            }}
+                          />
+                        </Popconfirm>
+                      )}
                       <Button
                         size="small"
-                        onClick={() => openFileInNewTab(files[0].fileUrl)}
+                        onClick={() => setViewModalFiles({ files, record })}
                         style={{
                           backgroundColor: "#ffffff",
-                          borderColor: "#d9d9d9",
-                          color: "#333",
+                          borderColor: "#10b981",
+                          color: "#10b981",
                           borderRadius: 6,
                           padding: "0 8px",
                           fontSize: 11,
                           height: 26,
                         }}
                       >
-                        View
+                        View ({files.length} Files)
                       </Button>
-                    );
-                  }
-
-                  return (
-                    <Button
-                      size="small"
-                      onClick={() => setViewModalFiles({ files, record })}
-                      style={{
-                        backgroundColor: "#ffffff",
-                        borderColor: "#10b981",
-                        color: "#10b981",
-                        borderRadius: 6,
-                        padding: "0 8px",
-                        fontSize: 11,
-                        height: 26,
-                      }}
-                    >
-                      View ({files.length} Files)
-                    </Button>
+                    </>
                   );
                 })()}
 
@@ -834,6 +909,31 @@ const DocumentTable = ({
                     )}
                   </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    {!readOnly && isActionAllowed && viewModalData?.record && !["submitted", "tbo", "waived", "sighted", "deferred", "pendingco"].includes((viewModalData.record.status || "").toLowerCase()) && (!isReturned || file.isNewUpload === true) && (
+                      <Popconfirm
+                        title="Delete this file?"
+                        onConfirm={() => {
+                          handleDeleteFile(viewModalData.record.docIdx, idx);
+                          setViewModalFiles(prev => {
+                            if (!prev) return prev;
+                            const newFiles = [...prev.files];
+                            newFiles.splice(idx, 1);
+                            if (newFiles.length === 0) return null;
+                            return { ...prev, files: newFiles };
+                          });
+                        }}
+                        okText="Yes"
+                        cancelText="No"
+                        placement="left"
+                      >
+                        <Button
+                          size="small"
+                          danger
+                          icon={<DeleteOutlined />}
+                          style={{ fontFamily: cardFontFamily }}
+                        />
+                      </Popconfirm>
+                    )}
                     <Button
                       size="small"
                       onClick={() => openFileInNewTab(file.fileUrl)}

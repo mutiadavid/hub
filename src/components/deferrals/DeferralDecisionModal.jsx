@@ -104,9 +104,9 @@ export default function DeferralDecisionModal({
       zIndex={zIndex}
       styles={{
         header: { background: "white", margin: 0, padding: "16px 20px 12px" },
-        body: { background: "white", padding: "0 20px 16px", margin: 0 },
+        body: { background: "white", padding: "0 20px 16px", margin: 0, maxHeight: "60vh", overflowY: "auto" },
         footer: { background: "white", padding: "0 20px 20px", margin: 0 },
-        content: { background: "white", padding: 0 },
+        content: { background: "white", padding: 0, zoom: 0.8 },
       }}
       width={width}
       footer={[

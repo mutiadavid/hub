@@ -162,6 +162,12 @@ export async function fetchProtectedFileBlob(url, token = getAuthToken()) {
         throw new Error(`HTTP ${response.status}`);
       }
 
+      // SAFEGUARD: Reject HTML fallback responses if we are expecting a document
+      const contentType = response.headers.get("Content-Type") || "";
+      if (contentType.includes("text/html") && !candidate.endsWith(".html") && !candidate.endsWith(".htm")) {
+        throw new Error("Received HTML fallback instead of actual file");
+      }
+
       return response.blob();
     } catch (error) {
       lastError = error;
@@ -180,7 +186,7 @@ function safeOpenUrl(url, token) {
   if (!url) return;
 
   const resolvedUrl = /^data:/i.test(url) ? dataUrlToBlobUrl(url) : url;
-  
+ 
   // If it's a regular URL (not data/blob), fetch with auth header and open
   if (!(/^data:|^blob:/i.test(url))) {
     fetchProtectedFileBlob(resolvedUrl, token)
@@ -218,7 +224,7 @@ export function downloadFile(url, filename) {
   const full = getFullUrl(url);
   if (!full) return;
   const token = getAuthToken();
-  
+ 
   // For data URLs, use the old method
   if (/^data:/i.test(full)) {
     const resolvedUrl = dataUrlToBlobUrl(full);

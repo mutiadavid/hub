@@ -1,4 +1,4 @@
-* src/features/auth/pages/LoginPage.css */
+/* src/features/auth/pages/LoginPage.css */
 
 .login-page-container {
     font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
@@ -38,6 +38,7 @@
     color: #000000;
     font-size: 1.1rem;
 }
+
 .login-page-container .header-logo-icon {
     width: 36px;
     height: 36px;
@@ -53,7 +54,8 @@
 .login-page-container .login-form-wrapper {
     width: 100%;
     max-width: 440px;
-    margin: auto; /* Vertically and horizontally center */
+    margin: auto;
+    /* Vertically and horizontally center */
 }
 
 .login-page-container .welcome-text {
@@ -61,6 +63,7 @@
     margin-bottom: 2rem;
     font-size: large;
 }
+
 .login-page-container .welcome-text h2 {
     font-size: 4.5rem;
     font-weight: 600;
@@ -78,11 +81,13 @@
     flex-direction: column;
     gap: 0.5rem;
 }
+
 .login-page-container .input-group label {
     font-size: 0.8rem;
     font-weight: 600;
     color: #374151;
 }
+
 .login-page-container .input-wrapper {
     display: flex;
     align-items: center;
@@ -92,10 +97,12 @@
     transition: all 0.2s;
     padding: 0 0.5rem;
 }
+
 .login-page-container .input-wrapper:focus-within {
     border-color: #111827;
     box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.1);
 }
+
 .login-page-container .input-prefix {
     display: flex;
     align-items: center;
@@ -105,6 +112,7 @@
     font-size: 1rem;
     font-weight: 500;
 }
+
 .login-page-container .input-wrapper input {
     width: 100%;
     padding: 0.85rem 0.5rem;
@@ -116,10 +124,12 @@
     background: transparent;
     color: #111827;
 }
+
 .login-page-container .input-wrapper input::placeholder {
     color: #9CA3AF;
     font-weight: 400;
 }
+
 .login-page-container .password-toggle {
     background: none;
     border: none;
@@ -132,6 +142,7 @@
     justify-content: center;
     transition: color 0.2s;
 }
+
 .login-page-container .password-toggle:hover {
     color: #4B5563;
 }
@@ -143,6 +154,7 @@
     margin: 0.4rem 0 1.5rem 0;
     font-size: 0.85rem;
 }
+
 .login-page-container .checkbox-remember {
     display: flex;
     align-items: center;
@@ -150,18 +162,21 @@
     cursor: pointer;
     color: #374151;
 }
+
 .login-page-container .checkbox-remember input {
     width: 1rem;
     height: 1rem;
     accent-color: #000000;
     cursor: pointer;
 }
+
 .login-page-container .forgot-link {
     color: #111827;
     text-decoration: underline;
     font-weight: 600;
     transition: color 0.2s;
 }
+
 .login-page-container .forgot-link:hover {
     color: #4B5563;
 }
@@ -169,7 +184,8 @@
 /* THE ONLY LIGHT BLUE ELEMENT */
 .login-page-container .login-btn {
     width: 100%;
-    background: #3AB3E5; /* NCBA primary blue */
+    background: #3AB3E5;
+    /* NCBA primary blue */
     border: none;
     padding: 0.85rem 0;
     border-radius: 0.5rem;
@@ -187,10 +203,13 @@
     align-items: center;
     gap: 0.5rem;
 }
+
 .login-page-container .login-btn:hover {
-    background: #2A8CB5; /* NCBA dark blue for hover */
+    background: #2A8CB5;
+    /* NCBA dark blue for hover */
     transform: translateY(-1px);
 }
+
 .login-page-container .login-btn:disabled {
     background: #9CA3AF;
     cursor: not-allowed;
@@ -206,15 +225,18 @@
     color: #9CA3AF;
     width: 100%;
 }
+
 .login-page-container .form-footer-layout .footer-links-inline {
     display: flex;
     gap: 1rem;
 }
+
 .login-page-container .form-footer-layout a {
     color: #9CA3AF;
     text-decoration: none;
     transition: color 0.2s;
 }
+
 .login-page-container .form-footer-layout a:hover {
     color: #111827;
 }
@@ -267,6 +289,7 @@
     border-radius: 50%;
     pointer-events: none;
 }
+
 .login-page-container .brand-column::after {
     content: "";
     position: absolute;
@@ -283,6 +306,7 @@
     position: relative;
     z-index: 2;
 }
+
 .login-page-container .brand-large h1 {
     font-size: 3rem;
     font-weight: 800;
@@ -290,6 +314,7 @@
     color: #FFFFFF;
     margin-bottom: 0.75rem;
 }
+
 .login-page-container .tagline {
     font-size: 0.9rem;
     font-weight: 400;
@@ -300,11 +325,13 @@
     padding-left: 1rem;
     margin-top: 0.4rem;
 }
+
 .login-page-container .hero-quote {
     position: relative;
     z-index: 2;
     margin: 3rem 0;
 }
+
 .login-page-container .hero-quote p {
     font-size: 1.25rem;
     font-weight: 400;
@@ -312,6 +339,7 @@
     font-style: italic;
     opacity: 0.9;
 }
+
 .login-page-container .hero-quote small {
     display: block;
     margin-top: 1rem;
@@ -319,6 +347,7 @@
     opacity: 0.7;
     letter-spacing: 0.5px;
 }
+
 .login-page-container .stats {
     display: flex;
     gap: 2rem;
@@ -326,11 +355,13 @@
     position: relative;
     z-index: 2;
 }
+
 .login-page-container .stat-item h3 {
     font-size: 1.8rem;
     font-weight: 700;
     color: #FFFFFF;
 }
+
 .login-page-container .stat-item p {
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -343,14 +374,17 @@
     .login-page-container .split-container {
         flex-direction: column;
     }
+
     .login-page-container .form-column {
         padding: 3rem 2rem;
     }
+
     .login-page-container .brand-column {
         padding: 3rem 2rem;
         text-align: center;
         align-items: center;
     }
+
     .login-page-container .tagline {
         max-width: 100%;
         text-align: center;
@@ -359,17 +393,18 @@
         padding-left: 0;
         padding-top: 0.75rem;
     }
+
     .login-page-container .stats {
         justify-content: center;
     }
 }
+
 @media (max-width: 480px) {
     .login-page-container .form-column {
         padding: 2rem 1.5rem;
     }
+
     .login-page-container .brand-column {
         padding: 2rem 1.5rem;
     }
 }
-
- 

@@ -908,7 +908,7 @@ const RmReviewChecklistModal = ({
       const resolvedChecklistId = checklist?.id || checklist?._id;
       const resolvedDocumentId = document?.id || document?._id;
 
-      const uploadResult = await uploadFileToBackend(
+      const rawUploadResult = await uploadFileToBackend(
         file,
         resolvedChecklistId,
         resolvedDocumentId,
@@ -916,6 +916,8 @@ const RmReviewChecklistModal = ({
         document.category,
         token,
       );
+
+      const uploadResult = { ...rawUploadResult, isNewUpload: true };
 
       setDocs((prev) =>
         prev.map((d, idx) => {
@@ -1630,6 +1632,7 @@ const RmReviewChecklistModal = ({
                   onDeferralNumberEdit={markDeferralValidationPending}
                   onClearDeferralValidation={clearDeferralValidation}
                   token={token}
+                  isReturned={displayComments.length > 0}
                 />
               </div>
             </div>

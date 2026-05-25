@@ -322,7 +322,7 @@ const ExtensionApplicationModal = ({
 
   return (
     <>
-      <div className={reviewShellClassName}>
+      <div className={reviewShellClassName} style={{ zoom: 0.8, maxHeight: "85vh", overflowY: "auto" }}>
         <div className="flex flex-col gap-4 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3 max-md:flex-col max-md:items-stretch">
             <div className="flex items-start gap-3 max-md:flex-col max-md:items-stretch">
@@ -633,4 +633,3 @@ const ExtensionApplicationModal = ({
 };
 
 export default ExtensionApplicationModal;
-
