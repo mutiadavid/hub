@@ -172,7 +172,7 @@
 
 .deferral-review-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(300px, 3fr);
+  grid-template-columns: minmax(0, 6.5fr) minmax(400px, 3.5fr);
   gap: 16px;
   align-items: start;
 }

@@ -17,9 +17,9 @@ export const getSidebarWidth = (collapsed) => {
   
   // Tablet: 768px - 1099px - half-size sidebar
   if (screenWidth < 1100) {
-    return collapsed ? 52 : 176;
+    return collapsed ? 64 : 200;
   }
   
   // Desktop: >= 1100px - full-size sidebar
-  return collapsed ? 88 : 264;
+  return collapsed ? 64 : 220;
 };
