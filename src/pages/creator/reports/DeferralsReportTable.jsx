@@ -90,6 +90,10 @@ export default function DeferralsReportTable({ rows }) {
   const [loadingDeferralId, setLoadingDeferralId] = useState(null);
 
   const customTableStyles = `
+    .deferrals-report-shell,
+    .deferrals-report-shell * {
+      font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif !important;
+    }
     .deferrals-report-shell {
       background: var(--color-white);
       border-radius: 8px;
@@ -134,8 +138,8 @@ export default function DeferralsReportTable({ rows }) {
       background: transparent !important;
       color: var(--color-text-medium) !important;
       font-weight: 600;
-      font-size: 12px;
-      padding: 14px 12px !important;
+      font-size: 11px !important;
+      padding: 12px 12px !important;
       border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
       border-right: none !important;
       line-height: 1.2;
@@ -150,8 +154,8 @@ export default function DeferralsReportTable({ rows }) {
       border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
       border-top: none !important;
       border-right: none !important;
-      padding: 16px 12px !important;
-      font-size: 12px;
+      padding: 12px 12px !important;
+      font-size: 12px !important;
       color: var(--color-text-medium);
       line-height: 1.25;
       text-align: left;
@@ -209,8 +213,8 @@ export default function DeferralsReportTable({ rows }) {
     }
     .deferrals-report-primary {
       color: var(--color-text-dark);
-      font-size: 13px;
-      font-weight: 400;
+      font-size: 12px;
+      font-weight: 600;
       letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;
@@ -281,7 +285,6 @@ export default function DeferralsReportTable({ rows }) {
       }
     }
   `;
-
   const handleCloseModal = () => {
     setSelectedDeferral(null);
     setLoadingDeferralId(null);

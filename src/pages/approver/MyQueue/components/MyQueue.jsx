@@ -18,6 +18,28 @@ import {
 import { DeferralDetailsModal, ExtensionApplicationsTab } from ".";
 import ExtensionApplicationModal from "./ExtensionApplicationModal";
 import { API_BASE_URL } from "../../../../config/runtimeConfig";
+import "../../../../styles/creatorDesignSystem.css";
+
+const myQueuePageStyles = `
+  .approver-myqueue-page {
+  }
+  .approver-myqueue-page,
+  .approver-myqueue-page * {
+    font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif !important;
+  }
+  .approver-myqueue-page .ant-table-thead > tr > th {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    padding: 8px 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-medium, #6b7280) !important;
+  }
+  .approver-myqueue-page .ant-table-tbody > tr > td {
+    font-size: 11px !important;
+    padding: 8px 12px !important;
+  }
+`;
 
 const { RangePicker } = DatePicker;
 
@@ -33,9 +55,9 @@ const primaryQueueButtonClassName = "!min-h-[42px] !rounded-lg !border-0 !bg-[va
 
 const secondaryQueueButtonClassName = "!min-h-[42px] !rounded-lg !border !border-[rgba(214,189,152,0.28)] !bg-white !px-4 !text-xs !font-semibold !text-[var(--color-text-medium)] !shadow-none hover:!border-[rgba(64,83,76,0.24)] hover:!bg-white hover:!text-[var(--color-text-dark)] focus:!border-[rgba(64,83,76,0.24)] focus:!bg-white focus:!text-[var(--color-text-dark)] active:!border-[rgba(64,83,76,0.24)] active:!bg-white active:!text-[var(--color-text-dark)] disabled:!border-[#D1D5DB] disabled:!bg-[#D1D5DB] disabled:!text-white disabled:[&>span]:!text-white";
 
-const queueTabsClassName = "[&_.ant-tabs-nav]:mb-0 [&_.ant-tabs-nav]:border-b [&_.ant-tabs-nav]:border-[rgba(214,189,152,0.2)] [&_.ant-tabs-nav]:bg-white [&_.ant-tabs-nav]:px-4 max-md:[&_.ant-tabs-nav]:px-0 [&_.ant-tabs-nav-wrap]:overflow-auto [&_.ant-tabs-nav::before]:border-[rgba(214,189,152,0.2)] [&_.ant-tabs-tab]:mr-6 [&_.ant-tabs-tab]:rounded-none [&_.ant-tabs-tab]:border-none [&_.ant-tabs-tab]:bg-transparent [&_.ant-tabs-tab]:px-2 [&_.ant-tabs-tab]:pb-3 [&_.ant-tabs-tab]:pt-3.5 [&_.ant-tabs-tab]:text-xs [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-(--color-text-light) [&_.ant-tabs-tab]:transition-all max-md:[&_.ant-tabs-tab]:mr-[22px] max-md:[&_.ant-tabs-tab]:pb-2.5 max-md:[&_.ant-tabs-tab]:pt-3 [&_.ant-tabs-tab-active]:border-transparent [&_.ant-tabs-tab-active]:bg-transparent [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-normal [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-(--color-primary-dark) [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:rounded-none [&_.ant-tabs-ink-bar]:bg-(--color-primary-dark)";
+const queueTabsClassName = "[&_.ant-tabs-nav]:mb-0 [&_.ant-tabs-nav]:border-b [&_.ant-tabs-nav]:border-[rgba(214,189,152,0.2)] [&_.ant-tabs-nav]:bg-white [&_.ant-tabs-nav]:px-4 max-md:[&_.ant-tabs-nav]:px-0 [&_.ant-tabs-nav-wrap]:overflow-auto [&_.ant-tabs-nav::before]:border-[rgba(214,189,152,0.2)] [&_.ant-tabs-tab]:mr-6 [&_.ant-tabs-tab]:rounded-none [&_.ant-tabs-tab]:border-none [&_.ant-tabs-tab]:bg-transparent [&_.ant-tabs-tab]:px-2 [&_.ant-tabs-tab]:pb-2 [&_.ant-tabs-tab]:pt-2.5 [&_.ant-tabs-tab]:text-[11px] [&_.ant-tabs-tab]:font-medium [&_.ant-tabs-tab]:text-(--color-text-light) [&_.ant-tabs-tab]:transition-all max-md:[&_.ant-tabs-tab]:mr-[22px] max-md:[&_.ant-tabs-tab]:pb-2 max-md:[&_.ant-tabs-tab]:pt-2 [&_.ant-tabs-tab-active]:border-transparent [&_.ant-tabs-tab-active]:bg-transparent [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:font-normal [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-(--color-primary-dark) [&_.ant-tabs-ink-bar]:h-0.5 [&_.ant-tabs-ink-bar]:rounded-none [&_.ant-tabs-ink-bar]:bg-(--color-primary-dark)";
 
-const queueTableShellClassName = "rounded-lg bg-white px-4 pb-4 [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:bg-transparent [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-3.5 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-normal [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:leading-[1.2] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-t-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:bg-transparent [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:leading-[1.25] [&_.ant-table-tbody>tr>td]:text-(--color-text-dark) hover:[&_.ant-table-tbody>tr:hover>td]:bg-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-table-thead>tr>th::before]:hidden [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden [&_.ant-table-wrapper::before]:hidden [&_.ant-table-wrapper::after]:hidden [&_.ant-table-container::before]:hidden [&_.ant-table-container::after]:hidden [&_.ant-table-thead>tr::after]:hidden [&_.ant-table-tbody>tr::after]:hidden [&_.ant-pagination]:mb-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination_.ant-pagination-item]:min-w-[34px] [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-item]:bg-transparent [&_.ant-pagination_.ant-pagination-prev]:min-w-[34px] [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:bg-transparent [&_.ant-pagination_.ant-pagination-next]:min-w-[34px] [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-next]:bg-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-normal [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark)";
+const queueTableShellClassName = "rounded-lg bg-white px-4 pb-4 [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr>th]:border-b [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:border-[rgba(214,189,152,0.2)] [&_.ant-table-thead>tr>th]:bg-transparent [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-2 [&_.ant-table-thead>tr>th]:text-[10px] [&_.ant-table-thead>tr>th]:font-normal [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:leading-[1.2] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-t-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td]:bg-transparent [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-2.5 [&_.ant-table-tbody>tr>td]:text-[11px] [&_.ant-table-tbody>tr>td]:leading-[1.25] [&_.ant-table-tbody>tr>td]:text-(--color-text-dark) hover:[&_.ant-table-tbody>tr:hover>td]:bg-[rgba(214,189,152,0.12)] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-table-thead>tr>th::before]:hidden [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden [&_.ant-table-wrapper::before]:hidden [&_.ant-table-wrapper::after]:hidden [&_.ant-table-container::before]:hidden [&_.ant-table-container::after]:hidden [&_.ant-table-thead>tr::after]:hidden [&_.ant-table-tbody>tr::after]:hidden [&_.ant-pagination]:mb-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination_.ant-pagination-item]:min-w-[34px] [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-item]:bg-transparent [&_.ant-pagination_.ant-pagination-prev]:min-w-[34px] [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:bg-transparent [&_.ant-pagination_.ant-pagination-next]:min-w-[34px] [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-next]:bg-transparent [&_.ant-pagination_.ant-pagination-item-active]:border-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active]:bg-[rgba(214,189,152,0.18)] [&_.ant-pagination_.ant-pagination-item-active_a]:font-normal [&_.ant-pagination_.ant-pagination-item-active_a]:text-(--color-text-dark)";
 
 const queueLoadingStateClassName = "flex min-h-[220px] items-center justify-center rounded-lg border border-[rgba(214,189,152,0.2)] bg-white";
 
@@ -320,7 +342,7 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
       if (!res.ok) {
         let errorMsg = "Failed to return extension for rework";
         const responseText = await res.text().catch(() => "");
-       
+
         try {
           const body = JSON.parse(responseText);
           errorMsg = body?.message || body?.error || errorMsg;
@@ -406,7 +428,8 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
   );
 
   return (
-    <div className="creator-theme min-h-full w-full bg-(--color-bg)">
+    <div className="approver-myqueue-page creator-theme min-h-full w-full bg-(--color-bg)">
+      <style>{myQueuePageStyles}</style>
       <div className="w-full">
         <div className="overflow-hidden rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
           {showDeferralDetails ? (
@@ -439,8 +462,8 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
             <>
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] bg-(--color-bg) p-4 max-md:flex-col max-md:items-stretch">
                 <div>
-                  <h2 className="m-0 text-[15px] font-normal leading-[1.2] tracking-[-0.02em] text-(--color-text-dark)">My Queue</h2>
-                  <p className="m-0 text-xs leading-6 text-(--color-text-dark)">
+                  <h2 className="m-0 text-[13px] font-semibold leading-[1.2] tracking-[-0.02em] text-(--color-text-dark)">My Queue</h2>
+                  <p className="m-0 text-[11px] leading-5 text-(--color-text-dark)">
                     Review pending deferrals and extension applications from one workspace.
                   </p>
                 </div>
@@ -470,71 +493,71 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                     label: renderTabLabel("Deferrals", filteredDeferrals.length),
                     children: (
                       <div>
-                      <div className={baseFiltersRowClassName}>
-                        <Select
-                          placeholder="Status"
-                          value={statusFilter}
-                          onChange={setStatusFilter}
-                          size="large"
-                          options={[
-                            { label: "All statuses", value: "all" },
-                            { label: "Pending approval", value: "pending_approval" },
-                            { label: "In review", value: "in_review" },
-                          ]}
-                        />
-                        <RangePicker
-                          value={dateRange.length === 2 ? [dayjs(dateRange[0]), dayjs(dateRange[1])] : null}
-                          onChange={(dates) => {
-                            if (dates) {
-                              setDateRange([dates[0].toDate(), dates[1].toDate()]);
-                            } else {
-                              setDateRange([]);
-                            }
-                          }}
-                          size="large"
-                        />
-                        <div className={queueActionsClassName}>
-                          <Button
-                            className={primaryQueueButtonClassName}
-                            icon={<ReloadOutlined />}
-                            onClick={refetchDeferrals}
-                            loading={isLoading}
+                        <div className={baseFiltersRowClassName}>
+                          <Select
+                            placeholder="Status"
+                            value={statusFilter}
+                            onChange={setStatusFilter}
                             size="large"
-                          >
-                            Refresh
-                          </Button>
-                          {hasActiveFilters && (
-                            <Button className={secondaryQueueButtonClassName} onClick={resetFilters} size="large">
-                              Clear Filters
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      {isLoading ? (
-                        <div className={queueLoadingStateClassName}>
-                          <Spin />
-                        </div>
-                      ) : filteredDeferrals.length === 0 ? (
-                        <div className={queueLoadingStateClassName}>
-                          <Empty description="No pending deferrals" />
-                        </div>
-                      ) : (
-                        <div className={queueTableShellClassName}>
-                          <Table
-                            columns={deferralColumns}
-                            dataSource={filteredDeferrals}
-                            rowKey={(record) => record._id || record.id}
-                            tableLayout="fixed"
-                            pagination={{ pageSize: 5, showSizeChanger: true, pageSizeOptions: ["5", "10", "20", "50"] }}
-                            scroll={{ x: 720 }}
-                            onRow={(record) => ({
-                              onClick: () => handleOpenDeferralDetails(record),
-                              className: "cursor-pointer",
-                            })}
+                            options={[
+                              { label: "All statuses", value: "all" },
+                              { label: "Pending approval", value: "pending_approval" },
+                              { label: "In review", value: "in_review" },
+                            ]}
                           />
+                          <RangePicker
+                            value={dateRange.length === 2 ? [dayjs(dateRange[0]), dayjs(dateRange[1])] : null}
+                            onChange={(dates) => {
+                              if (dates) {
+                                setDateRange([dates[0].toDate(), dates[1].toDate()]);
+                              } else {
+                                setDateRange([]);
+                              }
+                            }}
+                            size="large"
+                          />
+                          <div className={queueActionsClassName}>
+                            <Button
+                              className={primaryQueueButtonClassName}
+                              icon={<ReloadOutlined />}
+                              onClick={refetchDeferrals}
+                              loading={isLoading}
+                              size="large"
+                            >
+                              Refresh
+                            </Button>
+                            {hasActiveFilters && (
+                              <Button className={secondaryQueueButtonClassName} onClick={resetFilters} size="large">
+                                Clear Filters
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      )}
+
+                        {isLoading ? (
+                          <div className={queueLoadingStateClassName}>
+                            <Spin />
+                          </div>
+                        ) : filteredDeferrals.length === 0 ? (
+                          <div className={queueLoadingStateClassName}>
+                            <Empty description="No pending deferrals" />
+                          </div>
+                        ) : (
+                          <div className={queueTableShellClassName}>
+                            <Table
+                              columns={deferralColumns}
+                              dataSource={filteredDeferrals}
+                              rowKey={(record) => record._id || record.id}
+                              tableLayout="fixed"
+                              pagination={{ pageSize: 5, showSizeChanger: true, pageSizeOptions: ["5", "10", "20", "50"] }}
+                              scroll={{ x: 720 }}
+                              onRow={(record) => ({
+                                onClick: () => handleOpenDeferralDetails(record),
+                                className: "cursor-pointer",
+                              })}
+                            />
+                          </div>
+                        )}
                       </div>
                     ),
                   },
@@ -543,24 +566,24 @@ const MyQueue = ({ initialTab = "deferrals" }) => {
                     label: renderTabLabel("Extensions", filteredExtensions.length),
                     children: (
                       <div>
-                      <div className={compactFiltersRowClassName}>
-                        <div className={queueActionsClassName}>
-                          <Button
-                            className={primaryQueueButtonClassName}
-                            icon={<ReloadOutlined />}
-                            onClick={refetchExtensions}
-                            loading={extensionsLoading}
-                            size="large"
-                          >
-                            Refresh
-                          </Button>
-                          {extensionSearchText && (
-                            <Button className={secondaryQueueButtonClassName} onClick={resetExtensionFilters} size="large">
-                              Clear Search
+                        <div className={compactFiltersRowClassName}>
+                          <div className={queueActionsClassName}>
+                            <Button
+                              className={primaryQueueButtonClassName}
+                              icon={<ReloadOutlined />}
+                              onClick={refetchExtensions}
+                              loading={extensionsLoading}
+                              size="large"
+                            >
+                              Refresh
                             </Button>
-                          )}
+                            {extensionSearchText && (
+                              <Button className={secondaryQueueButtonClassName} onClick={resetExtensionFilters} size="large">
+                                Clear Search
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </div>
 
                         <ExtensionApplicationsTab
                           extensions={filteredExtensions}

@@ -174,10 +174,10 @@ export function buildDclAnalytics(rows, statusColors) {
       value,
       color:
         statusColors[
-          String(name || "unknown")
-            .replace(/\s+/g, "")
-            .replace(/_/g, "")
-            .toLowerCase()
+        String(name || "unknown")
+          .replace(/\s+/g, "")
+          .replace(/_/g, "")
+          .toLowerCase()
         ] || statusColors.unknown,
     }))
     .sort((a, b) => b.value - a.value);
@@ -477,6 +477,7 @@ const CHECKLIST_FINAL_STATUSES = new Set([
   "rejected",
   "deferred",
   "revived",
+  "discarded",
 ]);
 
 const DEFERRAL_FINAL_STATUSES = new Set([
@@ -609,7 +610,7 @@ export const formatTatDuration = (minutes, fallback = "-") => {
   if (mins > 0) parts.push(`${mins}m`);
 
   if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
-  
+
   return parts.join(" ");
 };
 
@@ -680,7 +681,7 @@ const getChecklistCurrentStage = (checklist, logs = getChecklistLogs(checklist))
   const status = safeLower(checklist?.status);
 
   // Match against exact enum values in various formats: PascalCase, camelCase, lowercase, snake_case
-  if (["approved", "rejected", "completed"].includes(status)) return "done";
+  if (["approved", "rejected", "completed", "discarded"].includes(status)) return "done";
   if (["cocheckerreview", "cochecker_review", "co_checker_review"].includes(status)) return "coChecker";
   if (["pending", "active", "", null, undefined].includes(checklist?.status) || ["pending", "active"].includes(status)) {
     const hasCoCheckerBoundary = Boolean(
@@ -1117,7 +1118,7 @@ export const buildTatBreakdown = (item, workflowType, nowAt = dayjs()) =>
 export const buildTATTableRows = (deferralRows = [], dclRows = [], nowAt = dayjs()) => {
   const mappedDeferrals = (deferralRows || []).map((item, index) => {
     const breakdown = buildDeferralTatBreakdown(item, nowAt);
-    
+
     return {
       key: `deferral-${item?._id || item?.id || index}`,
       itemId: item?.deferralNumber || item?.id || item?._id || `DEF-${index + 1}`,
@@ -1151,7 +1152,7 @@ export const buildTATTableRows = (deferralRows = [], dclRows = [], nowAt = dayjs
       breakdown.coCreatorInitialTat,
       breakdown.coCreatorRevisionTat,
     ]);
-    
+
     return {
       key: `dcl-${item?._id || item?.id || index}`,
       itemId: item?.dclNo || item?.dclNumber || item?.id || item?._id || `DCL-${index + 1}`,

@@ -6,12 +6,8 @@ import {
   Input,
 } from "antd";
 import "../../styles/creatorTableOverrides.css";
-import {
-  SearchOutlined,
-} from "@ant-design/icons";
-import {
-  useGetChecklistsByCreatorQuery,
-} from "../../api/checklistApi";
+import { SearchOutlined } from "@ant-design/icons";
+import { useGetAllCoCreatorChecklistsQuery } from "../../api/checklistApi";
 import { formatDate } from "../../utils/checklistUtils";
 import RealTimeSlaTag from "../../components/common/RealTimeSlaTag";
 // import ReviewChecklistModal from "../../components/modals/ReviewChecklistModal";
@@ -49,9 +45,7 @@ const Completed = () => {
   const {
     data: allChecklists = [],
     isLoading,
-  } = useGetChecklistsByCreatorQuery(creatorId, {
-    skip: !creatorId,
-  });
+  } = useGetAllCoCreatorChecklistsQuery();
 
   /* ---------------- FILTER APPROVED ---------------- */
   const filteredData = useMemo(() => {

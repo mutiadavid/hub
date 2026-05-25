@@ -16,10 +16,12 @@ import MyQueueExtensionApplicationModal from "../MyQueue/components/ExtensionApp
 import "../../../styles/creatorDesignSystem.css";
 
 const actionedPageStyles = `
+  .approver-actioned-page,
+  .approver-actioned-page * {
+    font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif !important;
+  }
+
   .approver-actioned-page {
-    min-height: 100%;
-    width: 100%;
-    background: var(--color-bg);
   }
 
   .approver-actioned-shell {
@@ -47,8 +49,8 @@ const actionedPageStyles = `
 
   .approver-actioned-title {
     color: var(--color-text-dark);
-    font-size: 15px;
-    font-weight: 400;
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.02em;
     margin: 0;
@@ -57,7 +59,7 @@ const actionedPageStyles = `
   .approver-actioned-copy {
     margin: 0;
     color: var(--color-text-dark);
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.5;
   }
 
@@ -81,9 +83,9 @@ const actionedPageStyles = `
     border: none !important;
     background: transparent !important;
     border-radius: 0 !important;
-    padding: 14px 8px 12px !important;
+    padding: 10px 8px 8px !important;
     color: var(--color-text-light);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     margin: 0 24px 0 0 !important;
   }
@@ -166,14 +168,15 @@ const actionedPageStyles = `
 
   .approver-actioned-table .ant-table-thead > tr > th {
     background: transparent !important;
-    color: var(--color-text-dark) !important;
-    font-weight: 400;
-    font-size: 11px;
-    padding: 14px 12px !important;
+    color: var(--color-text-medium, #6b7280) !important;
+    font-weight: 600 !important;
+    font-size: 10px !important;
+    padding: 8px 12px !important;
     border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
     border-right: none !important;
     line-height: 1.2;
     text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
   .approver-actioned-table .ant-table-tbody > tr > td {
@@ -181,8 +184,8 @@ const actionedPageStyles = `
     border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
     border-top: none !important;
     border-right: none !important;
-    padding: 16px 12px !important;
-    font-size: 12px;
+    padding: 8px 12px !important;
+    font-size: 11px !important;
     color: var(--color-text-dark);
     line-height: 1.25;
   }

@@ -1,6 +1,11 @@
 /* Creator Table Header Border Removal Overrides */
 /* Remove table header bottom borders for a cleaner look */
 
+.creator-table-header-clean,
+.creator-table-header-clean * {
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif !important;
+}
+
 .creator-table-header-clean .ant-table-thead > tr > th {
   border-bottom: none !important;
 }
@@ -25,3 +30,40 @@
 .creator-table-header-clean .ant-table-tbody > tr > td {
   border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
 }
+
+/* Utility Table Cell Styles for Consistency */
+.creator-table-primary-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.creator-table-primary-value {
+  color: var(--color-text-dark);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.creator-table-secondary-value {
+  color: var(--color-text-light);
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.creator-table-muted {
+  color: var(--color-text-medium);
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

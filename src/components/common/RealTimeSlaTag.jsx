@@ -127,7 +127,7 @@ function formatBusinessDuration(diffMs) {
     return `${minutes}m`;
   }
 
-  return "0m";
+  return "< 1m";
 }
 
 function getSlaPresentation({

@@ -3,8 +3,9 @@ import React, { useState, useMemo } from "react";
 import { Button, Select, Table } from "antd";
 import { useNavigate } from "react-router-dom";
 import ChecklistsPage from "./ChecklistsPageCreator";
-import { useGetAllCoCreatorChecklistsQuery } from "../../api/checklistApi";
+import { useGetSpecificChecklistsByCreatorQuery } from "../../api/checklistApi";
 import { formatCommentTimestamp } from "../../utils/checklistUtils";
+import "../../styles/creatorTableOverrides.css";
 
 const pageRootClassName =
   "min-h-full w-full bg-white px-0 [font-family:'Century_Gothic','CenturyGothic','AppleGothic',sans-serif]";
@@ -31,11 +32,11 @@ const createButtonClassName =
 const tableShellClassName =
   "rounded-lg bg-white [&_.ant-table]:table-fixed [&_.ant-table]:w-full [&_.ant-table-cell]:before:hidden [&_.ant-table-cell]:after:hidden [&_.ant-table-cell]:align-middle [&_.ant-table-container]:before:hidden [&_.ant-table-container]:after:hidden [&_.ant-table-content]:overflow-x-auto [&_.ant-table-placeholder]:bg-white [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-[#d6bd981f] [&_.ant-table-tbody>tr>td]:bg-white [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-4 [&_.ant-table-tbody>tr>td]:text-[13px] [&_.ant-table-tbody>tr>td]:text-[#4b5563] [&_.ant-table-tbody>tr>td:first-child]:pl-0 [&_.ant-table-tbody>tr>td:last-child]:pr-0 [&_.ant-table-tbody>tr:hover>td]:bg-[#f5f7f4] [&_.ant-table-thead>tr]:border-b-0 [&_.ant-table-thead>tr:after]:hidden [&_.ant-table-thead>tr:before]:hidden [&_.ant-table-thead>tr>th]:bg-white [&_.ant-table-thead>tr>th]:border-b-0 [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-[14px] [&_.ant-table-thead>tr>th]:text-xs [&_.ant-table-thead>tr>th]:font-semibold [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.02em] [&_.ant-table-thead>tr>th]:text-[#6b7280] [&_.ant-table-thead>tr>th:first-child]:pl-0 [&_.ant-table-thead>tr>th:last-child]:pr-0 [&_.ant-pagination]:mt-[18px] [&_.ant-pagination]:mb-0 [&_.ant-pagination]:items-center [&_.ant-pagination]:gap-1.5 [&_.ant-pagination_.ant-pagination-item]:rounded-full [&_.ant-pagination_.ant-pagination-item]:border-transparent [&_.ant-pagination_.ant-pagination-item]:bg-transparent [&_.ant-pagination_.ant-pagination-item]:text-[13px] [&_.ant-pagination_.ant-pagination-item-active]:border-[#d6bd982e] [&_.ant-pagination_.ant-pagination-item-active]:bg-[#d6bd982e] [&_.ant-pagination_.ant-pagination-item-active_a]:font-medium [&_.ant-pagination_.ant-pagination-item-active_a]:text-[#1f2933] [&_.ant-pagination_.ant-pagination-item-link]:text-[13px] [&_.ant-pagination_.ant-pagination-item-link]:text-[#1f2933] [&_.ant-pagination_.ant-pagination-item_a]:text-xs [&_.ant-pagination_.ant-pagination-item_a]:font-medium [&_.ant-pagination_.ant-pagination-item_a]:text-[#1f2933] [&_.ant-pagination_.ant-pagination-next]:rounded-full [&_.ant-pagination_.ant-pagination-next]:border-transparent [&_.ant-pagination_.ant-pagination-next]:bg-transparent [&_.ant-pagination_.ant-pagination-next]:min-w-[34px] [&_.ant-pagination_.ant-pagination-options]:text-xs [&_.ant-pagination_.ant-pagination-options]:font-medium [&_.ant-pagination_.ant-pagination-options]:text-[#1f2933] [&_.ant-pagination_.ant-pagination-prev]:rounded-full [&_.ant-pagination_.ant-pagination-prev]:border-transparent [&_.ant-pagination_.ant-pagination-prev]:bg-transparent [&_.ant-pagination_.ant-pagination-prev]:min-w-[34px] [&_.ant-pagination_.ant-select-arrow]:text-[#1f2933] [&_.ant-pagination_.ant-select-selection-item]:text-xs [&_.ant-pagination_.ant-select-selection-item]:text-[#1f2933] [&_.ant-pagination_.ant-select-selection-placeholder]:text-xs [&_.ant-pagination_.ant-select-selection-placeholder]:text-[#1f2933] [&_.ant-pagination_.ant-select-selector]:text-xs [&_.ant-pagination_.ant-select-selector]:text-[#1f2933] [&_.ant-spin-container]:bg-white";
 
-const primaryCellClassName = "flex min-w-0 flex-col gap-1";
-const primaryValueClassName = "truncate text-[13px] font-normal tracking-[-0.01em] text-[#1f2933]";
-const createdCellClassName = "flex min-w-0 items-center";
-const createdDateClassName = "truncate text-[13px] font-medium text-[#4b5563]";
-const mutedClassName = "truncate text-[13px] font-normal text-[#4b5563]";
+const primaryCellClassName = "creator-table-primary-cell";
+const primaryValueClassName = "creator-table-primary-value";
+const createdCellClassName = "creator-table-primary-cell";
+const createdDateClassName = "creator-table-muted";
+const mutedClassName = "creator-table-muted";
 
 const getStatusBadgeClassName = (variant) => {
   switch (variant) {
@@ -85,14 +86,28 @@ const CoChecklistPage = ({
 
   // Style to remove table header border separator
   const headerBorderRemovalStyle = `
+    .cochecklist-page,
+    .cochecklist-page * {
+      font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif !important;
+    }
     .cochecklist-page .ant-table-thead > tr > th {
       border-bottom: none !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      padding: 12px 12px !important;
+      text-transform: uppercase;
+      color: var(--color-text-medium, #6b7280) !important;
+      letter-spacing: 0.02em;
     }
     .cochecklist-page .ant-table-thead {
       border-bottom: none !important;
     }
     .cochecklist-page .ant-table-header {
       border-bottom: none !important;
+    }
+    .cochecklist-page .ant-table-tbody > tr > td {
+      font-size: 12px !important;
+      padding: 12px 12px !important;
     }
   `;
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -106,7 +121,7 @@ const CoChecklistPage = ({
   const isDrawerOpen = drawerOpen || Boolean(restoredDraftId);
 
   const { data: checklists = [], refetch } =
-    useGetAllCoCreatorChecklistsQuery();
+    useGetSpecificChecklistsByCreatorQuery(userId, { skip: !userId });
 
   // Filter checklists: Only show Pending checklists and Revived checklists
   // EXCLUDE coCreatorReview status checklists (non-revived)
@@ -262,7 +277,7 @@ const CoChecklistPage = ({
     },
     {
       title: "Docs",
-      dataIndex: "documents", 
+      dataIndex: "documents",
       width: 70,
       align: "center",
       render: (docs = []) => {
@@ -309,78 +324,78 @@ const CoChecklistPage = ({
           coCreatorId={userId}
         />
       ) : (
-      <div className={`${shellClassName} cochecklist-page`}>
-        <div className={cardClassName}>
-          <div className={toolbarClassName}>
-            <div className="flex w-full items-center">
-              <Button
-                onClick={() => setDrawerOpen(true)}
-                className={createButtonClassName}
-              >
-                + Create New DCL
-              </Button>
+        <div className={`${shellClassName} cochecklist-page`}>
+          <div className={cardClassName}>
+            <div className={toolbarClassName}>
+              <div className="flex w-full items-center">
+                <Button
+                  onClick={() => setDrawerOpen(true)}
+                  className={createButtonClassName}
+                >
+                  + Create New DCL
+                </Button>
+              </div>
+
+              <div className="flex w-full items-center justify-center">
+                <h2 className={titleClassName}>Created Checklists</h2>
+              </div>
+
+              <div className={actionsClassName}>
+                <Select
+                  allowClear
+                  placeholder="Status"
+                  options={statusOptions}
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  className={filterClassName}
+                />
+                <Select
+                  allowClear
+                  placeholder="Loan Type"
+                  options={loanTypeOptions}
+                  value={loanTypeFilter}
+                  onChange={setLoanTypeFilter}
+                  className={filterClassName}
+                />
+                <Select
+                  allowClear
+                  placeholder="Assigned RM"
+                  options={rmOptions}
+                  value={rmFilter}
+                  onChange={setRmFilter}
+                  className={filterClassName}
+                />
+              </div>
             </div>
 
-            <div className="flex w-full items-center justify-center">
-              <h2 className={titleClassName}>Created Checklists</h2>
-            </div>
-
-            <div className={actionsClassName}>
-              <Select
-                allowClear
-                placeholder="Status"
-                options={statusOptions}
-                value={statusFilter}
-                onChange={setStatusFilter}
-                className={filterClassName}
-              />
-              <Select
-                allowClear
-                placeholder="Loan Type"
-                options={loanTypeOptions}
-                value={loanTypeFilter}
-                onChange={setLoanTypeFilter}
-                className={filterClassName}
-              />
-              <Select
-                allowClear
-                placeholder="Assigned RM"
-                options={rmOptions}
-                value={rmFilter}
-                onChange={setRmFilter}
-                className={filterClassName}
+            <div className={tableShellClassName}>
+              <Table
+                columns={columns}
+                dataSource={filteredChecklists}
+                rowKey={(record) => record.id || record._id || record.dclNo}
+                size="middle"
+                tableLayout="fixed"
+                scroll={{ x: 1280 }}
+                pagination={{
+                  pageSize: 5,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["5", "10", "20", "50"],
+                  position: ["bottomCenter"],
+                }}
+                locale={{ emptyText: "No checklists available" }}
+                onRow={(record) => ({
+                  onClick: () => {
+                    const checklistId = record.id || record._id;
+                    if (checklistId) {
+                      navigate(`/cocreator/review/${checklistId}`);
+                    }
+                  },
+                  className: "cursor-pointer",
+                })}
               />
             </div>
-          </div>
-
-          <div className={tableShellClassName}>
-            <Table
-              columns={columns}
-              dataSource={filteredChecklists}
-              rowKey={(record) => record.id || record._id || record.dclNo}
-              size="middle"
-              tableLayout="fixed"
-              scroll={{ x: 1280 }}
-              pagination={{
-                pageSize: 5,
-                showSizeChanger: true,
-                pageSizeOptions: ["5", "10", "20", "50"],
-                position: ["bottomCenter"],
-              }}
-              locale={{ emptyText: "No checklists available" }}
-              onRow={(record) => ({
-                onClick: () => {
-                  const checklistId = record.id || record._id;
-                  if (checklistId) {
-                    navigate(`/cocreator/review/${checklistId}`);
-                  }
-                },
-                className: "cursor-pointer",
-              })}
-            />
           </div>
         </div>
-      </div>
       )}
     </div>
   );

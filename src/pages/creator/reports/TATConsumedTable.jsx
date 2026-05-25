@@ -34,8 +34,11 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
 
     return { label: String(status || "Pending").replace(/_/g, " "), variant: "pending" };
   };
-
   const customTableStyles = `
+    .tat-consumed-table,
+    .tat-consumed-table * {
+      font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif !important;
+    }
     .tat-consumed-table {
       background: var(--color-white);
       border-radius: 8px;
@@ -75,8 +78,8 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
       background: transparent !important;
       font-weight: 600;
       color: var(--color-text-medium) !important;
-      font-size: 12px;
-      padding: 14px 12px !important;
+      font-size: 11px !important;
+      padding: 12px 12px !important;
       border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
       text-transform: uppercase;
       border-right: none !important;
@@ -114,9 +117,9 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
     .tat-consumed-table .ant-table-tbody > tr > td {
       background: transparent !important;
       border-bottom: 1px solid rgba(214, 189, 152, 0.12) !important;
-      padding: 16px 12px !important;
+      padding: 12px 12px !important;
       color: var(--color-text-medium);
-      font-size: 12px;
+      font-size: 12px !important;
       border-right: none !important;
       line-height: 1.25;
       border-top: none !important;
@@ -180,14 +183,14 @@ export default function TATConsumedTable({ deferralRows = [], dclRows = [] }) {
 
     .tat-consumed-name {
       color: var(--color-text-dark);
-      font-size: 13px;
-      font-weight: 400;
+      font-size: 12px;
+      font-weight: 600;
       letter-spacing: -0.01em;
     }
 
     .tat-consumed-meta {
       color: var(--color-text-medium);
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .tat-consumed-metric {

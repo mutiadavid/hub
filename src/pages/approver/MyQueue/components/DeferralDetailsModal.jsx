@@ -143,7 +143,7 @@ const dedupeHistoryEntries = (entries) => {
     });
 };
 
-const reviewShellClassName = "border-t border-[rgba(214,189,152)] bg-(--color-bg) [&_.ant-descriptions-item-label]:text-[11px] [&_.ant-descriptions-item-label]:font-normal [&_.ant-descriptions-item-label]:uppercase [&_.ant-descriptions-item-label]:tracking-[0.04em] [&_.ant-descriptions-item-label]:text-(--color-text-dark) [&_.ant-descriptions-item-content]:overflow-wrap-anywhere [&_.ant-descriptions-item-content]:text-[13px] [&_.ant-descriptions-item-content]:font-normal [&_.ant-descriptions-item-content]:text-(--color-text-dark) max-md:[&_.ant-descriptions-view]:block max-md:[&_.ant-descriptions-view_table]:block max-md:[&_.ant-descriptions-view_tbody]:block max-md:[&_.ant-descriptions-row]:block max-md:[&_.ant-descriptions-item]:block max-md:[&_.ant-descriptions-item]:w-full max-md:[&_.ant-descriptions-item]:border-b max-md:[&_.ant-descriptions-item]:border-[rgba(214,189,152,0.14)] max-md:[&_.ant-descriptions-item:last-child]:border-b-0 max-md:[&_.ant-descriptions-item-label]:block max-md:[&_.ant-descriptions-item-content]:block max-md:[&_.ant-descriptions-item-label]:w-full max-md:[&_.ant-descriptions-item-content]:w-full max-md:[&_.ant-descriptions-item-label]:whitespace-normal max-md:[&_.ant-descriptions-item-content]:whitespace-normal max-md:[&_.ant-descriptions-item-label]:px-0 max-md:[&_.ant-descriptions-item-content]:px-0 max-md:[&_.ant-descriptions-item-label]:pb-1.5 max-md:[&_.ant-descriptions-item-content]:pt-0 max-md:[&_.ant-descriptions-item-content]:min-w-0 [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-header]:border-b-0 [&_.ant-table-header]:shadow-none [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr]:border-b-0 [&_.ant-table-thead>tr]:shadow-none [&_.ant-table-thead>tr>th]:!border-b-0 [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:bg-[rgba(247,244,239,0.55)] [&_.ant-table-thead>tr>th]:px-4 [&_.ant-table-thead>tr>th]:py-3 [&_.ant-table-thead>tr>th]:text-[11px] [&_.ant-table-thead>tr>th]:font-medium [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.04em] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-thead>tr>th]:shadow-none [&_.ant-table-tbody>tr:first-child>td]:!border-t-0 [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.1)] [&_.ant-table-tbody>tr>td]:px-4 [&_.ant-table-tbody>tr>td]:py-3.5 [&_.ant-table-tbody>tr>td]:text-xs [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr:last-child>td]:border-b-0 [&_.ant-table-row:hover>td]:bg-[rgba(247,244,239,0.35)] [&_.ant-table-thead>tr>th::before]:hidden [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
+const reviewShellClassName = "border-t border-[rgba(214,189,152)] bg-(--color-bg) [&_.ant-descriptions-item-label]:text-[10px] [&_.ant-descriptions-item-label]:font-normal [&_.ant-descriptions-item-label]:uppercase [&_.ant-descriptions-item-label]:tracking-[0.04em] [&_.ant-descriptions-item-label]:text-(--color-text-dark) [&_.ant-descriptions-item-content]:overflow-wrap-anywhere [&_.ant-descriptions-item-content]:text-[11px] [&_.ant-descriptions-item-content]:font-normal [&_.ant-descriptions-item-content]:text-(--color-text-dark) max-md:[&_.ant-descriptions-view]:block max-md:[&_.ant-descriptions-view_table]:block max-md:[&_.ant-descriptions-view_tbody]:block max-md:[&_.ant-descriptions-row]:block max-md:[&_.ant-descriptions-item]:block max-md:[&_.ant-descriptions-item]:w-full max-md:[&_.ant-descriptions-item]:border-b max-md:[&_.ant-descriptions-item]:border-[rgba(214,189,152,0.14)] max-md:[&_.ant-descriptions-item:last-child]:border-b-0 max-md:[&_.ant-descriptions-item-label]:block max-md:[&_.ant-descriptions-item-content]:block max-md:[&_.ant-descriptions-item-label]:w-full max-md:[&_.ant-descriptions-item-content]:w-full max-md:[&_.ant-descriptions-item-label]:whitespace-normal max-md:[&_.ant-descriptions-item-content]:whitespace-normal max-md:[&_.ant-descriptions-item-label]:px-0 max-md:[&_.ant-descriptions-item-content]:px-0 max-md:[&_.ant-descriptions-item-label]:pb-1.5 max-md:[&_.ant-descriptions-item-content]:pt-0 max-md:[&_.ant-descriptions-item-content]:min-w-0 [&_.ant-table-wrapper]:bg-transparent [&_.ant-spin-nested-loading]:bg-transparent [&_.ant-spin-container]:bg-transparent [&_.ant-table]:border-none [&_.ant-table]:bg-transparent [&_.ant-table-header]:border-b-0 [&_.ant-table-header]:shadow-none [&_.ant-table-container]:border-none [&_.ant-table-container]:bg-transparent [&_.ant-table-content]:border-none [&_.ant-table-content]:bg-transparent [&_table]:border-none [&_thead]:bg-transparent [&_tbody]:bg-transparent [&_tr]:border-none [&_.ant-table-thead>tr]:border-b-0 [&_.ant-table-thead>tr]:shadow-none [&_.ant-table-thead>tr>th]:!border-b-0 [&_.ant-table-thead>tr>th]:border-r-0 [&_.ant-table-thead>tr>th]:bg-[rgba(247,244,239,0.55)] [&_.ant-table-thead>tr>th]:px-3 [&_.ant-table-thead>tr>th]:py-2 [&_.ant-table-thead>tr>th]:text-[10px] [&_.ant-table-thead>tr>th]:font-medium [&_.ant-table-thead>tr>th]:uppercase [&_.ant-table-thead>tr>th]:tracking-[0.04em] [&_.ant-table-thead>tr>th]:text-(--color-text-dark) [&_.ant-table-thead>tr>th]:shadow-none [&_.ant-table-tbody>tr:first-child>td]:!border-t-0 [&_.ant-table-tbody>tr>td]:border-b [&_.ant-table-tbody>tr>td]:border-r-0 [&_.ant-table-tbody>tr>td]:border-[rgba(214,189,152,0.1)] [&_.ant-table-tbody>tr>td]:px-3 [&_.ant-table-tbody>tr>td]:py-2.5 [&_.ant-table-tbody>tr>td]:text-[11px] [&_.ant-table-tbody>tr>td]:text-(--color-text-medium) [&_.ant-table-tbody>tr:last-child>td]:border-b-0 [&_.ant-table-row:hover>td]:bg-[rgba(247,244,239,0.35)] [&_.ant-table-thead>tr>th::before]:hidden [&_.ant-table-cell::before]:hidden [&_.ant-table-cell::after]:hidden";
 
 const tableShellClassName = "overflow-hidden rounded-xl border border-[rgba(214,189,152,0.16)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]";
 
@@ -483,12 +483,12 @@ const DeferralDetailsModal = ({
                 <BankOutlined />
               </span>
               <div>
-                <h2 className="m-0 text-base font-normal tracking-[-0.02em] text-(--color-text-dark)">
+                <h2 className="m-0 text-[13px] font-semibold tracking-[-0.02em] text-(--color-text-dark)">
                   {headerTag
                     ? `${headerTag}: ${safeDeferral.deferralNumber}`
                     : `Deferral Request: ${safeDeferral.deferralNumber}`}
                 </h2>
-                <div className="mt-1 text-xs text-(--color-text-light)">{detailsSubtitle}</div>
+                <div className="mt-1 text-[11px] text-(--color-text-light)">{detailsSubtitle}</div>
               </div>
             </div>
 
@@ -499,9 +499,9 @@ const DeferralDetailsModal = ({
             />
           </div>
 
-          <div className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
-            <div className="text-[13px] font-normal text-(--color-text-dark)">Under Review by Approvers</div>
-            <div className="mt-1 text-xs text-(--color-text-medium)">
+          <div className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white px-3 py-2.5 shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
+            <div className="text-[11px] font-semibold text-(--color-text-dark)">Under Review by Approvers</div>
+            <div className="mt-0.5 text-[10px] text-(--color-text-medium)">
               This deferral request is currently undergoing approval from the designated approvers.
             </div>
           </div>
@@ -559,7 +559,7 @@ const DeferralDetailsModal = ({
               <button
                 key={tab.key}
                 type="button"
-                className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2.5 text-xs font-medium ${activeTab === tab.key ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
+                className={`whitespace-nowrap border-b-2 bg-transparent px-3 py-2 text-[11px] font-medium ${activeTab === tab.key ? "border-(--color-primary-dark) text-(--color-primary-dark)" : "border-transparent text-(--color-text-light)"}`}
                 onClick={() => setActiveTab(tab.key)}
               >
                 {tab.label}
@@ -571,8 +571,8 @@ const DeferralDetailsModal = ({
             <div className="grid items-start gap-4 min-[1101px]:grid-cols-[minmax(0,7fr)_minmax(280px,3fr)]">
               <div className="flex min-w-0 flex-col gap-4">
                 <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
-                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
-                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Customer Information</h3>
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-2.5">
+                    <h3 className="m-0 text-[11px] font-semibold text-(--color-text-dark)">Customer Information</h3>
                   </div>
                   <div className="p-4">
                     <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
@@ -584,8 +584,8 @@ const DeferralDetailsModal = ({
                 </section>
 
                 <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
-                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
-                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Deferral Summary</h3>
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-2.5">
+                    <h3 className="m-0 text-[11px] font-semibold text-(--color-text-dark)">Deferral Summary</h3>
                   </div>
                   <div className="p-4">
                     <Descriptions column={{ xs: 1, sm: 2, lg: 3 }}>
@@ -606,12 +606,12 @@ const DeferralDetailsModal = ({
                 </section>
 
                 <section className="rounded-lg border border-[rgba(214,189,152,0.2)] bg-white shadow-[0_1px_2px_rgba(26,54,54,0.06)]">
-                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
-                    <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Deferral Description</h3>
+                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-2.5">
+                    <h3 className="m-0 text-[11px] font-semibold text-(--color-text-dark)">Deferral Description</h3>
                   </div>
                   <div className="p-4">
                     <Typography.Paragraph
-                      className="mb-0 whitespace-pre-wrap text-(--color-text-medium)"
+                      className="mb-0 whitespace-pre-wrap text-[11px] text-(--color-text-medium)"
                     >
                       {safeDeferral.deferralDescription || "-"}
                     </Typography.Paragraph>
@@ -627,8 +627,8 @@ const DeferralDetailsModal = ({
           ) : (
             <div className="space-y-4">
               <div className={tableShellClassName}>
-                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
-                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Documents To Be Deferred</h3>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-2.5">
+                  <h3 className="m-0 text-[11px] font-semibold text-(--color-text-dark)">Documents To Be Deferred</h3>
                 </div>
                 {requestedDocsWithDates.length > 0 ? (
                   <Table
@@ -644,8 +644,8 @@ const DeferralDetailsModal = ({
               </div>
 
               <div className={tableShellClassName}>
-                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
-                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Facility Details</h3>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-2.5">
+                  <h3 className="m-0 text-[11px] font-semibold text-(--color-text-dark)">Facility Details</h3>
                 </div>
                 {safeDeferral.facilities?.length > 0 ? (
                   <Table
@@ -661,8 +661,8 @@ const DeferralDetailsModal = ({
               </div>
 
               <div className={tableShellClassName}>
-                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
-                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Mandatory DCL Upload</h3>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-2.5">
+                  <h3 className="m-0 text-[11px] font-semibold text-(--color-text-dark)">Mandatory DCL Upload</h3>
                 </div>
                 {dclDocs.length > 0 ? (
                   <Table
@@ -678,8 +678,8 @@ const DeferralDetailsModal = ({
               </div>
 
               <div className={tableShellClassName}>
-                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
-                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Additional Documents</h3>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-2.5">
+                  <h3 className="m-0 text-[11px] font-semibold text-(--color-text-dark)">Additional Documents</h3>
                 </div>
                 {uploadedDocs.length > 0 ? (
                   <Table
@@ -695,8 +695,8 @@ const DeferralDetailsModal = ({
               </div>
 
               <div className={tableShellClassName}>
-                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-3.5">
-                  <h3 className="m-0 text-[13px] font-normal text-(--color-text-dark)">Approval Flow</h3>
+                <div className="flex items-center justify-between gap-3 border-b border-[rgba(214,189,152,0.2)] px-4 py-2.5">
+                  <h3 className="m-0 text-[11px] font-semibold text-(--color-text-dark)">Approval Flow</h3>
                 </div>
                 {approvalFlowWithCurrent.length > 0 ? (
                   <Table

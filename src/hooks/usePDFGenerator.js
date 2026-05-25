@@ -1041,10 +1041,10 @@ const usePDFGenerator = () => {
 
           try {
             if (ncbaLogo) {
-              const logoWidth = 24;
-              const logoHeight = 7;
+              const logoWidth = 28;
+              const logoHeight = 9;
               // Add logo to header area (top right) on every page
-              doc.addImage(ncbaLogo, 'PNG', pageWidth - margin - logoWidth, 8, logoWidth, logoHeight);
+              doc.addImage(ncbaLogo, 'PNG', pageWidth - margin - logoWidth, 10, logoWidth, logoHeight);
             }
           } catch (e) { /* silently skip */ }
 
@@ -1273,7 +1273,7 @@ const usePDFGenerator = () => {
           startY: yPos,
           margin: { left: margin, right: margin },
           head: [['Document Name', 'Uploaded At', 'Status']],
-          body: supportingDocs.map(d => [d.name, dayjs(d.uploadedAt).format("YYYY-MM-DD HH:mm"), '✓ Uploaded']),
+          body: supportingDocs.map(d => [d.name, dayjs(d.uploadedAt).format("YYYY-MM-DD HH:mm"), 'Uploaded']),
           theme: 'grid',
           headStyles: {
             fillColor: [230, 230, 230], // Light Gray (GeoBuild style)

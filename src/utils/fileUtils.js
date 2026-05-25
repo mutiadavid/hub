@@ -4,17 +4,28 @@ function normalizeApiDocumentUrl(url) {
   const value = String(url || "").trim();
   if (!value) return value;
 
+  // Rewrite legacy /uploads/ paths (not /api/uploads/) to /api/protected-uploads/
+  // This handles old DB records that stored fileUrl as /uploads/checklists/...
+  const legacyRewrite = (str) =>
+    str.replace(/(?<!\bapi)\/uploads\//gi, "/api/protected-uploads/");
+
   if (/^(https?:)?\/\//i.test(value)) {
     try {
       const parsed = new URL(value);
       parsed.pathname = parsed.pathname.replace(/\/api\/api\//i, "/api/");
+      parsed.pathname = parsed.pathname.replace(/(?<!\bapi)\/uploads\//i, "/api/protected-uploads/");
       return parsed.toString();
     } catch {
-      return value.replace(/\/api\/api\//i, "/api/");
+      return legacyRewrite(value.replace(/\/api\/api\//i, "/api/"));
     }
   }
 
-  return value.replace(/^\/api\/api\//i, "/api/");
+  let result = value.replace(/^\/api\/api\//i, "/api/");
+  // Only rewrite bare /uploads/ (not /api/uploads/ which is the uploads API)
+  if (/^\/uploads\//i.test(result)) {
+    result = result.replace(/^\/uploads\//i, "/api/protected-uploads/");
+  }
+  return result;
 }
 
 function stripDocumentHash(url) {

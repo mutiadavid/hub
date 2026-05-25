@@ -22,7 +22,7 @@ import {
   CheckCircleOutlined,
 } from "@ant-design/icons";
 import {
-  useGetChecklistsByCreatorQuery,
+  useGetAllCoCreatorChecklistsQuery,
   useReviveChecklistMutation,
   useUpdateChecklistStatusMutation,
   useUpdateCoCreatorChecklistMutation,
@@ -57,9 +57,7 @@ const Completed = () => {
     data: allChecklists = [],
     isLoading,
     refetch,
-  } = useGetChecklistsByCreatorQuery(creatorId, {
-    skip: !creatorId,
-  });
+  } = useGetAllCoCreatorChecklistsQuery();
 
   const [reviveChecklistMutation, { isLoading: isReviving }] =
     useReviveChecklistMutation();

@@ -816,9 +816,9 @@ export const generateChecklistPDF = (
 
       try {
         if (ncbaLogoPNG) {
-          const logoWidth = 24;
-          const logoHeight = 7;
-          doc.addImage(ncbaLogoPNG, "PNG", PAGE_WIDTH - MARGIN_RIGHT - logoWidth, 8, logoWidth, logoHeight);
+          const logoWidth = 28;
+          const logoHeight = 9;
+          doc.addImage(ncbaLogoPNG, "PNG", PAGE_WIDTH - MARGIN_RIGHT - logoWidth, 10, logoWidth, logoHeight);
         }
       } catch (error) {
         console.warn("Could not add logo to checklist PDF footer/header:", error);

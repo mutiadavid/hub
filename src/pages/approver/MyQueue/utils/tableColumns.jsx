@@ -151,11 +151,16 @@ export const renderQueueSla = (date, record, pendingStatuses = ["pending_approva
 
   // If we have neither SLA nor a sensible start timestamp, show elapsed as 0m rather than N/A
   const fallbackStartedAt = startedAt || new Date().toISOString();
+  
+  const status = String(record?.status || record?.deferral?.status || "").toLowerCase();
+  const isTerminal = ["approved", "rejected", "completed", "discarded", "partially approved"].some(s => status.includes(s));
+  const endedAt = isTerminal ? (record?.updatedAt || record?.deferral?.updatedAt || record?.approvedAt || record?.deferral?.approvedAt || null) : null;
 
     return (
       <RealTimeSlaTag
         slaExpiry={slaDate}
         startedAt={fallbackStartedAt}
+        endedAt={endedAt}
         emptyLabel={startedAt ? undefined : "Not set"}
         minWidth={76}
         displayStyle="text"
@@ -216,6 +221,19 @@ export const getDeferralColumns = (onRowClick) => [
     title: "TAT consumed",
     dataIndex: "slaExpiry",
     width: 110,
+    sorter: (a, b) => {
+      const getTat = (record) => {
+        const startedAt = record?.createdAt || record?.deferral?.createdAt || record?.updatedAt || record?.approvedAt;
+        if (!startedAt) return 0;
+        
+        const status = String(record?.status || record?.deferral?.status || "").toLowerCase();
+        const isTerminal = ["approved", "rejected", "completed", "discarded", "partially approved"].some(s => status.includes(s));
+        const endedAt = isTerminal ? (record?.updatedAt || record?.deferral?.updatedAt || record?.approvedAt || record?.deferral?.approvedAt) : new Date().toISOString();
+        
+        return new Date(endedAt).getTime() - new Date(startedAt).getTime();
+      };
+      return getTat(a) - getTat(b);
+    },
     render: (date, record) => renderQueueSla(date, record),
   },
 ];
@@ -275,6 +293,19 @@ export const getExtensionColumns = (onRowClick) => [
     title: "TAT consumed",
     dataIndex: "slaExpiry",
     width: 110,
+    sorter: (a, b) => {
+      const getTat = (record) => {
+        const startedAt = record?.createdAt || record?.deferral?.createdAt || record?.updatedAt || record?.approvedAt;
+        if (!startedAt) return 0;
+        
+        const status = String(record?.status || record?.deferral?.status || "").toLowerCase();
+        const isTerminal = ["approved", "rejected", "completed", "discarded", "partially approved"].some(s => status.includes(s));
+        const endedAt = isTerminal ? (record?.updatedAt || record?.deferral?.updatedAt || record?.approvedAt || record?.deferral?.approvedAt) : new Date().toISOString();
+        
+        return new Date(endedAt).getTime() - new Date(startedAt).getTime();
+      };
+      return getTat(a) - getTat(b);
+    },
     render: (_, record) =>
       renderQueueSla(
         resolveRecordValue(record, ["slaExpiry", "deferral.slaExpiry", "deferral.nextDueDate"]),

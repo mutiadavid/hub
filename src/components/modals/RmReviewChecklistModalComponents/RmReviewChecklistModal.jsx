@@ -565,49 +565,49 @@ const RmReviewChecklistModal = ({
     setSupportingDocs(supportingDocsData);
   }, [checklist, checklistDetail, localChecklist]);
 
+  // Shared fetch function - extracted so it can be called after uploads too
+  const fetchSupportingDocs = useCallback(async () => {
+    if (!resolvedChecklistId) return;
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/uploads/checklist/${resolvedChecklistId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!response.ok) return;
+
+      const result = await response.json();
+      if (result.data && Array.isArray(result.data)) {
+        const docsWithCategory = dedupeSupportingUploads(
+          result.data
+            .filter((doc) => {
+              const category = normalizeLookupValue(doc.category);
+              const hasSupportingCategory =
+                category === normalizeLookupValue("Supporting Documents");
+              const hasNoCategory = !category;
+              const isNotDeleted =
+                normalizeLookupValue(doc.status || doc.uploadData?.status) !==
+                "deleted";
+              // Keep supporting uploads even when role/category metadata is incomplete.
+              return (hasSupportingCategory || hasNoCategory) && isNotDeleted;
+            })
+            .map(normalizeSupportingUpload),
+        );
+        setSupportingDocs(docsWithCategory);
+      }
+    } catch (error) {
+      console.error("Error fetching supporting docs:", error);
+    }
+  }, [API_BASE_URL, resolvedChecklistId, token]);
+
   // Fetch supporting docs from backend when checklist changes
   useEffect(() => {
-    if (!resolvedChecklistId) return;
-
-    const fetchSupportingDocs = async () => {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/uploads/checklist/${resolvedChecklistId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
-
-        if (!response.ok) return;
-
-        const result = await response.json();
-        if (result.data && Array.isArray(result.data)) {
-          const docsWithCategory = dedupeSupportingUploads(
-            result.data
-              .filter((doc) => {
-                const category = normalizeLookupValue(doc.category);
-                const hasSupportingCategory =
-                  category === normalizeLookupValue("Supporting Documents");
-                const hasNoCategory = !category;
-                const isNotDeleted =
-                  normalizeLookupValue(doc.status || doc.uploadData?.status) !==
-                  "deleted";
-                // Keep supporting uploads even when role/category metadata is incomplete.
-                return (hasSupportingCategory || hasNoCategory) && isNotDeleted;
-              })
-              .map(normalizeSupportingUpload),
-          );
-          setSupportingDocs(docsWithCategory);
-        }
-      } catch (error) {
-        console.error("Error fetching supporting docs:", error);
-      }
-    };
-
     fetchSupportingDocs();
-  }, [API_BASE_URL, resolvedChecklistId, token]);
+  }, [fetchSupportingDocs]);
 
   
   const isActionAllowed =
@@ -1008,7 +1008,8 @@ const RmReviewChecklistModal = ({
         },
       };
 
-      setSupportingDocs((prevDocs) => [...prevDocs, newSupportingDoc]);
+      // Re-fetch from backend as single source of truth - avoids duplicates
+      await fetchSupportingDocs();
       showSuccessToast(`"${file.name}" uploaded successfully.`);
     } catch (error) {
       console.error("Error uploading supporting document:", error);
