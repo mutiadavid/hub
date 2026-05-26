@@ -6,10 +6,22 @@ const storedAuth = localStorage.getItem("user")
   : null;
 
 // Normalize stored user to ensure both id and _id are present
-const normalizeUser = (user) => {
+const normalizeUser = (user, token) => {
   if (!user) return null;
+
+  let secureRole = user.role;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      secureRole = payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || user.role;
+    } catch (e) {
+      // ignore parsing errors
+    }
+  }
+
   return {
     ...user,
+    role: secureRole,
     id: user?.id || user?._id,
     _id: user?.id || user?._id,
   };
@@ -18,12 +30,12 @@ const normalizeUser = (user) => {
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: normalizeUser(storedAuth?.user) || null,
+    user: normalizeUser(storedAuth?.user, storedAuth?.token) || null,
     token: storedAuth?.token || null,
   },
   reducers: {
     setCredentials: (state, { payload }) => {
-      const normalizedUser = normalizeUser(payload.user);
+      const normalizedUser = normalizeUser(payload.user, payload.token);
       state.user = normalizedUser;
       state.token = payload.token;
 
