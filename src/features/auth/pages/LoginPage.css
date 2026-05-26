@@ -5,14 +5,14 @@
     display: flex;
     align-items: stretch;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100%;
     background-color: #F8F9FA;
 }
 
 /* main container: fills the entire page */
 .login-page-container .split-container {
     width: 100%;
-    min-height: 100vh;
+    min-height: 100%;
     background: #ffffff;
     display: flex;
     flex-wrap: wrap;

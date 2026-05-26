@@ -374,7 +374,7 @@ const DocumentSidebarComponent = ({
       >
         <div
           style={{
-            maxHeight: "calc(100vh - 112px)",
+            maxHeight: "calc(125vh - 112px)",
             overflowY: "auto",
             paddingBottom: allDocs.length > 0 ? 50 : 0,
           }}

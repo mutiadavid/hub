@@ -432,7 +432,7 @@ const DocumentAccordion = ({ documents, setDocuments }) => {
           margin-bottom: 14px;
         }
         .creator-document-modal-table-scroll {
-          max-height: calc(100vh - 320px);
+          max-height: calc(125vh - 320px);
           overflow-y: auto;
           padding-right: 4px;
           border-radius: 8px;

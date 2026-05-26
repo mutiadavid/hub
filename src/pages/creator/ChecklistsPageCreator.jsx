@@ -547,7 +547,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           align-items: start;
         }
         .creator-create-details-scroll {
-          max-height: calc(100vh - 310px);
+          max-height: calc(125vh - 310px);
           overflow-y: auto;
           padding-right: 4px;
         }
@@ -697,7 +697,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           min-width: 280px;
         }
         .creator-create-docs-scroll {
-          max-height: calc(100vh - 310px);
+          max-height: calc(125vh - 310px);
           overflow-y: auto;
           padding-right: 4px;
         }

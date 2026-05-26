@@ -345,7 +345,7 @@ const NotificationBell = ({ onOpenChecklist }) => {
               style={{
                 flex: 1,
                 minHeight: 0,
-                maxHeight: "calc(100vh - 186px)",
+                maxHeight: "calc(125vh - 186px)",
                 overflowY: "auto",
                 paddingBottom: 50,
                 overscrollBehavior: "contain",

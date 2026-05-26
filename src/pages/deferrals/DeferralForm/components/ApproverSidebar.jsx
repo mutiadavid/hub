@@ -19,7 +19,7 @@ export default function ApproverSidebar({
     <>
       <style>{`
         .deferral-form-approver-card.ant-card {
-          height: calc(100vh - 48px);
+          height: calc(125vh - 48px);
           position: sticky;
           top: 24px;
           border-radius: 10px !important;

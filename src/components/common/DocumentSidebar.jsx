@@ -122,7 +122,7 @@ const DocumentSidebar = ({ documents, open, onClose, supportingDocs = [] }) => {
         </div>
       ) : (
         <div
-          style={{ maxHeight: "calc(100vh - 100px)", overflowY: "auto" }}
+          style={{ maxHeight: "calc(125vh - 100px)", overflowY: "auto" }}
           onClick={(e) => e.stopPropagation()}
         >
           {Object.entries(groupedDocs).map(([category, docs]) => (

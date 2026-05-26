@@ -141,7 +141,7 @@ const AppShell = () => {
         <Route
           path="/cocreator/*"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute role="cocreator">
               <MainLayout />
             </ProtectedRoute>
           }
@@ -151,7 +151,7 @@ const AppShell = () => {
         <Route
           path="/cochecker/*"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute role="cochecker">
               <CheckerLayout />
             </ProtectedRoute>
           }
@@ -161,7 +161,7 @@ const AppShell = () => {
         <Route
           path="/admin/*"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute role="admin">
               <AdminLayout />
             </ProtectedRoute>
           }
@@ -171,7 +171,7 @@ const AppShell = () => {
         <Route
           path="/rm/*"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute role="rm">
               <RmLayout userId={userId} />
             </ProtectedRoute>
           }
@@ -181,7 +181,7 @@ const AppShell = () => {
         <Route
           path="/approver/*"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute role="approver">
               <ApproverLayout userId={userId} />
             </ProtectedRoute>
           }

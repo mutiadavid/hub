@@ -733,15 +733,15 @@ const DocumentTable = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginBottom: 16,
-            paddingBottom: 12,
+            marginBottom: 4,
+            paddingBottom: 4,
             borderBottom: `2px solid ${categoryColor}`,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span
               style={{
-                fontSize: 16,
+                fontSize: 13,
                 fontWeight: 600,
                 color: categoryColor,
               }}
@@ -803,7 +803,7 @@ const DocumentTable = ({
         >
           <style>{`
             .doc-table.ant-table .ant-table-thead > tr > th {
-              padding: 9px 12px !important;
+              padding: 4px 8px !important;
               font-size: 10px !important;
               font-weight: 600 !important;
               color: var(--color-text-medium) !important;
@@ -815,7 +815,7 @@ const DocumentTable = ({
               letter-spacing: 0.02em !important;
             }
             .doc-table.ant-table .ant-table-tbody > tr > td {
-              padding: 8px 12px !important;
+              padding: 4px 8px !important;
               font-size: 12px !important;
               color: var(--color-text-body) !important;
               line-height: 1.45 !important;
@@ -901,7 +901,7 @@ const DocumentTable = ({
               font-size: 12px !important;
             }
             .doc-table .ant-pagination {
-              margin: 12px 16px 14px !important;
+              margin: 4px 8px 4px !important;
               justify-content: flex-end;
             }
             .doc-table .ant-input-textarea textarea {
@@ -1014,7 +1014,7 @@ const DocumentTable = ({
       >
         <style>{`
           .doc-table.ant-table .ant-table-thead > tr > th {
-            padding: 9px 12px !important;
+            padding: 4px 8px !important;
             font-size: 10px !important;
             font-weight: 600 !important;
             color: var(--color-text-medium) !important;
@@ -1026,7 +1026,7 @@ const DocumentTable = ({
             letter-spacing: 0.02em !important;
           }
           .doc-table.ant-table .ant-table-tbody > tr > td {
-            padding: 8px 12px !important;
+            padding: 4px 8px !important;
             font-size: 12px !important;
             color: var(--color-text-body) !important;
             line-height: 1.45 !important;
@@ -1112,7 +1112,7 @@ const DocumentTable = ({
             font-size: 12px !important;
           }
           .doc-table .ant-pagination {
-            margin: 12px 16px 14px !important;
+            margin: 4px 8px 4px !important;
             justify-content: flex-end;
           }
           .doc-table .ant-input-textarea textarea {

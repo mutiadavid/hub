@@ -281,17 +281,10 @@
   }
 }
 
-/*
- * Global 80% density scaling.
- * zoom:0.8 renders elements at 80% of their CSS size.
- * Fix: apply zoom AND height to html itself.
- *   html grows to 125vh in CSS space → zoom:0.8 renders it as 100vh visual.
- *   body/root inherit 100% of that → fill the full visible screen with ZERO gap.
- */
 html {
   zoom: 0.8 !important;
-  height: 125vh !important;
-  width: 125vw !important;
+  height: 100% !important;
+  width: 100% !important;
   overflow: hidden !important;
 }
 

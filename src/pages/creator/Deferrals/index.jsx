@@ -1829,7 +1829,7 @@ const Deferrals = ({ userId }) => {
             padding: "18px 20px",
           },
           body: { padding: 16, maxHeight: "60vh", overflowY: "auto" },
-          content: { padding: 0, borderRadius: 16, zoom: 0.8 },
+          content: { padding: 0, borderRadius: 16 },
         }}
       >
         <div className="admin-page__modal-body">

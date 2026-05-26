@@ -233,7 +233,7 @@ const MODAL_STYLES = `
     padding-top: 20px;
     padding-bottom: 20px;
     transition: left 0.2s cubic-bezier(0.2, 0, 0, 1);
-    max-height: 100vh;
+    max-height: 125vh;
   }
  
   .deferral-modal-container {

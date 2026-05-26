@@ -43,9 +43,8 @@
 
 .creator-layout-shell {
   display: flex;
-  height: 125vh;      /* compensates for global zoom:0.8 → 125vh * 0.8 = 100vh visual */
-  min-height: 125vh;
-  width: 125vw;       /* compensates for global zoom:0.8 → 125vw * 0.8 = 100vw visual */
+  height: 100% !important;
+  width: 100% !important;
   overflow: hidden;
   background: var(--color-bg);
 }

@@ -6,7 +6,7 @@
   background: var(--color-white);
   border-radius: 0;
   overflow-y: auto;
-  max-height: 85vh;
+  max-height: calc(125vh - 100px);
   width: 100%;
   max-width: 100%;
   box-shadow: none;
@@ -14,7 +14,6 @@
   margin: 0;
   position: relative;
   z-index: 1;
-  zoom: 0.8;
 }
 
 .deferral-review-topbar {

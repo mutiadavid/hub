@@ -30,9 +30,12 @@ export const uploadFileToBackend = async (
     if (!response.ok) {
       const errorText = await response.text();
       let errorMsg = "Upload failed";
+
       try {
         const errorData = JSON.parse(errorText);
         errorMsg = errorData.error || errorMsg;
+        console.log("message",   errorMsg);
+        
       } catch (e) {
         errorMsg = errorText || errorMsg;
       }
