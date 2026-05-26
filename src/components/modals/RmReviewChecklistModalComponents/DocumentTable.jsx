@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   Space,
@@ -12,6 +12,8 @@ import {
   Modal,
   List,
   Popconfirm,
+  Tabs,
+  Badge,
 } from "antd";
 import { UploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import { openFileInNewTab } from "../../../utils/fileUtils";
@@ -20,6 +22,7 @@ import { formatStatusForSnakeCase } from "../../../utils/statusColors";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
+const { TabPane } = Tabs;
 const cardFontFamily = "'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif";
 const gray700 = "#374151";
 
@@ -76,6 +79,30 @@ const getStatusTextColor = (status) => {
   return gray700;
 };
 
+// Helper function to group documents by category
+const groupDocumentsByCategory = (docsData) => {
+  const grouped = {};
+  docsData.forEach((doc, idx) => {
+    const category = doc.category || "Uncategorized";
+    if (!grouped[category]) {
+      grouped[category] = [];
+    }
+    grouped[category].push({ ...doc, docIdx: idx });
+  });
+  return grouped;
+};
+
+// Helper function to get category badge color
+const getCategoryColor = (category) => {
+  const categoryLower = category.toLowerCase();
+  if (categoryLower.includes("compliance")) return "#10b981";
+  if (categoryLower.includes("financial")) return "#3b82f6";
+  if (categoryLower.includes("legal")) return "#8b5cf6";
+  if (categoryLower.includes("kra")) return "#f59e0b";
+  if (categoryLower.includes("identification")) return "#ec4899";
+  return "#64748b";
+};
+
 const DocumentTable = ({
   docs,
   setDocs,
@@ -91,11 +118,23 @@ const DocumentTable = ({
   checklist,
   isReturned,
 }) => {
-  const [openDeferralPopoverDoc, setOpenDeferralPopoverDoc] = React.useState(null);
-  const [transientValidationByDoc, setTransientValidationByDoc] = React.useState({});
-  const [viewModalFiles, setViewModalFiles] = React.useState(null);
+  const [openDeferralPopoverDoc, setOpenDeferralPopoverDoc] = useState(null);
+  const [transientValidationByDoc, setTransientValidationByDoc] = useState({});
+  const [viewModalFiles, setViewModalFiles] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(null);
   const transientValidationTimersRef = React.useRef({});
   const previousValidationRef = React.useRef({});
+
+  const safeDocs = Array.isArray(docs) ? docs : [];
+  const groupedDocs = groupDocumentsByCategory(safeDocs);
+  const categories = Object.keys(groupedDocs);
+
+  // Set initial active category
+  React.useEffect(() => {
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0]);
+    }
+  }, [categories, activeCategory]);
 
   const canActOnDoc = (doc) => {
     const docStatus = (doc.status || "").toLowerCase();
@@ -224,28 +263,7 @@ const DocumentTable = ({
     );
   };
 
-  const columns = [
-    {
-      title: "Category",
-      dataIndex: "category",
-      width: 150,
-      render: (text) => (
-        <span
-          style={{
-            fontSize: 12,
-            color: "var(--color-text-body)",
-            fontWeight: 500,
-            lineHeight: 1.45,
-            display: "block",
-            whiteSpace: "normal",
-            wordBreak: "break-word",
-            fontFamily: cardFontFamily,
-          }}
-        >
-          {text || "N/A"}
-        </span>
-      ),
-    },
+  const getColumns = () => [
     {
       title: "Document Name",
       dataIndex: "name",
@@ -255,13 +273,13 @@ const DocumentTable = ({
           autoSize={{ minRows: 1, maxRows: 3 }}
           value={text || "N/A"}
           disabled
-          style={{ fontSize: 12, resize: "none", color: gray700, opacity: 0.72 }}
+          style={{ fontSize: 12, resize: "none", color: gray700, opacity: 0.72, fontFamily: cardFontFamily }}
         />
       ),
     },
     {
       title: "Creator Status",
-      width: 118,
+      width: 130,
       render: (_, record) => {
         const label =
           record.status === "deferred" && record.deferralNumber
@@ -296,7 +314,7 @@ const DocumentTable = ({
           autoSize={{ minRows: 1, maxRows: 3 }}
           value={text}
           disabled
-          style={{ fontSize: 12, resize: "none", color: gray700, opacity: 0.72 }}
+          style={{ fontSize: 12, resize: "none", color: gray700, opacity: 0.72, fontFamily: cardFontFamily }}
         />
       ),
     },
@@ -324,6 +342,7 @@ const DocumentTable = ({
                   fontWeight: 600,
                   fontSize: 11,
                   lineHeight: 1.1,
+                  fontFamily: cardFontFamily,
                 }}
               >
                 {expiryMeta.label}
@@ -336,6 +355,7 @@ const DocumentTable = ({
                 fontWeight: 500,
                 lineHeight: 1.15,
                 margin: 0,
+                fontFamily: cardFontFamily,
               }}
             >
               {expiryMeta.detail}
@@ -381,7 +401,7 @@ const DocumentTable = ({
     },
     {
       title: "RM Action",
-      width: 260,
+      width: 280,
       render: (_, record) => {
         const isRestrictedCOStatus = [
           "submitted",
@@ -424,7 +444,7 @@ const DocumentTable = ({
               }
               disabled={!canActOnDoc(record)}
               autoFocus
-              style={{ fontSize: 12 }}
+              style={{ fontSize: 12, fontFamily: cardFontFamily }}
             />
 
             {transientValidation && (
@@ -442,6 +462,7 @@ const DocumentTable = ({
                     transientValidation.status === "valid"
                       ? "1px solid #b7eb8f"
                       : "1px solid #ffccc7",
+                  fontFamily: cardFontFamily,
                 }}
               >
                 {transientValidation.message ? <div>{transientValidation.message}</div> : null}
@@ -539,7 +560,7 @@ const DocumentTable = ({
                   }
 
                   if (files.length === 0) {
-                    return <span style={{ color: "#94a3b8", fontSize: 11 }}>No files uploaded</span>;
+                    return <span style={{ color: "#94a3b8", fontSize: 11, fontFamily: cardFontFamily }}>No files uploaded</span>;
                   }
 
                   if (files.length === 1) {
@@ -561,6 +582,7 @@ const DocumentTable = ({
                                 borderRadius: 6,
                                 padding: "0 8px",
                                 height: 26,
+                                fontFamily: cardFontFamily,
                               }}
                             />
                           </Popconfirm>
@@ -576,6 +598,7 @@ const DocumentTable = ({
                             padding: "0 8px",
                             fontSize: 11,
                             height: 26,
+                            fontFamily: cardFontFamily,
                           }}
                         >
                           View
@@ -601,6 +624,7 @@ const DocumentTable = ({
                               borderRadius: 6,
                               padding: "0 8px",
                               height: 26,
+                              fontFamily: cardFontFamily,
                             }}
                           />
                         </Popconfirm>
@@ -616,6 +640,7 @@ const DocumentTable = ({
                           padding: "0 8px",
                           fontSize: 11,
                           height: 26,
+                          fontFamily: cardFontFamily,
                         }}
                       >
                         View ({files.length} Files)
@@ -642,6 +667,7 @@ const DocumentTable = ({
                         padding: "0 8px",
                         fontSize: 11,
                         height: 26,
+                        fontFamily: cardFontFamily,
                       }}
                       disabled={!isActionAllowed || isRestrictedCOStatus}
                     >
@@ -658,6 +684,7 @@ const DocumentTable = ({
                   fontSize: 12,
                   color: "#8c8c8c",
                   lineHeight: 1.4,
+                  fontFamily: cardFontFamily,
                 }}
               >
                 Explain this N/A selection in RM General Comment before submit.
@@ -729,10 +756,309 @@ const DocumentTable = ({
     },
   ];
 
-
-
+  const columns = getColumns();
   const viewModalData = viewModalFiles || { files: [], record: null };
 
+  // Render table for a specific category (used for single category)
+  const renderCategoryTable = (category) => {
+    const categoryDocs = groupedDocs[category] || [];
+    const categoryColor = getCategoryColor(category);
+
+    return (
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 16,
+            paddingBottom: 12,
+            borderBottom: `2px solid ${categoryColor}`,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: categoryColor,
+                fontFamily: cardFontFamily,
+              }}
+            >
+              {category}
+            </span>
+            <Badge
+              count={categoryDocs.length}
+              style={{
+                backgroundColor: categoryColor,
+                color: "#fff",
+              }}
+            />
+          </div>
+        </div>
+
+        <Table
+          className="doc-table"
+          rowKey="docIdx"
+          size="small"
+          pagination={false}
+          dataSource={categoryDocs}
+          columns={columns}
+          tableLayout="auto"
+          scroll={{ x: 1700 }}
+        />
+      </div>
+    );
+  };
+
+  // If no documents, show empty state
+  if (safeDocs.length === 0) {
+    return (
+      <div
+        className="creator-card creator-completed-docs-card"
+        style={{
+          marginBottom: 0,
+          overflow: "hidden",
+          borderColor: "rgba(226, 232, 240, 0.9)",
+          fontFamily: cardFontFamily,
+          borderRadius: 14,
+          boxShadow: "0 10px 26px rgba(26, 54, 54, 0.08)",
+        }}
+      >
+        <div className="creator-card__header">Required Documents</div>
+        <div
+          className="creator-card__body"
+          style={{
+            padding: "40px",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ fontSize: "14px", color: "#999", marginBottom: "8px", fontFamily: cardFontFamily }}>
+            No documents found
+          </p>
+          <p style={{ fontSize: "12px", color: "#666", fontFamily: cardFontFamily }}>
+            Documents will appear here once added
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If only one category or less, show single table without tabs
+  if (categories.length <= 1) {
+    return (
+      <div
+        className="creator-card creator-completed-docs-card"
+        style={{
+          marginBottom: 0,
+          overflow: "hidden",
+          borderColor: "rgba(226, 232, 240, 0.9)",
+          fontFamily: cardFontFamily,
+          borderRadius: 14,
+          boxShadow: "0 10px 26px rgba(26, 54, 54, 0.08)",
+        }}
+      >
+        <div className="creator-card__header">Required Documents</div>
+        <div
+          className="creator-card__body"
+          style={{
+            padding: 0,
+            overflow: "hidden",
+          }}
+        >
+          <style>{`
+            .creator-completed-docs-card .creator-card__header {
+              border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+              padding: 10px 14px !important;
+              font-size: 12px !important;
+              color: ${gray700} !important;
+              font-family: ${cardFontFamily} !important;
+            }
+            .creator-completed-docs-card .creator-card__body {
+              display: flex;
+              flex-direction: column;
+            }
+            .creator-completed-docs-card .ant-table-wrapper .ant-table-thead,
+            .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr,
+            .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr > th {
+              border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+              box-shadow: none !important;
+            }
+            .doc-table.ant-table .ant-table-thead > tr > th {
+              padding: 9px 12px !important;
+              font-size: 12px !important;
+              font-weight: 600 !important;
+              color: var(--color-text-medium) !important;
+              background: var(--color-white) !important;
+              border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+              text-transform: uppercase;
+              letter-spacing: 0.04em;
+            }
+            .doc-table.ant-table .ant-table-tbody > tr > td {
+              padding: 8px 12px !important;
+              font-size: 12px !important;
+              color: var(--color-text-body) !important;
+              line-height: 1.45 !important;
+              vertical-align: middle !important;
+              border-bottom: 1px solid rgba(226, 232, 240, 0.75) !important;
+            }
+            .doc-table .ant-table-container,
+            .doc-table .ant-table-content,
+            .doc-table .ant-table-body,
+            .doc-table .ant-table-cell {
+              background: var(--color-white) !important;
+            }
+            .doc-table .ant-input,
+            .doc-table .ant-input-textarea {
+              font-size: 12px !important;
+            }
+            .doc-table table {
+              width: 100% !important;
+              table-layout: auto !important;
+            }
+            .doc-table .ant-select,
+            .doc-table .ant-input,
+            .doc-table .ant-input-textarea {
+              width: 100% !important;
+              min-width: 0 !important;
+            }
+            .doc-table .ant-select .ant-select-selector {
+              font-size: 12px !important;
+              min-height: 30px !important;
+              padding: 0 8px !important;
+            }
+            .doc-table .ant-btn-sm {
+              font-size: 12px !important;
+              padding: 0 8px !important;
+              height: 28px !important;
+            }
+            .doc-table .ant-input-affix-wrapper,
+            .doc-table .ant-input,
+            .doc-table .ant-input-textarea textarea {
+              padding-top: 4px !important;
+              padding-bottom: 4px !important;
+            }
+            .doc-table .ant-btn-sm .anticon {
+              font-size: 12px !important;
+            }
+            .doc-table .ant-btn-dangerous .anticon {
+              font-size: 12px !important;
+            }
+            .doc-table .ant-input-textarea textarea {
+              min-height: 30px !important;
+              line-height: 1.45 !important;
+            }
+            .doc-table .ant-table-body {
+              overflow-x: auto !important;
+              overflow-y: auto !important;
+            }
+            .doc-table.ant-table .ant-table-tbody > tr:hover > td {
+              background: rgba(148, 163, 184, 0.06) !important;
+            }
+          `}</style>
+
+          {categories.map((category) => renderCategoryTable(category))}
+
+          <Modal
+            title={<div style={{ fontFamily: cardFontFamily, fontWeight: 600, color: "#1e293b" }}>Associated Files</div>}
+            open={!!viewModalFiles}
+            onCancel={() => setViewModalFiles(null)}
+            footer={[
+              <Button key="close" onClick={() => setViewModalFiles(null)} style={{ fontFamily: cardFontFamily }}>
+                Close
+              </Button>
+            ]}
+            width={480}
+            centered
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 8 }}>
+              <p style={{ fontSize: 13, color: "#64748b", margin: 0, fontFamily: cardFontFamily }}>
+                This document has multiple uploads. Click on any file to view it:
+              </p>
+              <List
+                dataSource={viewModalData.files || []}
+                renderItem={(file, idx) => (
+                  <List.Item
+                    style={{
+                      padding: "10px 12px",
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: 8,
+                      marginBottom: 8,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
+                      <span
+                        onClick={() => openFileInNewTab(file.fileUrl)}
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          cursor: "pointer",
+                          textDecoration: "underline",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          fontFamily: cardFontFamily,
+                        }}
+                        title={file.fileName}
+                      >
+                        {file.fileName || `Attachment ${idx + 1}`}
+                      </span>
+                      {file.uploadedBy && (
+                        <span style={{ fontSize: 11, color: "#64748b", marginTop: 2, fontFamily: cardFontFamily }}>
+                          Uploaded by: {file.uploadedBy} ({file.uploadedByRole || "Unknown"})
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      {!readOnly && isActionAllowed && viewModalData?.record && !["submitted", "tbo", "waived", "sighted", "deferred", "pendingco"].includes((viewModalData.record.status || "").toLowerCase()) && (!isReturned || file.isNewUpload === true) && (
+                        <Popconfirm
+                          title="Delete this file?"
+                          onConfirm={() => {
+                            handleDeleteFile(viewModalData.record.docIdx, idx);
+                            setViewModalFiles(prev => {
+                              if (!prev) return prev;
+                              const newFiles = [...prev.files];
+                              newFiles.splice(idx, 1);
+                              if (newFiles.length === 0) return null;
+                              return { ...prev, files: newFiles };
+                            });
+                          }}
+                          okText="Yes"
+                          cancelText="No"
+                          placement="left"
+                        >
+                          <Button
+                            size="small"
+                            danger
+                            icon={<DeleteOutlined />}
+                            style={{ fontFamily: cardFontFamily }}
+                          />
+                        </Popconfirm>
+                      )}
+                      <Button
+                        size="small"
+                        onClick={() => openFileInNewTab(file.fileUrl)}
+                        style={{ fontFamily: cardFontFamily }}
+                      >
+                        View
+                      </Button>
+                    </div>
+                  </List.Item>
+                )}
+              />
+            </div>
+          </Modal>
+        </div>
+      </div>
+    );
+  }
+
+  // Multiple categories - use tabs
   return (
     <div
       className="creator-card creator-completed-docs-card"
@@ -842,17 +1168,73 @@ const DocumentTable = ({
           .doc-table.ant-table .ant-table-tbody > tr:hover > td {
             background: rgba(148, 163, 184, 0.06) !important;
           }
+          .doc-category-tab .ant-tabs-tab {
+            padding: 8px 16px !important;
+            margin: 0 !important;
+          }
+          .doc-category-tab .ant-tabs-nav {
+            margin-bottom: 16px !important;
+          }
+          .doc-category-tab .ant-tabs-nav::before {
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+          }
+          .doc-category-tab .ant-tabs-tab-active .ant-tabs-tab-btn {
+            font-weight: 600 !important;
+          }
+          .doc-category-tab .ant-tabs-ink-bar {
+            background: #164679 !important;
+            height: 2px !important;
+          }
         `}</style>
-        <Table
-          className="doc-table"
-          rowKey="docIdx"
-          size="small"
-          pagination={false}
-          dataSource={docs}
-          columns={columns}
-          tableLayout="auto"
-          scroll={{ x: 1700 }}
-        />
+
+        <Tabs
+          className="doc-category-tab"
+          activeKey={activeCategory}
+          onChange={setActiveCategory}
+          type="line"
+          style={{ padding: "0 16px", marginTop: 8 }}
+        >
+          {categories.map((category) => {
+            const categoryColor = getCategoryColor(category);
+            const categoryCount = groupedDocs[category]?.length || 0;
+
+            return (
+              <TabPane
+                key={category}
+                tab={
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: categoryColor, fontFamily: cardFontFamily }}>{category}</span>
+                    <Badge
+                      count={categoryCount}
+                      style={{
+                        backgroundColor: categoryColor,
+                        color: "#fff",
+                        fontSize: 10,
+                        minWidth: 18,
+                        height: 18,
+                        lineHeight: "18px",
+                      }}
+                    />
+                  </span>
+                }
+              >
+                <div style={{ padding: "0 0 16px 0" }}>
+                  <Table
+                    className="doc-table"
+                    rowKey="docIdx"
+                    size="small"
+                    pagination={false}
+                    dataSource={groupedDocs[category]}
+                    columns={columns}
+                    tableLayout="auto"
+                    scroll={{ x: 1700 }}
+                  />
+                </div>
+              </TabPane>
+            );
+          })}
+        </Tabs>
+
         <Modal
           title={<div style={{ fontFamily: cardFontFamily, fontWeight: 600, color: "#1e293b" }}>Associated Files</div>}
           open={!!viewModalFiles}

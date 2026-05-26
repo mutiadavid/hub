@@ -122,15 +122,8 @@ export const useChecklistOperations = (
         throw new Error("Checklist ID missing");
       }
 
-      const requiresComplianceExpiryForRmSubmission = ["cocreatorreview", "co_creator_review"].includes(
-        String(checklist?.status || "").toLowerCase(),
-      );
-      const complianceDocsMissingExpiry = getComplianceDocumentsMissingResolvedExpiry(docs);
-      if (requiresComplianceExpiryForRmSubmission && complianceDocsMissingExpiry.length > 0) {
-        throw new Error(
-          `Cannot submit to RM: ${complianceDocsMissingExpiry.length} compliance document(s) missing a valid expiry date. Set the expiry date so the document shows Current or Expired before submission.`,
-        );
-      }
+      // Co-Creator does NOT need compliance expiry dates to forward to RM.
+      // That check is only enforced when submitting to Co-Checker.
 
       const deferredDocs = docs.filter((doc) =>
         isDeferredAction(doc?.action || doc?.status),

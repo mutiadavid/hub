@@ -672,6 +672,7 @@ export default function Reports() {
   const [allDeferrals, setAllDeferrals] = useState([]);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportingFormat, setExportingFormat] = useState("");
+  const [isDetailsViewActive, setIsDetailsViewActive] = useState(false);
   const [activeTatView, setActiveTatView] = useState("deferral");
   const [reportNow, setReportNow] = useState(() => dayjs());
   const token = useSelector((state) => state?.auth?.token);
@@ -1008,7 +1009,7 @@ export default function Reports() {
       case "deferrals":
         return (
           <Spin spinning={loading}>
-            <DeferralsReportTable rows={filteredDeferrals} />
+            <DeferralsReportTable rows={filteredDeferrals} onDetailsViewChange={setIsDetailsViewActive} />
           </Spin>
         );
       case "deferralCharts":
@@ -1018,7 +1019,7 @@ export default function Reports() {
           </Spin>
         );
       case "allDCLs":
-        return <AllDCLsTable filters={filters} />;
+        return <AllDCLsTable filters={filters} onDetailsViewChange={setIsDetailsViewActive} />;
       case "dclCharts":
         return <DclAnalyticsDashboard rows={filteredAllDcls} />;
       case "tatConsumed":
@@ -1046,95 +1047,98 @@ export default function Reports() {
   return (
     <div className={pageRootClassName}>
       <div className={shellClassName}>
-        <div className={cardClassName}>
-        <div className={toolbarClassName}>
-          <div className={titleBlockClassName}>
-            <div className={titleBlockClassName}>
-              <h2 className={titleClassName}>
-                {DCL_DISPLAY_NAME} Reports & Analytics
-              </h2>
-             
+        {!isDetailsViewActive && (
+          <div className={cardClassName}>
+            <div className={toolbarClassName}>
+              <div className={titleBlockClassName}>
+                <div className={titleBlockClassName}>
+                  <h2 className={titleClassName}>
+                    {DCL_DISPLAY_NAME} Reports & Analytics
+                  </h2>
+                </div>
+              </div>
+
+              <div className={actionsClassName}>
+                <Tabs
+                  className={tabsClassName}
+                  activeKey={activeTab}
+                  onChange={(key) => {
+                    setActiveTab(key);
+                    clearFilters();
+                  }}
+                  type="line"
+                  items={[
+                    {
+                      key: "deferrals",
+                      label: (
+                        <span className="flex items-center gap-2">
+                          <CheckCircleOutlined /> Deferrals
+                        </span>
+                      ),
+                    },
+                    {
+                      key: "allDCLs",
+                      label: (
+                        <span className="flex items-center gap-2">
+                          <FileTextOutlined /> All {DCL_PLURAL_DISPLAY_NAME}
+                        </span>
+                      ),
+                    },
+                    {
+                      key: "deferralCharts",
+                      label: (
+                        <span className="flex items-center gap-2">
+                          <BarChartOutlined /> Deferral Charts
+                        </span>
+                      ),
+                    },
+                    {
+                      key: "dclCharts",
+                      label: (
+                        <span className="flex items-center gap-2">
+                          <BarChartOutlined /> {DCL_DISPLAY_NAME} Charts
+                        </span>
+                      ),
+                    },
+                    {
+                      key: "tatConsumed",
+                      label: (
+                        <span className="flex items-center gap-2">
+                          <ClockCircleOutlined /> TAT Consumed
+                        </span>
+                      ),
+                    },
+                    {
+                      key: "tatConsumedCharts",
+                      label: (
+                        <span className="flex items-center gap-2">
+                          <BarChartOutlined /> TAT Charts
+                        </span>
+                      ),
+                    },
+                  ]}
+                />
+
+                <Tooltip title="Export Report" overlayClassName="reports-export-tooltip">
+                  <Button
+                    className={exportButtonClassName}
+                    icon={<DownloadOutlined />}
+                    onClick={() => setExportModalOpen(true)}
+                  />
+                </Tooltip>
+              </div>
             </div>
           </div>
+        )}
 
-          <div className={actionsClassName}>
-            <Tabs
-              className={tabsClassName}
-              activeKey={activeTab}
-              onChange={(key) => {
-                setActiveTab(key);
-                clearFilters();
-              }}
-              type="line"
-              items={[
-                {
-                  key: "deferrals",
-                  label: (
-                    <span className="flex items-center gap-2">
-                      <CheckCircleOutlined /> Deferrals
-                    </span>
-                  ),
-                },
-                {
-                  key: "allDCLs",
-                  label: (
-                    <span className="flex items-center gap-2">
-                      <FileTextOutlined /> All {DCL_PLURAL_DISPLAY_NAME}
-                    </span>
-                  ),
-                },
-                {
-                  key: "deferralCharts",
-                  label: (
-                    <span className="flex items-center gap-2">
-                      <BarChartOutlined /> Deferral Charts
-                    </span>
-                  ),
-                },
-                {
-                  key: "dclCharts",
-                  label: (
-                    <span className="flex items-center gap-2">
-                      <BarChartOutlined /> {DCL_DISPLAY_NAME} Charts
-                    </span>
-                  ),
-                },
-                {
-                  key: "tatConsumed",
-                  label: (
-                    <span className="flex items-center gap-2">
-                      <ClockCircleOutlined /> TAT Consumed
-                    </span>
-                  ),
-                },
-                {
-                  key: "tatConsumedCharts",
-                  label: (
-                    <span className="flex items-center gap-2">
-                      <BarChartOutlined /> TAT Charts
-                    </span>
-                  ),
-                },
-              ]}
-            />
-
-            <Tooltip title="Export Report" overlayClassName="reports-export-tooltip">
-              <Button
-                className={exportButtonClassName}
-                icon={<DownloadOutlined />}
-                onClick={() => setExportModalOpen(true)}
-              />
-            </Tooltip>
-          </div>
-        </div>
-      </div>
-
-      <ReportsFilters
-        activeTab={activeTab}
-        filters={filters}
-        setFilters={setFilters}
-        clearFilters={clearFilters}
-      />
+      {!isDetailsViewActive && (
+        <ReportsFilters
+          activeTab={activeTab}
+          filters={filters}
+          setFilters={setFilters}
+          clearFilters={clearFilters}
+        />
+      )}
 
       <div
         className={contentClassName}
@@ -1143,9 +1147,11 @@ export default function Reports() {
         {renderContent()}
       </div>
 
-      <div className={generatedClassName}>
-        Generated on {reportNow.format("DD/MM/YYYY HH:mm:ss")}
-      </div>
+      {!isDetailsViewActive && (
+        <div className={generatedClassName}>
+          Generated on {reportNow.format("DD/MM/YYYY HH:mm:ss")}
+        </div>
+      )}
 
       <Modal
         open={exportModalOpen}

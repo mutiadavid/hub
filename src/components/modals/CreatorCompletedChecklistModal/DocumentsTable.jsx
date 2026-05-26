@@ -1,14 +1,53 @@
-import { Table, Button, Tooltip } from "antd";
+import React, { useState } from "react";
+import { Table, Button, Tooltip, Tabs, Badge } from "antd";
 import { TABLE_CONFIG } from "./constants";
 import { getCheckerStatusDisplay } from "../../../utils/checklistConstants";
 import { getFullUrl as getFullUrlUtil } from "../../../utils/checklistUtils";
 import { formatStatusText } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
 
+const { TabPane } = Tabs;
+
+// Helper function to group documents by category
+const groupDocumentsByCategory = (docs) => {
+  const grouped = {};
+  docs.forEach((doc) => {
+    const category = doc.category || "Uncategorized";
+    if (!grouped[category]) {
+      grouped[category] = [];
+    }
+    grouped[category].push(doc);
+  });
+  return grouped;
+};
+
+// Helper function to get category badge color
+const getCategoryColor = (category) => {
+  const categoryLower = category.toLowerCase();
+  if (categoryLower.includes("compliance")) return "#10b981";
+  if (categoryLower.includes("financial")) return "#3b82f6";
+  if (categoryLower.includes("legal")) return "#8b5cf6";
+  if (categoryLower.includes("kra")) return "#f59e0b";
+  if (categoryLower.includes("identification")) return "#ec4899";
+  return "#64748b";
+};
+
 const DocumentsTable = ({ docs, checklist }) => {
   // FIX: Ensure docs is always an array
   const safeDocs = Array.isArray(docs) ? docs : [];
   const pageSize = 6;
+  const [activeCategory, setActiveCategory] = useState(null);
+
+  // Group documents by category
+  const groupedDocs = groupDocumentsByCategory(safeDocs);
+  const categories = Object.keys(groupedDocs);
+
+  // Set initial active category
+  React.useEffect(() => {
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0]);
+    }
+  }, [categories, activeCategory]);
 
   // Show debug info if no documents
   if (safeDocs.length === 0) {
@@ -40,7 +79,7 @@ const DocumentsTable = ({ docs, checklist }) => {
   }
 
   // FIX: Use TABLE_CONFIG.COLUMNS instead of TABLE_COLUMNS
-  const columns = TABLE_CONFIG.COLUMNS.map((col) => {
+  const getColumns = () => TABLE_CONFIG.COLUMNS.map((col) => {
     if (col.key === "category") {
       return {
         ...col,
@@ -252,6 +291,171 @@ const DocumentsTable = ({ docs, checklist }) => {
     return col;
   });
 
+  const columns = getColumns();
+
+  // Render table for a specific category (used for single category)
+  const renderCategoryTable = (category) => {
+    const categoryDocs = groupedDocs[category] || [];
+    const categoryColor = getCategoryColor(category);
+
+    return (
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 16,
+            paddingBottom: 12,
+            borderBottom: `2px solid ${categoryColor}`,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: categoryColor,
+              }}
+            >
+              {category}
+            </span>
+            <Badge
+              count={categoryDocs.length}
+              style={{
+                backgroundColor: categoryColor,
+                color: "#fff",
+              }}
+            />
+          </div>
+        </div>
+
+        <Table
+          className="doc-table"
+          columns={columns}
+          dataSource={categoryDocs}
+          pagination={{
+            pageSize,
+            hideOnSinglePage: false,
+            size: "small",
+            position: ["bottomRight"],
+            showSizeChanger: false,
+          }}
+          rowKey="docIdx"
+          size="small"
+          tableLayout="auto"
+          scroll={{ x: 1180 }}
+          locale={{
+            emptyText: "No documents available",
+          }}
+        />
+      </div>
+    );
+  };
+
+  // If only one category or less, show single table without tabs
+  if (categories.length <= 1) {
+    return (
+      <div
+        className="creator-card creator-completed-docs-card"
+        style={{
+          marginBottom: 0,
+          overflow: "hidden",
+          borderColor: "rgba(214, 189, 152, 0.2)",
+          boxShadow: "0 1px 2px rgba(26, 54, 54, 0.06)",
+        }}
+      >
+        <div className="creator-card__header">Required Documents</div>
+        <div
+          className="creator-card__body"
+          style={{
+            padding: 0,
+            overflow: "hidden",
+          }}
+        >
+          <style>{`
+            .creator-completed-docs-card .creator-card__header {
+              border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+            }
+            .creator-completed-docs-card .creator-card__body {
+              display: flex;
+              flex-direction: column;
+            }
+            .creator-completed-docs-card .ant-table-wrapper .ant-table-thead,
+            .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr,
+            .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr > th {
+              background: var(--color-white) !important;
+              border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+              box-shadow: none !important;
+            }
+            .creator-completed-docs-card .ant-table-wrapper .ant-table-header,
+            .creator-completed-docs-card .ant-table-wrapper .ant-table-container {
+              background: var(--color-white) !important;
+            }
+            .doc-table.ant-table .ant-table-thead > tr > th {
+              padding: 9px 12px !important;
+              font-size: 12px !important;
+              font-weight: 600 !important;
+              color: var(--color-heading) !important;
+              background: var(--color-white) !important;
+              border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+              text-transform: uppercase;
+              letter-spacing: 0.08em;
+              line-height: 1.2 !important;
+            }
+            .doc-table.ant-table .ant-table-tbody > tr > td {
+              padding: 8px 12px !important;
+              font-size: 12px !important;
+              color: var(--color-heading-light) !important;
+              line-height: 1.45 !important;
+              vertical-align: middle !important;
+              border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+              background: var(--color-white) !important;
+            }
+            .doc-table .ant-table-container,
+            .doc-table .ant-table-content,
+            .doc-table .ant-table-body,
+            .doc-table .ant-table-cell {
+              background: var(--color-white) !important;
+            }
+            .doc-table table {
+              width: 100% !important;
+              table-layout: auto !important;
+            }
+            .doc-table .ant-input,
+            .doc-table .ant-input-textarea {
+              font-size: 12px !important;
+            }
+            .doc-table .ant-btn-sm {
+              font-size: 12px !important;
+              height: 28px !important;
+              padding: 0 8px !important;
+            }
+            .doc-table .ant-input-affix-wrapper,
+            .doc-table .ant-input,
+            .doc-table .ant-input-textarea textarea {
+              padding-top: 4px !important;
+              padding-bottom: 4px !important;
+            }
+            .doc-table .ant-btn-sm .anticon {
+              font-size: 12px !important;
+            }
+            .doc-table .ant-pagination {
+              margin: 12px 16px 14px !important;
+              justify-content: flex-end;
+            }
+            .doc-table .ant-table-tbody > tr:hover > td {
+              background: rgba(214, 189, 152, 0.05) !important;
+            }
+          `}</style>
+
+          {categories.map((category) => renderCategoryTable(category))}
+        </div>
+      </div>
+    );
+  }
+
+  // Multiple categories - use tabs
   return (
     <div
       className="creator-card creator-completed-docs-card"
@@ -270,100 +474,155 @@ const DocumentsTable = ({ docs, checklist }) => {
           overflow: "hidden",
         }}
       >
-      <style>{`
-        .creator-completed-docs-card .creator-card__header {
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-        }
-        .creator-completed-docs-card .creator-card__body {
-          display: flex;
-          flex-direction: column;
-        }
-        .creator-completed-docs-card .ant-table-wrapper .ant-table-thead,
-        .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr,
-        .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr > th {
-          background: var(--color-white) !important;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-          box-shadow: none !important;
-        }
-        .creator-completed-docs-card .ant-table-wrapper .ant-table-header,
-        .creator-completed-docs-card .ant-table-wrapper .ant-table-container {
-          background: var(--color-white) !important;
-        }
-        .doc-table.ant-table .ant-table-thead > tr > th {
-          padding: 9px 12px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
+        <style>{`
+          .creator-completed-docs-card .creator-card__header {
+            border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+          }
+          .creator-completed-docs-card .creator-card__body {
+            display: flex;
+            flex-direction: column;
+          }
+          .creator-completed-docs-card .ant-table-wrapper .ant-table-thead,
+          .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr,
+          .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr > th {
+            background: var(--color-white) !important;
+            border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+            box-shadow: none !important;
+          }
+          .creator-completed-docs-card .ant-table-wrapper .ant-table-header,
+          .creator-completed-docs-card .ant-table-wrapper .ant-table-container {
+            background: var(--color-white) !important;
+          }
+          .doc-table.ant-table .ant-table-thead > tr > th {
+            padding: 9px 12px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
             color: var(--color-heading) !important;
-          background: var(--color-white) !important;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          line-height: 1.2 !important;
-        }
-        .doc-table.ant-table .ant-table-tbody > tr > td {
-          padding: 8px 12px !important;
-          font-size: 12px !important;
+            background: var(--color-white) !important;
+            border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            line-height: 1.2 !important;
+          }
+          .doc-table.ant-table .ant-table-tbody > tr > td {
+            padding: 8px 12px !important;
+            font-size: 12px !important;
             color: var(--color-heading-light) !important;
-          line-height: 1.45 !important;
-          vertical-align: middle !important;
-          border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
-          background: var(--color-white) !important;
-        }
-        .doc-table .ant-table-container,
-        .doc-table .ant-table-content,
-        .doc-table .ant-table-body,
-        .doc-table .ant-table-cell {
-          background: var(--color-white) !important;
-        }
-        .doc-table table {
-          width: 100% !important;
-          table-layout: auto !important;
-        }
-        .doc-table .ant-input,
-        .doc-table .ant-input-textarea {
-          font-size: 12px !important;
-        }
-        .doc-table .ant-btn-sm {
-          font-size: 12px !important;
-          height: 28px !important;
-          padding: 0 8px !important;
-        }
-        .doc-table .ant-input-affix-wrapper,
-        .doc-table .ant-input,
-        .doc-table .ant-input-textarea textarea {
-          padding-top: 4px !important;
-          padding-bottom: 4px !important;
-        }
-        .doc-table .ant-btn-sm .anticon {
-          font-size: 12px !important;
-        }
-        .doc-table .ant-pagination {
-          margin: 12px 16px 14px !important;
-          justify-content: flex-end;
-        }
-        .doc-table .ant-table-tbody > tr:hover > td {
-          background: rgba(214, 189, 152, 0.05) !important;
-        }
-      `}</style>
-      <Table
-        className="doc-table"
-        columns={columns}
-        dataSource={safeDocs}
-        pagination={{
-          pageSize,
-          hideOnSinglePage: false,
-          size: "small",
-          position: ["bottomRight"],
-          showSizeChanger: false,
-        }}
-        rowKey="docIdx"
-        size="small"
-        tableLayout="auto"
-        scroll={{ x: 1180 }}
-        locale={{
-          emptyText: "No documents available",
-        }}
-      />
+            line-height: 1.45 !important;
+            vertical-align: middle !important;
+            border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+            background: var(--color-white) !important;
+          }
+          .doc-table .ant-table-container,
+          .doc-table .ant-table-content,
+          .doc-table .ant-table-body,
+          .doc-table .ant-table-cell {
+            background: var(--color-white) !important;
+          }
+          .doc-table table {
+            width: 100% !important;
+            table-layout: auto !important;
+          }
+          .doc-table .ant-input,
+          .doc-table .ant-input-textarea {
+            font-size: 12px !important;
+          }
+          .doc-table .ant-btn-sm {
+            font-size: 12px !important;
+            height: 28px !important;
+            padding: 0 8px !important;
+          }
+          .doc-table .ant-input-affix-wrapper,
+          .doc-table .ant-input,
+          .doc-table .ant-input-textarea textarea {
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
+          }
+          .doc-table .ant-btn-sm .anticon {
+            font-size: 12px !important;
+          }
+          .doc-table .ant-pagination {
+            margin: 12px 16px 14px !important;
+            justify-content: flex-end;
+          }
+          .doc-table .ant-table-tbody > tr:hover > td {
+            background: rgba(214, 189, 152, 0.05) !important;
+          }
+          .doc-category-tab .ant-tabs-tab {
+            padding: 8px 16px !important;
+            margin: 0 !important;
+          }
+          .doc-category-tab .ant-tabs-nav {
+            margin-bottom: 16px !important;
+          }
+          .doc-category-tab .ant-tabs-nav::before {
+            border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
+          }
+          .doc-category-tab .ant-tabs-tab-active .ant-tabs-tab-btn {
+            font-weight: 600 !important;
+          }
+          .doc-category-tab .ant-tabs-ink-bar {
+            background: #164679 !important;
+            height: 2px !important;
+          }
+        `}</style>
+
+        <Tabs
+          className="doc-category-tab"
+          activeKey={activeCategory}
+          onChange={setActiveCategory}
+          type="line"
+          style={{ padding: "0 16px", marginTop: 8 }}
+        >
+          {categories.map((category) => {
+            const categoryColor = getCategoryColor(category);
+            const categoryCount = groupedDocs[category]?.length || 0;
+
+            return (
+              <TabPane
+                key={category}
+                tab={
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: categoryColor }}>{category}</span>
+                    <Badge
+                      count={categoryCount}
+                      style={{
+                        backgroundColor: categoryColor,
+                        color: "#fff",
+                        fontSize: 10,
+                        minWidth: 18,
+                        height: 18,
+                        lineHeight: "18px",
+                      }}
+                    />
+                  </span>
+                }
+              >
+                <div style={{ padding: "0 0 16px 0" }}>
+                  <Table
+                    className="doc-table"
+                    columns={columns}
+                    dataSource={groupedDocs[category]}
+                    pagination={{
+                      pageSize,
+                      hideOnSinglePage: false,
+                      size: "small",
+                      position: ["bottomRight"],
+                      showSizeChanger: false,
+                    }}
+                    rowKey="docIdx"
+                    size="small"
+                    tableLayout="auto"
+                    scroll={{ x: 1180 }}
+                    locale={{
+                      emptyText: "No documents available",
+                    }}
+                  />
+                </div>
+              </TabPane>
+            );
+          })}
+        </Tabs>
       </div>
     </div>
   );

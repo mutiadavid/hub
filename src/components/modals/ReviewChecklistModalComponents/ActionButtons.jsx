@@ -58,9 +58,10 @@ const ActionButtons = ({
   const hasComplianceDocsMissingExpiry = complianceDocsMissingExpiry.length > 0;
   const naReasonMissingDocs = React.useMemo(() => getNaReasonMissingDocs(docs), [docs]);
   const hasNaReasonMissingDocs = naReasonMissingDocs.length > 0;
-  const requiresComplianceExpiryForRmSubmission = ["cocreatorreview", "co_creator_review"].includes(
-    checklist?.status?.toLowerCase(),
-  );
+  
+  // Co-Creator no longer needs to provide compliance dates when submitting to RM.
+  // It is ONLY required when submitting to the Checker.
+  const requiresComplianceExpiryForRmSubmission = false;
 
   // Submit to CoChecker: All documents must have final status (tbo, sighted, deferred, submitted, etc.)
   const canSubmitToCoChecker =

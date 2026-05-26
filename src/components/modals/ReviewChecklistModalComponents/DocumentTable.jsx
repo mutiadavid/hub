@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import dayjs from "dayjs";
 import {
   Table,
@@ -13,6 +13,8 @@ import {
   message,
   Modal,
   List,
+  Tabs,
+  Badge,
 } from "antd";
 import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import { getExpiryMeta, getExpiryStatus } from "../../../utils/documentUtils";
@@ -22,6 +24,7 @@ import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 const normalizeStatusValue = (value) =>
   String(value || "")
@@ -46,6 +49,30 @@ const getDisplayText = (value, fallback = "N/A") => {
   return normalized || fallback;
 };
 
+// Helper function to group documents by category
+const groupDocumentsByCategory = (docs) => {
+  const grouped = {};
+  docs.forEach((doc) => {
+    const category = doc.category || "Uncategorized";
+    if (!grouped[category]) {
+      grouped[category] = [];
+    }
+    grouped[category].push(doc);
+  });
+  return grouped;
+};
+
+// Helper function to get category badge color
+const getCategoryColor = (category) => {
+  const categoryLower = category.toLowerCase();
+  if (categoryLower.includes("compliance")) return "#10b981";
+  if (categoryLower.includes("financial")) return "#3b82f6";
+  if (categoryLower.includes("legal")) return "#8b5cf6";
+  if (categoryLower.includes("kra")) return "#f59e0b";
+  if (categoryLower.includes("identification")) return "#ec4899";
+  return "#64748b";
+};
+
 const DocumentTable = ({
   docs,
   onNameChange,
@@ -55,9 +82,9 @@ const DocumentTable = ({
   onClearDeferralValidation,
   onDelete,
   onExpiryDateChange,
-  onViewFile, // ✅ Make sure this is passed
+  onViewFile,
   isActionDisabled,
-  checklistStatus, // ✅ Accept checklist status as prop
+  checklistStatus,
   deferralValidationByDoc = {},
   onValidateDeferralNo,
   token,
@@ -67,9 +94,10 @@ const DocumentTable = ({
   const safeDocs = Array.isArray(docs) ? docs : [];
   const pageSize = 6;
   const verticalScrollHeight = 360;
-  const [openDeferralPopoverDoc, setOpenDeferralPopoverDoc] = React.useState(null);
-  const [transientValidationByDoc, setTransientValidationByDoc] = React.useState({});
-  const [viewModalFiles, setViewModalFiles] = React.useState(null);
+  const [openDeferralPopoverDoc, setOpenDeferralPopoverDoc] = useState(null);
+  const [transientValidationByDoc, setTransientValidationByDoc] = useState({});
+  const [viewModalFiles, setViewModalFiles] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(null);
   const transientValidationTimersRef = React.useRef({});
   const previousValidationRef = React.useRef({});
 
@@ -141,40 +169,18 @@ const DocumentTable = ({
     const docStatus = (doc.status || "").toLowerCase();
     const checklistStat = (checklistStatus || "").toLowerCase();
 
-    // Allow actions when checklist is in pending/cocreatorreview OR document is pendingco
     return (
       ["pending", "cocreatorreview"].includes(checklistStat) ||
       docStatus === "pendingco"
     );
   };
-  const columns = [
-    {
-      title: "Category",
-      dataIndex: "category",
-      width: 150,
-      render: (text) => (
-        <Tooltip title={getDisplayText(text)}>
-          <span
-            style={{
-              fontSize: 12,
-              color: "var(--color-text-body)",
-              fontWeight: 500,
-              lineHeight: 1.45,
-              display: "block",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {getDisplayText(text)}
-          </span>
-        </Tooltip>
-      ),
-    },
+
+  // Get the columns for the table
+  const getColumns = () => [
     {
       title: "Document Name",
       dataIndex: "name",
-      width: 185,
+      width: 200,
       render: (text, record) => (
         <Input.TextArea
           autoSize={{ minRows: 1, maxRows: 2 }}
@@ -189,7 +195,7 @@ const DocumentTable = ({
     {
       title: "Action",
       dataIndex: "action",
-      width: 145,
+      width: 155,
       render: (text, record) => {
         const validationState = deferralValidationByDoc?.[record.docIdx];
         const isDeferredRow = isDeferredStatusValue(
@@ -321,7 +327,6 @@ const DocumentTable = ({
         const statusLabel =
           status === "deferred" && record.deferralNo ? "Deferred" : status;
 
-        // Define colors for each status with better visibility
         let textColor = "#000";
 
         const normalizedStatus = String(status || "")
@@ -332,19 +337,19 @@ const DocumentTable = ({
           normalizedStatus.includes("submitted") ||
           normalizedStatus.includes("sighted")
         ) {
-          textColor = "#52C41A"; // Green
+          textColor = "#52C41A";
         } else if (
           normalizedStatus.includes("deferred") ||
           normalizedStatus.includes("waived") ||
           normalizedStatus.includes("tbo")
         ) {
-          textColor = "#FAAD14"; // Amber
+          textColor = "#FAAD14";
         } else if (normalizedStatus.includes("pending")) {
-          textColor = "#FF4D4F"; // Red
+          textColor = "#FF4D4F";
         } else if (normalizedStatus.includes("approved")) {
-          textColor = "#52C41A"; // Green
+          textColor = "#52C41A";
         } else if (normalizedStatus.includes("rejected")) {
-          textColor = "#FF4D4F"; // Red
+          textColor = "#FF4D4F";
         }
 
         return (
@@ -405,11 +410,6 @@ const DocumentTable = ({
       width: 156,
       render: (_, record) => {
         const checkerStatus = getResolvedCheckerStatus(record);
-        // Define colors for each status with better visibility
-        // approved/sighted: white background, green text
-        // waived/tbo/deferred: white background, amber text
-        // rejected: white background, red text
-        // pending: red background, red text
         let textColor = "#000";
         let label = checkerStatus || "Pending";
 
@@ -421,7 +421,7 @@ const DocumentTable = ({
           normalizedStatus.includes("approved") ||
           normalizedStatus.includes("sighted")
         ) {
-          textColor = "#52C41A"; // Green
+          textColor = "#52C41A";
           label = normalizedStatus.includes("approved")
             ? "approved"
             : "sighted";
@@ -430,7 +430,7 @@ const DocumentTable = ({
           normalizedStatus.includes("tbo") ||
           normalizedStatus.includes("deferred")
         ) {
-          textColor = "#FAAD14"; // Amber
+          textColor = "#FAAD14";
           const statusType = normalizedStatus.includes("waived")
             ? "waived"
             : normalizedStatus.includes("tbo")
@@ -438,10 +438,10 @@ const DocumentTable = ({
               : "deferred";
           label = statusType;
         } else if (normalizedStatus.includes("rejected")) {
-          textColor = "#FF4D4F"; // Red
+          textColor = "#FF4D4F";
           label = "rejected";
         } else {
-          textColor = "#FF4D4F"; // Red text
+          textColor = "#FF4D4F";
           label = "pending";
         }
 
@@ -560,10 +560,6 @@ const DocumentTable = ({
           return <span style={{ color: "var(--color-text-light)" }}>-</span>;
         }
 
-        // Define colors for each status
-        // submitted_for_review: white background, green text
-        // deferral_requested: white background, amber text
-        // pending_from_customer: red theme
         let textColor = "#000";
 
         const normalizedStatus = String(status)
@@ -574,22 +570,21 @@ const DocumentTable = ({
           normalizedStatus.includes("submittedforreview") ||
           normalizedStatus.includes("submitted_for_review")
         ) {
-          textColor = "#52C41A"; // Green
+          textColor = "#52C41A";
         } else if (
           normalizedStatus.includes("deferralrequested") ||
           normalizedStatus.includes("deferral_requested") ||
           normalizedStatus.includes("defferal_requested")
         ) {
-          textColor = "#FAAD14"; // Amber
+          textColor = "#FAAD14";
         } else if (
           normalizedStatus.includes("pendingfromcustomer") ||
           normalizedStatus.includes("pending_from_customer")
         ) {
-          textColor = "#FF4D4F"; // Red
+          textColor = "#FF4D4F";
         }
 
         const displayText = formatStatusForSnakeCase(status);
-        // Remove deferral number from display - shown in Deferral No column
 
         return (
           <Tooltip title={displayText}>
@@ -714,6 +709,292 @@ const DocumentTable = ({
     },
   ];
 
+  // Group documents by category
+  const groupedDocs = groupDocumentsByCategory(safeDocs);
+  const categories = Object.keys(groupedDocs);
+
+  // Set initial active category
+  React.useEffect(() => {
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0]);
+    }
+  }, [categories, activeCategory]);
+
+  // Render table for a specific category
+  const renderCategoryTable = (category) => {
+    const categoryDocs = groupedDocs[category] || [];
+    const categoryColor = getCategoryColor(category);
+
+    return (
+      <div>
+        {/* Category Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 16,
+            paddingBottom: 12,
+            borderBottom: `2px solid ${categoryColor}`,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: categoryColor,
+              }}
+            >
+              {category}
+            </span>
+            <Badge
+              count={categoryDocs.length}
+              style={{
+                backgroundColor: categoryColor,
+                color: "#fff",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Category Documents Table */}
+        <Table
+          className="doc-table"
+          columns={getColumns()}
+          dataSource={categoryDocs}
+          pagination={{
+            pageSize,
+            hideOnSinglePage: false,
+            size: "small",
+            position: ["bottomRight"],
+            showSizeChanger: false,
+          }}
+          rowKey="docIdx"
+          size="small"
+          tableLayout="fixed"
+          scroll={categoryDocs.length > 5 ? { x: 1500, y: verticalScrollHeight } : { x: 1500 }}
+          locale={{
+            emptyText: "No documents available",
+          }}
+        />
+      </div>
+    );
+  };
+
+  // If only one category or less, show single table without tabs
+  if (categories.length <= 1) {
+    return (
+      <div
+        className="creator-card creator-completed-docs-card"
+        style={{
+          marginBottom: 0,
+          overflow: "hidden",
+          borderColor: "rgba(226, 232, 240, 0.9)",
+        }}
+      >
+        <div className="creator-card__header">Required Documents</div>
+        <div
+          className="creator-card__body"
+          style={{
+            padding: 0,
+            overflow: "hidden",
+          }}
+        >
+          <style>{`
+            .doc-table.ant-table .ant-table-thead > tr > th {
+              padding: 9px 12px !important;
+              font-size: 10px !important;
+              font-weight: 600 !important;
+              color: var(--color-text-medium) !important;
+              background: var(--color-white) !important;
+              border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+              text-transform: uppercase;
+              white-space: normal !important;
+              line-height: 1.25 !important;
+              letter-spacing: 0.02em !important;
+            }
+            .doc-table.ant-table .ant-table-tbody > tr > td {
+              padding: 8px 12px !important;
+              font-size: 12px !important;
+              color: var(--color-text-body) !important;
+              line-height: 1.45 !important;
+              vertical-align: middle !important;
+              border-bottom: 1px solid rgba(226, 232, 240, 0.75) !important;
+            }
+            .doc-table .ant-table-container,
+            .doc-table .ant-table-content,
+            .doc-table .ant-table-body,
+            .doc-table .ant-table-cell {
+              background: var(--color-white) !important;
+            }
+            .doc-table .ant-input,
+            .doc-table .ant-input-textarea {
+              font-size: 12px !important;
+            }
+            .doc-table table {
+              width: 100% !important;
+              table-layout: fixed !important;
+            }
+            .doc-table .ant-select,
+            .doc-table .ant-picker,
+            .doc-table .ant-input,
+            .doc-table .ant-input-textarea {
+              width: 100% !important;
+              min-width: 0 !important;
+            }
+            .doc-table .ant-select .ant-select-selector {
+              font-size: 12px !important;
+              min-height: 30px !important;
+              padding: 0 8px !important;
+            }
+            .doc-table .ant-select-selection-item {
+              white-space: nowrap !important;
+              overflow: hidden !important;
+              text-overflow: ellipsis !important;
+              line-height: 28px !important;
+            }
+            .doc-table .ant-table-tbody .ant-table-cell {
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .doc-table .ant-table-cell .ant-tooltip-open-trigger,
+            .doc-table .doc-table-status-text {
+              max-width: 100%;
+            }
+            .doc-table .doc-table-view-cell,
+            .doc-table .doc-table-delete-cell {
+              white-space: normal !important;
+              overflow: visible !important;
+              text-overflow: clip !important;
+            }
+            .doc-table .doc-table-view-cell {
+              padding-left: 18px !important;
+            }
+            .doc-table .doc-table-delete-cell {
+              padding-left: 16px !important;
+            }
+            .doc-table .doc-table-view-cell .ant-btn,
+            .doc-table .doc-table-delete-cell .ant-btn {
+              margin-right: 6px;
+            }
+            .doc-table .ant-btn-sm {
+              font-size: 12px !important;
+              padding: 0 8px !important;
+              height: 28px !important;
+            }
+            .doc-table .ant-picker {
+              min-height: 30px !important;
+              padding: 0 8px !important;
+            }
+            .doc-table .ant-input-affix-wrapper,
+            .doc-table .ant-input,
+            .doc-table .ant-input-textarea textarea {
+              padding-top: 4px !important;
+              padding-bottom: 4px !important;
+            }
+            .doc-table .ant-btn-sm .anticon {
+              font-size: 12px !important;
+            }
+            .doc-table .ant-btn-dangerous .anticon {
+              font-size: 12px !important;
+            }
+            .doc-table .ant-pagination {
+              margin: 12px 16px 14px !important;
+              justify-content: flex-end;
+            }
+            .doc-table .ant-input-textarea textarea {
+              min-height: 30px !important;
+              line-height: 1.45 !important;
+            }
+            .doc-table .ant-input-textarea,
+            .doc-table .ant-input-textarea textarea {
+              overflow-wrap: break-word !important;
+              word-break: break-word !important;
+            }
+            .doc-table .ant-table-body {
+              overflow-x: auto !important;
+              overflow-y: auto !important;
+            }
+            .doc-table.ant-table .ant-table-tbody > tr:hover > td {
+              background: rgba(148, 163, 184, 0.06) !important;
+            }
+          `}</style>
+
+          {categories.map((category) => renderCategoryTable(category))}
+
+          <Modal
+            title={<div style={{ fontFamily: "inherit", fontWeight: 600, color: "#1e293b" }}>Associated Files</div>}
+            open={!!viewModalFiles}
+            onCancel={() => setViewModalFiles(null)}
+            footer={[
+              <Button key="close" onClick={() => setViewModalFiles(null)}>
+                Close
+              </Button>
+            ]}
+            width={480}
+            centered
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 8 }}>
+              <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+                This document has multiple uploads. Click on any file to view it:
+              </p>
+              <List
+                dataSource={viewModalFiles || []}
+                renderItem={(file, idx) => (
+                  <List.Item
+                    style={{
+                      padding: "10px 12px",
+                      background: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: 8,
+                      marginBottom: 8,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
+                      <span
+                        onClick={() => openFileInNewTab(file.fileUrl)}
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          cursor: "pointer",
+                          textDecoration: "underline",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={file.fileName}
+                      >
+                        {file.fileName || `Attachment ${idx + 1}`}
+                      </span>
+                      {file.uploadedBy && (
+                        <span style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>
+                          Uploaded by: {file.uploadedBy} ({file.uploadedByRole || "Unknown"})
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      size="small"
+                      onClick={() => openFileInNewTab(file.fileUrl)}
+                    >
+                      View
+                    </Button>
+                  </List.Item>
+                )}
+              />
+            </div>
+          </Modal>
+        </div>
+      </div>
+    );
+  }
+
+  // Multiple categories - use tabs
   return (
     <div
       className="creator-card creator-completed-docs-card"
@@ -732,157 +1013,200 @@ const DocumentTable = ({
         }}
       >
         <style>{`
-        .creator-completed-docs-card .creator-card__header {
-          border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
-        }
-        .creator-completed-docs-card .creator-card__body {
-          display: flex;
-          flex-direction: column;
-        }
-        .creator-completed-docs-card .ant-table-wrapper .ant-table-thead,
-        .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr,
-        .creator-completed-docs-card .ant-table-wrapper .ant-table-thead > tr > th {
-          border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
-          box-shadow: none !important;
-        }
-        .doc-table.ant-table .ant-table-thead > tr > th {
-          padding: 9px 12px !important;
-          font-size: 10px !important;
-          font-weight: 600 !important;
-          color: var(--color-text-medium) !important;
-          background: var(--color-white) !important;
-          border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
-          text-transform: uppercase;
-          white-space: normal !important;
-          line-height: 1.25 !important;
-          letter-spacing: 0.02em !important;
-        }
-        .doc-table.ant-table .ant-table-tbody > tr > td {
-          padding: 8px 12px !important;
-          font-size: 12px !important;
-          color: var(--color-text-body) !important;
-          line-height: 1.45 !important;
-          vertical-align: middle !important;
-          border-bottom: 1px solid rgba(226, 232, 240, 0.75) !important;
-        }
-        .doc-table .ant-table-container,
-        .doc-table .ant-table-content,
-        .doc-table .ant-table-body,
-        .doc-table .ant-table-cell {
-          background: var(--color-white) !important;
-        }
-        .doc-table .ant-input,
-        .doc-table .ant-input-textarea {
-          font-size: 12px !important;
-        }
-        .doc-table table {
-          width: 100% !important;
-          table-layout: fixed !important;
-        }
-        .doc-table .ant-select,
-        .doc-table .ant-picker,
-        .doc-table .ant-input,
-        .doc-table .ant-input-textarea {
-          width: 100% !important;
-          min-width: 0 !important;
-        }
-        .doc-table .ant-select .ant-select-selector {
-          font-size: 12px !important;
-          min-height: 30px !important;
-          padding: 0 8px !important;
-        }
-        .doc-table .ant-select-selection-item {
-          white-space: nowrap !important;
-          overflow: hidden !important;
-          text-overflow: ellipsis !important;
-          line-height: 28px !important;
-        }
-        .doc-table .ant-table-tbody .ant-table-cell {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .doc-table .ant-table-cell .ant-tooltip-open-trigger,
-        .doc-table .doc-table-status-text {
-          max-width: 100%;
-        }
-        .doc-table .doc-table-view-cell,
-        .doc-table .doc-table-delete-cell {
-          white-space: normal !important;
-          overflow: visible !important;
-          text-overflow: clip !important;
-        }
-        .doc-table .doc-table-view-cell {
-          padding-left: 18px !important;
-        }
-        .doc-table .doc-table-delete-cell {
-          padding-left: 16px !important;
-        }
-        .doc-table .doc-table-view-cell .ant-btn,
-        .doc-table .doc-table-delete-cell .ant-btn {
-          margin-right: 6px;
-        }
-        .doc-table .ant-btn-sm {
-          font-size: 12px !important;
-          padding: 0 8px !important;
-          height: 28px !important;
-        }
-        .doc-table .ant-picker {
-          min-height: 30px !important;
-          padding: 0 8px !important;
-        }
-        .doc-table .ant-input-affix-wrapper,
-        .doc-table .ant-input,
-        .doc-table .ant-input-textarea textarea {
-          padding-top: 4px !important;
-          padding-bottom: 4px !important;
-        }
-        .doc-table .ant-btn-sm .anticon {
-          font-size: 12px !important;
-        }
-        .doc-table .ant-btn-dangerous .anticon {
-          font-size: 12px !important;
-        }
-        .doc-table .ant-pagination {
-          margin: 12px 16px 14px !important;
-          justify-content: flex-end;
-        }
-        .doc-table .ant-input-textarea textarea {
-          min-height: 30px !important;
-          line-height: 1.45 !important;
-        }
-        .doc-table .ant-input-textarea,
-        .doc-table .ant-input-textarea textarea {
-          overflow-wrap: break-word !important;
-          word-break: break-word !important;
-        }
-        .doc-table .ant-table-body {
-          overflow-x: auto !important;
-          overflow-y: auto !important;
-        }
-        .doc-table.ant-table .ant-table-tbody > tr:hover > td {
-          background: rgba(148, 163, 184, 0.06) !important;
-        }
-      `}</style>
-        <Table
-          className="doc-table"
-          columns={columns}
-          dataSource={safeDocs}
-          pagination={{
-            pageSize,
-            hideOnSinglePage: false,
-            size: "small",
-            position: ["bottomRight"],
-            showSizeChanger: false,
-          }}
-          rowKey="docIdx"
-          size="small"
-          tableLayout="fixed"
-          scroll={safeDocs.length > 5 ? { x: 1700, y: verticalScrollHeight } : { x: 1700 }}
-          locale={{
-            emptyText: "No documents available",
-          }}
-        />
+          .doc-table.ant-table .ant-table-thead > tr > th {
+            padding: 9px 12px !important;
+            font-size: 10px !important;
+            font-weight: 600 !important;
+            color: var(--color-text-medium) !important;
+            background: var(--color-white) !important;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+            text-transform: uppercase;
+            white-space: normal !important;
+            line-height: 1.25 !important;
+            letter-spacing: 0.02em !important;
+          }
+          .doc-table.ant-table .ant-table-tbody > tr > td {
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            color: var(--color-text-body) !important;
+            line-height: 1.45 !important;
+            vertical-align: middle !important;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.75) !important;
+          }
+          .doc-table .ant-table-container,
+          .doc-table .ant-table-content,
+          .doc-table .ant-table-body,
+          .doc-table .ant-table-cell {
+            background: var(--color-white) !important;
+          }
+          .doc-table .ant-input,
+          .doc-table .ant-input-textarea {
+            font-size: 12px !important;
+          }
+          .doc-table table {
+            width: 100% !important;
+            table-layout: fixed !important;
+          }
+          .doc-table .ant-select,
+          .doc-table .ant-picker,
+          .doc-table .ant-input,
+          .doc-table .ant-input-textarea {
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+          .doc-table .ant-select .ant-select-selector {
+            font-size: 12px !important;
+            min-height: 30px !important;
+            padding: 0 8px !important;
+          }
+          .doc-table .ant-select-selection-item {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            line-height: 28px !important;
+          }
+          .doc-table .ant-table-tbody .ant-table-cell {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .doc-table .ant-table-cell .ant-tooltip-open-trigger,
+          .doc-table .doc-table-status-text {
+            max-width: 100%;
+          }
+          .doc-table .doc-table-view-cell,
+          .doc-table .doc-table-delete-cell {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+          }
+          .doc-table .doc-table-view-cell {
+            padding-left: 18px !important;
+          }
+          .doc-table .doc-table-delete-cell {
+            padding-left: 16px !important;
+          }
+          .doc-table .doc-table-view-cell .ant-btn,
+          .doc-table .doc-table-delete-cell .ant-btn {
+            margin-right: 6px;
+          }
+          .doc-table .ant-btn-sm {
+            font-size: 12px !important;
+            padding: 0 8px !important;
+            height: 28px !important;
+          }
+          .doc-table .ant-picker {
+            min-height: 30px !important;
+            padding: 0 8px !important;
+          }
+          .doc-table .ant-input-affix-wrapper,
+          .doc-table .ant-input,
+          .doc-table .ant-input-textarea textarea {
+            padding-top: 4px !important;
+            padding-bottom: 4px !important;
+          }
+          .doc-table .ant-btn-sm .anticon {
+            font-size: 12px !important;
+          }
+          .doc-table .ant-btn-dangerous .anticon {
+            font-size: 12px !important;
+          }
+          .doc-table .ant-pagination {
+            margin: 12px 16px 14px !important;
+            justify-content: flex-end;
+          }
+          .doc-table .ant-input-textarea textarea {
+            min-height: 30px !important;
+            line-height: 1.45 !important;
+          }
+          .doc-table .ant-input-textarea,
+          .doc-table .ant-input-textarea textarea {
+            overflow-wrap: break-word !important;
+            word-break: break-word !important;
+          }
+          .doc-table .ant-table-body {
+            overflow-x: auto !important;
+            overflow-y: auto !important;
+          }
+          .doc-table.ant-table .ant-table-tbody > tr:hover > td {
+            background: rgba(148, 163, 184, 0.06) !important;
+          }
+          .doc-category-tab .ant-tabs-tab {
+            padding: 8px 16px !important;
+            margin: 0 !important;
+          }
+          .doc-category-tab .ant-tabs-nav {
+            margin-bottom: 16px !important;
+          }
+          .doc-category-tab .ant-tabs-nav::before {
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+          }
+          .doc-category-tab .ant-tabs-tab-active .ant-tabs-tab-btn {
+            font-weight: 600 !important;
+          }
+          .doc-category-tab .ant-tabs-ink-bar {
+            background: #164679 !important;
+            height: 2px !important;
+          }
+        `}</style>
+
+        <Tabs
+          className="doc-category-tab"
+          activeKey={activeCategory}
+          onChange={setActiveCategory}
+          type="line"
+          style={{ padding: "0 16px", marginTop: 8 }}
+        >
+          {categories.map((category) => {
+            const categoryColor = getCategoryColor(category);
+            const categoryCount = groupedDocs[category]?.length || 0;
+
+            return (
+              <TabPane
+                key={category}
+                tab={
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: categoryColor }}>{category}</span>
+                    <Badge
+                      count={categoryCount}
+                      style={{
+                        backgroundColor: categoryColor,
+                        color: "#fff",
+                        fontSize: 10,
+                        minWidth: 18,
+                        height: 18,
+                        lineHeight: "18px",
+                      }}
+                    />
+                  </span>
+                }
+              >
+                <div style={{ padding: "0 0 16px 0" }}>
+                  <Table
+                    className="doc-table"
+                    columns={getColumns()}
+                    dataSource={groupedDocs[category]}
+                    pagination={{
+                      pageSize,
+                      hideOnSinglePage: false,
+                      size: "small",
+                      position: ["bottomRight"],
+                      showSizeChanger: false,
+                    }}
+                    rowKey="docIdx"
+                    size="small"
+                    tableLayout="fixed"
+                    scroll={groupedDocs[category]?.length > 5 ? { x: 1500, y: verticalScrollHeight } : { x: 1500 }}
+                    locale={{
+                      emptyText: "No documents available",
+                    }}
+                  />
+                </div>
+              </TabPane>
+            );
+          })}
+        </Tabs>
+
         <Modal
           title={<div style={{ fontFamily: "inherit", fontWeight: 600, color: "#1e293b" }}>Associated Files</div>}
           open={!!viewModalFiles}

@@ -211,29 +211,30 @@
   }
 
 
-/* Remove blue header background */
-.modalRootClassName .ant-modal-header {
-  background-color: transparent !important;
-  border-bottom: 1px solid #f0f0f0; /* optional: add light border instead */
-}
+  /* Remove blue header background */
+  .modalRootClassName .ant-modal-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid #f0f0f0;
+    /* optional: add light border instead */
+  }
 
-/* Ensure header text is dark */
-.modalTitleTextClassName,
-.modalTitleCopyClassName {
-  color: #1a1a1a !important;
-}
+  /* Ensure header text is dark */
+  .modalTitleTextClassName,
+  .modalTitleCopyClassName {
+    color: #1a1a1a !important;
+  }
 
-/* If the copy text is secondary, make it dark too */
-.modalTitleCopyClassName {
-  color: #2c3e50 !important;
-  font-size: 14px;
-  font-weight: normal;
-}
+  /* If the copy text is secondary, make it dark too */
+  .modalTitleCopyClassName {
+    color: #2c3e50 !important;
+    font-size: 14px;
+    font-weight: normal;
+  }
 
-/* Alternative: Target all text in modal header */
-.ant-modal-header * {
-  color: #1a1a1a;
-}
+  /* Alternative: Target all text in modal header */
+  .ant-modal-header * {
+    color: #1a1a1a;
+  }
 
   .teams-layout-preview .creator-layout-content {
     padding: 20px 24px 24px;
@@ -280,12 +281,26 @@
   }
 }
 
-html, body {
+/*
+ * Global 80% density scaling.
+ * zoom:0.8 renders elements at 80% of their CSS size.
+ * Fix: apply zoom AND height to html itself.
+ *   html grows to 125vh in CSS space → zoom:0.8 renders it as 100vh visual.
+ *   body/root inherit 100% of that → fill the full visible screen with ZERO gap.
+ */
+html {
+  zoom: 0.8 !important;
+  height: 125vh !important;
+  width: 125vw !important;
+  overflow: hidden !important;
+}
+
+body, #root {
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden !important;
   margin: 0;
   padding: 0;
-  height: 100%;
-  width: 100%;
-  overflow: hidden; /* Prevent page-level scroll */
   box-sizing: border-box;
 }
 
@@ -435,7 +450,8 @@ b,
 /* ✅ FIX: Buttons inherit body color by default - reset this behavior */
 /* Only reset native buttons; Ant buttons need to keep their variant colors */
 button:not(.ant-btn) {
-  color: unset !important; /* Don't inherit body text color */
+  color: unset !important;
+  /* Don't inherit body text color */
 }
 
 /* Explicitly set white text for navy buttons */
@@ -1001,6 +1017,7 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 .action-button-primary.ant-btn .ant-btn-content {
   color: #ffffff !important;
 }
+
 /* ✅ NEW DEFERRAL REQUEST BUTTON - Primary blue with guaranteed white text */
 .new-deferral-btn,
 .new-deferral-btn.ant-btn,
@@ -1155,7 +1172,7 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 }
 
 /* ✅ Thick green line (4px) below table headers - Professional separator */
-.ant-table-thead > tr > th {
+.ant-table-thead>tr>th {
   background-color: #ffffff !important;
   color: var(--color-heading) !important;
   font-weight: 700;
@@ -1171,16 +1188,16 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 }
 
 /* ✅ Table body styling */
-.ant-table-tbody > tr {
+.ant-table-tbody>tr {
   transition: background-color 0.2s ease;
 }
 
-.ant-table-tbody > tr:hover > td {
+.ant-table-tbody>tr:hover>td {
   background-color: var(--color-success-soft, #eef8e7) !important;
   cursor: pointer;
 }
 
-.ant-table-tbody > tr > td {
+.ant-table-tbody>tr>td {
   padding: 14px 12px !important;
   font-size: 13px;
   border-bottom: 1px solid #f0f0f0 !important;
@@ -1189,23 +1206,24 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 
 /* ✅ MOBILE RESPONSIVE - Horizontal scrolling for tables on mobile (≤375px) */
 @media (max-width: 375px) {
+
   /* Make content area scrollable horizontally */
   .ant-table-wrapper {
     min-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   .ant-table {
     min-width: 800px;
   }
-  
+
   .ant-table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     display: block;
   }
-  
+
   .ant-table-body {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -1221,42 +1239,44 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 
 /* ✅ MOBILE VIEW OPTIMIZATION - Content area horizontal scroll */
 @media (max-width: 375px) {
+
   /* Force horizontal scrolling on table wrappers */
   .ant-table-wrapper {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
   }
-  
+
   /* Ensure main content area allows horizontal scroll */
-  main, [role="main"] {
+  main,
+  [role="main"] {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   /* ✅ TABLE MOBILE OPTIMIZATION */
   .ant-table {
     font-size: 12px !important;
     min-width: 600px;
   }
-  
-  .ant-table-thead > tr > th {
+
+  .ant-table-thead>tr>th {
     padding: 8px 6px !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     white-space: nowrap !important;
   }
-  
-  .ant-table-tbody > tr > td {
+
+  .ant-table-tbody>tr>td {
     padding: 6px 4px !important;
     font-size: 12px !important;
     word-break: break-word !important;
   }
-  
+
   .ant-table-cell {
     padding: 6px 4px !important;
     max-width: 80px;
   }
-  
+
   /* Reduce Tag size on mobile */
   .ant-tag {
     font-size: 10px !important;
@@ -1313,7 +1333,7 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
   .ant-tag {
     color: inherit !important;
   }
-  
+
   /* Reduce Button size on mobile */
   .ant-btn {
     padding: 4px 8px !important;
@@ -1321,14 +1341,14 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
     height: auto !important;
     min-height: 28px !important;
   }
-  
+
   .ant-btn-sm {
     padding: 2px 4px !important;
     font-size: 10px !important;
     height: auto !important;
     min-height: 24px !important;
   }
-  
+
   /* Reduce Input size on mobile */
   .ant-input,
   .ant-input-number,
@@ -1338,7 +1358,7 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
     height: auto !important;
     min-height: 28px !important;
   }
-  
+
   /* Reduce Select size on mobile */
   .ant-select-selector {
     padding: 4px 8px !important;
@@ -1346,17 +1366,17 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
     height: auto !important;
     min-height: 28px !important;
   }
-  
+
   /* Reduce Icon size on mobile */
   .ant-table-cell .anticon {
     font-size: 12px !important;
   }
-  
+
   /* Pagination mobile optimization */
   .ant-pagination {
     font-size: 11px !important;
   }
-  
+
   .ant-pagination-item,
   .ant-pagination-item-active {
     min-width: 24px !important;
@@ -1364,34 +1384,34 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
     line-height: 24px !important;
     font-size: 11px !important;
   }
-  
+
   /* Reduce Card padding on mobile */
   .ant-card {
     padding: 8px !important;
   }
-  
-  .ant-card > .ant-card-head {
+
+  .ant-card>.ant-card-head {
     padding: 8px !important;
   }
-  
-  .ant-card > .ant-card-body {
+
+  .ant-card>.ant-card-body {
     padding: 8px !important;
   }
-  
+
   /* Reduce Row gutter spacing on mobile */
   .ant-row {
     margin-left: -2px !important;
     margin-right: -2px !important;
   }
-  
+
   /* Reduce column padding on mobile */
   .ant-col {
     padding-left: 2px !important;
     padding-right: 2px !important;
   }
-  
+
   /* Reduce input/select padding */
-  .ant-input, 
+  .ant-input,
   .ant-select-selector,
   .ant-picker {
     padding: 4px 8px !important;
@@ -1410,14 +1430,14 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
   z-index: 1000 !important;
 }
 
-.modal-centered-in-content > .ant-modal {
+.modal-centered-in-content>.ant-modal {
   pointer-events: auto !important;
   position: relative !important;
   top: auto !important;
   left: auto !important;
 }
 
-.modal-centered-in-content > .ant-modal-mask {
+.modal-centered-in-content>.ant-modal-mask {
   pointer-events: auto !important;
 }
 
@@ -1482,7 +1502,7 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 
 /* Modal mask for confirm modal */
 .ant-modal-mask.ant-modal-mask-for-confirm,
-.ant-modal-wrap.confirm-modal-wrapper ~ .ant-modal-mask {
+.ant-modal-wrap.confirm-modal-wrapper~.ant-modal-mask {
   position: fixed !important;
   top: 65px !important;
   left: var(--sidebar-width, 150px) !important;
@@ -1601,6 +1621,7 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
   border-color: #b3b3b3 !important;
   color: #000000 !important;
 }
+
 .ant-modal-wrap.create-dcl-modal-wrapper .ant-modal {
   width: 1200px !important;
   max-width: calc(100vw - 310px) !important;
@@ -1616,11 +1637,11 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
   .ant-modal-wrap.create-dcl-modal-wrapper {
     left: var(--sidebar-width, 40px) !important;
   }
-  
+
   .ant-modal-mask[style*="display: block"] {
     left: var(--sidebar-width, 40px) !important;
   }
-  
+
   .ant-modal-wrap.create-dcl-modal-wrapper .ant-modal {
     width: calc(100vw - 120px) !important;
     max-width: calc(100vw - 120px) !important;
@@ -1635,11 +1656,11 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
     padding-left: 0 !important;
     padding-right: 16px !important;
   }
-  
+
   .ant-modal-mask[style*="display: block"] {
     left: 0 !important;
   }
-  
+
   .ant-modal-wrap.create-dcl-modal-wrapper .ant-modal {
     width: calc(100vw - 32px) !important;
     max-width: calc(100vw - 32px) !important;
@@ -1885,8 +1906,8 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 .ant-descriptions-item-label,
 .ant-descriptions-item-content,
 .ant-table,
-.ant-table-thead > tr > th,
-.ant-table-tbody > tr > td,
+.ant-table-thead>tr>th,
+.ant-table-tbody>tr>td,
 .ant-tabs-tab,
 .ant-tabs-tab-btn,
 .ant-modal-title,
@@ -1916,7 +1937,7 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 .ant-radio-wrapper,
 .ant-checkbox-wrapper,
 .ant-switch-inner,
-.ant-picker-input > input,
+.ant-picker-input>input,
 .ant-picker-panel-container,
 .ant-empty-description,
 .ant-result-title,
@@ -1928,7 +1949,12 @@ body .confirm-submit-btn.ant-btn-primary[disabled] .anticon {
 }
 
 /* Headers - 14px, normal weight */
-h1, h2, h3, h4, h5, h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 .ant-typography h1,
 .ant-typography h2,
 .ant-typography h3,
@@ -1940,7 +1966,7 @@ h1, h2, h3, h4, h5, h6,
 .ant-tabs-tab,
 .ant-tabs-tab-btn,
 .ant-descriptions-item-label,
-.ant-table-thead > tr > th,
+.ant-table-thead>tr>th,
 .ant-collapse-header,
 .ant-steps-item-title,
 .ant-breadcrumb,
@@ -1953,20 +1979,21 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* Table header specific - remove colored borders */
-.ant-table-thead > tr > th {
+.ant-table-thead>tr>th {
   background-color: #f9fafb !important;
   border-bottom: 1px solid #e5e7eb !important;
-  padding: 10px 12px !important;
-  font-weight: 400 !important;
+  padding: 5px 8px !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
   color: #374151 !important;
 }
 
-.ant-table-tbody > tr > td {
+.ant-table-tbody>tr>td {
   border-bottom: 1px solid #f0f0f0 !important;
-  padding: 10px 12px !important;
+  padding: 5px 8px !important;
 }
 
-.ant-table-tbody > tr:hover > td {
+.ant-table-tbody>tr:hover>td {
   background-color: #fafafa !important;
 }
 
@@ -2038,7 +2065,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* Form items */
-.ant-form-item-label > label {
+.ant-form-item-label>label {
   font-size: 12px !important;
   font-weight: 400 !important;
 }
@@ -2154,20 +2181,17 @@ h1, h2, h3, h4, h5, h6,
 
 /* Responsive */
 @media (max-width: 768px) {
-  .ant-table-thead > tr > th,
-  .ant-table-tbody > tr > td {
+
+  .ant-table-thead>tr>th,
+  .ant-table-tbody>tr>td {
     padding: 8px 8px !important;
   }
-  
+
   .ant-card-head {
     padding: 8px 12px !important;
   }
-  
+
   .ant-card-body {
     padding: 10px 12px !important;
   }
-}
-
-body {
-  zoom: 0.8;
 }

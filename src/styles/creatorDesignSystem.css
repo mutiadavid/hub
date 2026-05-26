@@ -43,9 +43,9 @@
 
 .creator-layout-shell {
   display: flex;
-  height: 100vh;
-  min-height: 100vh;
-  width: 100%;
+  height: 125vh;      /* compensates for global zoom:0.8 → 125vh * 0.8 = 100vh visual */
+  min-height: 125vh;
+  width: 125vw;       /* compensates for global zoom:0.8 → 125vw * 0.8 = 100vw visual */
   overflow: hidden;
   background: var(--color-bg);
 }
@@ -616,13 +616,13 @@
 }
 
 .creator-table-shell .ant-table-thead > tr > th {
-  padding: 12px 24px !important;
+  padding: 6px 10px !important;
   background: var(--color-bg) !important;
   border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
   color: var(--color-heading) !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.08em;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -638,10 +638,10 @@
 }
 
 .creator-table-shell .ant-table-tbody > tr > td {
-  padding: 16px 24px !important;
+  padding: 6px 10px !important;
   border-bottom: 1px solid rgba(214, 189, 152, 0.2) !important;
   color: var(--color-heading-light) !important;
-  font-size: 14px !important;
+  font-size: 12px !important;
   background: var(--color-white) !important;
 }
 

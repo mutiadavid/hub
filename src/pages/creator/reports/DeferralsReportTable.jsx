@@ -84,7 +84,7 @@ const getReportStatusMeta = (deferral) => {
   };
 };
 
-export default function DeferralsReportTable({ rows }) {
+export default function DeferralsReportTable({ rows, onDetailsViewChange }) {
   const token = useSelector((state) => state?.auth?.token);
   const [selectedDeferral, setSelectedDeferral] = useState(null);
   const [loadingDeferralId, setLoadingDeferralId] = useState(null);
@@ -288,6 +288,9 @@ export default function DeferralsReportTable({ rows }) {
   const handleCloseModal = () => {
     setSelectedDeferral(null);
     setLoadingDeferralId(null);
+    if (onDetailsViewChange) {
+      onDetailsViewChange(false);
+    }
   };
 
   const handleRowClick = async (record) => {
@@ -299,6 +302,9 @@ export default function DeferralsReportTable({ rows }) {
     }
 
     setLoadingDeferralId(String(recordId));
+    if (onDetailsViewChange) {
+      onDetailsViewChange(true);
+    }
 
     try {
       const freshDeferral = await deferralApi.getDeferralById(recordId, token);

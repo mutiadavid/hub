@@ -249,7 +249,7 @@ const getTatSortValue = (record) => {
   return calculateBusinessMilliseconds(startedAt, dayjs());
 };
 
-export default function AllDCLsTable({ filters, onDataLoaded }) {
+export default function AllDCLsTable({ filters, onDataLoaded, onDetailsViewChange }) {
   const [selectedChecklist, setSelectedChecklist] = useState(null);
 
   const { data = [], isLoading, refetch } = useGetAllCoCreatorChecklistsQuery();
@@ -281,13 +281,18 @@ export default function AllDCLsTable({ filters, onDataLoaded }) {
     return searchMatch && statusMatch;
   });
 
-  // Handle row click to open modal
   const handleRowClick = (record) => {
     setSelectedChecklist(record);
+    if (onDetailsViewChange) {
+      onDetailsViewChange(true);
+    }
   };
 
   const handleCloseModal = () => {
     setSelectedChecklist(null);
+    if (onDetailsViewChange) {
+      onDetailsViewChange(false);
+    }
     refetch();
   };
 
