@@ -169,7 +169,7 @@ const ReviewChecklistPage = ({
   const location = useLocation();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
-  const token = auth?.token || localStorage.getItem("token");
+  const token = auth?.token;
   const resolvedChecklistId = checklistIdProp || id;
   const restoredDraft = location.state?.restoredDraft || null;
   const restoredDraftData = restoredDraft?.data || null;

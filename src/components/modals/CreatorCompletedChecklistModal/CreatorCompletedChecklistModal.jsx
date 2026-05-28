@@ -255,7 +255,7 @@ export default CreatorCompletedChecklistModal;
 //           overflow: visible;
 //           width: 1200px;
 //           max-width: calc(100vw - 310px);
-//           max-height: calc(100vh - 130px);
+//           max-height: calc(125vh - 130px);
 //           box-shadow: 0 12px 32px rgba(26, 54, 54, 0.14);
 //           border: 1px solid rgba(214, 189, 152, 0.2);
 //           margin: 0 auto;
@@ -492,7 +492,7 @@ export default CreatorCompletedChecklistModal;
 //             style={{
 //               width: embedded ? "100%" : 1200,
 //               maxWidth: embedded ? "100%" : "calc(100vw - 310px)",
-//               maxHeight: embedded ? "none" : "calc(100vh - 130px)",
+//               maxHeight: embedded ? "none" : "calc(125vh - 130px)",
 //               borderRadius: embedded ? 16 : 12,
 //             }}
 //             onClick={(e) => e.stopPropagation()}

@@ -74,7 +74,7 @@ const CheckerReviewChecklistModal = ({
   const navigate = useNavigate();
   const effectiveReadOnly = isReadOnly || readOnly;
   const auth = useSelector((state) => state.auth);
-  const token = auth?.token || localStorage.getItem("token");
+  const token = auth?.token;
   const API_BASE_URL = API_ORIGIN;
 
   const [docs, setDocs] = useState([]);

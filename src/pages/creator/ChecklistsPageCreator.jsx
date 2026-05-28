@@ -49,6 +49,13 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
   const [customerName, setCustomerName] = useState("");
   const [customerNumber, setCustomerNumber] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [customerBranchName, setCustomerBranchName] = useState("");
+  const [classification, setClassification] = useState("");
+  const [businessSegment, setBusinessSegment] = useState("");
+  const [businessSegmentDesc, setBusinessSegmentDesc] = useState("");
+  const [subSegment, setSubSegment] = useState("");
+  const [subSegmentDesc, setSubSegmentDesc] = useState("");
+  const [custType, setCustType] = useState("");
   const [ibpsNo, setIbpsNo] = useState("");
   const [selectedMultipleLoanTypes, setSelectedMultipleLoanTypes] = useState(
     [],
@@ -98,6 +105,13 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         setCustomerName(data.customerName || "");
         setCustomerNumber(data.customerNumber || "");
         setCustomerEmail(data.customerEmail || "");
+        setCustomerBranchName(data.customerBranchName || "");
+        setClassification(data.classification || "");
+        setBusinessSegment(data.businessSegment || "");
+        setBusinessSegmentDesc(data.businessSegmentDesc || "");
+        setSubSegment(data.subSegment || "");
+        setSubSegmentDesc(data.subSegmentDesc || "");
+        setCustType(data.custType || "");
         setIbpsNo(data.ibpsNo || "");
         setSelectedMultipleLoanTypes(data.selectedMultipleLoanTypes || []);
 
@@ -153,6 +167,13 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
     setCustomerName("");
     setCustomerNumber("");
     setCustomerEmail("");
+    setCustomerBranchName("");
+    setClassification("");
+    setBusinessSegment("");
+    setBusinessSegmentDesc("");
+    setSubSegment("");
+    setSubSegmentDesc("");
+    setCustType("");
     setIbpsNo("");
     setSelectedMultipleLoanTypes([]);
     setDocuments([]);
@@ -333,6 +354,13 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
       customerName,
       customerNumber,
       customerEmail,
+      customerBranchName,
+      classification,
+      businessSegment,
+      businessSegmentDesc,
+      subSegment,
+      subSegmentDesc,
+      custType,
       ibpsNo,
       documents: normalizeDocumentCategories(documents),
     };
@@ -832,6 +860,13 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
                             setCustomerNumber={setCustomerNumber}
                             customerEmail={customerEmail}
                             setCustomerEmail={setCustomerEmail}
+                            setCustomerBranchName={setCustomerBranchName}
+                            setClassification={setClassification}
+                            setBusinessSegment={setBusinessSegment}
+                            setBusinessSegmentDesc={setBusinessSegmentDesc}
+                            setSubSegment={setSubSegment}
+                            setSubSegmentDesc={setSubSegmentDesc}
+                            setCustType={setCustType}
                             loanType={loanType}
                             loanTypes={loanTypes}
                             handleLoanTypeChange={handleLoanTypeChange}

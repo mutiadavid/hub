@@ -131,7 +131,7 @@ function dataUrlToBlobUrl(dataUrl) {
 }
 
 function getAuthToken() {
-  const directToken = localStorage.getItem("token");
+  const directToken = null;
   if (directToken) {
     return directToken;
   }
@@ -167,6 +167,7 @@ export async function fetchProtectedFileBlob(url, token = getAuthToken()) {
 
       const response = await fetch(candidate, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
       });
 
       if (!response.ok) {

@@ -951,7 +951,7 @@ const DeferralDetailsModal = ({
     setCloseLoading(true);
     try {
       const currentUser = JSON.parse(localStorage.getItem("user") || "null");
-      const token = currentUser?.token || localStorage.getItem("token");
+      const token = currentUser?.token;
       const closeRequestDocuments = [];
 
       for (const document of (documents || []).filter((entry) => Array.isArray(entry?.files) && entry.files.length > 0)) {
@@ -1196,7 +1196,7 @@ const DeferralDetailsModal = ({
       }));
 
       // Get token from localStorage
-      const token = localStorage.getItem("token");
+      const token = null;
 
       if (!deferral || !deferral._id) {
         showErrorToast("No deferral selected");

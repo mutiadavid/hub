@@ -5,6 +5,7 @@ import { getCheckerStatusDisplay } from "../../../utils/checklistConstants";
 import { getFullUrl as getFullUrlUtil } from "../../../utils/checklistUtils";
 import { formatStatusText } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
+import { openFileInNewTab } from "../../../utils/fileUtils";
 
 const { TabPane } = Tabs;
 
@@ -269,7 +270,7 @@ const DocumentsTable = ({ docs, checklist }) => {
             <Tooltip title="View">
               <Button
                 size="small"
-                onClick={() => window.open(getFullUrlUtil(url), "_blank")}
+                onClick={() => openFileInNewTab(url)}
                 style={{
                   backgroundColor: "#ffffff",
                   borderColor: "#d9d9d9",

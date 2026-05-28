@@ -4,22 +4,11 @@ import { API_BASE_URL } from "../../config/runtimeConfig";
 // Create a pre-configured axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
-
-// Optionally add an interceptor for auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token"); // or wherever you store JWT
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 export default {
   // Fetch all checklists

@@ -42,7 +42,7 @@ export const useChecklistOperations = (
   onRefetchNeeded = null, // Callback to trigger parent refetch after submission
 ) => {
   const auth = useSelector((state) => state.auth);
-  const token = auth?.token || localStorage.getItem("token");
+  const token = auth?.token;
   const [submitRmChecklist, { isLoading: isSubmittingToRM }] =
     useSubmitChecklistToRMMutation();
   const [updateChecklistStatus, { isLoading: isCheckerSubmitting }] =
@@ -382,7 +382,7 @@ export const useChecklistOperations = (
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            // Cookies handle auth via withCredentials
           },
           body: formData,
         },

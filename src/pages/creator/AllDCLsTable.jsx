@@ -278,7 +278,16 @@ export default function AllDCLsTable({ filters, onDataLoaded, onDetailsViewChang
       ? true
       : String(d.status).toLowerCase() === String(filters.status).toLowerCase();
 
-    return searchMatch && statusMatch;
+    // Filter by date
+    let dateMatch = true;
+    if (filters.dateRange && filters.dateRange.length === 2 && filters.dateRange[0] && filters.dateRange[1]) {
+      const startDate = filters.dateRange[0].startOf('day');
+      const endDate = filters.dateRange[1].endOf('day');
+      const dclDate = dayjs(d.createdAt || d.updatedAt);
+      dateMatch = dclDate.isValid() && (dclDate.isAfter(startDate) || dclDate.isSame(startDate)) && (dclDate.isBefore(endDate) || dclDate.isSame(endDate));
+    }
+
+    return searchMatch && statusMatch && dateMatch;
   });
 
   const handleRowClick = (record) => {
@@ -323,6 +332,40 @@ export default function AllDCLsTable({ filters, onDataLoaded, onDetailsViewChang
       dataIndex: "customerName",
       width: 160,
       render: (text) => <span className="creator-table-primary-value">{text || "-"}</span>,
+    },
+    {
+      title: "Branch",
+      dataIndex: "customerBranchName",
+      width: 130,
+      render: (text) => <span className="creator-table-muted">{text || "—"}</span>,
+    },
+    {
+      title: "Classification",
+      dataIndex: "classification",
+      width: 120,
+      render: (text) => <span className="creator-table-muted">{text || "—"}</span>,
+    },
+    {
+      title: "Business Segment",
+      dataIndex: "businessSegmentDesc",
+      width: 150,
+      render: (text, record) => (
+        <span className="creator-table-muted">{text || record?.businessSegment || "—"}</span>
+      ),
+    },
+    {
+      title: "Sub-Segment",
+      dataIndex: "subSegmentDesc",
+      width: 130,
+      render: (text, record) => (
+        <span className="creator-table-muted">{text || record?.subSegment || "—"}</span>
+      ),
+    },
+    {
+      title: "Cust. Type",
+      dataIndex: "custType",
+      width: 100,
+      render: (text) => <span className="creator-table-muted">{text || "—"}</span>,
     },
     {
       title: "IBPS No",

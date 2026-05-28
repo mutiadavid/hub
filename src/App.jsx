@@ -6,10 +6,11 @@ import "antd/dist/reset.css";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
-
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useHeartbeatPresenceMutation } from "./api/userApi";
+import { useGetMeQuery } from "./api/authApi";
+import { setCredentials } from "./api/authSlice";
 import socketService from "./service/socketService";
 
 // Pages
@@ -30,11 +31,26 @@ import "./App.css";
 const HEARTBEAT_MIN_INTERVAL_MS = 25000;
 
 const AppShell = () => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const userId = user?.id;
   const location = useLocation();
   const [heartbeatPresence] = useHeartbeatPresenceMutation();
   const lastHeartbeatAtRef = useRef(0);
+
+  // Restore session from HttpOnly cookie on page load/reload.
+  // If the cookie is valid the backend returns the user; if not,
+  // the query returns 401 and we stay on the login page.
+  const { data: meData, isLoading: meLoading, isError: meError } = useGetMeQuery(undefined, {
+    // Only call /me when Redux has no user yet (i.e. fresh page load)
+    skip: !!user,
+  });
+
+  useEffect(() => {
+    if (meData?.user && meData?.token) {
+      dispatch(setCredentials({ user: meData.user, token: meData.token }));
+    }
+  }, [meData, dispatch]);
 
   // Connect socket when user is logged in
   useEffect(() => {
@@ -123,6 +139,21 @@ const AppShell = () => {
       cancelled = true;
     };
   }, [heartbeatPresence, location.pathname, user]);
+
+  // While /me is in flight on first load, show a loading indicator
+  // instead of flashing the login page.
+  if (meLoading && !user) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <div style={{ textAlign: "center", color: "#164679" }}>
+          <div className="ant-spin ant-spin-lg ant-spin-spinning" style={{ marginBottom: 16 }}>
+            <span className="ant-spin-dot ant-spin-dot-spin" />
+          </div>
+          <p style={{ fontSize: 14, margin: 0 }}>Restoring session…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

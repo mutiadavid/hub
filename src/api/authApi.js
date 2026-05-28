@@ -10,6 +10,11 @@ export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery,
   endpoints: (builder) => ({
+    // Restore session from HttpOnly cookie on page reload
+    getMe: builder.query({
+      query: () => "admin/auth/me",
+    }),
+
     registerAdmin: builder.mutation({
       query: (data) => ({
         url: "admin/auth/register",
@@ -38,6 +43,7 @@ export const authApi = createApi({
 });
 
 export const {
+  useGetMeQuery,
   useRegisterAdminMutation,
   useLoginMutation,
   useLogoutMutation,

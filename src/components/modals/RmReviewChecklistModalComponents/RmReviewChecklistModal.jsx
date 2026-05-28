@@ -184,7 +184,7 @@ const RmReviewChecklistModal = ({
 }) => {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
-  const token = auth?.token || localStorage.getItem("token");
+  const token = auth?.token;
 
   const [docs, setDocs] = useState([]);
   const [supportingDocs, setSupportingDocs] = useState([]);
@@ -609,7 +609,7 @@ const RmReviewChecklistModal = ({
     fetchSupportingDocs();
   }, [fetchSupportingDocs]);
 
-  
+ 
   const isActionAllowed =
     !readOnly && activeChecklist?.status?.toLowerCase() === "rmreview";
 

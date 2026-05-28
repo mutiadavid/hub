@@ -54,14 +54,13 @@ export const useDocumentUpload = (checklistId) => {
                 formData.append("documentName", documentName || file.name);
                 formData.append("category", category || "Other");
 
-                const token = localStorage.getItem("token");
-
                 const response = await fetch(`${API_BASE_URL}/api/uploads`, {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        // Cookies handle auth via credentials: 'include'
                     },
                     body: formData,
+                    credentials: "include",
                 });
 
                 if (!response.ok) {
@@ -116,14 +115,12 @@ export const useDocumentUpload = (checklistId) => {
             }
 
             try {
-                const token = localStorage.getItem("token");
-
                 const response = await fetch(`${API_BASE_URL}/api/uploads/${uploadId}`, {
                     method: "DELETE",
                     headers: {
-                        Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
+                    credentials: "include",
                 });
 
                 if (!response.ok) {

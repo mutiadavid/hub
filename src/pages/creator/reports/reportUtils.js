@@ -154,6 +154,8 @@ export function buildDclAnalytics(rows, statusColors) {
   const statusMap = new Map();
   const loanTypeMap = new Map();
   const rmMap = new Map();
+  const branchMap = new Map();
+  const segmentMap = new Map();
 
   rows.forEach((row) => {
     const statusLabel = String(row?.status || "Unknown")
@@ -166,6 +168,12 @@ export function buildDclAnalytics(rows, statusColors) {
 
     const rmName = row?.assignedToRM?.name || "Unassigned RM";
     rmMap.set(rmName, (rmMap.get(rmName) || 0) + 1);
+
+    const branchName = row?.customerBranchName || "Unspecified Branch";
+    branchMap.set(branchName, (branchMap.get(branchName) || 0) + 1);
+
+    const segment = row?.businessSegmentDesc || row?.businessSegment || "Unspecified Segment";
+    segmentMap.set(segment, (segmentMap.get(segment) || 0) + 1);
   });
 
   const statusRows = Array.from(statusMap.entries())
@@ -192,11 +200,23 @@ export function buildDclAnalytics(rows, statusColors) {
     .sort((a, b) => b.value - a.value)
     .slice(0, 6);
 
+  const branchRows = Array.from(branchMap.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 6);
+
+  const segmentRows = Array.from(segmentMap.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 6);
+
   return {
     total: rows.length,
     statusRows,
     loanTypeRows,
     rmRows,
+    branchRows,
+    segmentRows,
   };
 }
 
@@ -246,6 +266,8 @@ export function buildDeferralsAnalytics(rows) {
   const deferredItemMap = new Map();
   const itemDeferredGroupMap = new Map();
   const riskMatrixMap = new Map();
+  const branchMap = new Map();
+  const segmentMap = new Map();
 
   rows.forEach((deferral) => {
     const overdueDays = getOverdueDays(deferral);
@@ -274,6 +296,24 @@ export function buildDeferralsAnalytics(rows) {
     rmStats.total += 1;
     if (overdueStatus === "Over Due") rmStats.overDue += 1;
     else rmStats.notOverdue += 1;
+
+    const branchName = deferral?.customerBranchName || "Unspecified Branch";
+    if (!branchMap.has(branchName)) {
+      branchMap.set(branchName, { branch: branchName, notOverdue: 0, overDue: 0, total: 0 });
+    }
+    const branchStats = branchMap.get(branchName);
+    branchStats.total += 1;
+    if (overdueStatus === "Over Due") branchStats.overDue += 1;
+    else branchStats.notOverdue += 1;
+
+    const segmentName = deferral?.businessSegmentDesc || deferral?.businessSegment || "Unspecified Segment";
+    if (!segmentMap.has(segmentName)) {
+      segmentMap.set(segmentName, { segment: segmentName, notOverdue: 0, overDue: 0, total: 0 });
+    }
+    const segmentStats = segmentMap.get(segmentName);
+    segmentStats.total += 1;
+    if (overdueStatus === "Over Due") segmentStats.overDue += 1;
+    else segmentStats.notOverdue += 1;
 
     getDocumentEntries(deferral).forEach((doc) => {
       const itemName = doc.name || "Unspecified Item";
@@ -346,6 +386,14 @@ export function buildDeferralsAnalytics(rows) {
   const rmCountRows = Array.from(rmCountMap.values())
     .sort((a, b) => b.total - a.total)
     .map((row, idx) => ({ key: `rm-${idx}`, ...row }));
+
+  const branchCountRows = Array.from(branchMap.values())
+    .sort((a, b) => b.total - a.total)
+    .map((row, idx) => ({ key: `branch-${idx}`, ...row }));
+
+  const segmentCountRows = Array.from(segmentMap.values())
+    .sort((a, b) => b.total - a.total)
+    .map((row, idx) => ({ key: `seg-${idx}`, ...row }));
 
   const deferredItemRows = Array.from(deferredItemMap.values())
     .sort((a, b) => b.total - a.total)
@@ -428,6 +476,8 @@ export function buildDeferralsAnalytics(rows) {
     overdueBucketChartData: overdueTimeRows,
     riskClassificationChartData: riskClassificationRows,
     rmChartData: rmCountRows.slice(0, 6),
+    branchChartData: branchCountRows.slice(0, 6),
+    segmentChartData: segmentCountRows.slice(0, 6),
     deferredItemChartData: deferredItemRows.slice(0, 6),
   };
 }

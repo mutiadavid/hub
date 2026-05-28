@@ -215,6 +215,85 @@ export default function DclAnalyticsDashboard({ rows }) {
           </ResponsiveContainer>
         </div>
       </Card>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24} xl={12}>
+          <Card title="Top Branches" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.branchRows} margin={{ top: 24, right: 16, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis
+                    dataKey="name"
+                    angle={-18}
+                    textAnchor="end"
+                    interval={0}
+                    height={68}
+                    tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }}
+                  />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} DCLs (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.name || "Branch",
+                    ]}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32}>
+                    {computed.branchRows.map((entry, index) => (
+                      <Cell
+                        key={`${entry.name}-${index}`}
+                        fill={DCL_BAR_COLORS[(index + 1) % DCL_BAR_COLORS.length]}
+                      />
+                    ))}
+                    <LabelList dataKey="value" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} xl={12}>
+          <Card title="Business Segments" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={computed.segmentRows}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={90}
+                    innerRadius={48}
+                    paddingAngle={2}
+                    label={({ value, percent }) => (percent >= 0.08 ? `${value} (${(percent * 100).toFixed(0)}%)` : "")}
+                  >
+                    {computed.segmentRows.map((entry, index) => (
+                      <Cell
+                        key={`${entry.name}-${index}`}
+                        fill={DCL_BAR_COLORS[(index + 3) % DCL_BAR_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Legend
+                    verticalAlign="bottom"
+                    height={48}
+                    formatter={(value, entry) => `${value} (${entry?.payload?.value || 0})`}
+                  />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} DCLs (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.name || "Segment",
+                    ]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 }

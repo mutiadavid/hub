@@ -146,6 +146,22 @@ const DeferralTable = ({
       render: (text) => <span className="creator-table-primary-value">{text}</span>,
     },
     {
+      title: "Branch",
+      dataIndex: "customerBranchName",
+      key: "customerBranchName",
+      width: 120,
+      render: (text) => <span className="creator-table-muted">{text || "-"}</span>,
+    },
+    {
+      title: "Segment",
+      key: "businessSegment",
+      width: 120,
+      render: (_, record) => {
+        const seg = record.businessSegmentDesc || record.businessSegment || "-";
+        return <span className="creator-table-muted">{seg}</span>;
+      },
+    },
+    {
       title: "Loan Type",
       dataIndex: "loanType",
       key: "loanType",

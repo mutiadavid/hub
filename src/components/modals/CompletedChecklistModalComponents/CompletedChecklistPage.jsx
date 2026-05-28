@@ -1,47 +1,41 @@
 import React from "react";
-import { Button, Empty, Spin } from "antd";
+import { Button, Empty, Spin, message } from "antd";
 import {
   LeftOutlined,
+  RedoOutlined,
   UnorderedListOutlined,
 } from "@ant-design/icons";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
   useGetChecklistCommentsQuery,
   useGetCoCreatorChecklistByIdQuery,
+  useReviveChecklistMutation,
 } from "../../../api/checklistApi";
 import { useChecklistDocuments } from "../../../hooks/useChecklistDocuments";
+import { useReviveChecklist } from "./hooks/useReviveChecklist";
 import ChecklistInfoCard from "./ChecklistInfoCard";
-import DocumentSummary from "./DocumentSummary";
+import ProgressStatsSection from "./ProgressStatsSection";
 import DocumentsTable from "./DocumentsTable";
 import CommentHistorySection from "./CommentHistorySection";
-import DocumentSidebarComponent from "./DocumentSidebarComponent";
+import DocumentSidebarComponent from "../CompletedChecklistModalComponents/DocumentSidebarComponent";
 import PDFGenerator from "./PDFGenerator";
+import ReviveConfirmationModal from "./ReviveConfirmationModal";
+import { API_BASE_URL } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
-const TABS = [
-  { key: "details", label: "Checklist Details" },
-  { key: "documents", label: "Required Documents" },
-];
-
-const CompletedChecklistPage = ({
+const CreatorCompletedChecklistPage = ({
   checklistId: checklistIdProp,
   initialChecklist = null,
   onClose,
+  readOnly = false,
 }) => {
   const { id: routeId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const id = checklistIdProp || routeId;
-  const routeRoot = React.useMemo(() => {
-    const [, section] = location.pathname.split("/");
-    return section ? `/${section}/completed` : "/rm/completed";
-  }, [location.pathname]);
-  const handleClose = onClose || (() => navigate(routeRoot));
+  const handleClose = onClose || (() => navigate(-1));
 
-  const [activeTab, setActiveTab] = React.useState(
-    location.state?.initialTab === "documents" ? "documents" : "details",
-  );
+  const [activeTab, setActiveTab] = React.useState("documents");
   const [showDocumentSidebar, setShowDocumentSidebar] = React.useState(false);
   const [supportingDocs, setSupportingDocs] = React.useState([]);
 
@@ -49,6 +43,7 @@ const CompletedChecklistPage = ({
     data: fetchedChecklist,
     isLoading,
     isFetching,
+    refetch,
   } = useGetCoCreatorChecklistByIdQuery(id, {
     skip: !id,
     refetchOnMountOrArgChange: true,
@@ -57,88 +52,105 @@ const CompletedChecklistPage = ({
 
   const checklist = fetchedChecklist || initialChecklist;
   const checklistId = checklist?.id || checklist?._id;
-  const { docs, documentCounts } = useChecklistDocuments(checklist);
+  const { docs } = useChecklistDocuments(checklist);
+  const safeDocs = React.useMemo(() => (Array.isArray(docs) ? docs : []), [docs]);
 
   const { data: comments, isLoading: commentsLoading } =
     useGetChecklistCommentsQuery(checklistId, {
       skip: !checklistId,
     });
 
-  const isSystemGeneratedMessage = React.useCallback((text = "") => {
-    if (!text) return true;
-    const message = text.toLowerCase().trim();
-    const systemPatterns = [
-      "submitted to",
-      "returned to",
-      "approved by",
-      "rejected by",
-      "completed",
-      "status updated",
-      "initiated",
-      "submitted for",
-      "sent to",
-      "assigned to",
-      "document uploaded",
-      "checklist created",
-      "draft saved",
-      "revived from",
-      "submitted to co-checker",
-      "submitted to co",
-      "submitted to rm",
-      "checklist updated",
-      "documents updated",
-      "submitted back to co-creator",
-      "returned to co-creator",
-      "sent for approval",
-      "approved checklist",
-      "rejected checklist",
-      "supporting document",
-      "document reference",
-      "file uploaded",
-      "status changed",
-      "status: ",
-      "checklist status",
-      "has been",
-      "document",
-    ];
-    return systemPatterns.some((pattern) => message.includes(pattern));
-  }, []);
+  const [reviveChecklistMutation] = useReviveChecklistMutation();
 
-  const userComments = React.useMemo(() => {
-    if (!comments || !Array.isArray(comments)) return [];
-    return comments.filter((item) => {
-      const role = (item.userId?.role || item.role || "").toLowerCase();
-      const message = item.message || item.comment || "";
-      const isSystem = isSystemGeneratedMessage(message);
-      const isEmpty = !message.trim();
+  const handleRevive = React.useCallback(
+    async (checklistToRevive) => {
+      const response = await reviveChecklistMutation(checklistToRevive).unwrap();
 
-      if (role === "system") return false;
-      if (isSystem) return false;
-      if (isEmpty) return false;
-      return true;
-    });
-  }, [comments, isSystemGeneratedMessage]);
+      const newDCLNumber =
+        response.newDCLNumber ||
+        response.checklist?.dclNo ||
+        response.data?.newDCL ||
+        response.dclNo;
+
+      message.success({
+        content:
+          response?.message ||
+          `Checklist revived successfully as ${newDCLNumber}!`,
+        key: "revive",
+        duration: 3,
+      });
+
+      return response;
+    },
+    [reviveChecklistMutation],
+  );
+
+  const {
+    isReviving,
+    showReviveConfirm,
+    handleReviveChecklist,
+    handleConfirmRevive,
+    handleCancelRevive,
+  } = useReviveChecklist(
+    checklist,
+    handleRevive,
+    () => {
+      refetch();
+    },
+    () => {
+      handleClose();
+    },
+  );
 
   React.useEffect(() => {
-    if (checklist?.supportingDocs && Array.isArray(checklist.supportingDocs)) {
-      setSupportingDocs(checklist.supportingDocs);
-    } else {
-      setSupportingDocs([]);
-    }
-  }, [checklist, checklist?.supportingDocs]);
-
-  React.useEffect(() => {
-    if (location.state?.initialTab === "documents") {
-      setActiveTab("documents");
+    if (!checklistId) {
       return;
     }
 
-    setActiveTab("details");
-  }, [id, location.state]);
+    const fetchSupportingDocs = async () => {
+      try {
+        const token = null;
+        const response = await fetch(
+          `${API_BASE_URL}/uploads/checklist/${checklistId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          setSupportingDocs([]);
+          return;
+        }
+
+        const result = await response.json();
+        const docsWithCategory = Array.isArray(result.data)
+          ? result.data.map((doc) => ({
+              ...doc,
+              category: "Supporting Documents",
+              isSupporting: true,
+            }))
+          : [];
+
+        setSupportingDocs(docsWithCategory);
+      } catch (error) {
+        console.error("Failed to fetch supporting docs:", error);
+        setSupportingDocs([]);
+      }
+    };
+
+    fetchSupportingDocs();
+  }, [checklistId]);
+
+  React.useEffect(() => {
+    setActiveTab("documents");
+    setShowDocumentSidebar(false);
+  }, [id]);
 
   const uploadedDocumentCount = React.useMemo(() => {
     let mainDocs = 0;
-    (docs || []).forEach((doc) => {
+    safeDocs.forEach((doc) => {
       const uploads = Array.isArray(doc.uploads) ? doc.uploads : [];
       if (uploads.length > 0) {
         mainDocs += uploads.length;
@@ -147,9 +159,8 @@ const CompletedChecklistPage = ({
       }
     });
 
-    const supportingDocumentCount = (supportingDocs || []).filter((doc) => doc.fileUrl).length;
-    return mainDocs + supportingDocumentCount;
-  }, [docs, supportingDocs]);
+    return mainDocs + supportingDocs.length;
+  }, [safeDocs, supportingDocs]);
 
   const preparedChecklist = React.useMemo(
     () => ({
@@ -169,31 +180,8 @@ const CompletedChecklistPage = ({
       createdAt: checklist?.createdAt || new Date().toISOString(),
       completedAt:
         checklist?.completedAt || checklist?.updatedAt || new Date().toISOString(),
-      segment: checklist?.segment || "Corporate",
-      branch: checklist?.branch || "Head Office",
     }),
     [checklist],
-  );
-
-  const preparedDocs = React.useMemo(
-    () =>
-      docs.map((doc, index) => ({
-        ...doc,
-        name: doc.name || doc.documentName || `Document ${index + 1}`,
-        category: doc.category || "Other",
-        status: doc.status || doc.action || "pending",
-        action: doc.action || doc.status || "pending",
-        comment: doc.comment || "",
-        expiryDate: doc.expiryDate || doc.ExpiryDate || null,
-        fileUrl: doc.fileUrl || null,
-        checkerStatus:
-          doc.checkerStatus || doc.finalCheckerStatus || "approved",
-        finalCheckerStatus:
-          doc.finalCheckerStatus || doc.checkerStatus || "approved",
-        rmStatus: doc.rmStatus || "completed",
-        deferralNumber: doc.deferralNumber || doc.deferralNo || null,
-      })),
-    [docs],
   );
 
   if (isLoading || isFetching) {
@@ -215,25 +203,25 @@ const CompletedChecklistPage = ({
   return (
     <div className="creator-theme" style={{ minHeight: "100%", background: "var(--color-bg)" }}>
       <style>{`
-        .rm-completed-page-shell {
+        .creator-completed-page-shell {
           display: flex;
           flex-direction: column;
           gap: 16px;
         }
-        .rm-completed-page-topbar {
+        .creator-completed-page-topbar {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           gap: 12px;
           flex-wrap: wrap;
         }
-        .rm-completed-page-topbar-main {
+        .creator-completed-page-topbar-main {
           display: flex;
           align-items: flex-start;
           gap: 12px;
           flex-wrap: wrap;
         }
-        .rm-completed-page-back {
+        .creator-completed-page-back {
           padding: 8px 12px !important;
           border-radius: 6px !important;
           border: 1px solid var(--color-primary-soft) !important;
@@ -241,23 +229,23 @@ const CompletedChecklistPage = ({
           background: transparent !important;
           box-shadow: none !important;
         }
-        .rm-completed-page-back:hover,
-        .rm-completed-page-back:focus {
+        .creator-completed-page-back:hover,
+        .creator-completed-page-back:focus {
           background: rgba(214, 189, 152, 0.1) !important;
         }
-        .rm-completed-page-title {
+        .creator-completed-page-title {
           margin: 0;
           font-size: 15px;
           font-weight: 700;
           letter-spacing: -0.02em;
           color: var(--color-text-dark);
         }
-        .rm-completed-page-subtitle {
+        .creator-completed-page-subtitle {
           margin-top: 4px;
           font-size: 12px;
           color: var(--color-text-light);
         }
-        .rm-completed-page-viewdocs {
+        .creator-completed-page-viewdocs {
           display: inline-flex;
           align-items: center;
           gap: 8px;
@@ -268,7 +256,7 @@ const CompletedChecklistPage = ({
           color: var(--color-text-medium) !important;
           box-shadow: none !important;
         }
-        .rm-completed-page-viewdocs-count {
+        .creator-completed-page-viewdocs-count {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -281,77 +269,68 @@ const CompletedChecklistPage = ({
           font-size: 9px;
           font-weight: 600;
         }
-        .rm-completed-page-actionbar {
+        .creator-completed-page-actionbar {
           background: var(--color-white);
           border: 1px solid rgba(214, 189, 152, 0.2);
           border-radius: 8px;
           box-shadow: 0 1px 2px rgba(26, 54, 54, 0.06);
           padding: 12px 16px;
         }
-        .rm-completed-page-actionbar-inner {
+        .creator-completed-page-actionrow {
           display: flex;
           justify-content: flex-end;
-          align-items: center;
-          flex-wrap: wrap;
           gap: 8px;
+          flex-wrap: wrap;
         }
-        .rm-completed-page-actionbtn.ant-btn,
-        .rm-completed-page-actionbar .rm-completed-page-actionbtn.ant-btn {
+        .creator-completed-page-button.ant-btn,
+        .creator-completed-page-button.ant-btn:hover,
+        .creator-completed-page-button.ant-btn:focus,
+        .creator-completed-page-button.ant-btn:active {
           min-height: 34px !important;
           height: 34px !important;
           padding: 0 14px !important;
           border-radius: 6px !important;
           font-size: 12px !important;
           font-weight: 600 !important;
-          box-shadow: none !important;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-        }
-        .rm-completed-page-actionbtn--primary.ant-btn,
-        .rm-completed-page-actionbar .rm-completed-page-actionbtn--primary.ant-btn,
-        .rm-completed-page-actionbar .rm-completed-page-actionbtn--primary.ant-btn:hover,
-        .rm-completed-page-actionbar .rm-completed-page-actionbtn--primary.ant-btn:focus {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 6px !important;
           background: var(--ncb-primary-500) !important;
-          border-color: transparent !important;
-          color: #ffffff !important;
+          border: none !important;
+          color: #FFFFFF !important;
+          box-shadow: none !important;
         }
-        .rm-completed-page-actionbtn--secondary.ant-btn,
-        .rm-completed-page-actionbar .rm-completed-page-actionbtn--secondary.ant-btn {
-          background: var(--color-white) !important;
+        .creator-completed-page-button--secondary.ant-btn,
+        .creator-completed-page-button--secondary.ant-btn:hover,
+        .creator-completed-page-button--secondary.ant-btn:focus,
+        .creator-completed-page-button--secondary.ant-btn:active {
+          background: transparent !important;
           border: 1px solid rgba(214, 189, 152, 0.2) !important;
           color: var(--color-text-medium) !important;
         }
-        .rm-completed-page-actionbtn--secondary.ant-btn:hover,
-        .rm-completed-page-actionbtn--secondary.ant-btn:focus {
-          border-color: var(--color-primary-dark) !important;
-          color: var(--color-primary-dark) !important;
-          background: rgba(214, 189, 152, 0.08) !important;
+        .creator-completed-page-layout {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
         }
-        .rm-completed-page-layout {
-          display: block;
-        }
-        .rm-completed-page-main {
-          min-width: 0;
-        }
-        .rm-completed-page-details-layout {
+        .creator-completed-page-details-layout {
           display: grid;
           grid-template-columns: minmax(0, 7fr) minmax(280px, 3fr);
           gap: 16px;
           align-items: start;
         }
-        .rm-completed-page-details-main {
+        .creator-completed-page-details-main {
           min-width: 0;
         }
-        .rm-completed-page-tabs {
+        .creator-completed-page-tabs {
           display: flex;
           gap: 4px;
           border-bottom: 1px solid rgba(214, 189, 152, 0.2);
           margin-bottom: 16px;
           overflow-x: auto;
         }
-        .rm-completed-page-tab {
+        .creator-completed-page-tab {
           padding: 6px 12px;
           border: none;
           border-bottom: 2px solid transparent;
@@ -360,120 +339,135 @@ const CompletedChecklistPage = ({
           font-size: 12px;
           font-weight: 500;
           cursor: pointer;
-          transition: color 150ms, border-color 150ms;
           white-space: nowrap;
           font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
         }
-        .rm-completed-page-tab:hover {
-          color: var(--color-primary-medium);
-        }
-        .rm-completed-page-tab--active {
+        .creator-completed-page-tab--active {
           color: var(--color-primary-dark);
           border-bottom-color: var(--color-primary-dark);
         }
+        .creator-completed-page-tab:hover {
+          color: var(--color-primary-medium);
+        }
         @media (max-width: 1023px) {
-          .rm-completed-page-details-layout {
+          .creator-completed-page-details-layout {
             grid-template-columns: 1fr;
           }
         }
       `}</style>
 
       <DocumentSidebarComponent
-        documents={docs}
+        documents={safeDocs}
         supportingDocs={supportingDocs}
         open={showDocumentSidebar}
         onClose={() => setShowDocumentSidebar(false)}
       />
 
-      <div className="rm-completed-page-shell">
-        <div className="rm-completed-page-topbar">
-          <div className="rm-completed-page-topbar-main">
+      <div className="creator-completed-page-shell">
+        <div className="creator-completed-page-topbar">
+          <div className="creator-completed-page-topbar-main">
             <Button
               icon={<LeftOutlined />}
-              className="rm-completed-page-back"
+              className="creator-completed-page-back"
               onClick={handleClose}
             >
               Back
             </Button>
             <div>
-              <h1 className="rm-completed-page-title">
-                {preparedChecklist.dclNo || preparedChecklist.title || "Completed Checklist"}
+              <h1 className="creator-completed-page-title">
+                {checklist.dclNo || checklist.title || "Completed Checklist"}
               </h1>
-              <div className="rm-completed-page-subtitle">
-                {preparedChecklist.customerName || "Completed checklist workspace"}
+              <div className="creator-completed-page-subtitle">
+                {checklist.customerName || checklist.title || "Checklist workspace"}
               </div>
             </div>
           </div>
 
           <Button
-            className="rm-completed-page-viewdocs"
+            className="creator-completed-page-viewdocs"
             onClick={() => setShowDocumentSidebar(true)}
           >
             <UnorderedListOutlined />
             View Documents
-            <span className="rm-completed-page-viewdocs-count">{uploadedDocumentCount}</span>
+            <span className="creator-completed-page-viewdocs-count">
+              {uploadedDocumentCount}
+            </span>
           </Button>
         </div>
 
-        <div className="rm-completed-page-actionbar">
-          <div className="rm-completed-page-actionbar-inner">
+        <div className="creator-completed-page-actionbar">
+          <div className="creator-completed-page-actionrow">
+            <Button
+              className="creator-completed-page-button creator-completed-page-button--secondary"
+              onClick={handleClose}
+            >
+              Close
+            </Button>
+            {!readOnly && (
+              <Button
+                className="creator-completed-page-button"
+                icon={<RedoOutlined />}
+                loading={isReviving}
+                onClick={handleReviveChecklist}
+              >
+                Revive Checklist
+              </Button>
+            )}
             <PDFGenerator
               checklist={preparedChecklist}
-              docs={preparedDocs}
+              docs={safeDocs}
               supportingDocs={supportingDocs}
               creatorComment={checklist?.creatorComment || ""}
-              comments={userComments}
-              className="rm-completed-page-actionbtn rm-completed-page-actionbtn--primary"
+              comments={comments || []}
             />
-            <Button
-              icon={<LeftOutlined />}
-              onClick={handleClose}
-              className="rm-completed-page-actionbtn rm-completed-page-actionbtn--secondary"
-            >
-              Back to Completed
-            </Button>
           </div>
         </div>
 
-        <div className="rm-completed-page-layout">
-          <div className="rm-completed-page-main">
-            <div className="rm-completed-page-tabs">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  className={`rm-completed-page-tab ${activeTab === tab.key ? "rm-completed-page-tab--active" : ""}`}
-                  onClick={() => setActiveTab(tab.key)}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {activeTab === "details" && (
-              <div className="rm-completed-page-details-layout">
-                <div className="rm-completed-page-details-main">
-                  <ChecklistInfoCard checklist={preparedChecklist} />
-                  <DocumentSummary documentCounts={documentCounts} />
-                </div>
-
-                <CommentHistorySection
-                  comments={userComments}
-                  commentsLoading={commentsLoading}
-                />
-              </div>
-            )}
-
-            {activeTab === "documents" && (
-              <div className="creator-table-shell">
-                <DocumentsTable docs={docs} checklist={preparedChecklist} />
-              </div>
-            )}
+        <div className="creator-completed-page-layout">
+          <div className="creator-completed-page-tabs">
+            <button
+              type="button"
+              className={`creator-completed-page-tab ${activeTab === "details" ? "creator-completed-page-tab--active" : ""}`}
+              onClick={() => setActiveTab("details")}
+            >
+              Checklist Details
+            </button>
+            <button
+              type="button"
+              className={`creator-completed-page-tab ${activeTab === "documents" ? "creator-completed-page-tab--active" : ""}`}
+              onClick={() => setActiveTab("documents")}
+            >
+              Required Documents
+            </button>
           </div>
+
+          {activeTab === "details" && (
+            <div className="creator-completed-page-details-layout">
+              <div className="creator-completed-page-details-main">
+                <ChecklistInfoCard checklist={checklist} />
+                <ProgressStatsSection docs={safeDocs} />
+              </div>
+              <CommentHistorySection
+                comments={comments}
+                isLoading={commentsLoading}
+              />
+            </div>
+          )}
+
+          {activeTab === "documents" && (
+            <DocumentsTable docs={safeDocs} checklist={checklist} />
+          )}
         </div>
       </div>
+
+      <ReviveConfirmationModal
+        open={showReviveConfirm}
+        onCancel={handleCancelRevive}
+        onConfirm={handleConfirmRevive}
+        loading={isReviving}
+      />
     </div>
   );
 };
 
-export default CompletedChecklistPage;
+export default CreatorCompletedChecklistPage;

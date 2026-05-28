@@ -197,7 +197,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
 
       (async () => {
         try {
-          const token = localStorage.getItem("token");
+          const token = null;
           await deferralApi.sendReminder(deferralId, token);
           showSuccessToast("Reminder sent to approver successfully");
         } catch (error) {
@@ -460,7 +460,7 @@ const DeferralPending = ({ userId = "rm_current" }) => {
               currentData={currentData}
               onRowClick={async (record) => {
                 try {
-                  const token = localStorage.getItem("token");
+                  const token = null;
                   if (token) {
                     const fullDeferral = await deferralApi.getDeferralById(record._id || record.id, token);
                     setSelectedDeferral(fullDeferral || record);
@@ -546,8 +546,8 @@ const DeferralPending = ({ userId = "rm_current" }) => {
 
           extensionModal.setExtensionSubmitting(true);
           try {
-            const stored = JSON.parse(localStorage.getItem("user") || "null");
-            const token = stored?.token;
+            const { store } = await import("../../../app/store");
+            const token = store.getState().auth.token;
             const requestedAbsoluteValues = Object.values(extensionModal.extensionDaysByDoc)
               .map((extensionDays) => {
                 const normalizedExtensionDays = Number(extensionDays);

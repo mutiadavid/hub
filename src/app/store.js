@@ -11,6 +11,7 @@ import deferralReducer from "../api/deferralSlice"; // <-- added deferralReducer
 import { extensionApi } from "../api/extensionApi";
 import { notificationApi } from "../api/notificationApi";
 import { adSearchApi } from "../api/adSearchApi"; // <-- added adSearchApi
+import { customerApi } from "../api/customerApi";  // <-- DataWarehouse customer search
 
 
 export const store = configureStore({
@@ -27,6 +28,7 @@ export const store = configureStore({
     [deferralApi.reducerPath]: deferralApi.reducer, // <-- added deferralApi reducer
     [extensionApi.reducerPath]: extensionApi.reducer,
     [notificationApi.reducerPath]: notificationApi.reducer,
+    [customerApi.reducerPath]: customerApi.reducer,  // <-- DataWarehouse customer search
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -40,6 +42,7 @@ export const store = configureStore({
       deferralApi.middleware, // <-- added deferralApi middleware
       extensionApi.middleware,
       notificationApi.middleware,
+      customerApi.middleware,  // <-- DataWarehouse customer search
     ),
   devTools: true,
 });

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Button,
@@ -25,6 +24,7 @@ import {
 import dayjs from "dayjs";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import { getExpiryMeta } from "../../../utils/documentUtils";
+import { openFileInNewTab } from "../../utils/fileUtils";
 
 const PRIMARY_BLUE = "#164679";
 const ACCENT_LIME = "#b5d334";
@@ -251,12 +251,9 @@ const CreatorQueueChecklistModal = ({ checklist, open, onClose }) => {
             icon={<EyeOutlined />}
             size="small"
             onClick={() =>
-              window.open(
-                getFullUrl(record.fileUrl || record.uploadData?.fileUrl),
-                "_blank",
-              )
+              openFileInNewTab(record.fileUrl || record.uploadData?.fileUrl)
             }
-            disabled={!record.fileUrl}
+            disabled={!(record.fileUrl || record.uploadData?.fileUrl)}
           >
             View
           </Button>

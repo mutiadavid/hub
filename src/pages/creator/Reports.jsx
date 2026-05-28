@@ -779,6 +779,19 @@ export default function Reports() {
       });
     }
 
+    if (filters.branch) {
+      const q = safeLower(filters.branch);
+      rows = rows.filter((d) => safeLower(d?.customerBranchName || "").includes(q));
+    }
+
+    if (filters.segment) {
+      const q = safeLower(filters.segment);
+      rows = rows.filter((d) => {
+        const seg = safeLower(d?.businessSegmentDesc || d?.businessSegment || "");
+        return seg.includes(q);
+      });
+    }
+
     if (isTatTab && filters.status) {
       rows = rows.filter(
         (deferral) => String(deferral?.status || "").toLowerCase() === String(filters.status).toLowerCase(),
@@ -817,7 +830,15 @@ export default function Reports() {
         ? true
         : String(row.status).toLowerCase() === String(filters.status).toLowerCase();
 
-      return searchMatch && statusMatch && dateMatch;
+      const branchMatch = !filters.branch
+        ? true
+        : safeLower(row?.customerBranchName || "").includes(safeLower(filters.branch));
+
+      const segmentMatch = !filters.segment
+        ? true
+        : safeLower(row?.businessSegmentDesc || row?.businessSegment || "").includes(safeLower(filters.segment));
+
+      return searchMatch && statusMatch && dateMatch && branchMatch && segmentMatch;
     });
   }, [allDcls, filters, isTatTab]);
 

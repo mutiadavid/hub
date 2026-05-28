@@ -53,6 +53,30 @@ export default function ReportsFilters({
                   size="middle"
                 />
               </div>
+              <div className="min-w-[140px] flex-[1_1_140px]">
+                <Input
+                  className={searchClassName}
+                  placeholder="Filter by Branch"
+                  value={filters.branch}
+                  onChange={(e) =>
+                    setFilters({ ...filters, branch: e.target.value })
+                  }
+                  allowClear
+                  size="middle"
+                />
+              </div>
+              <div className="min-w-[140px] flex-[1_1_140px]">
+                <Input
+                  className={searchClassName}
+                  placeholder="Filter by Segment"
+                  value={filters.segment}
+                  onChange={(e) =>
+                    setFilters({ ...filters, segment: e.target.value })
+                  }
+                  allowClear
+                  size="middle"
+                />
+              </div>
               <div className="min-w-60 flex-[1_1_260px]">
                 <RangePicker
                   className={pickerClassName}
@@ -102,14 +126,60 @@ export default function ReportsFilters({
 
         {/* Left Section - Deferral Filter */}
         {isDeferralTab && !isTatTab && (
-          <Col xs={24} sm={14} md={10} lg={9}>
-            <RangePicker
-              className={pickerClassName}
-              placeholder={["Start Date", "End Date"]}
-              value={filters.dateRange}
-              onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
-              size="middle"
-            />
+          <Col xs={24}>
+            <div className={fieldRowClassName}>
+              <div className="min-w-60 flex-[1_1_260px]">
+                <Input
+                  className={searchClassName}
+                  prefix={<SearchOutlined />}
+                  placeholder="Search by Deferral No, Customer..."
+                  value={filters.searchText}
+                  onChange={(e) =>
+                    setFilters({ ...filters, searchText: e.target.value })
+                  }
+                  allowClear
+                  size="middle"
+                />
+              </div>
+              <div className="min-w-[140px] flex-[1_1_140px]">
+                <Input
+                  className={searchClassName}
+                  placeholder="Filter by Branch"
+                  value={filters.branch}
+                  onChange={(e) =>
+                    setFilters({ ...filters, branch: e.target.value })
+                  }
+                  allowClear
+                  size="middle"
+                />
+              </div>
+              <div className="min-w-[140px] flex-[1_1_140px]">
+                <Input
+                  className={searchClassName}
+                  placeholder="Filter by Segment"
+                  value={filters.segment}
+                  onChange={(e) =>
+                    setFilters({ ...filters, segment: e.target.value })
+                  }
+                  allowClear
+                  size="middle"
+                />
+              </div>
+              <div className="min-w-[200px] flex-[1_1_200px]">
+                <RangePicker
+                  className={pickerClassName}
+                  placeholder={["Start Date", "End Date"]}
+                  value={filters.dateRange}
+                  onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
+                  size="middle"
+                />
+              </div>
+              <div>
+                <Button onClick={clearFilters} size="middle" className={buttonClassName}>
+                  Clear
+                </Button>
+              </div>
+            </div>
           </Col>
         )}
 
@@ -127,6 +197,39 @@ export default function ReportsFilters({
                     setFilters({ ...filters, searchText: e.target.value })
                   }
                   allowClear
+                  size="middle"
+                />
+              </div>
+              <div className="min-w-[140px] flex-[1_1_140px]">
+                <Input
+                  className={searchClassName}
+                  placeholder="Filter by Branch"
+                  value={filters.branch}
+                  onChange={(e) =>
+                    setFilters({ ...filters, branch: e.target.value })
+                  }
+                  allowClear
+                  size="middle"
+                />
+              </div>
+              <div className="min-w-[140px] flex-[1_1_140px]">
+                <Input
+                  className={searchClassName}
+                  placeholder="Filter by Segment"
+                  value={filters.segment}
+                  onChange={(e) =>
+                    setFilters({ ...filters, segment: e.target.value })
+                  }
+                  allowClear
+                  size="middle"
+                />
+              </div>
+              <div className="min-w-60 flex-[1_1_260px]">
+                <RangePicker
+                  className={pickerClassName}
+                  placeholder={["Start Date", "End Date"]}
+                  value={filters.dateRange}
+                  onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
                   size="middle"
                 />
               </div>

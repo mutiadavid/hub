@@ -168,7 +168,7 @@ export const useFormSubmission = () => {
         };
 
         // Get user token for file uploads
-        let userToken = localStorage.getItem("token");
+        let userToken = null;
         if (!userToken) {
           try {
             const stored = JSON.parse(localStorage.getItem("user") || "null");

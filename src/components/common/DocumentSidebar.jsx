@@ -3,7 +3,7 @@ import { Drawer, Card, Tag, Button } from "antd";
 import { DownloadOutlined, EyeOutlined, FileOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { API_ORIGIN } from "../../config/runtimeConfig";
-import { openFileInNewTab } from "../../utils/fileUtils";
+import { openFileInNewTab, downloadFile } from "../../utils/fileUtils";
 
 const API_BASE_URL = API_ORIGIN;
 
@@ -288,14 +288,7 @@ const DocumentSidebar = ({ documents, open, onClose, supportingDocs = [] }) => {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            const url = getFullUrl(fileUrl);
-                            const link = document.createElement("a");
-                            link.href = url;
-                            link.download = fileName || "document";
-                            link.target = "_blank";
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
+                            downloadFile(fileUrl, fileName);
                           }}
                         >
                           Download

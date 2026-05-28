@@ -219,18 +219,21 @@ export const getStatusesForTab = (activeTab) => {
   return statuses[activeTab] || [];
 };
 
+import { store } from "../../../../app/store";
+
 /**
- * Get current user from localStorage
+ * Get current user from Redux store
  * @returns {Object} User object with _id, role, name, etc.
  */
 export const getCurrentUser = () => {
   try {
-    const stored = JSON.parse(localStorage.getItem("user") || "null");
+    const state = store.getState();
+    const stored = state.auth.user;
     return {
-      _id: stored?._id || stored?.user?._id,
-      role: stored?.role || stored?.user?.role,
-      name: stored?.name || stored?.user?.name,
-      email: stored?.email || stored?.user?.email,
+      _id: stored?._id || stored?.id,
+      role: stored?.role,
+      name: stored?.name,
+      email: stored?.email,
     };
   } catch {
     return { _id: null, role: null, name: null, email: null };

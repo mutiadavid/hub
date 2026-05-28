@@ -330,7 +330,10 @@ const Completed = () => {
           c.customerNumber?.toLowerCase().includes(q) ||
           c.customerName?.toLowerCase().includes(q) ||
           c.loanType?.toLowerCase().includes(q) ||
-          c.approvedBy?.name?.toLowerCase().includes(q),
+          c.approvedBy?.name?.toLowerCase().includes(q) ||
+          c.customerBranchName?.toLowerCase().includes(q) ||
+          c.businessSegment?.toLowerCase().includes(q) ||
+          c.businessSegmentDesc?.toLowerCase().includes(q),
       );
     }
 
@@ -386,6 +389,34 @@ const Completed = () => {
           {text}
         </div>
       ),
+    },
+    {
+      title: "Branch",
+      dataIndex: "customerBranchName",
+      width: 120,
+      render: (text) => (
+        <div style={{ fontSize: 12, color: "#666", fontWeight: 500 }}>
+          {text || "—"}
+        </div>
+      ),
+    },
+    {
+      title: "Classification",
+      dataIndex: "classification",
+      width: 110,
+      render: (text) => (
+        <div style={{ fontSize: 12, color: "#666", fontWeight: 500 }}>
+          {text || "—"}
+        </div>
+      ),
+    },
+    {
+      title: "Segment",
+      width: 140,
+      render: (_, record) => {
+        const seg = record.businessSegmentDesc || record.businessSegment || "—";
+        return <div style={{ fontSize: 12, color: "#666", fontWeight: 500 }}>{seg}</div>;
+      },
     },
     {
       title: "IBPS No",

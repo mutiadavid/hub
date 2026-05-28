@@ -272,6 +272,79 @@ export default function DeferralsDashboard({ rows }) {
       </Row>
 
       <Row gutter={[16, 16]}>
+        <Col xs={24} xl={12}>
+          <Card title="Top Branches" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.branchChartData} margin={{ top: 24, right: 16, left: 16, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis dataKey="branch" tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} deferrals (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.branch || "Branch",
+                    ]}
+                  />
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={32}>
+                    {computed.branchChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.branch}-${index}`}
+                        fill={DEFERRAL_BAR_COLORS[(index + 1) % DEFERRAL_BAR_COLORS.length]}
+                      />
+                    ))}
+                    <LabelList dataKey="total" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} xl={12}>
+          <Card title="Business Segments" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={computed.segmentChartData}
+                    dataKey="total"
+                    nameKey="segment"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={90}
+                    innerRadius={48}
+                    paddingAngle={2}
+                    label={({ value, percent }) => (percent >= 0.08 ? `${value} (${(percent * 100).toFixed(0)}%)` : "")}
+                  >
+                    {computed.segmentChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.segment}-${index}`}
+                        fill={DEFERRAL_BAR_COLORS[(index + 3) % DEFERRAL_BAR_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Legend
+                    verticalAlign="bottom"
+                    height={48}
+                    formatter={(value, entry) => `${value} (${entry?.payload?.total || 0})`}
+                  />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} deferrals (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.segment || "Segment",
+                    ]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
         <Col xs={24} md={8}>
           <Card size="small" title="Portfolio Signal" style={{ borderRadius: 14 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

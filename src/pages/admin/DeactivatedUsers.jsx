@@ -97,7 +97,7 @@ const DeactivatedUsers = () => {
           // RTK mutation failed — try a fallback direct fetch to the API endpoint.
           console.warn("toggleActive mutation failed, attempting fallback fetch", err);
           try {
-            const token = window.localStorage.getItem("token");
+            const token = null;
             const base = import.meta.env.VITE_API_URL || "";
             const url = `${base}/api/users/${idStr}/active`;
             const res = await fetch(url, {

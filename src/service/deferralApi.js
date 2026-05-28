@@ -347,30 +347,29 @@ function collectRecipientsByType(deferral, notificationType, data = {}) {
   });
 }
 
-function getAuthHeaders(token) {
-  // Prefer explicit token argument (from Redux) to avoid direct localStorage reads.
-  let fallbackToken = localStorage.getItem("token");
-
-  if (!fallbackToken) {
-    try {
-      const stored = JSON.parse(localStorage.getItem("user") || "null");
-      fallbackToken = stored?.token || null;
-    } catch {
-      fallbackToken = null;
-    }
-  }
-
-  const t = token || fallbackToken;
+function getAuthHeaders() {
+  // Authentication is handled via HttpOnly cookies set by the server.
+  // The browser will automatically include the accessToken cookie on every
+  // credentialed request. No Bearer token needed here.
   return {
     "content-type": "application/json",
-    ...(t ? { authorization: `Bearer ${t}` } : {}),
+  };
+}
+
+// Returns a partial fetch options object that callers can spread into their fetch() call.
+// Using { ...getAuthInit() } ensures credentials:'include' is present on every API call,
+// which is required for the browser to send the HttpOnly accessToken cookie.
+function getAuthInit(extraHeaders = {}) {
+  return {
+    credentials: "include",
+    headers: { ...getAuthHeaders(), ...extraHeaders },
   };
 }
 
 const deferralApi = {
   getAllDeferrals: async (token) => {
     const res = await fetch(`${API_BASE}/all`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) throw new Error("Failed to fetch all deferrals");
     const data = await res.json();
@@ -380,7 +379,7 @@ const deferralApi = {
   getMyDeferrals: async (token) => {
     try {
       const res = await fetch(`${API_BASE}/my`, {
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
       });
      
       if (!res.ok) {
@@ -397,7 +396,7 @@ const deferralApi = {
 
   getDeferralById: async (id, token) => {
     const res = await fetch(`${API_BASE}/${id}`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) throw new Error("Failed to fetch deferral");
     const data = await res.json();
@@ -417,7 +416,7 @@ const deferralApi = {
 
     const query = searchParams.toString();
     const res = await fetch(`${API_BASE}/search${query ? `?${query}` : ""}`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
 
     if (!res.ok) {
@@ -431,7 +430,7 @@ const deferralApi = {
   createDeferral: async (payload, token) => {
     const res = await fetch(`${API_BASE}`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -456,12 +455,12 @@ const deferralApi = {
 
   getNextDeferralNumber: async (token) => {
     let res = await fetch(`${API_BASE}/next-number`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) {
       // Backward compatibility with older API route
       res = await fetch(`${API_BASE}/preview-number`, {
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
       });
     }
     if (!res.ok) throw new Error("Failed to get preview deferral number");
@@ -471,7 +470,7 @@ const deferralApi = {
   updateDeferral: async (id, patch, token) => {
     const res = await fetch(`${API_BASE}/${id}`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(patch),
     });
     if (!res.ok) {
@@ -510,7 +509,7 @@ const deferralApi = {
   addHistory: async (id, entry, token) => {
     const res = await fetch(`${API_BASE}/${id}/history`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(entry),
     });
     if (!res.ok) throw new Error("Failed to add history");
@@ -520,7 +519,7 @@ const deferralApi = {
   addDocument: async (id, doc, token) => {
     const res = await fetch(`${API_BASE}/${id}/documents`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(doc),
     });
     if (!res.ok) throw new Error("Failed to add document");
@@ -536,24 +535,12 @@ const deferralApi = {
     if (opts.isAdditional) fd.append("isAdditional", "true");
     if (opts.documentName) fd.append("documentName", String(opts.documentName));
 
-    let fallbackToken = localStorage.getItem("token");
-    if (!fallbackToken) {
-      try {
-        const stored = JSON.parse(localStorage.getItem("user") || "null");
-        fallbackToken = stored?.token || null;
-      } catch {
-        fallbackToken = null;
-      }
-    }
-
-    const t = token || fallbackToken;
-
     const res = await fetch(`${API_BASE}/${id}/documents/upload`, {
       method: "POST",
       headers: {
-        ...(t ? { authorization: `Bearer ${t}` } : {}),
         // IMPORTANT: do not set Content-Type; browser will set multipart with boundary
       },
+      credentials: "include",
       body: fd,
     });
 
@@ -567,12 +554,12 @@ const deferralApi = {
 
   getApproverQueue: async (token) => {
     let res = await fetch(`${API_BASE}/approver-queue`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) {
       // Backward compatibility with older route shape
       res = await fetch(`${API_BASE}/approver/queue`, {
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
       });
     }
     if (!res.ok) throw new Error("Failed to fetch approver queue");
@@ -582,12 +569,12 @@ const deferralApi = {
 
   getActionedDeferrals: async (token) => {
     let res = await fetch(`${API_BASE}/actioned`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) {
       // Backward compatibility with older route shape
       res = await fetch(`${API_BASE}/approver/actioned`, {
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
       });
     }
     if (!res.ok) throw new Error("Failed to fetch actioned deferrals");
@@ -597,7 +584,7 @@ const deferralApi = {
 
   getPendingDeferrals: async (token) => {
     const res = await fetch(`${API_BASE}/pending`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) throw new Error("Failed to fetch pending deferrals");
     const data = await res.json();
@@ -607,21 +594,11 @@ const deferralApi = {
   getApprovedDeferrals: async (token) => {
     try {
       const res = await fetch(`${API_BASE}/approved`, {
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
       });
      
       if (res.ok) {
         const data = await res.json();
-        const normalized = normalizeDeferralList(data);
-        return normalized;
-      }
-
-      if (res.status === 401 || res.status === 403) {
-        const pub = await fetch(`${API_BASE}/debug/public/approved`);
-        if (!pub.ok) {
-          throw createSanitizedApiError(res.status);
-        }
-        const data = await pub.json();
         const normalized = normalizeDeferralList(data);
         return normalized;
       }
@@ -634,7 +611,7 @@ const deferralApi = {
 
   getCloseWorkflowDeferrals: async (token) => {
     const res = await fetch(`${API_BASE}/close-workflow`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -647,7 +624,7 @@ const deferralApi = {
   getCreatorQueue: async (token) => {
     try {
       const res = await fetch(`${API_BASE}/creator-queue`, {
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -659,7 +636,7 @@ const deferralApi = {
       // Fallback to pending if creator-queue endpoint doesn't exist (backward compatibility)
       console.warn("creator-queue endpoint not available, falling back to pending");
       const res = await fetch(`${API_BASE}/pending`, {
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
       });
       if (!res.ok) throw new Error("Failed to fetch deferrals");
       const data = await res.json();
@@ -670,7 +647,7 @@ const deferralApi = {
   addComment: async (id, text, token) => {
     const res = await fetch(`${API_BASE}/${id}/comments`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify({ text }),
     });
     if (!res.ok) throw new Error("Failed to add comment");
@@ -680,7 +657,7 @@ const deferralApi = {
   sendReminder: async (id, token, payload = {}) => {
     const res = await fetch(`${API_BASE}/${id}/reminder`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -716,7 +693,7 @@ const deferralApi = {
     const requestApprove = (method) =>
       fetch(`${API_BASE}/${id}/approve`, {
         method,
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(body),
       });
 
@@ -750,7 +727,7 @@ const deferralApi = {
     const requestReject = (method) =>
       fetch(`${API_BASE}/${id}/reject`, {
         method,
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(body),
       });
 
@@ -770,7 +747,7 @@ const deferralApi = {
   deleteDeferral: async (id, token) => {
     const res = await fetch(`${API_BASE}/${id}`, {
       method: "DELETE",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -784,7 +761,7 @@ const deferralApi = {
     const payload = data || {};
     const res = await fetch(`${API_BASE}/${id}/withdraw`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -808,7 +785,7 @@ const deferralApi = {
     const requestReturnForRework = (method) =>
       fetch(`${API_BASE}/${id}/return-for-rework`, {
         method,
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(payload),
       });
 
@@ -831,7 +808,7 @@ const deferralApi = {
   // Get returned deferrals
   getReturnedDeferrals: async (token) => {
     const res = await fetch(`${API_BASE}/returned`, {
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
     if (!res.ok) throw new Error("Failed to fetch returned deferrals");
     return res.json();
@@ -846,7 +823,7 @@ const deferralApi = {
     const requestApproveByCreator = (url, method) =>
       fetch(url, {
         method,
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(data),
       });
 
@@ -883,7 +860,7 @@ const deferralApi = {
     const requestApproveByChecker = (url, method) =>
       fetch(url, {
         method,
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(data),
       });
 
@@ -917,7 +894,7 @@ const deferralApi = {
   rejectByCreator: async (deferralId, data, token) => {
     const res = await fetch(`${API_BASE}/${deferralId}/reject-by-creator`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(data),
     });
     if (!res.ok) {
@@ -931,7 +908,7 @@ const deferralApi = {
   rejectByChecker: async (deferralId, data, token) => {
     const res = await fetch(`${API_BASE}/${deferralId}/reject-by-checker`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(data),
     });
     if (!res.ok) {
@@ -952,14 +929,14 @@ const deferralApi = {
 
     let res = await fetch(`${API_BASE}/${deferralId}/return-for-rework`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(dotnetPayload),
     });
 
     if (res.status === 404 || res.status === 405) {
       res = await fetch(`${API_BASE}/${deferralId}/return-by-creator`, {
         method: "PUT",
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(data),
       });
     }
@@ -982,14 +959,14 @@ const deferralApi = {
 
     let res = await fetch(`${API_BASE}/${deferralId}/return-for-rework`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(dotnetPayload),
     });
 
     if (res.status === 404 || res.status === 405) {
       res = await fetch(`${API_BASE}/${deferralId}/return-by-checker`, {
         method: "PUT",
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(data),
       });
     }
@@ -1006,7 +983,7 @@ const deferralApi = {
     const requestClose = (method) =>
       fetch(`${API_BASE}/${deferralId}/close`, {
         method,
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(data),
       });
 
@@ -1032,7 +1009,7 @@ const deferralApi = {
   approveCloseRequestByCreator: async (deferralId, data, token) => {
     const res = await fetch(`${API_BASE}/${deferralId}/close-request/approve-creator`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(data || {}),
     });
     if (!res.ok) {
@@ -1052,7 +1029,7 @@ const deferralApi = {
   approveCloseRequestByChecker: async (deferralId, data, token) => {
     const res = await fetch(`${API_BASE}/${deferralId}/close-request/approve-checker`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(data || {}),
     });
     if (!res.ok) {
@@ -1074,7 +1051,7 @@ const deferralApi = {
     const requestRecall = (method) =>
       fetch(`${API_BASE}/${deferralId}/recall`, {
         method,
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify(data),
       });
 
@@ -1088,7 +1065,7 @@ const deferralApi = {
       // but PUT /{id} with Pending status resets approval flow.
       res = await fetch(`${API_BASE}/${deferralId}`, {
         method: "PUT",
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify({ status: "Pending" }),
       });
     }
@@ -1111,7 +1088,7 @@ const deferralApi = {
     try {
       const res = await fetch(`${API_BASE}/${deferralId}/send-notification`, {
         method: "POST",
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
         body: JSON.stringify({
           notificationType,
           ...data,
@@ -1163,7 +1140,7 @@ const deferralApi = {
   // Additional utility method to get partially approved deferrals
   getPartiallyApprovedDeferrals: async () => {
     const res = await fetch(`${API_BASE}/partially-approved`, {
-      headers: getAuthHeaders(),
+      ...getAuthInit(),
     });
     if (!res.ok) {
       // If endpoint doesn't exist, we'll filter from all deferrals on the client side
@@ -1189,7 +1166,7 @@ const deferralApi = {
   // Get deferrals requiring creator approval
   getDeferralsRequiringCreatorApproval: async () => {
     const res = await fetch(`${API_BASE}/requiring-creator-approval`, {
-      headers: getAuthHeaders(),
+      ...getAuthInit(),
     });
     if (!res.ok) {
       // If endpoint doesn't exist, we'll filter from all deferrals on the client side
@@ -1209,7 +1186,7 @@ const deferralApi = {
   // Get deferrals requiring checker approval
   getDeferralsRequiringCheckerApproval: async () => {
     const res = await fetch(`${API_BASE}/requiring-checker-approval`, {
-      headers: getAuthHeaders(),
+      ...getAuthInit(),
     });
     if (!res.ok) {
       // If endpoint doesn't exist, we'll filter from all deferrals on the client side
@@ -1229,7 +1206,7 @@ const deferralApi = {
   postComment: async (id, commentData, token) => {
     const res = await fetch(`${API_BASE}/${id}/comments`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(commentData),
     });
     if (!res.ok) throw new Error("Failed to post comment");
@@ -1278,7 +1255,7 @@ const deferralApi = {
 
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: jsonBody,
     });
 
@@ -1293,7 +1270,7 @@ const deferralApi = {
   getRMExtensionApplications: async (token) => {
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/rm/applications`, {
       method: "GET",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
 
     if (!res.ok) {
@@ -1309,7 +1286,7 @@ const deferralApi = {
   getApproverExtensionQueue: async (token) => {
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/approver/queue`, {
       method: "GET",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
 
     if (!res.ok) {
@@ -1323,7 +1300,7 @@ const deferralApi = {
   getApproverExtensionActioned: async (token) => {
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/approver/actioned`, {
       method: "GET",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
 
     if (!res.ok) {
@@ -1338,7 +1315,7 @@ const deferralApi = {
     const payload = { comment };
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/approve`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
 
@@ -1354,7 +1331,7 @@ const deferralApi = {
     const payload = { reason };
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/reject`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
 
@@ -1369,7 +1346,7 @@ const deferralApi = {
   getCreatorPendingExtensions: async (token) => {
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/creator/pending`, {
       method: "GET",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
 
     if (!res.ok) {
@@ -1384,7 +1361,7 @@ const deferralApi = {
     const payload = { comment };
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/accept-creator`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
 
@@ -1400,7 +1377,7 @@ const deferralApi = {
     const payload = { reason };
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/return-creator`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
 
@@ -1416,7 +1393,7 @@ const deferralApi = {
     const payload = { reason };
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/reject-creator`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
 
@@ -1431,7 +1408,7 @@ const deferralApi = {
   getCheckerPendingExtensions: async (token) => {
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/checker/pending`, {
       method: "GET",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
 
     if (!res.ok) {
@@ -1446,7 +1423,7 @@ const deferralApi = {
     const payload = { comment };
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/approve-checker`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
 
@@ -1462,7 +1439,7 @@ const deferralApi = {
     const payload = { reason };
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/return-checker`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
 
@@ -1478,7 +1455,7 @@ const deferralApi = {
     const payload = { reason };
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/reject-checker`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(payload),
     });
 
@@ -1493,7 +1470,7 @@ const deferralApi = {
   getExtensionById: async (extensionId, token) => {
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}`, {
       method: "GET",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
 
     if (!res.ok) {
@@ -1530,7 +1507,7 @@ const deferralApi = {
 
     const res = await fetch(`${API_BASE}/${deferralId}/approvers`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(normalizedApprovers),
     });
 
@@ -1564,7 +1541,7 @@ const deferralApi = {
     try {
       const usersApiUrl = `${API_BASE_URL}/users?role=approver`;
       const res = await fetch(usersApiUrl, {
-        headers: getAuthHeaders(token),
+        ...getAuthInit(),
       });
 
       if (!res.ok) {
@@ -1581,7 +1558,7 @@ const deferralApi = {
   sendExtensionReminder: async (extensionId, token) => {
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/reminder`, {
       method: "POST",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
     });
 
     if (!res.ok) {
@@ -1618,7 +1595,7 @@ const deferralApi = {
 
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/approvers`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify(normalizedApprovers),
     });
 
@@ -1640,7 +1617,7 @@ const deferralApi = {
   returnExtensionForRework: async (extensionId, reason, token) => {
     const res = await fetch(`${API_BASE.replace(/\/deferrals$/, "")}/extensions/${extensionId}/return-for-rework`, {
       method: "PUT",
-      headers: getAuthHeaders(token),
+      ...getAuthInit(),
       body: JSON.stringify({ reason }),
     });
 

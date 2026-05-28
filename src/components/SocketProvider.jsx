@@ -34,8 +34,7 @@ export const SocketProvider = ({ children }) => {
       }
 
       try {
-        // Get token from localStorage
-        const token = localStorage.getItem("token");
+        const token = null;
 
         // Create socket connection
         const socketInstance = io(API_ORIGIN, {

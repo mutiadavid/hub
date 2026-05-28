@@ -600,7 +600,7 @@ const ExtensionApplicationModal = ({
   };
 
   const handleConfirmApprovers = async () => {
-    const token = localStorage.getItem("token");
+    const token = null;
     if (!token || !currentExtension?.id) return;
 
     setConfirmingApprovers(true);
@@ -632,7 +632,7 @@ const ExtensionApplicationModal = ({
       return;
     }
 
-    const token = localStorage.getItem("token");
+    const token = null;
     setRemindingApprover(true);
     try {
       await deferralApi.sendExtensionReminder(extensionId, token);

@@ -10,7 +10,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { formatDateTime, getFullUrl } from "../../../utils/checklistUtils";
-import { openFileInNewTab } from "../../../utils/fileUtils";
+import { openFileInNewTab, downloadFile } from "../../../utils/fileUtils";
 import "../../../styles/creatorDesignSystem.css";
 
 const DRAWER_CLASS = "creator-review-document-sidebar";
@@ -146,14 +146,7 @@ const DocumentSidebar = ({ documents = [], supportingDocs = [], open, onClose })
 
   const handleDownloadFile = (fileName, fileUrl) => {
     try {
-      const resolvedUrl = getFullUrl(fileUrl);
-      const link = document.createElement("a");
-      link.href = resolvedUrl;
-      link.download = fileName || "document";
-      link.target = "_blank";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      downloadFile(fileUrl, fileName || "document");
     } catch (error) {
       console.error("Error downloading file:", error);
     }

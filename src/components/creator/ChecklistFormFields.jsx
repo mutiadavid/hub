@@ -1,7 +1,6 @@
-// export default ChecklistFormFields;
 import React, { useMemo, useState } from "react";
 import { AutoComplete, Input, Select } from "antd";
-import { useGetCustomersQuery } from "../../api/userApi";
+import { useSearchCustomersQuery } from "../../api/customerApi";
 import "../../styles/creatorDesignSystem.css";
 
 const ChecklistFormFields = ({
@@ -20,13 +19,29 @@ const ChecklistFormFields = ({
   customerEmail,
   setCustomerEmail,
 
+  setCustomerBranchName,
+  setClassification,
+  setBusinessSegment,
+  setBusinessSegmentDesc,
+  setSubSegment,
+  setSubSegmentDesc,
+  setCustType,
+
   loanType,
   loanTypes,
   handleLoanTypeChange,
   selectedMultipleLoanTypes,
   setSelectedMultipleLoanTypes,
 }) => {
-  const { data: customers = [], isLoading } = useGetCustomersQuery();
+  // Only query the DataWarehouse once the user has typed ≥ 3 characters.
+  // This avoids hammering the external gateway on every single keystroke.
+  const dwQuery = String(customerNumber || "").trim();
+  const shouldSearch = dwQuery.length >= 3;
+
+  const { data: dwCustomers = [], isFetching } = useSearchCustomersQuery(
+    dwQuery,
+    { skip: !shouldSearch }
+  );
 
   // Filter out "Multiple Loan Type" from the options list for the multi-select
   const actualLoanTypes = loanTypes.filter(t => t !== "Multiple Loan Type");
@@ -42,32 +57,27 @@ const ChecklistFormFields = ({
 
   const [rmSearchText, setRmSearchText] = useState(selectedRMName);
 
-  /* ---------------- CUSTOMER OPTIONS ---------------- */
-  const customerOptions = customers?.map((cust) => ({
+  /* ---------------- CUSTOMER OPTIONS (from DataWarehouse) ---------------- */
+  const customerOptions = dwCustomers.map((cust) => ({
     label: cust.customerNumber,
     value: cust.customerNumber,
-    id: cust._id,
-    name: cust.name,
-    email: cust.email,
+    id: cust.customerNumber,       // DW has no Mongo _id; use customerNumber as key
+    name: cust.customerName ?? cust.name ?? "",
+    email: cust.email ?? cust.custEmailId ?? "",
+    customerBranchName: cust.customerBranchName,
+    classification: cust.classification,
+    businessSegment: cust.businessSegment,
+    businessSegmentDesc: cust.businessSegmentDesc,
+    subSegment: cust.subSegment,
+    subSegmentDesc: cust.subSegmentDesc,
+    custType: cust.custType,
   }));
 
   const limitedCustomerOptions = useMemo(() => {
-    const query = String(customerNumber || "").trim().toLowerCase();
-    const baseOptions = customerOptions || [];
-
-    if (!query) {
-      return baseOptions.slice(0, 4);
-    }
-
-    return baseOptions
-      .filter((option) => {
-        const value = String(option.value || "").toLowerCase();
-        const label = String(option.label || "").toLowerCase();
-        const name = String(option.name || "").toLowerCase();
-        return value.includes(query) || label.includes(query) || name.includes(query);
-      })
-      .slice(0, 4);
-  }, [customerNumber, customerOptions]);
+    // The DW already filters by customerNumber server-side;
+    // just cap the dropdown list to avoid a huge menu.
+    return customerOptions.slice(0, 8);
+  }, [customerOptions]);
 
   const limitedRmOptions = useMemo(() => {
     const query = String(rmSearchText || "").trim().toLowerCase();
@@ -92,9 +102,15 @@ const ChecklistFormFields = ({
     setCustomerNumber(option.value); // Number selected
     setCustomerName(option.name); // Auto populate
     setCustomerEmail(option.email); // Auto populate
+    setCustomerBranchName(option.customerBranchName || "");
+    setClassification(option.classification || "");
+    setBusinessSegment(option.businessSegment || "");
+    setBusinessSegmentDesc(option.businessSegmentDesc || "");
+    setSubSegment(option.subSegment || "");
+    setSubSegmentDesc(option.subSegmentDesc || "");
+    setCustType(option.custType || "");
   };
 
-  if (isLoading) return <h1>Loading customers...</h1>;
 
   return (
     <div className="creator-create-card creator-create-card--details">
@@ -170,15 +186,29 @@ const ChecklistFormFields = ({
         onChange={(val) => {
           setCustomerNumber(val);
 
+          // When the user clears the field, reset every auto-populated field
           if (!val) {
             setCustomerId("");
             setCustomerName("");
             setCustomerEmail("");
+            setCustomerBranchName("");
+            setClassification("");
+            setBusinessSegment("");
+            setBusinessSegmentDesc("");
+            setSubSegment("");
+            setSubSegmentDesc("");
+            setCustType("");
           }
         }}
         filterOption={false}
       >
-        <Input />
+        <Input
+          suffix={
+            isFetching && shouldSearch
+              ? <span style={{ fontSize: 11, color: "#aaa" }}>Searching…</span>
+              : null
+          }
+        />
       </AutoComplete>
 
       {/* ---------------- AUTO-FILLED FIELDS ---------------- */}

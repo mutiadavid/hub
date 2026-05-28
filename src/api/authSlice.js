@@ -1,11 +1,9 @@
-
 import { createSlice } from "@reduxjs/toolkit";
 
-const storedAuth = localStorage.getItem("user")
-  ? JSON.parse(localStorage.getItem("user"))
-  : null;
-
-// Normalize stored user to ensure both id and _id are present
+// Derive the user's role directly from the JWT payload to prevent
+// client-side tampering. No localStorage is used — the session is
+// maintained exclusively by the HttpOnly `accessToken` cookie set by
+// the backend.
 const normalizeUser = (user, token) => {
   if (!user) return null;
 
@@ -13,9 +11,12 @@ const normalizeUser = (user, token) => {
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      secureRole = payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || user.role;
+      secureRole =
+        payload.role ||
+        payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+        user.role;
     } catch (e) {
-      // ignore parsing errors
+      // ignore JWT parse errors
     }
   }
 
@@ -29,30 +30,23 @@ const normalizeUser = (user, token) => {
 
 const authSlice = createSlice({
   name: "auth",
+  // Start with no persisted state — the login flow will populate this
+  // after a successful /api/auth/login response.
   initialState: {
-    user: normalizeUser(storedAuth?.user, storedAuth?.token) || null,
-    token: storedAuth?.token || null,
+    user: null,
+    token: null,
   },
   reducers: {
     setCredentials: (state, { payload }) => {
       const normalizedUser = normalizeUser(payload.user, payload.token);
       state.user = normalizedUser;
-      state.token = payload.token;
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          user: normalizedUser,
-          token: payload.token,
-        }),
-      );
-      localStorage.setItem("token", payload.token || "");
+      // Keep the token in Redux memory so prepareHeaders can attach it
+      // as a Bearer header. The HttpOnly cookie is the authoritative session.
+      state.token = payload.token || null;
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
     },
   },
 });

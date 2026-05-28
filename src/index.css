@@ -288,7 +288,8 @@ html {
   overflow: hidden !important;
 }
 
-body, #root {
+body,
+#root {
   height: 100% !important;
   width: 100% !important;
   overflow: hidden !important;

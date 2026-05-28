@@ -31,7 +31,7 @@ const CompletedChecklistModal = ({
   const { docs, documentCounts } = useChecklistDocuments(checklist);
 
   const checklistId = checklist?.id || checklist?._id;
-  const token = localStorage.getItem("token");
+  const token = null;
 
   React.useEffect(() => {
     if (!checklistId) return;
@@ -203,7 +203,7 @@ const CompletedChecklistModal = ({
           padding-top: 20px;
           padding-bottom: 20px;
           transition: left 0.2s cubic-bezier(0.2, 0, 0, 1);
-          max-height: 100vh;
+          max-height: 125vh;
         }
 
         .completed-modal-container {

@@ -115,14 +115,9 @@ const RMActionModal = ({ checklist, open, onClose, actionType }) => {
           formData.append('files', fileObj);
         });
 
-        const token = localStorage.getItem('authToken') ||
-                     (JSON.parse(localStorage.getItem('user') || '{}')?.token);
-       
         const response = await fetch(`${API_BASE_URL}/checklist/${checklist.id || checklist._id}/upload`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          credentials: 'include',
           body: formData
         });
 

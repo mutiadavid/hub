@@ -402,6 +402,51 @@ export default function DeferralsReportTable({ rows, onDetailsViewChange }) {
       ),
     },
     {
+      title: "Branch",
+      key: "customerBranchName",
+      width: 130,
+      ellipsis: true,
+      render: (_, row) => (
+        <span className="deferrals-report-muted">{row?.customerBranchName || "-"}</span>
+      ),
+    },
+    {
+      title: "Classification",
+      key: "classification",
+      width: 120,
+      ellipsis: true,
+      render: (_, row) => (
+        <span className="deferrals-report-muted">{row?.classification || "-"}</span>
+      ),
+    },
+    {
+      title: "Business Segment",
+      key: "businessSegment",
+      width: 150,
+      ellipsis: true,
+      render: (_, row) => (
+        <span className="deferrals-report-muted">{row?.businessSegmentDesc || row?.businessSegment || "-"}</span>
+      ),
+    },
+    {
+      title: "Sub-Segment",
+      key: "subSegment",
+      width: 130,
+      ellipsis: true,
+      render: (_, row) => (
+        <span className="deferrals-report-muted">{row?.subSegmentDesc || row?.subSegment || "-"}</span>
+      ),
+    },
+    {
+      title: "Cust. Type",
+      key: "custType",
+      width: 100,
+      ellipsis: true,
+      render: (_, row) => (
+        <span className="deferrals-report-muted">{row?.custType || "-"}</span>
+      ),
+    },
+    {
       title: "RM",
       key: "rm",
       width: 124,

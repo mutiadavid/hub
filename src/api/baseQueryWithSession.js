@@ -3,14 +3,6 @@ import { logout } from "./authSlice";
 
 export const AUTH_STATUS_MESSAGE_KEY = "authStatusMessage";
 
-const getStoredToken = () => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return window.localStorage.getItem("token");
-};
-
 const persistAuthStatusMessage = (message) => {
   if (typeof window === "undefined" || !message) {
     return;
@@ -24,7 +16,7 @@ const resolveAuthStatusMessage = (statusCode, fallbackMessage) => {
     case "SESSION_EXPIRED":
       return "You were logged out after 15 minutes of inactivity.";
     case "SESSION_REPLACED":
-      return "Your account was signed in on another device or browser.";
+      return "Your session has ended. Please sign in again.";
     case "USER_INACTIVE":
       return "Your account is inactive. Contact an administrator.";
     case "SESSION_INVALID":
@@ -78,8 +70,9 @@ export const sanitizeApiError = (error) => {
 export const createBaseQueryWithSession = ({ baseUrl }) => {
   const rawBaseQuery = fetchBaseQuery({
     baseUrl,
+    credentials: "include",
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token || getStoredToken();
+      const token = getState().auth?.token;
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
       }
@@ -90,10 +83,10 @@ export const createBaseQueryWithSession = ({ baseUrl }) => {
 
   return async (args, api, extraOptions) => {
     const result = await rawBaseQuery(args, api, extraOptions);
-    const hasActiveToken = Boolean(api.getState()?.auth?.token || getStoredToken());
+    const hasActiveToken = Boolean(api.getState()?.auth?.token);
 
     // Don't logout on 401 for heartbeat requests - just silently fail
-    if (result?.error?.status === 401 && hasActiveToken) {
+    if (result?.error?.status === 401) {
       const isHeartbeatRequest = args?.url?.includes('presence/heartbeat');
       if (!isHeartbeatRequest) {
         const statusCode = result.error?.data?.code;

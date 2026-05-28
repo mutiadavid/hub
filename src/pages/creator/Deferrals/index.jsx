@@ -547,6 +547,7 @@ const deferralsPageStyles = `
 const Deferrals = ({ userId }) => {
   // Auth from Redux
   const token = useSelector((state) => state.auth.token);
+  const currentUser = useSelector((state) => state.auth.user);
 
   // Main state management using custom hooks
   const { deferrals, setDeferrals, loading, loadDeferrals } =
@@ -632,8 +633,7 @@ const Deferrals = ({ userId }) => {
             );
           }
 
-          const stored = JSON.parse(localStorage.getItem("user") || "null");
-          const myId = stored?.user?._id || userId;
+          const myId = currentUser?._id || currentUser?.id || userId;
           const isMine =
             updated.requestor &&
             ((updated.requestor._id &&
@@ -650,9 +650,7 @@ const Deferrals = ({ userId }) => {
           setSelectedDeferral((prev) => ({ ...prev, ...updated }));
         }
 
-        const myUserId = localStorage.getItem("user")
-          ? JSON.parse(localStorage.getItem("user")).user._id
-          : null;
+        const myUserId = currentUser?._id || currentUser?.id || userId;
         const isMine =
           updated.requestor &&
           ((updated.requestor._id &&
@@ -755,8 +753,7 @@ const Deferrals = ({ userId }) => {
   const loadPendingExtensions = async () => {
     try {
       setExtensionsLoading(true);
-      const user = JSON.parse(localStorage.getItem("user") || "null");
-      const token = user?.token;
+      const token = currentUser?.token || token;
 
       if (!token) {
         message.error("Authentication token not found");
@@ -1356,8 +1353,7 @@ const Deferrals = ({ userId }) => {
 
   const handleAcceptExtension = async (extensionId, comment) => {
     try {
-      const user = JSON.parse(localStorage.getItem("user") || "null");
-      const token = user?.token;
+      const currentToken = currentUser?.token || token;
 
       if (!token) {
         message.error("Authentication token not found");
@@ -1367,7 +1363,7 @@ const Deferrals = ({ userId }) => {
       const response = await deferralApi.acceptExtensionAsCreator(
         extensionId,
         comment,
-        token,
+        currentToken,
       );
       const updatedExtension = response?.extension || response;
       const updatedDeferral =
@@ -1401,8 +1397,7 @@ const Deferrals = ({ userId }) => {
 
   const handleReturnExtensionForRework = async (extensionId, reason) => {
     try {
-      const user = JSON.parse(localStorage.getItem("user") || "null");
-      const token = user?.token;
+      const currentToken = currentUser?.token || token;
 
       if (!token) {
         message.error("Authentication token not found");
@@ -1412,7 +1407,7 @@ const Deferrals = ({ userId }) => {
       const response = await deferralApi.returnExtensionAsCreator(
         extensionId,
         reason,
-        token,
+        currentToken,
       );
       const updatedExtension = response?.extension || response;
       const updatedDeferral =
@@ -1446,8 +1441,7 @@ const Deferrals = ({ userId }) => {
 
   const handleRejectExtension = async (extensionId, reason) => {
     try {
-      const user = JSON.parse(localStorage.getItem("user") || "null");
-      const token = user?.token;
+      const currentToken = currentUser?.token || token;
 
       if (!token) {
         message.error("Authentication token not found");
@@ -1457,7 +1451,7 @@ const Deferrals = ({ userId }) => {
       const response = await deferralApi.rejectExtensionAsCreator(
         extensionId,
         reason,
-        token,
+        currentToken,
       );
       const updatedExtension = response?.extension || response;
       const updatedDeferral =
