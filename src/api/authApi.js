@@ -23,14 +23,11 @@ export const authApi = createApi({
       }),
     }),
 
-    login: builder.mutation({
+    loginWithMicrosoft: builder.mutation({
       query: (data) => ({
-        url: "admin/auth/login",
+        url: "admin/auth/sso/microsoft",
         method: "POST",
-        body: {
-          Username: data?.username || data?.email || "",
-          Password: data?.password || "",
-        },
+        body: { idToken: data?.idToken ?? "" },
       }),
     }),
     logout: builder.mutation({
@@ -39,13 +36,21 @@ export const authApi = createApi({
         method: "POST",
       }),
     }),
+    verifyMfaLogin: builder.mutation({
+      query: (data) => ({
+        url: "admin/auth/mfa/verify",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
 export const {
   useGetMeQuery,
   useRegisterAdminMutation,
-  useLoginMutation,
+  useLoginWithMicrosoftMutation,
   useLogoutMutation,
+  useVerifyMfaLoginMutation,
 } = authApi;
 

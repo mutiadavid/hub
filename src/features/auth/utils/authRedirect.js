@@ -24,7 +24,10 @@ export const redirectUserByRole = ({ navigate, role, successMessage }) => {
       navigate("/approver");
       break;
     default:
-      navigate("/register");
+      console.warn("Unknown role in redirectUserByRole:", roleStr, "Original role:", role);
+      // Let's redirect to admin by default so ProtectedRoute can handle it and show authorization error,
+      // or if it's completely missing, at least it doesn't blindly go to /register
+      navigate("/admin");
       break;
   }
 };

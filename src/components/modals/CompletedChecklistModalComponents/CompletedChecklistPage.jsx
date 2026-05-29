@@ -13,14 +13,14 @@ import {
   useReviveChecklistMutation,
 } from "../../../api/checklistApi";
 import { useChecklistDocuments } from "../../../hooks/useChecklistDocuments";
-import { useReviveChecklist } from "./hooks/useReviveChecklist";
+import { useReviveChecklist } from "../CreatorCompletedChecklistModal/hooks/useReviveChecklist";
 import ChecklistInfoCard from "./ChecklistInfoCard";
-import ProgressStatsSection from "./ProgressStatsSection";
+import ProgressStatsSection from "../CreatorCompletedChecklistModal/ProgressStatsSection";
 import DocumentsTable from "./DocumentsTable";
 import CommentHistorySection from "./CommentHistorySection";
 import DocumentSidebarComponent from "../CompletedChecklistModalComponents/DocumentSidebarComponent";
 import PDFGenerator from "./PDFGenerator";
-import ReviveConfirmationModal from "./ReviveConfirmationModal";
+import ReviveConfirmationModal from "../CreatorCompletedChecklistModal/ReviveConfirmationModal";
 import { API_BASE_URL } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
 
