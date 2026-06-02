@@ -26,7 +26,7 @@ export const useCustomerSearch = () => {
     try {
       const stored = JSON.parse(localStorage.getItem("user") || "null");
       const token = stored?.token;
-      const url = `${API_BASE_URL}/users/customers?q=${encodeURIComponent(q)}${searchLoanType ? `&loanType=${encodeURIComponent(searchLoanType)}` : ""}`;
+      const url = `${API_ORIGIN}/api/customers/search?customerNumber=${encodeURIComponent(q)}${searchLoanType ? `&loanType=${encodeURIComponent(searchLoanType)}` : ""}`;
       const res = await fetch(url, {
         headers: {
           ...(token ? { authorization: `Bearer ${token}` } : {}),
@@ -35,7 +35,16 @@ export const useCustomerSearch = () => {
       });
       if (!res.ok) return;
       const results = await res.json();
-      setCustomerSearchResults(results || []);
+      const mappedResults = (Array.isArray(results) ? results : [results]).filter(Boolean).map(c => ({
+        ...c,
+        // Use customerNumber as a stable identity key so the cache lookup in
+        // fetchCustomer (index.jsx) can always find a typeahead-selected customer
+        // without making an extra network round-trip.
+        _id: c._id || c.id || c.customerNumber || `unknown-${Math.random().toString(36).substring(7)}`,
+        id:  c.id  || c._id || c.customerNumber,
+        name: c.name || c.customerName || c.cusShortName || "Unknown Customer"
+      }));
+      setCustomerSearchResults(mappedResults);
     } catch (err) {
       console.error("Typeahead search failed", err);
     }
@@ -102,7 +111,8 @@ export const useCustomerSearch = () => {
   }, [searchDclNumber, searchDclsTypeahead]);
 
   const handleSelectCustomer = useCallback((customer) => {
-    setSelectedCustomerId(customer._id || null);
+    // Accept either _id or id coming from backend
+    setSelectedCustomerId(customer._id || customer.id || customer.customerNumber || null);
     setSelectCustomerModalVisible(false);
     setCustomerSearchResults([]);
   }, []);

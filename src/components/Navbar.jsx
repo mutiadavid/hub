@@ -8,6 +8,7 @@ import {
 import { Dropdown } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../api/authSlice";
+import { authApi, useLogoutMutation } from "../api/authApi";
 import { useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import "../styles/creatorDesignSystem.css";
@@ -20,6 +21,7 @@ const Navbar = ({ toggleSidebar }) => {
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
+  const [logoutMutation] = useLogoutMutation();
   // logout no longer requires email verification; keep flow simple
 
   // Get dashboard title and path based on user role
@@ -55,22 +57,11 @@ const Navbar = ({ toggleSidebar }) => {
 
   const handleLogout = async () => {
     try {
-      // Call backend logout to invalidate server-side session/token (if implemented)
-      await fetch(`${API_BASE_URL}/admin/auth/logout`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      // Always perform local client logout
-      dispatch(logout());
-      showAuthSuccessToast("Logged out successfully.");
-      navigate("/login", { replace: true });
+      await logoutMutation().unwrap();
     } catch (error) {
       console.error("Logout error:", error);
-      // On failure, still clear local state to avoid locking user out
+    } finally {
+      dispatch(authApi.util.resetApiState());
       dispatch(logout());
       showAuthSuccessToast("Logged out successfully.");
       navigate("/login", { replace: true });
@@ -156,3 +147,4 @@ const Navbar = ({ toggleSidebar }) => {
 };
 
 export default Navbar;
+

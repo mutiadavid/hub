@@ -294,44 +294,51 @@ export default function DeferralForm() {
 
       let data = null;
 
-      if (searchState.selectedCustomerId) {
-        const url = `${API_BASE_URL}/users/customers/${searchState.selectedCustomerId}`;
-        const res = await fetch(url, {
-          headers: {
-            ...(token ? { authorization: `Bearer ${token}` } : {}),
-            "content-type": "application/json",
-          },
-        });
+      // If a customer was already chosen from the typeahead, use cached results
+      const cachedCustomer =
+        searchState.selectedCustomerId &&
+        searchState.customerSearchResults.find(
+          (c) =>
+            (c._id || c.id || c.customerNumber) === searchState.selectedCustomerId
+        );
 
-        if (res.status === 401) {
-          message.error("Unauthorized: please login");
-          return;
+      if (cachedCustomer) {
+        // Use cached result — no extra network call needed
+        const d = cachedCustomer;
+        formState.setCustomerName(d.customerName || d.name || d.cusShortName || "");
+        formState.setBusinessName(d.businessName || d.customerName || d.name || d.cusShortName || "");
+        formState.setCustomerNumber(d.customerNumber || "");
+        if (searchState.searchLoanType) {
+          formState.setLoanType(searchState.searchLoanType);
+        } else if (d.loanType) {
+          formState.setLoanType(d.loanType);
         }
-
-        if (!res.ok) throw new Error("Failed to fetch customer details");
-        data = await res.json();
-      } else {
-        const url = `${API_BASE_URL}/customers/search`;
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            ...(token ? { authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            customerNumber: searchState.searchCustomerNumber,
-            loanType: searchState.searchLoanType,
-          }),
-        });
-
-        if (res.status === 401) {
-          message.error("Unauthorized: please login");
-          return;
-        }
-
-        if (!res.ok) throw new Error("Failed to fetch customers");
-        data = await res.json();
+        formState.setIsCustomerFetched(true);
+        formState.setShowSearchForm(false);
+        return;
       }
+
+      // Otherwise hit the backend
+      const url = `${API_BASE_URL}/customers/search`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          customerNumber: searchState.searchCustomerNumber,
+          loanType: searchState.searchLoanType,
+        }),
+      });
+
+      if (res.status === 401) {
+        message.error("Unauthorized: please login");
+        return;
+      }
+
+      if (!res.ok) throw new Error("Failed to fetch customers");
+      data = await res.json();
 
       if (!data) {
         message.info("No customer found");
@@ -346,21 +353,28 @@ export default function DeferralForm() {
 
         if (data.length === 1) {
           const d = data[0];
-          formState.setCustomerName(d.name || "");
-          formState.setBusinessName(d.businessName || "");
+          formState.setCustomerName(d.customerName || d.name || d.cusShortName || "");
+          formState.setBusinessName(d.businessName || d.customerName || d.name || d.cusShortName || "");
           formState.setCustomerNumber(d.customerNumber || "");
-          searchState.setSelectedCustomerId(d._id || null);
+          searchState.setSelectedCustomerId(d._id || d.id || d.customerNumber || null);
         } else {
-          searchState.setCustomerSearchResults(data);
+          // Ensure data has _id and name for the UI component
+          const mappedData = data.map((c) => ({
+            ...c,
+            _id: c._id || c.id || `${c.customerNumber}-${Math.random().toString(36).substring(7)}`,
+            id:  c.id  || c._id,
+            name: c.name || c.customerName || c.cusShortName || "Unknown Customer",
+          }));
+          searchState.setCustomerSearchResults(mappedData);
           searchState.setSelectCustomerModalVisible(true);
           return;
         }
       } else {
         const d = data;
-        formState.setCustomerName(d.customerName || d.name || "");
-        formState.setBusinessName(d.businessName || "");
+        formState.setCustomerName(d.customerName || d.name || d.cusShortName || "");
+        formState.setBusinessName(d.businessName || d.customerName || d.name || d.cusShortName || "");
         formState.setCustomerNumber(d.customerNumber || "");
-        searchState.setSelectedCustomerId(d._id || null);
+        searchState.setSelectedCustomerId(d._id || d.id || d.customerNumber || null);
       }
 
       if (searchState.searchLoanType) {
@@ -546,13 +560,19 @@ export default function DeferralForm() {
         setShowSearchForm={formState.setShowSearchForm}
         onFetchCustomer={fetchCustomer}
         onSelectCustomer={(customer) => {
-          formState.setCustomerName(customer.name || "");
-          formState.setBusinessName(customer.businessName || "");
+          formState.setCustomerName(customer.name || customer.customerName || customer.cusShortName || "");
+          formState.setBusinessName(customer.businessName || customer.customerName || customer.name || customer.cusShortName || "");
           formState.setCustomerNumber(customer.customerNumber || "");
           searchState.setSearchCustomerNumber(customer.customerNumber || "");
-          searchState.setSelectedCustomerId(customer._id || null);
+          // Normalise id — backend returns camelCase `id`, not mongo `_id`
+          searchState.setSelectedCustomerId(customer._id || customer.id || customer.customerNumber || null);
           searchState.setSelectCustomerModalVisible(false);
           searchState.setCustomerSearchResults([]);
+          if (searchState.searchLoanType) {
+            formState.setLoanType(searchState.searchLoanType);
+          }
+          formState.setIsCustomerFetched(true);
+          formState.setShowSearchForm(false);
         }}
         onSelectDcl={handleSelectDcl}
         isFetching={formState.isFetching}

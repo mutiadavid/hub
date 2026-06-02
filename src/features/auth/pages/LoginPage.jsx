@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useLoginWithMicrosoftMutation, useVerifyMfaLoginMutation, authApi } from "../../../api/authApi";
+import { useLoginWithMicrosoftMutation, useVerifyMfaLoginMutation } from "../../../api/authApi";
 import { consumeAuthStatusMessage } from "../../../api/baseQueryWithSession";
 import { setCredentials } from "../../../api/authSlice";
 import { redirectUserByRole } from "../utils/authRedirect";
@@ -85,26 +85,29 @@ const LoginPage = () => {
         token: mfaTempToken,
         totpCode: mfaCode,
       }).unwrap();
-      
-      let finalUser = response?.user;
-      let finalToken = response?.token;
 
-      // If user is not returned in the MFA verify response, fetch it from /me
-      if (!finalUser) {
-        const meResponse = await dispatch(authApi.endpoints.getMe.initiate(undefined, { forceRefetch: true })).unwrap();
-        finalUser = meResponse?.user || meResponse;
-        finalToken = finalToken || meResponse?.token;
+      // Backend returns camelCase: { token, user: { id, name, email, role } }
+      // Support both camelCase and PascalCase field names defensively.
+      const finalUser = response?.user ?? response?.User;
+      const finalToken = response?.token ?? response?.Token;
+
+      if (!finalUser || !finalToken) {
+        throw new Error("Incomplete response from server. Please try again.");
       }
-      
+
+      // Set credentials in Redux BEFORE navigating so ProtectedRoute sees the user.
       dispatch(setCredentials({ user: finalUser, token: finalToken }));
-      
+
       redirectUserByRole({
         navigate,
-        role: finalUser?.role,
+        role: finalUser?.role ?? finalUser?.Role,
         successMessage: "Signed in successfully.",
       });
     } catch (err) {
-      const msg = err?.data?.message || "Invalid MFA code. Please try again.";
+      const msg =
+        err?.data?.message ||
+        err?.message ||
+        "Invalid MFA code. Please try again.";
       setLoginError(msg);
       toast.error(msg);
     } finally {

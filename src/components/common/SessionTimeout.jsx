@@ -3,6 +3,7 @@ import { Modal } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../api/authSlice";
+import { authApi } from "../../api/authApi";
 
 /** Throttle idle resets so mousemove does not constantly clear/set timers. */
 const ACTIVITY_RESET_MS = 1000;
@@ -47,6 +48,7 @@ const SessionTimeout = ({ timeoutDuration = 15 * 60 * 1000, warningDuration = 30
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsWarningVisible(false);
 
+    dispatch(authApi.util.resetApiState());
     dispatch(logout());
 
     Modal.warning({
