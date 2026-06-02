@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config/runtimeConfig";
+import { store } from "../app/store";
 
 const API_BASE = `${API_BASE_URL}/deferrals`;
 
@@ -347,22 +348,26 @@ function collectRecipientsByType(deferral, notificationType, data = {}) {
   });
 }
 
-function getAuthHeaders() {
-  // Authentication is handled via HttpOnly cookies set by the server.
-  // The browser will automatically include the accessToken cookie on every
-  // credentialed request. No Bearer token needed here.
-  return {
+function getAuthHeaders(token) {
+  const resolvedToken = token || store.getState().auth?.token;
+  const headers = {
     "content-type": "application/json",
   };
+  if (resolvedToken) {
+    headers["authorization"] = `Bearer ${resolvedToken}`;
+  }
+  return headers;
 }
 
 // Returns a partial fetch options object that callers can spread into their fetch() call.
 // Using { ...getAuthInit() } ensures credentials:'include' is present on every API call,
 // which is required for the browser to send the HttpOnly accessToken cookie.
-function getAuthInit(extraHeaders = {}) {
+function getAuthInit(token, extraHeaders = {}) {
+  const resolvedToken = typeof token === "string" ? token : undefined;
+  const resolvedHeaders = typeof token === "object" ? token : extraHeaders;
   return {
     credentials: "include",
-    headers: { ...getAuthHeaders(), ...extraHeaders },
+    headers: { ...getAuthHeaders(resolvedToken), ...resolvedHeaders },
   };
 }
 

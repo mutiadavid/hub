@@ -1,11 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { message } from "antd";
+import { useSelector } from "react-redux";
 import { API_BASE_URL, API_ORIGIN } from "../../../../config/runtimeConfig";
 
 /**
  * Custom hook for customer and DCL search functionality
  */
 export const useCustomerSearch = () => {
+  const reduxToken = useSelector((state) => state.auth.token);
   const [searchCustomerNumber, setSearchCustomerNumber] = useState("");
   const [searchLoanType, setSearchLoanType] = useState("");
   const [customerSearchResults, setCustomerSearchResults] = useState([]);
@@ -25,7 +27,7 @@ export const useCustomerSearch = () => {
   const searchCustomersTypeahead = useCallback(async (q) => {
     try {
       const stored = JSON.parse(localStorage.getItem("user") || "null");
-      const token = stored?.token;
+      const token = reduxToken || stored?.token;
       const url = `${API_ORIGIN}/api/customers/search?customerNumber=${encodeURIComponent(q)}${searchLoanType ? `&loanType=${encodeURIComponent(searchLoanType)}` : ""}`;
       const res = await fetch(url, {
         headers: {
@@ -48,13 +50,13 @@ export const useCustomerSearch = () => {
     } catch (err) {
       console.error("Typeahead search failed", err);
     }
-  }, [searchLoanType]);
+  }, [searchLoanType, reduxToken]);
 
   // Typeahead search for DCLs
   const searchDclsTypeahead = useCallback(async (q) => {
     try {
       const stored = JSON.parse(localStorage.getItem("user") || "null");
-      const token = stored?.token;
+      const token = reduxToken || stored?.token;
 
       const url = `${API_ORIGIN}/api/customers/search-dcl?dclNo=${encodeURIComponent(q)}`;
       const res = await fetch(url, {
@@ -74,7 +76,7 @@ export const useCustomerSearch = () => {
       console.error("DCL typeahead search failed", err);
       setDclSearchResults([]);
     }
-  }, []);
+  }, [reduxToken]);
 
   // Debounce customer search
   useEffect(() => {

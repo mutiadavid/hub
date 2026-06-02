@@ -174,6 +174,22 @@ export default function ReportsFilters({
                   size="middle"
                 />
               </div>
+              <div className="basis-[220px]">
+                <Select
+                  className={selectClassName}
+                  placeholder="Filter by status"
+                  value={filters.status}
+                  onChange={(value) => setFilters({ ...filters, status: value })}
+                  size="middle"
+                >
+                  <Option value="">All Statuses</Option>
+                  {statusOptions.map((status) => (
+                    <Option key={status} value={status}>
+                      {status}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
               <div>
                 <Button onClick={clearFilters} size="middle" className={buttonClassName}>
                   Clear

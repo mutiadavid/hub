@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Button, Empty, Spin, message } from "antd";
 import {
   LeftOutlined,
@@ -30,6 +31,7 @@ const CreatorCompletedChecklistPage = ({
   onClose,
   readOnly = false,
 }) => {
+  const reduxToken = useSelector((state) => state.auth.token);
   const { id: routeId } = useParams();
   const navigate = useNavigate();
   const id = checklistIdProp || routeId;
@@ -109,7 +111,7 @@ const CreatorCompletedChecklistPage = ({
 
     const fetchSupportingDocs = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = reduxToken || localStorage.getItem("token");
         const response = await fetch(
           `${API_BASE_URL}/uploads/checklist/${checklistId}`,
           {

@@ -1,9 +1,10 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
+import { API_BASE_URL } from "../config/runtimeConfig";
 import { createBaseQueryWithSession } from "./baseQueryWithSession";
 
 // Base points to /api/customers — handled by CustomerController.cs
 const baseQuery = createBaseQueryWithSession({
-  baseUrl: import.meta.env.VITE_API_URL + "/api/customers",
+  baseUrl: `${API_BASE_URL}/customers`,
 });
 
 export const customerApi = createApi({

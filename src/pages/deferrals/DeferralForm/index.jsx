@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
+import { useSelector } from "react-redux";
 import { Row, Col, message } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import deferralApi from "../../../service/deferralApi";
@@ -65,6 +66,7 @@ export default function DeferralForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const restoredDraftIdRef = useRef(null);
+  const reduxToken = useSelector((state) => state.auth.token);
   
   // Draft management state
   const [draftId, setDraftId] = useState(null);
@@ -290,7 +292,7 @@ export default function DeferralForm() {
 
       formState.setIsFetching(true);
       const stored = JSON.parse(localStorage.getItem("user") || "null");
-      const token = stored?.token;
+      const token = reduxToken || stored?.token;
 
       let data = null;
 
@@ -397,7 +399,7 @@ export default function DeferralForm() {
   const fetchDclFile = async (checklistId, dclNumber) => {
     try {
       const stored = JSON.parse(localStorage.getItem("user") || "null");
-      const token = stored?.token;
+      const token = reduxToken || stored?.token;
 
       const url = `${API_BASE_URL}/cocreatorChecklist/${checklistId}`;
       const res = await fetch(url, {

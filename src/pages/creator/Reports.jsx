@@ -709,12 +709,22 @@ export default function Reports() {
       setLoading(true);
       try {
         const allRows = await deferralApi.getAllDeferrals(token).catch(async () => {
-          const [pending, approved, returned, mine, closeWorkflow] = await Promise.all([
+          const [
+            pending,
+            approved,
+            returned,
+            mine,
+            closeWorkflow,
+            partiallyApproved,
+            actioned,
+          ] = await Promise.all([
             deferralApi.getPendingDeferrals(token).catch(() => []),
             deferralApi.getApprovedDeferrals(token).catch(() => []),
             deferralApi.getReturnedDeferrals(token).catch(() => []),
             deferralApi.getMyDeferrals(token).catch(() => []),
             deferralApi.getCloseWorkflowDeferrals(token).catch(() => []),
+            deferralApi.getPartiallyApprovedDeferrals().catch(() => []),
+            deferralApi.getActionedDeferrals(token).catch(() => []),
           ]);
 
           const combined = [
@@ -723,6 +733,8 @@ export default function Reports() {
             ...(Array.isArray(returned) ? returned : []),
             ...(Array.isArray(mine) ? mine : []),
             ...(Array.isArray(closeWorkflow) ? closeWorkflow : []),
+            ...(Array.isArray(partiallyApproved) ? partiallyApproved : []),
+            ...(Array.isArray(actioned) ? actioned : []),
           ];
 
           return Array.from(
@@ -792,7 +804,7 @@ export default function Reports() {
       });
     }
 
-    if (isTatTab && filters.status) {
+    if (filters.status) {
       rows = rows.filter(
         (deferral) => String(deferral?.status || "").toLowerCase() === String(filters.status).toLowerCase(),
       );

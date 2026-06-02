@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import dayjs from "dayjs";
 import deferralApi from "../../../../service/deferralApi";
 import {
@@ -18,6 +19,7 @@ import { deleteDraft } from "../../../../utils/draftsUtils";
  */
 export const useFormSubmission = () => {
   const navigate = useNavigate();
+  const reduxToken = useSelector((state) => state.auth.token);
 
   const handleSubmitDeferral = useCallback(
     async (
@@ -168,7 +170,7 @@ export const useFormSubmission = () => {
         };
 
         // Get user token for file uploads
-        let userToken = null;
+        let userToken = reduxToken;
         if (!userToken) {
           try {
             const stored = JSON.parse(localStorage.getItem("user") || "null");
@@ -281,7 +283,7 @@ export const useFormSubmission = () => {
         setIsSubmitting(false);
       }
     },
-    [navigate]
+    [navigate, reduxToken]
   );
 
   return { handleSubmitDeferral };

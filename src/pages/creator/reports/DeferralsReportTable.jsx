@@ -9,7 +9,7 @@ import deferralApi from "../../../service/deferralApi";
 import { hasClosedCloseRequestDocuments } from "../../../utils/deferralDocuments";
 import ActionedDeferralDetailsModal from "../../approver/Actioned/components/DeferralDetailsModal";
 import ApproverDeferralDetailsModal from "../../approver/MyQueue/components/DeferralDetailsModal";
-// import RmDeferralDetailsModal from "../../deferrals/DeferralPending/components/DeferralDetailsModal";
+import RmDeferralDetailsModal from "../../deferrals/DeferralPending/components/DeferralDetailsModal";
 
 const APPROVER_STAGE_STATUSES = new Set([
   "pending_approval",

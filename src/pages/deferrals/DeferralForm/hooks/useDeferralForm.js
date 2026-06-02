@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 /**
  * Custom hook to manage main deferral form state
  */
 export const useDeferralForm = () => {
+  const user = useSelector((state) => state.auth.user);
   const [showSearchForm, setShowSearchForm] = useState(false);
   const [isCustomerFetched, setIsCustomerFetched] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,25 +37,33 @@ export const useDeferralForm = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [previewDeferralNumber, setPreviewDeferralNumber] = useState("");
 
-  // Load current user from localStorage on mount
+  // Load current user from Redux or localStorage on mount/user change
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("user");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const u = parsed?.user || {};
-        setCurrentUser((prev) => ({
-          ...prev,
-          name: u.name || prev.name || "Requestor",
-          role: u.role || prev.role,
-          email: u.email || prev.email,
-          employeeId: u.employeeId || prev.employeeId,
-        }));
+    if (user) {
+      setCurrentUser({
+        name: user.name || "Requestor",
+        role: user.role || "",
+        email: user.email || "",
+        employeeId: user.employeeId || "",
+      });
+    } else {
+      try {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const u = parsed?.user || {};
+          setCurrentUser({
+            name: u.name || "Requestor",
+            role: u.role || "",
+            email: u.email || "",
+            employeeId: u.employeeId || "",
+          });
+        }
+      } catch (e) {
+        console.warn("Unable to load user from storage", e);
       }
-    } catch (e) {
-      console.warn("Unable to load user from storage", e);
     }
-  }, []);
+  }, [user]);
 
   return {
     showSearchForm,
