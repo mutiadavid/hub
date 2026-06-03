@@ -40,7 +40,7 @@ const ChecklistFormFields = ({
   // Only query the DataWarehouse once the user has typed ≥ 3 characters.
   // This avoids hammering the external gateway on every single keystroke.
   const dwQuery = String(customerNumber || "").trim();
-  const shouldSearch = dwQuery.length >= 4;
+  const shouldSearch = dwQuery.length >= 6;
 
   console.log("[ChecklistFormFields] DW Query:", dwQuery, "| Should search:", shouldSearch);
 
