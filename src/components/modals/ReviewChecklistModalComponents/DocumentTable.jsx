@@ -19,6 +19,7 @@ import {
 import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import { getExpiryMeta, getExpiryStatus } from "../../../utils/documentUtils";
 import { openFileInNewTab } from "../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import "../../../styles/creatorDesignSystem.css";
@@ -100,6 +101,7 @@ const DocumentTable = ({
   const [activeCategory, setActiveCategory] = useState(null);
   const transientValidationTimersRef = React.useRef({});
   const previousValidationRef = React.useRef({});
+  const { openFile } = useProtectedFileFetcher();
 
   React.useEffect(() => {
     const currentTimers = transientValidationTimersRef.current;
@@ -639,7 +641,7 @@ const DocumentTable = ({
                 if (typeof onViewFile === "function") {
                   onViewFile({ ...record, fileUrl: files[0].fileUrl });
                 } else {
-                  openFileInNewTab(files[0].fileUrl);
+                  openFile(files[0].fileUrl).catch((err) => console.error(err));
                 }
               }}
               size="small"
@@ -957,7 +959,7 @@ const DocumentTable = ({
                   >
                     <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
                       <span
-                        onClick={() => openFileInNewTab(file.fileUrl)}
+                        onClick={() => openFile(file.fileUrl).catch((err) => console.error(err))}
                         style={{
                           fontSize: 13,
                           fontWeight: 600,
@@ -980,7 +982,7 @@ const DocumentTable = ({
                     </div>
                     <Button
                       size="small"
-                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      onClick={() => openFile(file.fileUrl).catch((err) => console.error(err))}
                     >
                       View
                     </Button>
@@ -1240,7 +1242,7 @@ const DocumentTable = ({
                 >
                   <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
                     <span
-                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      onClick={() => openFile(file.fileUrl).catch((err) => console.error(err))}
                       style={{
                         fontSize: 13,
                         fontWeight: 600,
@@ -1263,7 +1265,7 @@ const DocumentTable = ({
                   </div>
                   <Button
                     size="small"
-                    onClick={() => openFileInNewTab(file.fileUrl)}
+                    onClick={() => openFile(file.fileUrl).catch((err) => console.error(err))}
                   >
                     View
                   </Button>

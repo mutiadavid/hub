@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import { message } from "antd";
 import { API_BASE_URL } from "../utils/constants";
-import { openFileInNewTab } from "../utils/fileUtils";
+import useProtectedFileFetcher from "./useProtectedFileFetcher";
 // import dayjs from 'dayjs';
 
 export const useDocumentHandlers = (docs, setDocs, isActionDisabled) => {
+  const { openFile } = useProtectedFileFetcher();
   const handleNameChange = useCallback(
     (idx, value) => {
       if (isActionDisabled) return;
@@ -107,7 +108,14 @@ export const useDocumentHandlers = (docs, setDocs, isActionDisabled) => {
       return;
     }
 
-    openFileInNewTab(fileUrl);
+    (async () => {
+      try {
+        await openFile(fileUrl);
+      } catch (err) {
+        console.error("Error opening file:", err);
+        message.error("Failed to open file. Please try again.");
+      }
+    })();
   }, []);
 
   return {

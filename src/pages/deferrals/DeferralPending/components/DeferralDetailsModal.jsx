@@ -43,6 +43,7 @@ import {
 } from "../../../../utils/deferralDocuments";
 import UniformTag from "../../../../components/common/UniformTag";
 import { openFileInNewTab, downloadFile } from "../../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../../hooks/useProtectedFileFetcher";
 import downloadDeferralPdf from "../../../../utils/deferralPdfGenerator";
 import {
   PRIMARY_BLUE,
@@ -753,6 +754,7 @@ const DeferralDetailsModal = ({
   const [fullDeferral, setFullDeferral] = useState(deferral);
   const [, setLoadingFullDeferral] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState("details");
+  const { openFile, downloadFile: fetchDownloadFile, loading: fileLoading } = useProtectedFileFetcher();
 
   // Fetch full deferral details when modal opens to ensure documents are loaded
   useEffect(() => {
@@ -1589,7 +1591,7 @@ const DeferralDetailsModal = ({
             type="default"
             size="small"
             icon={<EyeOutlined />}
-            onClick={() => openFileInNewTab(doc.fileUrl || doc.url)}
+            onClick={() => openFile(doc.fileUrl || doc.url).catch((err) => console.error(err))}
             disabled={!doc.fileUrl && !doc.url}
           >
             View
@@ -1597,7 +1599,7 @@ const DeferralDetailsModal = ({
           <Button
             size="small"
             icon={<DownloadOutlined />}
-            onClick={() => downloadFile(doc.fileUrl || doc.url, doc.name)}
+            onClick={() => fetchDownloadFile(doc.fileUrl || doc.url, doc.name).catch((err) => console.error(err))}
             disabled={!doc.fileUrl && !doc.url}
           >
             Download
@@ -1714,13 +1716,13 @@ const DeferralDetailsModal = ({
         <div className="deferral-review-actionset">
           <Button
             size="small"
-            onClick={() => openFileInNewTab(upload.fileUrl || upload.url)}
+            onClick={() => openFile(upload.fileUrl || upload.url).catch((err) => console.error(err))}
           >
             View
           </Button>
           <Button
             size="small"
-            onClick={() => downloadFile(upload.fileUrl || upload.url, upload.name)}
+            onClick={() => fetchDownloadFile(upload.fileUrl || upload.url, upload.name).catch((err) => console.error(err))}
           >
             Download
           </Button>

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Button, Select, Table } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -82,6 +81,10 @@ const CoChecklistPage = ({
   draftToRestore = null,
   setDraftToRestore = null,
 }) => {
+  console.log("=== CoChecklistPage RENDER START ===");
+  console.log("userId:", userId);
+  console.log("draftToRestore:", draftToRestore);
+  
   const navigate = useNavigate();
 
   // Style to remove table header border separator
@@ -114,82 +117,122 @@ const CoChecklistPage = ({
   const [statusFilter, setStatusFilter] = useState(undefined);
   const [loanTypeFilter, setLoanTypeFilter] = useState(undefined);
   const [rmFilter, setRmFilter] = useState(undefined);
+  
   const restoredDraftId =
     typeof draftToRestore === "string"
       ? draftToRestore
       : draftToRestore?.id || null;
+      
   const isDrawerOpen = drawerOpen || Boolean(restoredDraftId);
+  
+  console.log("restoredDraftId:", restoredDraftId);
+  console.log("isDrawerOpen:", isDrawerOpen);
 
-  const { data: checklists = [], refetch } =
+  console.log("Calling useGetSpecificChecklistsByCreatorQuery with userId:", userId);
+  const { data: checklists = [], refetch, isLoading, error } =
     useGetSpecificChecklistsByCreatorQuery(userId, { skip: !userId });
+    
+  console.log("useGetSpecificChecklistsByCreatorQuery results:");
+  console.log("  checklists:", checklists);
+  console.log("  isLoading:", isLoading);
+  console.log("  error:", error);
+  console.log("  checklists length:", checklists.length);
 
   // Filter checklists: Only show Pending checklists and Revived checklists
   // EXCLUDE coCreatorReview status checklists (non-revived)
   const myChecklists = useMemo(() => {
-    return checklists.filter((c) => {
+    console.log("Computing myChecklists from", checklists.length, "items");
+    const filtered = checklists.filter((c) => {
       const statusLower = (c.status || "").toLowerCase();
       const isRevived = c.dclNo?.toLowerCase().includes("copy");
-      if (isRevived) {
-        return statusLower === "cocreatorreview";
-      }
-      return statusLower === "pending";
+      const include = isRevived ? statusLower === "cocreatorreview" : statusLower === "pending";
+      console.log(`  Checklist ${c.dclNo}: status=${c.status}, isRevived=${isRevived}, include=${include}`);
+      return include;
     });
+    console.log("myChecklists result:", filtered);
+    return filtered;
   }, [checklists]);
 
   const statusOptions = useMemo(
-    () =>
-      Array.from(
+    () => {
+      const options = Array.from(
         new Set(
           myChecklists
             .map((checklist) => getChecklistStatusMeta(checklist.status, checklist.dclNo).label)
             .filter(Boolean)
         )
-      ).map((value) => ({ label: value, value })),
+      ).map((value) => ({ label: value, value }));
+      console.log("statusOptions:", options);
+      return options;
+    },
     [myChecklists]
   );
 
   const loanTypeOptions = useMemo(
-    () =>
-      Array.from(
+    () => {
+      const options = Array.from(
         new Set(myChecklists.map((checklist) => checklist.loanType).filter(Boolean))
-      ).map((value) => ({ label: value, value })),
+      ).map((value) => ({ label: value, value }));
+      console.log("loanTypeOptions:", options);
+      return options;
+    },
     [myChecklists]
   );
 
   const rmOptions = useMemo(
-    () =>
-      Array.from(
+    () => {
+      const options = Array.from(
         new Set(
           myChecklists
             .map((checklist) => checklist.assignedToRM?.name)
             .filter(Boolean)
         )
-      ).map((value) => ({ label: value, value })),
+      ).map((value) => ({ label: value, value }));
+      console.log("rmOptions:", options);
+      return options;
+    },
     [myChecklists]
   );
 
   const filteredChecklists = useMemo(
-    () =>
-      myChecklists.filter((checklist) => {
-        const checklistStatus = getChecklistStatusMeta(
-          checklist.status,
-          checklist.dclNo
-        ).label;
+    () => {
+      let filtered = myChecklists;
+      console.log("Applying filters - initial filtered count:", filtered.length);
+      
+      if (statusFilter) {
+        filtered = filtered.filter((checklist) => {
+          const checklistStatus = getChecklistStatusMeta(
+            checklist.status,
+            checklist.dclNo
+          ).label;
+          const matches = checklistStatus === statusFilter;
+          console.log(`  Filter by status: ${checklistStatus} === ${statusFilter} = ${matches}`);
+          return matches;
+        });
+        console.log("  After status filter:", filtered.length);
+      }
 
-        if (statusFilter && checklistStatus !== statusFilter) {
-          return false;
-        }
+      if (loanTypeFilter) {
+        filtered = filtered.filter((checklist) => {
+          const matches = checklist.loanType === loanTypeFilter;
+          console.log(`  Filter by loanType: ${checklist.loanType} === ${loanTypeFilter} = ${matches}`);
+          return matches;
+        });
+        console.log("  After loanType filter:", filtered.length);
+      }
 
-        if (loanTypeFilter && checklist.loanType !== loanTypeFilter) {
-          return false;
-        }
-
-        if (rmFilter && checklist.assignedToRM?.name !== rmFilter) {
-          return false;
-        }
-
-        return true;
-      }),
+      if (rmFilter) {
+        filtered = filtered.filter((checklist) => {
+          const matches = checklist.assignedToRM?.name === rmFilter;
+          console.log(`  Filter by rm: ${checklist.assignedToRM?.name} === ${rmFilter} = ${matches}`);
+          return matches;
+        });
+        console.log("  After rm filter:", filtered.length);
+      }
+      
+      console.log("filteredChecklists result:", filtered);
+      return filtered;
+    },
     [myChecklists, statusFilter, loanTypeFilter, rmFilter]
   );
 
@@ -317,8 +360,10 @@ const CoChecklistPage = ({
           open={isDrawerOpen}
           draftId={restoredDraftId}
           onClose={() => {
+            console.log("ChecklistsPage onClose called");
             setDrawerOpen(false);
             setDraftToRestore?.(null);
+            console.log("Refetching checklists...");
             refetch();
           }}
           coCreatorId={userId}
@@ -329,7 +374,10 @@ const CoChecklistPage = ({
             <div className={toolbarClassName}>
               <div className="flex w-full items-center">
                 <Button
-                  onClick={() => setDrawerOpen(true)}
+                  onClick={() => {
+                    console.log("Create New DCL button clicked");
+                    setDrawerOpen(true);
+                  }}
                   className={createButtonClassName}
                 >
                   + Create New DCL
@@ -346,7 +394,10 @@ const CoChecklistPage = ({
                   placeholder="Status"
                   options={statusOptions}
                   value={statusFilter}
-                  onChange={setStatusFilter}
+                  onChange={(value) => {
+                    console.log("Status filter changed to:", value);
+                    setStatusFilter(value);
+                  }}
                   className={filterClassName}
                 />
                 <Select
@@ -354,7 +405,10 @@ const CoChecklistPage = ({
                   placeholder="Loan Type"
                   options={loanTypeOptions}
                   value={loanTypeFilter}
-                  onChange={setLoanTypeFilter}
+                  onChange={(value) => {
+                    console.log("Loan type filter changed to:", value);
+                    setLoanTypeFilter(value);
+                  }}
                   className={filterClassName}
                 />
                 <Select
@@ -362,7 +416,10 @@ const CoChecklistPage = ({
                   placeholder="Assigned RM"
                   options={rmOptions}
                   value={rmFilter}
-                  onChange={setRmFilter}
+                  onChange={(value) => {
+                    console.log("RM filter changed to:", value);
+                    setRmFilter(value);
+                  }}
                   className={filterClassName}
                 />
               </div>
@@ -386,6 +443,7 @@ const CoChecklistPage = ({
                 onRow={(record) => ({
                   onClick: () => {
                     const checklistId = record.id || record._id;
+                    console.log("Row clicked for checklist:", record.dclNo, "id:", checklistId);
                     if (checklistId) {
                       navigate(`/cocreator/review/${checklistId}`);
                     }

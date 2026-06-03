@@ -3,11 +3,12 @@ import { Drawer, Card, Tag, Button } from "antd";
 import { DownloadOutlined, EyeOutlined, FileOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { API_ORIGIN } from "../../config/runtimeConfig";
-import { openFileInNewTab, downloadFile } from "../../utils/fileUtils";
+import useProtectedFileFetcher from "../../hooks/useProtectedFileFetcher";
 
 const API_BASE_URL = API_ORIGIN;
 
 const DocumentSidebar = ({ documents, open, onClose, supportingDocs = [] }) => {
+  const { openFile, downloadFile, loading } = useProtectedFileFetcher();
   const getFileIcon = (fileName) => {
     if (!fileName) return <FileOutlined style={{ fontSize: "11px" }} />;
     const ext = fileName.split(".").pop().toLowerCase();
@@ -271,7 +272,9 @@ const DocumentSidebar = ({ documents, open, onClose, supportingDocs = [] }) => {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            openFileInNewTab(fileUrl);
+                            openFile(fileUrl).catch((err) => {
+                              console.error("Error opening file:", err);
+                            });
                           }}
                         >
                           View
@@ -288,7 +291,9 @@ const DocumentSidebar = ({ documents, open, onClose, supportingDocs = [] }) => {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            downloadFile(fileUrl, fileName);
+                            downloadFile(fileUrl, fileName).catch((err) => {
+                              console.error("Error downloading file:", err);
+                            });
                           }}
                         >
                           Download

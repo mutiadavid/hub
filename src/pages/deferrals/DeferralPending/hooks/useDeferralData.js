@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback} from "react";
 import deferralApi from "../../../../service/deferralApi";
 import { showErrorToast } from "../../../../utils/authToast";
 
@@ -14,9 +14,10 @@ export const useDeferralData = (userId) => {
   const loadDeferrals = useCallback(async () => {
     setLoading(true);
     try {
-      const stored = JSON.parse(localStorage.getItem("user") || "null");
-      const token = stored?.token;
-      const userId = stored?.user?._id || stored?.id;
+      const { store } = await import("../../../../app/store");
+      const authState = store.getState().auth;
+      const token = authState?.token;
+      const currentUserId = authState?.user?._id || authState?.user?.id || userId;
 
       if (!token) {
         console.error("[DEFERRAL_LOAD] ERROR: No authentication token found!");
@@ -26,7 +27,7 @@ export const useDeferralData = (userId) => {
         return;
       }
 
-      if (!userId) {
+      if (!currentUserId) {
         console.error("[DEFERRAL_LOAD] ERROR: No user ID found!");
         showErrorToast("User ID not found. Please login again.");
         setDeferrals([]);

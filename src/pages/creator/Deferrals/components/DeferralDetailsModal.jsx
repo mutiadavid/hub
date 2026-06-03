@@ -18,6 +18,7 @@ import {
   getDeferralDocumentBuckets,
 } from "../../../../utils/deferralDocuments";
 import { openFileInNewTab, downloadFile } from "../../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../../hooks/useProtectedFileFetcher";
 import downloadDeferralPdf from "../../../../utils/deferralPdfGenerator";
 import DeferralReviewHeader from "./DeferralReviewHeader";
 import DeferralReviewContent from "./DeferralReviewContent";
@@ -334,7 +335,7 @@ const DeferralDetailsModal = (props) => {
               type="default"
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => openFileInNewTab(documentUrl)}
+              onClick={() => openFile(documentUrl).catch((err) => console.error(err))}
               disabled={!documentUrl}
             >
               View
@@ -342,7 +343,7 @@ const DeferralDetailsModal = (props) => {
             <Button
               size="small"
               icon={<DownloadOutlined />}
-              onClick={() => downloadFile(documentUrl, doc.name)}
+              onClick={() => fetchDownloadFile(documentUrl, doc.name).catch((err) => console.error(err))}
               disabled={!documentUrl}
             >
               Download
@@ -424,10 +425,10 @@ const DeferralDetailsModal = (props) => {
 
         return (
           <div className="deferral-review-actionset">
-            <Button size="small" onClick={() => openFileInNewTab(documentUrl)} disabled={!documentUrl}>
+            <Button size="small" onClick={() => openFile(documentUrl).catch((err) => console.error(err))} disabled={!documentUrl}>
               View
             </Button>
-            <Button size="small" onClick={() => downloadFile(documentUrl, upload.name)} disabled={!documentUrl}>
+            <Button size="small" onClick={() => fetchDownloadFile(documentUrl, upload.name).catch((err) => console.error(err))} disabled={!documentUrl}>
               Download
             </Button>
           </div>
@@ -692,5 +693,6 @@ const DeferralDetailsModal = (props) => {
     </>
   );
 };
+  const { openFile, downloadFile: fetchDownloadFile } = useProtectedFileFetcher();
 
 export default DeferralDetailsModal;

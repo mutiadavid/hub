@@ -23,6 +23,13 @@ export const authApi = createApi({
       }),
     }),
 
+    login: builder.mutation({
+      query: (data) => ({
+        url: "admin/auth/login",
+        method: "POST",
+        body: data,
+      }),
+    }),
     loginWithMicrosoft: builder.mutation({
       query: (data) => ({
         url: "admin/auth/sso/microsoft",
@@ -43,14 +50,23 @@ export const authApi = createApi({
         body: data,
       }),
     }),
+    verifyEmailMfa: builder.mutation({
+      query: (data) => ({
+        url: "admin/auth/verify-email-mfa",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
 export const {
   useGetMeQuery,
   useRegisterAdminMutation,
+  useLoginMutation,
   useLoginWithMicrosoftMutation,
   useLogoutMutation,
   useVerifyMfaLoginMutation,
+  useVerifyEmailMfaMutation,
 } = authApi;
 

@@ -26,6 +26,7 @@ import getFacilityColumns from "../../../../utils/facilityColumns";
 import { getDeferralDocumentBuckets } from "../../../../utils/deferralDocuments";
 import { getLivePartyApprovalStatuses } from "../../../../utils/deferralApprovalStatus";
 import { openFileInNewTab, downloadFile } from "../../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../../hooks/useProtectedFileFetcher";
 import downloadDeferralPdf from "../../../../utils/deferralPdfGenerator";
 import {
   ERROR_RED,
@@ -182,6 +183,8 @@ const DeferralDetailsModal = ({
 
   const loadingComments = false;
   const safeDeferral = deferral || null;
+
+  const { openFile, downloadFile: fetchDownloadFile } = useProtectedFileFetcher();
 
   const executeApprove = async () => {
     setApproveLoading(true);
@@ -401,7 +404,7 @@ const DeferralDetailsModal = ({
           <Button
             size="small"
             icon={<EyeOutlined />}
-            onClick={() => openFileInNewTab(record.fileUrl || record.url)}
+            onClick={() => openFile(record.fileUrl || record.url).catch((err) => console.error(err))}
             disabled={!record.fileUrl && !record.url}
           >
             View

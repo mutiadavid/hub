@@ -8,7 +8,14 @@ const normalizeOrigin = (value, fallback) => {
   }
 
   if (/^https?:\/\//i.test(raw)) {
-    return raw.replace(/\/+$/, "");
+    try {
+      // Use only the origin (protocol + hostname + optional port) to avoid accidental
+      // inclusion of path segments in environment variables (which causes doubled paths)
+      const u = new URL(raw);
+      return u.origin.replace(/\/+$/, "");
+    } catch {
+      return raw.replace(/\/+$/, "");
+    }
   }
 
   if (raw.startsWith(":")) {

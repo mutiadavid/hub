@@ -24,6 +24,7 @@ import {
   getDeferralDocumentBuckets,
 } from "../../../../utils/deferralDocuments";
 import { openFileInNewTab, downloadFile } from "../../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../../hooks/useProtectedFileFetcher";
 import downloadDeferralPdf from "../../../../utils/deferralPdfGenerator";
 import deferralApi from "../../../../service/deferralApi";
 import { formatCommentTimestamp } from "../../../../utils/checklistUtils";
@@ -206,6 +207,7 @@ const DeferralDetailModal = ({
 }) => {
   const [activeTab, setActiveTab] = useState("details");
   const [downloadLoading, setDownloadLoading] = useState(false);
+  const { openFile, downloadFile: fetchDownloadFile } = useProtectedFileFetcher();
   const isCloseRequestAction = sourceTab === "closeRequests";
   const closeRequestDocuments = useMemo(
     () => {
@@ -468,7 +470,7 @@ const DeferralDetailModal = ({
             <Button
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => openFileInNewTab(documentUrl)}
+              onClick={() => openFile(documentUrl).catch((err) => console.error(err))}
               disabled={!documentUrl}
             >
               View
@@ -476,7 +478,7 @@ const DeferralDetailModal = ({
             <Button
               size="small"
               icon={<DownloadOutlined />}
-              onClick={() => downloadFile(documentUrl, doc.name)}
+              onClick={() => fetchDownloadFile(documentUrl, doc.name).catch((err) => console.error(err))}
               disabled={!documentUrl}
             >
               Download
@@ -516,7 +518,7 @@ const DeferralDetailModal = ({
             <Button
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => openFileInNewTab(documentUrl)}
+              onClick={() => openFile(documentUrl).catch((err) => console.error(err))}
               disabled={!documentUrl}
             >
               View
@@ -524,7 +526,7 @@ const DeferralDetailModal = ({
             <Button
               size="small"
               icon={<DownloadOutlined />}
-              onClick={() => downloadFile(documentUrl, upload.name)}
+              onClick={() => fetchDownloadFile(documentUrl, upload.name).catch((err) => console.error(err))}
               disabled={!documentUrl}
             >
               Download

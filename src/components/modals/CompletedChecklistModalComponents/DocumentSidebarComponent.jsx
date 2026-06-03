@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import { formatDateTime, getFullUrl } from "../../../utils/checklistUtils";
 import { openFileInNewTab, downloadFile } from "../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 import "../../../styles/creatorDesignSystem.css";
 
 const DRAWER_CLASS = "creator-completed-document-sidebar";
@@ -148,11 +149,14 @@ const DocumentSidebarComponent = ({
 
   const handleDownloadFile = (fileName, fileUrl) => {
     try {
-      downloadFile(fileUrl, fileName || "document");
+      // use hook-backed download
+      fetchDownloadFile(fileUrl, fileName || "document").catch((err) => console.error(err));
     } catch (error) {
       console.error("Error downloading file:", error);
     }
   };
+
+  const { openFile, downloadFile: fetchDownloadFile } = useProtectedFileFetcher();
 
   const allDocs = useMemo(() => {
     const processedDocs = [];
@@ -505,11 +509,7 @@ const DocumentSidebarComponent = ({
                           icon={<EyeOutlined />}
                           onClick={(event) => {
                             event.stopPropagation();
-                            try {
-                              openFileInNewTab(doc.fileUrl);
-                            } catch (error) {
-                              console.error("Error opening file:", error);
-                            }
+                            openFile(doc.fileUrl).catch((err) => console.error(err));
                           }}
                         >
                           View

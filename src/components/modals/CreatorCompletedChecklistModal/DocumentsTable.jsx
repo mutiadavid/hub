@@ -6,6 +6,7 @@ import { getFullUrl as getFullUrlUtil } from "../../../utils/checklistUtils";
 import { formatStatusText } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
 import { openFileInNewTab } from "../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 
 const { TabPane } = Tabs;
 
@@ -270,7 +271,7 @@ const DocumentsTable = ({ docs, checklist }) => {
             <Tooltip title="View">
               <Button
                 size="small"
-                onClick={() => openFileInNewTab(url)}
+                onClick={() => openFile(url).catch((err) => console.error(err))}
                 style={{
                   backgroundColor: "#ffffff",
                   borderColor: "#d9d9d9",
@@ -293,6 +294,8 @@ const DocumentsTable = ({ docs, checklist }) => {
   });
 
   const columns = getColumns();
+
+  const { openFile } = useProtectedFileFetcher();
 
   // Render table for a specific category (used for single category)
   const renderCategoryTable = (category) => {

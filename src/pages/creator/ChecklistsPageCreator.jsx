@@ -40,7 +40,12 @@ const hasMissingDeferredNumbers = (sourceDocuments = []) =>
     ),
   );
 
-const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
+const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null, coCreatorId }) => {
+  console.log("=== ChecklistsPage RENDER START ===");
+  console.log("open:", open);
+  console.log("initialDraftId:", initialDraftId);
+  console.log("coCreatorId:", coCreatorId);
+
   const navigate = useNavigate();
   const [loanType, setLoanType] = useState("");
   const [assignedToRM, setAssignedToRM] = useState("");
@@ -65,8 +70,18 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
   const [currentDraftId, setCurrentDraftId] = useState(null);
   const [activeTab, setActiveTab] = useState("details");
 
+  console.log("Component state:");
+  console.log("  customerNumber state:", customerNumber);
+  console.log("  customerName state:", customerName);
+  console.log("  customerEmail state:", customerEmail);
+  console.log("  loanType state:", loanType);
+  console.log("  assignedToRM state:", assignedToRM);
+
   const { data: users = [] } = useGetUsersQuery();
+  console.log("users from useGetUsersQuery:", users);
+  
   const rms = users.filter((u) => u.role?.toLowerCase() === "rm");
+  console.log("rms filtered:", rms);
 
   const [createChecklist] = useCreateCoCreatorChecklistMutation();
 
@@ -83,6 +98,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
     documents,
   };
 
+  console.log("formData for auto-save:", formData);
+
   // Auto-save hook - saves every 2 seconds when form has data
   const { draftId: autoSavedDraftId, lastSaved } = useAutoSaveDraft({
     type: "cocreator",
@@ -92,31 +109,72 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
     enabled: open && (loanType || assignedToRM || customerNumber), // Only enable when modal is open and has some data
   });
 
+  console.log("autoSaveDraft result:", { autoSavedDraftId, lastSaved });
+
   // Load draft from localStorage
   function loadDraft(id) {
+    console.log("=== loadDraft START ===");
+    console.log("Loading draft with id:", id);
+    
     try {
       const drafts = getDrafts("cocreator");
+      console.log("All cocreator drafts:", drafts);
+      
       const draft = drafts.find((d) => d.id === id);
+      console.log("Found draft:", draft);
+      
       if (draft && draft.data) {
         const data = draft.data;
+        console.log("Draft data:", data);
+        
+        console.log("Setting loanType to:", data.loanType || "");
         setLoanType(data.loanType || "");
+        
+        console.log("Setting assignedToRM to:", data.assignedToRM || "");
         setAssignedToRM(data.assignedToRM || "");
+        
+        console.log("Setting customerId to:", data.customerId || "");
         setCustomerId(data.customerId || "");
+        
+        console.log("Setting customerName to:", data.customerName || "");
         setCustomerName(data.customerName || "");
+        
+        console.log("Setting customerNumber to:", data.customerNumber || "");
         setCustomerNumber(data.customerNumber || "");
+        
+        console.log("Setting customerEmail to:", data.customerEmail || "");
         setCustomerEmail(data.customerEmail || "");
+        
+        console.log("Setting customerBranchName to:", data.customerBranchName || "");
         setCustomerBranchName(data.customerBranchName || "");
+        
+        console.log("Setting classification to:", data.classification || "");
         setClassification(data.classification || "");
+        
+        console.log("Setting businessSegment to:", data.businessSegment || "");
         setBusinessSegment(data.businessSegment || "");
+        
+        console.log("Setting businessSegmentDesc to:", data.businessSegmentDesc || "");
         setBusinessSegmentDesc(data.businessSegmentDesc || "");
+        
+        console.log("Setting subSegment to:", data.subSegment || "");
         setSubSegment(data.subSegment || "");
+        
+        console.log("Setting subSegmentDesc to:", data.subSegmentDesc || "");
         setSubSegmentDesc(data.subSegmentDesc || "");
+        
+        console.log("Setting custType to:", data.custType || "");
         setCustType(data.custType || "");
+        
+        console.log("Setting ibpsNo to:", data.ibpsNo || "");
         setIbpsNo(data.ibpsNo || "");
+        
+        console.log("Setting selectedMultipleLoanTypes to:", data.selectedMultipleLoanTypes || []);
         setSelectedMultipleLoanTypes(data.selectedMultipleLoanTypes || []);
 
         // Handle different document structures
         let docsToLoad = data.documents || [];
+        console.log("Original docsToLoad:", docsToLoad);
 
         // If documents have a flat structure (from ReviewChecklistModal),
         // convert them to nested structure with docList
@@ -125,9 +183,11 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           docsToLoad[0].category &&
           !docsToLoad[0].docList
         ) {
+          console.log("Detected flat document structure - converting to nested");
           // Group by category
           const groupedDocs = {};
-          docsToLoad.forEach((doc) => {
+          docsToLoad.forEach((doc, idx) => {
+            console.log(`  Document ${idx}:`, doc);
             const category = doc.category || "Uncategorized";
             if (!groupedDocs[category]) {
               groupedDocs[category] = [];
@@ -147,20 +207,30 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
             category,
             docList: groupedDocs[category],
           }));
+          console.log("Converted nested docs:", docsToLoad);
         }
 
-        setDocuments(normalizeDocumentCategories(docsToLoad));
+        const normalizedDocs = normalizeDocumentCategories(docsToLoad);
+        console.log("Normalized documents:", normalizedDocs);
+        setDocuments(normalizedDocs);
         setCurrentDraftId(draft.id);
         message.success("Draft restored successfully!");
+      } else {
+        console.log("No draft found with id:", id);
       }
     } catch (error) {
       console.error("Error loading draft:", error);
       message.error("Failed to load draft");
     }
+    
+    console.log("=== loadDraft END ===");
   }
 
   // Reset form
   function resetForm() {
+    console.log("=== resetForm called ===");
+    console.log("Resetting all form fields to empty/default values");
+    
     setLoanType("");
     setAssignedToRM("");
     setCustomerId("");
@@ -180,11 +250,14 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
     setNewDocName("");
     setSelectedCategoryName(null);
     setCurrentDraftId(null);
+    
+    console.log("Reset complete");
   }
 
   // Update currentDraftId when auto-save provides one
   useEffect(() => {
     if (autoSavedDraftId && autoSavedDraftId !== currentDraftId) {
+      console.log("useEffect: autoSavedDraftId changed, updating currentDraftId from", currentDraftId, "to", autoSavedDraftId);
       const timeoutId = window.setTimeout(() => {
         setCurrentDraftId(autoSavedDraftId);
       }, 0);
@@ -197,10 +270,16 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
 
   // Load draft data on mount if initialDraftId is provided
   useEffect(() => {
+    console.log("useEffect: initialDraftId or open changed");
+    console.log("  initialDraftId:", initialDraftId);
+    console.log("  open:", open);
+    
     const timeoutId = window.setTimeout(() => {
       if (initialDraftId) {
+        console.log("Loading draft because initialDraftId is present");
         loadDraft(initialDraftId);
-      } else {
+      } else if (open) {
+        console.log("Resetting form because open is true and no initialDraftId");
         resetForm();
       }
     }, 0);
@@ -210,10 +289,16 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
 
   // Manual save draft handler
   const handleSaveDraft = () => {
+    console.log("=== handleSaveDraft called ===");
+    console.log("Current formData:", formData);
+    
     try {
       const saved = saveDraft("cocreator", formData, currentDraftId);
+      console.log("saveDraft result:", saved);
+      
       if (saved) {
         setCurrentDraftId(saved.id);
+        console.log("currentDraftId updated to:", saved.id);
         message.success("Draft saved successfully!");
         navigate(getDraftRoute("cocreator"));
       } else {
@@ -226,38 +311,53 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
   };
 
   const handleLoanTypeChange = (value) => {
+    console.log("=== handleLoanTypeChange called ===");
+    console.log("New loan type value:", value);
+    
     setLoanType(value);
     setSelectedMultipleLoanTypes([]); // Reset multiple selection
 
     if (value !== "Multiple Loan Type") {
       const categories = loanTypeDocuments[value] || [];
-      setDocuments(
-        categories.map((cat) => ({
-          category: cat.title,
-          docList: cat.documents.map((d) => ({
-            name: d,
-            status: "pendingrm",
-            action: "",
-            comment: "",
-            deferralNo: "",
-          })),
+      console.log("Categories for loan type:", categories);
+      
+      const newDocuments = categories.map((cat) => ({
+        category: cat.title,
+        docList: cat.documents.map((d) => ({
+          name: d,
+          status: "pendingrm",
+          action: "",
+          comment: "",
+          deferralNo: "",
         })),
-      );
+      }));
+      
+      console.log("Setting documents to:", newDocuments);
+      setDocuments(newDocuments);
     } else {
+      console.log("Loan type is 'Multiple Loan Type' - clearing documents until actual types selected");
       setDocuments([]); // Clear until actual types are selected
     }
   };
 
   // Logic to handle multiple loan types document population
   React.useEffect(() => {
+    console.log("useEffect for multiple loan types triggered");
+    console.log("  loanType:", loanType);
+    console.log("  selectedMultipleLoanTypes:", selectedMultipleLoanTypes);
+    
     if (
       loanType === "Multiple Loan Type" &&
       selectedMultipleLoanTypes.length > 0
     ) {
+      console.log("Processing multiple loan types...");
       const mergedCategories = {};
 
       selectedMultipleLoanTypes.forEach((type) => {
+        console.log("  Processing loan type:", type);
         const categories = loanTypeDocuments[type] || [];
+        console.log("    Categories for this type:", categories);
+        
         categories.forEach((cat) => {
           if (!mergedCategories[cat.title]) {
             mergedCategories[cat.title] = new Set();
@@ -267,6 +367,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
           });
         });
       });
+
+      console.log("Merged categories:", mergedCategories);
 
       const newDocs = Object.keys(mergedCategories).map((title) => ({
         category: title,
@@ -279,17 +381,25 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         })),
       }));
 
+      console.log("Setting documents to:", newDocs);
       setDocuments(newDocs);
     }
   }, [selectedMultipleLoanTypes, loanType]);
 
   const handleAddNewDocument = () => {
+    console.log("=== handleAddNewDocument called ===");
+    console.log("  newDocName:", newDocName);
+    console.log("  selectedCategoryName:", selectedCategoryName);
+    
     if (!newDocName.trim() || !selectedCategoryName) return;
 
     setDocuments((prevDocs) => {
+      console.log("Previous documents:", prevDocs);
+      
       const categoryIdx = prevDocs.findIndex(
         (cat) => cat.category === selectedCategoryName,
       );
+      console.log("Found category index:", categoryIdx);
 
       const newDoc = {
         name: newDocName.trim(),
@@ -298,9 +408,11 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         comment: "",
         deferralNo: "",
       };
+      console.log("New document to add:", newDoc);
 
+      let newDocuments;
       if (categoryIdx > -1) {
-        return prevDocs.map((category, index) =>
+        newDocuments = prevDocs.map((category, index) =>
           index === categoryIdx
             ? {
                 ...category,
@@ -309,14 +421,17 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
             : category,
         );
       } else {
-        return [
+        newDocuments = [
           ...prevDocs,
           {
-          category: selectedCategoryName,
-          docList: [newDoc],
+            category: selectedCategoryName,
+            docList: [newDoc],
           },
         ];
       }
+      
+      console.log("Updated documents:", newDocuments);
+      return newDocuments;
     });
 
     setNewDocName("");
@@ -324,11 +439,19 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
   };
 
   const handleSubmit = async () => {
+    console.log("=== handleSubmit START ===");
+    
     // If Multiple Loan Type is selected, ensure at least one actual type is picked
     const actualLoanType =
       loanType === "Multiple Loan Type"
         ? selectedMultipleLoanTypes.join(", ")
         : loanType;
+
+    console.log("Actual loan type:", actualLoanType);
+    console.log("assignedToRM:", assignedToRM);
+    console.log("ibpsNo:", ibpsNo);
+    console.log("selectedMultipleLoanTypes length:", selectedMultipleLoanTypes.length);
+    console.log("hasMissingDeferredNumbers:", hasMissingDeferredNumbers(documents));
 
     if (
       !assignedToRM ||
@@ -337,20 +460,24 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         : !loanType) ||
       !ibpsNo
     ) {
+      console.log("Validation failed: missing required fields");
       showWarningToast("Please fill all required fields.");
       return;
     }
 
     if (hasMissingDeferredNumbers(documents)) {
+      console.log("Validation failed: missing deferral numbers");
       showWarningToast("Enter a deferral number for every deferred document before creating the DCL.");
       setActiveTab("documents");
       return;
     }
 
+    const isValidGuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i.test(id);
+
     const payload = {
       loanType: actualLoanType,
       assignedToRMId: assignedToRM,
-      customerId,
+      customerId: isValidGuid(customerId) ? customerId : null,
       customerName,
       customerNumber,
       customerEmail,
@@ -365,17 +492,21 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
       documents: normalizeDocumentCategories(documents),
     };
 
+    console.log("Submitting payload:", payload);
+
     try {
-      await createChecklist(payload).unwrap();
+      const result = await createChecklist(payload).unwrap();
+      console.log("Create checklist result:", result);
       showSuccessToast("Checklist created successfully!");
       // Delete draft after successful creation
       if (currentDraftId) {
+        console.log("Deleting draft with id:", currentDraftId);
         deleteDraft(currentDraftId);
         setCurrentDraftId(null);
       }
       onClose();
     } catch (err) {
-      console.error(err);
+      console.error("Error creating checklist:", err);
       const errorMessage =
         err?.data?.message ||
         err?.data?.title ||
@@ -383,6 +514,8 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
         "Error creating checklist.";
       showErrorToast(errorMessage);
     }
+    
+    console.log("=== handleSubmit END ===");
   };
 
   // Check if all required fields are filled
@@ -394,12 +527,17 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
     ibpsNo &&
     !hasMissingDeferredNumbers(documents);
 
+  console.log("isFormValid:", isFormValid);
+
   const totalDocumentCount = documents.reduce(
     (sum, category) => sum + (Array.isArray(category?.docList) ? category.docList.length : 0),
     0,
   );
 
   const categoryCount = documents.length;
+
+  console.log("totalDocumentCount:", totalDocumentCount);
+  console.log("categoryCount:", categoryCount);
 
   return (
     <>
@@ -788,6 +926,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
                 <Button
                   icon={<CloseOutlined />}
                   onClick={() => {
+                    console.log("Close button clicked - resetting and closing");
                     resetForm();
                     onClose();
                   }}
@@ -818,6 +957,7 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
                 <Button
                   className="creator-create-button creator-create-button--ghost"
                   onClick={() => {
+                    console.log("Close (ghost) button clicked - resetting and closing");
                     resetForm();
                     onClose();
                   }}
@@ -836,10 +976,16 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
               <div className="creator-create-layout">
                 <div className="creator-create-main">
                   <div className="creator-create-tabs">
-                    <button type="button" className={`creator-create-tab ${activeTab === "details" ? "creator-create-tab--active" : ""}`} onClick={() => setActiveTab("details")}>
+                    <button type="button" className={`creator-create-tab ${activeTab === "details" ? "creator-create-tab--active" : ""}`} onClick={() => {
+                      console.log("Switching to details tab");
+                      setActiveTab("details");
+                    }}>
                       Checklist Details
                     </button>
-                    <button type="button" className={`creator-create-tab ${activeTab === "documents" ? "creator-create-tab--active" : ""}`} onClick={() => setActiveTab("documents")}>
+                    <button type="button" className={`creator-create-tab ${activeTab === "documents" ? "creator-create-tab--active" : ""}`} onClick={() => {
+                      console.log("Switching to documents tab");
+                      setActiveTab("documents");
+                    }}>
                       Required Documents
                     </button>
                   </div>
@@ -880,7 +1026,10 @@ const ChecklistsPage = ({ open, onClose, draftId: initialDraftId = null }) => {
                               type="text"
                               placeholder="Enter IBPS Number"
                               value={ibpsNo}
-                              onChange={(e) => setIbpsNo(e.target.value)}
+                              onChange={(e) => {
+                                console.log("IBPS No changed to:", e.target.value);
+                                setIbpsNo(e.target.value);
+                              }}
                               className="creator-create-ibps-input"
                             />
                           </div>

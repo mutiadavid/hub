@@ -5,13 +5,14 @@
 
 import { message } from "antd";
 import { getDeferralDocumentBuckets } from "../../../../utils/deferralDocuments";
-import { downloadFile, openFileInNewTab } from "../../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../../hooks/useProtectedFileFetcher";
 
 /**
  * useDocumentHandlers - Manages document file operations
  * @returns {Object} - {handleViewDocument, handleDownloadDocument}
  */
 export const useDocumentHandlers = () => {
+  const { openFile, downloadFile } = useProtectedFileFetcher();
   const handleViewDocument = (file) => {
     const fileUrl = file?.url || file?.fileUrl;
     if (!fileUrl) {
@@ -19,8 +20,9 @@ export const useDocumentHandlers = () => {
       return;
     }
 
-    openFileInNewTab(fileUrl);
-    message.info(`Opening ${file?.name || "document"}`);
+    openFile(fileUrl)
+      .then(() => message.info(`Opening ${file?.name || "document"}`))
+      .catch((err) => console.error("Failed to open file:", err));
   };
 
   const handleDownloadDocument = (file) => {
@@ -30,12 +32,10 @@ export const useDocumentHandlers = () => {
       return;
     }
 
-    try {
-      downloadFile(fileUrl, file?.name || "download");
-    } catch (err) {
+    downloadFile(fileUrl, file?.name || "download").catch((err) => {
       console.error("Failed to download file:", err);
       message.error("Failed to download file");
-    }
+    });
   };
 
   return {

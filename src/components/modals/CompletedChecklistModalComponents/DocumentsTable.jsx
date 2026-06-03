@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Table, Button, Tooltip, Tabs, Badge } from "antd";
 import { openFileInNewTab } from "../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 import {
   getCheckerStatusDisplay,
 } from "../../../utils/checklistConstants.js";
@@ -38,6 +39,7 @@ const DocumentsTable = ({ docs, checklist }) => {
   };
 
   const safeDocs = Array.isArray(docs) ? docs : [];
+  const { openFile } = useProtectedFileFetcher();
   const groupedDocs = groupDocumentsByCategory(safeDocs);
   const categories = Object.keys(groupedDocs);
 
@@ -165,7 +167,7 @@ const DocumentsTable = ({ docs, checklist }) => {
           <Tooltip title="View document">
             <Button
               size="small"
-              onClick={() => openFileInNewTab(record.fileUrl || record.uploadData?.fileUrl)}
+              onClick={() => openFile(record.fileUrl || record.uploadData?.fileUrl).catch((err) => console.error(err))}
               className="completed-modal-view-btn"
             >
               View

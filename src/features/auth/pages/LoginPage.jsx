@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useLoginWithMicrosoftMutation, useVerifyMfaLoginMutation } from "../../../api/authApi";
+import { useLoginWithMicrosoftMutation, useVerifyMfaLoginMutation, useLoginMutation, useVerifyEmailMfaMutation } from "../../../api/authApi";
 import { consumeAuthStatusMessage } from "../../../api/baseQueryWithSession";
 import { setCredentials } from "../../../api/authSlice";
 import { redirectUserByRole } from "../utils/authRedirect";
 import { performMicrosoftLoginRedirect, handleMicrosoftRedirect } from "../utils/microsoftLogin";
 import { toast } from "react-toastify";
 import ncbalogo from "../../../assets/ncba-logo.png";
-import { LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined, EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import "./LoginPage.css";
 
 const LoginPage = () => {
@@ -16,15 +16,21 @@ const LoginPage = () => {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [persistedStatusMessage] = useState(() => consumeAuthStatusMessage());
   const [loginWithMicrosoft] = useLoginWithMicrosoftMutation();
+  const [login] = useLoginMutation();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginMethod, setLoginMethod] = useState("select"); // 'select' | 'admin'
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaMethod, setMfaMethod] = useState("TOTP"); // 'TOTP' | 'EMAIL'
   const [mfaTempToken, setMfaTempToken] = useState("");
   const [mfaCode, setMfaCode] = useState("");
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
 
   const [verifyMfaLogin] = useVerifyMfaLoginMutation();
+  const [verifyEmailMfa] = useVerifyEmailMfaMutation();
   const statusMessage = location.state?.status || persistedStatusMessage || "";
 
   useEffect(() => {
@@ -55,6 +61,56 @@ const LoginPage = () => {
     });
   }, [loginWithMicrosoft, dispatch, navigate]);
 
+  const handleAdLogin = async (e) => {
+    e.preventDefault();
+    if (!form.email || !form.password) {
+      setLoginError("Please enter both email and password.");
+      return;
+    }
+    setLoginError("");
+    setIsSigningIn(true);
+    try {
+      const response = await login(form).unwrap();
+
+      const isMfa = response?.isMFARequired || response?.IsMFARequired;
+      if (isMfa) {
+        setMfaRequired(true);
+        setMfaMethod(response?.mfaMethod || response?.MFAMethod || "EMAIL");
+        setMfaTempToken(response?.mfaSessionToken || response?.MFASessionToken);
+
+        const devCode = response?.devTestCode || response?.DevTestCode;
+        if (devCode) {
+          toast.info(`Development MFA Code (Email): ${devCode}`);
+          setMfaCode(devCode);
+        } else {
+          toast.info("MFA code has been sent to your email.");
+        }
+        return;
+      }
+      
+      const finalUser = response?.user ?? response?.User;
+      const finalToken = response?.token ?? response?.Token;
+
+      if (!finalUser || !finalToken) {
+        throw new Error("Incomplete response from server. Please try again.");
+      }
+
+      dispatch(setCredentials({ user: finalUser, token: finalToken }));
+
+      redirectUserByRole({
+        navigate,
+        role: finalUser?.role ?? finalUser?.Role,
+        successMessage: "Signed in successfully.",
+      });
+    } catch (err) {
+      const msg = err?.data?.message || err?.message || "Invalid credentials. Please try again.";
+      setLoginError(msg);
+      toast.error(msg);
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
   const handleMicrosoftSignIn = async () => {
     setLoginError("");
     setIsSigningIn(true);
@@ -73,21 +129,28 @@ const LoginPage = () => {
 
   const handleMfaVerify = async () => {
     if (mfaCode.length !== 6) {
-      setLoginError("Please enter the 6-digit code from your Authenticator app.");
+      setLoginError("Please enter the 6-digit code.");
       return;
     }
     setLoginError("");
     setIsVerifyingMfa(true);
     try {
-      const response = await verifyMfaLogin({
-        tempToken: mfaTempToken,
-        sessionToken: mfaTempToken,
-        token: mfaTempToken,
-        totpCode: mfaCode,
-      }).unwrap();
+      let response;
+      if (mfaMethod === "EMAIL") {
+        response = await verifyEmailMfa({
+          sessionToken: mfaTempToken,
+          code: mfaCode,
+        }).unwrap();
+      } else {
+        response = await verifyMfaLogin({
+          tempToken: mfaTempToken,
+          sessionToken: mfaTempToken,
+          token: mfaTempToken,
+          totpCode: mfaCode,
+        }).unwrap();
+      }
 
-      // Backend returns camelCase: { token, user: { id, name, email, role } }
-      // Support both camelCase and PascalCase field names defensively.
+      // Backend returns camelCase or PascalCase.
       const finalUser = response?.user ?? response?.User;
       const finalToken = response?.token ?? response?.Token;
 
@@ -149,7 +212,9 @@ const LoginPage = () => {
             {mfaRequired ? (
               <div className="mfa-login-wrapper">
                 <div style={{ textAlign: "center", marginBottom: "1.5rem", color: "#6B7280", fontSize: "0.875rem" }}>
-                  Please enter the 6-digit code from your Authenticator app.
+                  {mfaMethod === "EMAIL"
+                    ? "Please enter the 6-digit code sent to your email."
+                    : "Please enter the 6-digit code from your Authenticator app."}
                 </div>
                 
                 <input
@@ -198,20 +263,29 @@ const LoginPage = () => {
                   Cancel
                 </button>
               </div>
-            ) : (
-              <>
-                {/* Microsoft SSO sign-in descriptor */}
+            ) : loginMethod === "select" ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <div style={{ textAlign: "center", marginBottom: "1.5rem", color: "#6B7280", fontSize: "0.875rem" }}>
-                  Use your NCBA Microsoft account to sign in securely.
+                  Please select your preferred sign-in method.
                 </div>
-
+                <button
+                  type="button"
+                  className="login-btn"
+                  onClick={() => setLoginMethod("admin")}
+                  style={{ background: "#2196f3", color: "white", width: "100%", justifyContent: "center" }}
+                >
+                  Sign in with Admin Credentials
+                </button>
+                <div style={{ textAlign: "center", color: "#9CA3AF", fontSize: "0.875rem", margin: "0.5rem 0" }}>
+                  — OR —
+                </div>
                 <button
                   id="microsoftSsoBtn"
                   type="button"
                   className="login-btn"
                   onClick={handleMicrosoftSignIn}
                   disabled={isSigningIn}
-                  style={{ gap: "0.75rem" }}
+                  style={{ background: "white", color: "#374151", border: "1px solid #D1D5DB", width: "100%", justifyContent: "center", gap: "0.75rem" }}
                 >
                   {isSigningIn ? (
                     <>
@@ -233,10 +307,88 @@ const LoginPage = () => {
                         <rect x="1"  y="11" width="9" height="9" fill="#00a4ef" />
                         <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
                       </svg>
-                      Sign in with Microsoft
+                      Sign in with Microsoft Entra ID
                     </>
                   )}
                 </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", marginBottom: "1.5rem" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginMethod("select");
+                      setLoginError("");
+                    }}
+                    style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "0.875rem", textDecoration: "underline" }}
+                  >
+                    &larr; Back
+                  </button>
+                  <div style={{ flex: 1, textAlign: "center", color: "#6B7280", fontSize: "0.875rem" }}>
+                    Sign in with Admin Credentials
+                  </div>
+                  <div style={{ width: "40px" }}></div>
+                </div>
+
+                <form onSubmit={handleAdLogin} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  <div>
+                    <label htmlFor="ad-email" style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "#374151", marginBottom: "0.5rem" }}>
+                      Email / Username
+                    </label>
+                    <input
+                      id="ad-email"
+                      type="text"
+                      value={form.email}
+                      onChange={(e) => {
+                        setForm({ ...form, email: e.target.value });
+                        setLoginError("");
+                      }}
+                      placeholder="Enter your email"
+                      style={{ width: "100%", padding: "0.75rem", borderRadius: "0.375rem", border: "1px solid #D1D5DB" }}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="ad-password" style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", color: "#374151", marginBottom: "0.5rem" }}>
+                      Password
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <input
+                        id="ad-password"
+                        type={showPassword ? "text" : "password"}
+                        value={form.password}
+                        onChange={(e) => {
+                          setForm({ ...form, password: e.target.value });
+                          setLoginError("");
+                        }}
+                        placeholder="Enter your password"
+                        style={{ width: "100%", padding: "0.75rem", borderRadius: "0.375rem", border: "1px solid #D1D5DB" }}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#6B7280" }}
+                      >
+                        {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="login-btn"
+                    disabled={isSigningIn}
+                    style={{ background: "#2196f3", color: "white", width: "100%", justifyContent: "center", marginTop: "0.5rem" }}
+                  >
+                    {isSigningIn ? (
+                      <>
+                        <LoadingOutlined style={{ fontSize: "1rem", marginRight: "0.5rem" }} />
+                        Signing in…
+                      </>
+                    ) : "Sign In"}
+                  </button>
+                </form>
               </>
             )}
           </div>

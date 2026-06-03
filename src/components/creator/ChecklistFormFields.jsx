@@ -1,3 +1,5 @@
+// ChecklistFormFields.jsx - With Debug Logs
+
 import React, { useMemo, useState } from "react";
 import { AutoComplete, Input, Select } from "antd";
 import { useSearchCustomersQuery } from "../../api/customerApi";
@@ -33,15 +35,28 @@ const ChecklistFormFields = ({
   selectedMultipleLoanTypes,
   setSelectedMultipleLoanTypes,
 }) => {
+  console.log("[ChecklistFormFields] Component rendered with customerNumber:", customerNumber);
+
   // Only query the DataWarehouse once the user has typed ≥ 3 characters.
   // This avoids hammering the external gateway on every single keystroke.
   const dwQuery = String(customerNumber || "").trim();
-  const shouldSearch = dwQuery.length >= 3;
+  const shouldSearch = dwQuery.length >= 4;
 
-  const { data: dwCustomers = [], isFetching } = useSearchCustomersQuery(
+  console.log("[ChecklistFormFields] DW Query:", dwQuery, "| Should search:", shouldSearch);
+
+  const { data: dwCustomers = [], isFetching, error } = useSearchCustomersQuery(
     dwQuery,
     { skip: !shouldSearch }
   );
+
+  // Log API response
+  if (error) {
+    console.error("[ChecklistFormFields] API Error from useSearchCustomersQuery:", error);
+  }
+  
+  console.log("[ChecklistFormFields] Raw dwCustomers from API:", dwCustomers);
+  console.log("[ChecklistFormFields] isFetching status:", isFetching);
+  console.log("[ChecklistFormFields] Number of customers received:", dwCustomers?.length || 0);
 
   // Filter out "Multiple Loan Type" from the options list for the multi-select
   const actualLoanTypes = loanTypes.filter(t => t !== "Multiple Loan Type");
@@ -58,46 +73,78 @@ const ChecklistFormFields = ({
   const [rmSearchText, setRmSearchText] = useState(selectedRMName);
 
   /* ---------------- CUSTOMER OPTIONS (from DataWarehouse) ---------------- */
-  const customerOptions = dwCustomers.map((cust) => ({
-    label: cust.customerNumber,
-    value: cust.customerNumber,
-    id: cust.customerNumber,       // DW has no Mongo _id; use customerNumber as key
-    name: cust.customerName ?? cust.name ?? "",
-    email: cust.email ?? cust.custEmailId ?? "",
-    customerBranchName: cust.customerBranchName,
-    classification: cust.classification,
-    businessSegment: cust.businessSegment,
-    businessSegmentDesc: cust.businessSegmentDesc,
-    subSegment: cust.subSegment,
-    subSegmentDesc: cust.subSegmentDesc,
-    custType: cust.custType,
-  }));
+  const customerOptions = dwCustomers.map((cust) => {
+    console.log("[ChecklistFormFields] Mapping customer:", cust);
+    
+    const mappedOption = {
+      label: cust.customerNumber,
+      value: cust.customerNumber,
+      id: cust.customerNumber,       // DW has no Mongo _id; use customerNumber as key
+      name: cust.customerName ?? cust.name ?? "",
+      email: cust.email ?? cust.custEmailId ?? "",
+      customerBranchName: cust.customerBranchName,
+      classification: cust.classification,
+      businessSegment: cust.businessSegment,
+      businessSegmentDesc: cust.businessSegmentDesc,
+      subSegment: cust.subSegment,
+      subSegmentDesc: cust.subSegmentDesc,
+      custType: cust.custType,
+    };
+    
+    console.log("[ChecklistFormFields] Mapped option:", mappedOption);
+    return mappedOption;
+  });
 
   const limitedCustomerOptions = useMemo(() => {
     // The DW already filters by customerNumber server-side;
     // just cap the dropdown list to avoid a huge menu.
-    return customerOptions.slice(0, 8);
+    const limited = customerOptions.slice(0, 8);
+    console.log("[ChecklistFormFields] Limited customer options (first 8):", limited);
+    return limited;
   }, [customerOptions]);
 
   const limitedRmOptions = useMemo(() => {
     const query = String(rmSearchText || "").trim().toLowerCase();
     const baseOptions = rmOptions || [];
 
+    console.log("[ChecklistFormFields] RM Search query:", query);
+    console.log("[ChecklistFormFields] Base RM options:", baseOptions);
+
     if (!query) {
-      return baseOptions.slice(0, 4);
+      const limited = baseOptions.slice(0, 4);
+      console.log("[ChecklistFormFields] Limited RM options (no query):", limited);
+      return limited;
     }
 
-    return baseOptions
+    const filtered = baseOptions
       .filter((option) => String(option.value || "").toLowerCase().includes(query))
       .slice(0, 4);
+    
+    console.log("[ChecklistFormFields] Filtered RM options:", filtered);
+    return filtered;
   }, [rmOptions, rmSearchText]);
 
   const handleRMSelect = (value, option) => {
+    console.log("[ChecklistFormFields] RM Selected - Value:", value, "Option:", option);
     setAssignedToRM(option.id);
     setRmSearchText(option.value || value || "");
   };
 
   const handleCustomerSelect = (value, option) => {
+    console.log("[ChecklistFormFields] ===== CUSTOMER SELECTED =====");
+    console.log("[ChecklistFormFields] Selected Value:", value);
+    console.log("[ChecklistFormFields] Selected Option:", option);
+    console.log("[ChecklistFormFields] Option ID:", option.id);
+    console.log("[ChecklistFormFields] Option Name:", option.name);
+    console.log("[ChecklistFormFields] Option Email:", option.email);
+    console.log("[ChecklistFormFields] Option Branch:", option.customerBranchName);
+    console.log("[ChecklistFormFields] Option Classification:", option.classification);
+    console.log("[ChecklistFormFields] Option Business Segment:", option.businessSegment);
+    console.log("[ChecklistFormFields] Option Business Segment Desc:", option.businessSegmentDesc);
+    console.log("[ChecklistFormFields] Option Sub Segment:", option.subSegment);
+    console.log("[ChecklistFormFields] Option Sub Segment Desc:", option.subSegmentDesc);
+    console.log("[ChecklistFormFields] Option Cust Type:", option.custType);
+    
     setCustomerId(option.id);
     setCustomerNumber(option.value); // Number selected
     setCustomerName(option.name); // Auto populate
@@ -109,8 +156,9 @@ const ChecklistFormFields = ({
     setSubSegment(option.subSegment || "");
     setSubSegmentDesc(option.subSegmentDesc || "");
     setCustType(option.custType || "");
+    
+    console.log("[ChecklistFormFields] State setters called - Customer data should now be populated");
   };
-
 
   return (
     <div className="creator-create-card creator-create-card--details">
@@ -184,10 +232,12 @@ const ChecklistFormFields = ({
         options={limitedCustomerOptions}
         onSelect={handleCustomerSelect}
         onChange={(val) => {
+          console.log("[ChecklistFormFields] AutoComplete onChange triggered with val:", val);
           setCustomerNumber(val);
 
           // When the user clears the field, reset every auto-populated field
           if (!val) {
+            console.log("[ChecklistFormFields] Clearing all customer fields because value is empty");
             setCustomerId("");
             setCustomerName("");
             setCustomerEmail("");
@@ -227,6 +277,7 @@ const ChecklistFormFields = ({
         options={limitedRmOptions}
         onSelect={handleRMSelect}
         onChange={(val) => {
+          console.log("[ChecklistFormFields] RM onChange triggered with val:", val);
           setRmSearchText(val);
 
           if (!val) {
@@ -246,6 +297,7 @@ const ChecklistFormFields = ({
         value={loanType}
         options={loanTypes.map((t) => ({ label: t, value: t }))}
         onSelect={(val) => {
+          console.log("[ChecklistFormFields] Loan Type selected:", val);
           handleLoanTypeChange(val);
         }}
       >
@@ -263,7 +315,10 @@ const ChecklistFormFields = ({
             style={{ width: "100%" }}
             placeholder="Select one or more loan types..."
             value={selectedMultipleLoanTypes}
-            onChange={(values) => setSelectedMultipleLoanTypes(values)}
+            onChange={(values) => {
+              console.log("[ChecklistFormFields] Multiple loan types changed:", values);
+              setSelectedMultipleLoanTypes(values);
+            }}
             options={actualLoanTypes.map(t => ({ label: t, value: t }))}
           />
           <p className="creator-helper-text" style={{ marginTop: 8 }}>

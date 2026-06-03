@@ -1,4 +1,3 @@
-
 import React, { useMemo ,useState,useRef,useCallback} from "react";
 import { Drawer, Input, Empty, Select, Form, Button, Typography, Space, Spin, Avatar, Divider, Tag } from "antd";
 import { UserAddOutlined, SearchOutlined, CheckCircleFilled, IdcardOutlined, MailOutlined, TeamOutlined } from "@ant-design/icons";
@@ -11,7 +10,7 @@ const roleOptions = [
   { value: "cocreator", label: "CO Creator" },
   { value: "cochecker", label: "CO Checker" },
   { value: "admin", label: "System Administrator" },
-  { value: "customer", label: "Customer" },
+  { value: "internalcontrols", label: "Internal Controls" },
 ];
 
 
@@ -82,14 +81,14 @@ const handleClose = () => {
       department: u.department,
       title: u.title,
       phone: u.phone,
-      role: formData?.role || "customer",
+      role: formData?.role || "rm",
     });
   };
  
   const handleClear = () => {
     setSelectedUser(null);
     setSearchOptions([]);
-    setFormData({ role: formData?.role || "customer" });
+    setFormData({ role: formData?.role || "rm" });
   };
  
   const renderOption = (option) => {
@@ -332,7 +331,7 @@ const handleClose = () => {
           >
             <Select
               size="large"
-              value={formData?.role || "customer"}
+              value={formData?.role || "rm"}
               onChange={(value) => setFormData({ ...formData, role: value })}
               options={roles}
               placeholder="Select user role"

@@ -25,6 +25,7 @@ import dayjs from "dayjs";
 import { API_ORIGIN } from "../../../config/runtimeConfig";
 import { getExpiryMeta } from "../../../utils/documentUtils";
 import { openFileInNewTab } from "../../utils/fileUtils";
+import useProtectedFileFetcher from "../../hooks/useProtectedFileFetcher";
 
 const PRIMARY_BLUE = "#164679";
 const ACCENT_LIME = "#b5d334";
@@ -48,6 +49,8 @@ const CreatorQueueChecklistModal = ({ checklist, open, onClose }) => {
   const [checkerComment, setCheckerComment] = useState("");
   const [additionalFiles, setAdditionalFiles] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+
+  const { openFile } = useProtectedFileFetcher();
 
   const API_BASE_URL = API_ORIGIN;
 
@@ -251,7 +254,7 @@ const CreatorQueueChecklistModal = ({ checklist, open, onClose }) => {
             icon={<EyeOutlined />}
             size="small"
             onClick={() =>
-              openFileInNewTab(record.fileUrl || record.uploadData?.fileUrl)
+              openFile(record.fileUrl || record.uploadData?.fileUrl).catch((err) => console.error(err))
             }
             disabled={!(record.fileUrl || record.uploadData?.fileUrl)}
           >

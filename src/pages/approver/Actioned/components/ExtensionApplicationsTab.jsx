@@ -14,6 +14,7 @@ import {
 import { getLivePartyApprovalStatuses } from "../../../../utils/deferralApprovalStatus";
 import { buildExtensionHistoryEntries, resolveDisplayName } from "../../../../utils/extensionHistory";
 import { downloadFile, openFileInNewTab } from "../../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../../hooks/useProtectedFileFetcher";
 import { PRIMARY_BLUE, SUCCESS_GREEN } from "../utils/constants";
 import CommentTrail from "./CommentTrail";
 
@@ -41,6 +42,7 @@ const ExtensionApplicationsTab = ({
   };
 
   const columns = getActionedColumns();
+  const { openFile, downloadFile: fetchDownloadFile } = useProtectedFileFetcher();
 
   // map extensions into deferral-like rows so the deferral columns render correctly
   const tableData = (extensions || []).map((ext, idx) => ({
@@ -70,7 +72,7 @@ const ExtensionApplicationsTab = ({
             <Button
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => openFileInNewTab(record.fileUrl || record.url)}
+              onClick={() => openFile(record.fileUrl || record.url).catch((err) => console.error(err))}
               disabled={!record.fileUrl && !record.url}
             >
               View
@@ -79,7 +81,7 @@ const ExtensionApplicationsTab = ({
               size="small"
               icon={<DownloadOutlined />}
               onClick={() =>
-                downloadFile(record.fileUrl || record.url, record.name || record.originalName || "document")
+                fetchDownloadFile(record.fileUrl || record.url, record.name || record.originalName || "document").catch((err) => console.error(err))
               }
               disabled={!record.fileUrl && !record.url}
             >

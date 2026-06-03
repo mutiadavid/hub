@@ -10,7 +10,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { formatDateTime } from "../../../utils/checklistUtils";
-import { downloadFile, openFileInNewTab } from "../../../utils/fileUtils";
+import { useLazyFetchFileQuery } from "../../../api/protectedUploadsApi";
 import "../../../styles/creatorDesignSystem.css";
 
 const DRAWER_CLASS = "creator-review-document-sidebar";
@@ -21,6 +21,7 @@ const DocumentSidebar = ({
   open,
   onClose,
 }) => {
+  const [triggerFetchFile] = useLazyFetchFileQuery();
   const getRoleLabel = (role) => {
     const normalizedRole = String(role || "").trim().toLowerCase();
 
@@ -151,9 +152,26 @@ const DocumentSidebar = ({
 
   const handleDownloadFile = (fileName, fileUrl) => {
     try {
-      downloadFile(fileUrl, fileName || "document");
+      // use RTK Query lazy trigger to fetch blob and download
+      triggerFetchFile(fileUrl).then((res) => {
+        if (res.error) {
+          console.error("Failed to fetch file for download:", res.error);
+          alert("Failed to download file. Please try again.");
+          return;
+        }
+        const blob = res.data;
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = fileName || "document";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+      });
     } catch (error) {
       console.error("Error downloading file:", error);
+      alert("Failed to download file. Please try again.");
     }
   };
 
@@ -499,11 +517,21 @@ const DocumentSidebar = ({
                           icon={<EyeOutlined />}
                           onClick={(event) => {
                             event.stopPropagation();
-                            try {
-                              openFileInNewTab(doc.fileUrl);
-                            } catch (error) {
-                              console.error("Error opening file:", error);
-                            }
+                            // Use RTK Query to fetch blob then open
+                            triggerFetchFile(doc.fileUrl).then((res) => {
+                              if (res.error) {
+                                console.error("Failed to fetch file for view:", res.error);
+                                alert("Failed to open file. Please try again.");
+                                return;
+                              }
+                              const blob = res.data;
+                              const blobUrl = URL.createObjectURL(blob);
+                              window.open(blobUrl, "_blank", "noopener,noreferrer");
+                              setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+                            }).catch((err) => {
+                              console.error("Failed to fetch file for view:", err);
+                              alert("Failed to open file. Please try again.");
+                            });
                           }}
                         >
                           View

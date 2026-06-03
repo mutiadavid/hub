@@ -46,12 +46,12 @@ const UserTable = ({
     return activeUsers.filter((user) => {
       const name = (user.name || "").toLowerCase();
       const email = (user.email || "").toLowerCase();
-      const customerNumber = (user.customerNumber || "").toLowerCase();
+      const department = (user.department || "").toLowerCase();
 
       return (
         name.includes(query) ||
         email.includes(query) ||
-        customerNumber.includes(query)
+        department.includes(query)
       );
     });
   }, [activeUsers, searchText]);
@@ -79,14 +79,14 @@ const UserTable = ({
       ),
     },
     {
-      title: "Customer #",
-      dataIndex: "customerNumber",
-      key: "customerNumber",
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
       sorter: (a, b) =>
-        (a.customerNumber || "").localeCompare(b.customerNumber || ""),
-      render: (customerNumber) => (
-        <span className="admin-page__value admin-page__value--mono admin-page__value--muted">
-          {customerNumber || "N/A"}
+        (a.department || "").localeCompare(b.department || ""),
+      render: (department) => (
+        <span className="admin-page__value admin-page__value--muted">
+          {department || "N/A"}
         </span>
       ),
     },
@@ -216,7 +216,7 @@ const UserTable = ({
         <Space wrap>
           <Input
             prefix={<SearchOutlined style={{ color: "var(--color-text-light)" }} />}
-            placeholder="Search name, email, or customer number"
+            placeholder="Search name, email, or department"
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
             allowClear
@@ -253,4 +253,3 @@ const UserTable = ({
 };
 
 export default UserTable;
-

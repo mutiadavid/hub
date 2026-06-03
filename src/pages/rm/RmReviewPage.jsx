@@ -14,7 +14,7 @@ import {
 } from "antd";
 import { UploadOutlined, EyeOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
-import { openFileInNewTab } from "../../utils/fileUtils";
+import useProtectedFileFetcher from "../../hooks/useProtectedFileFetcher";
 import {
   useGetChecklistsQuery,
   useSubmitRmChecklistMutation,
@@ -22,6 +22,7 @@ import {
 
 const RMReviewPage = () => {
   const { user } = useSelector((state) => state.auth);
+  const { openFile } = useProtectedFileFetcher();
   const rmId = user?._id;
 
   const { data: checklists = [], refetch } = useGetChecklistsQuery();
@@ -168,7 +169,11 @@ const RMReviewPage = () => {
             <Button
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => openFileInNewTab(record.fileUrl)}
+              onClick={() => {
+                openFile(record.fileUrl).catch((err) => {
+                  console.error("Error opening file:", err);
+                });
+              }}
             >
               View
             </Button>

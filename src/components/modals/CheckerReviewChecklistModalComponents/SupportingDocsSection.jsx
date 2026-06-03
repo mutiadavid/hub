@@ -3,8 +3,10 @@ import { Card, Tag, Space, Button } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { openFileInNewTab } from "../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 
 const SupportingDocsSection = ({ supportingDocs }) => {
+  const { openFile } = useProtectedFileFetcher();
   if (!supportingDocs || supportingDocs.length === 0) return null;
 
   // Function to get role tag color
@@ -95,7 +97,7 @@ const SupportingDocsSection = ({ supportingDocs }) => {
                     <Button
                       size="small"
                       icon={<EyeOutlined />}
-                      onClick={() => openFileInNewTab(doc.fileUrl)}
+                      onClick={() => openFile(doc.fileUrl).catch((err) => console.error(err))}
                     >
                       View
                     </Button>

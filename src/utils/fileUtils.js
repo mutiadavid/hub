@@ -1,4 +1,6 @@
 import { API_ORIGIN } from "../config/runtimeConfig";
+import { protectedUploadsApi } from "../api/protectedUploadsApi";
+import { store } from "../app/store";
 
 function normalizeApiDocumentUrl(url) {
   const value = String(url || "").trim();
@@ -14,9 +16,11 @@ function normalizeApiDocumentUrl(url) {
       const parsed = new URL(value);
       parsed.pathname = parsed.pathname.replace(/\/api\/api\//i, "/api/");
       parsed.pathname = parsed.pathname.replace(/(?<!\bapi)\/uploads\//i, "/api/protected-uploads/");
+      // Collapse multiple occurrences of the protected-uploads segment
+      parsed.pathname = parsed.pathname.replace(/(\/api\/protected-uploads\/)+/ig, "/api/protected-uploads/");
       return parsed.toString();
     } catch {
-      return legacyRewrite(value.replace(/\/api\/api\//i, "/api/"));
+      return legacyRewrite(value.replace(/\/api\/api\//i, "/api/")).replace(/(\/api\/protected-uploads\/)+/ig, "/api/protected-uploads/");
     }
   }
 
@@ -25,6 +29,8 @@ function normalizeApiDocumentUrl(url) {
   if (/^\/uploads\//i.test(result)) {
     result = result.replace(/^\/uploads\//i, "/api/protected-uploads/");
   }
+  // Collapse duplicate protected-uploads segments if present
+  result = result.replace(/(\/api\/protected-uploads\/)+/ig, "/api/protected-uploads/");
   return result;
 }
 
@@ -84,9 +90,14 @@ function buildDocumentUrlCandidates(url) {
   addCandidate(normalized);
   addCandidate(withoutHash);
   addCandidate(withoutDocTarget);
-  addCandidate(getFullUrl(normalized));
-  addCandidate(getFullUrl(withoutHash));
-  addCandidate(getFullUrl(withoutDocTarget));
+  
+  // Only add full URLs if the normalized path doesn't already start with /api/
+  // (to avoid duplication when backend returns complete API paths)
+  if (!String(normalized || "").toLowerCase().startsWith("/api/")) {
+    addCandidate(getFullUrl(normalized));
+    addCandidate(getFullUrl(withoutHash));
+    addCandidate(getFullUrl(withoutDocTarget));
+  }
 
   return candidates;
 }
@@ -94,11 +105,25 @@ function buildDocumentUrlCandidates(url) {
 export function getFullUrl(url) {
   if (!url) return null;
   const normalizedUrl = normalizeApiDocumentUrl(url);
+  
   // If already absolute or data/blob, return as-is
-  if (/^(https?:)?\/\//i.test(normalizedUrl) || /^data:|^blob:/i.test(normalizedUrl)) return normalizedUrl;
-  // For root-relative URLs like /uploads/..., prefix API base
-  const base = API_ORIGIN;
-  if (normalizedUrl.startsWith("/")) return (base ? base : "") + normalizedUrl;
+  if (/^(https?:)?\/\//i.test(normalizedUrl) || /^data:|^blob:/i.test(normalizedUrl)) {
+    return normalizedUrl;
+  }
+  
+  // For root-relative URLs, prefix API base
+  const base = API_ORIGIN || "";
+
+  // If normalizedUrl already starts with /api/protected-uploads/, just prefix base
+  // The normalizeApiDocumentUrl function has already handled collapsing duplicates
+  const uploadsPrefix = "/api/protected-uploads/";
+  if (String(normalizedUrl || "").toLowerCase().startsWith(uploadsPrefix.toLowerCase())) {
+    // It already has the /api/protected-uploads/ prefix, just add base
+    return base + normalizedUrl;
+  }
+
+  // Default: join base + normalizedUrl
+  if (normalizedUrl.startsWith("/")) return base + normalizedUrl;
   return normalizedUrl;
 }
 
@@ -131,20 +156,38 @@ function dataUrlToBlobUrl(dataUrl) {
 }
 
 function getAuthToken() {
-  const directToken = null;
-  if (directToken) {
-    return directToken;
+  try {
+    // Try window.__REDUX_DEVTOOLS_EXTENSION__ pattern (Redux DevTools)
+    // In production, try to get token from sessionStorage if it was set
+    const sessionToken = sessionStorage.getItem("authToken");
+    if (sessionToken) return sessionToken;
+  } catch (err) {
+    // Silently continue
   }
 
+  // Fallback: try localStorage - check multiple possible keys
   try {
+    // Check for token stored by auth slice
     const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-    return storedUser?.token || null;
-  } catch {
-    return null;
+    if (storedUser?.token) return storedUser.token;
+    
+    // Also check for direct token storage
+    const directToken = localStorage.getItem("authToken") || localStorage.getItem("token");
+    if (directToken) return directToken;
+  } catch (err) {
+    // Silently continue
   }
+
+  // If no token found, return null - let credentials/cookies handle auth
+  return null;
 }
 
-export async function fetchProtectedFileBlob(url, token = getAuthToken()) {
+export async function fetchProtectedFileBlob(url, token) {
+  // If no token passed in, try to get it now (not at call time)
+  if (token === undefined) {
+    token = getAuthToken();
+  }
+  
   const candidates = buildDocumentUrlCandidates(url);
   if (candidates.length === 0) {
     throw new Error("No file URL provided");
@@ -165,22 +208,40 @@ export async function fetchProtectedFileBlob(url, token = getAuthToken()) {
         return response.blob();
       }
 
-      const response = await fetch(candidate, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      // Debug: log candidate being attempted (helps diagnose malformed URLs)
+      try {
+        // eslint-disable-next-line no-console
+        console.debug("fetchProtectedFileBlob: attempting", { candidate, hasToken: Boolean(token) });
+      } catch {}
+      // Safeguard: Check for and log any duplicate /api/protected-uploads/ in the candidate
+      const uploadsCount = (candidate.match(/\/api\/protected-uploads\//gi) || []).length;
+      if (uploadsCount > 1) {
+        // eslint-disable-next-line no-console
+        console.warn("fetchProtectedFileBlob: Detected duplicate path segments in candidate", {
+          candidate,
+          uploadsCount,
+        });
+        // Skip this candidate and continue trying others
+        lastError = new Error(`Malformed URL: duplicate /api/protected-uploads/ segments detected`);
+        continue;
       }
 
-      // SAFEGUARD: Reject HTML fallback responses if we are expecting a document
-      const contentType = response.headers.get("Content-Type") || "";
-      if (contentType.includes("text/html") && !candidate.endsWith(".html") && !candidate.endsWith(".htm")) {
-        throw new Error("Received HTML fallback instead of actual file");
-      }
+      // Use RTK Query via the store to fetch protected file blobs so we centralize auth
+      try {
+        const actionResult = await store.dispatch(protectedUploadsApi.endpoints.fetchFile.initiate(candidate));
+        if (actionResult?.data) {
+          return actionResult.data; // Blob returned by responseHandler
+        }
 
-      return response.blob();
+        if (actionResult?.error) {
+          // Record the error and continue to next candidate
+          lastError = new Error(actionResult.error?.data?.message || actionResult.error?.error || `HTTP ${actionResult.error?.status || "error"}`);
+          continue;
+        }
+      } catch (err) {
+        lastError = err;
+        continue;
+      }
     } catch (error) {
       lastError = error;
     }
@@ -189,7 +250,11 @@ export async function fetchProtectedFileBlob(url, token = getAuthToken()) {
   throw lastError || new Error("Failed to fetch protected file");
 }
 
-export async function fetchProtectedFileObjectUrl(url, token = getAuthToken()) {
+export async function fetchProtectedFileObjectUrl(url, token) {
+  // If no token passed in, try to get it now (not at call time)
+  if (token === undefined) {
+    token = getAuthToken();
+  }
   const blob = await fetchProtectedFileBlob(url, token);
   return URL.createObjectURL(blob);
 }

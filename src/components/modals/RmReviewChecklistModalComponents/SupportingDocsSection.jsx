@@ -3,6 +3,7 @@ import { Card, Button, Space, Tag } from "antd";
 import { EyeOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { openFileInNewTab } from "../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 
 const SupportingDocsSection = ({
   supportingDocs,
@@ -11,6 +12,7 @@ const SupportingDocsSection = ({
   readOnly,
   title = "RM Uploaded Supporting Documents",
 }) => {
+  const { openFile } = useProtectedFileFetcher();
   if (!supportingDocs || supportingDocs.length === 0) {
     return null;
   }
@@ -140,7 +142,7 @@ const SupportingDocsSection = ({
                     size="small"
                     icon={<EyeOutlined />}
                     onClick={() =>
-                      openFileInNewTab(doc.fileUrl || doc.uploadData?.fileUrl)
+                      openFile(doc.fileUrl || doc.uploadData?.fileUrl).catch((err) => console.error(err))
                     }
                   >
                     View

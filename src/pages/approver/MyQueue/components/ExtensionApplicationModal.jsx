@@ -31,6 +31,7 @@ import {
   resolveDisplayName,
 } from "../../../../utils/extensionHistory";
 import { downloadFile, openFileInNewTab } from "../../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../../hooks/useProtectedFileFetcher";
 import { PRIMARY_BLUE, SUCCESS_GREEN, ERROR_RED } from "../utils/constants";
 import CommentTrail from "./CommentTrail";
 import DeferralDecisionModal from "../../../../components/deferrals/DeferralDecisionModal";
@@ -133,6 +134,7 @@ const ExtensionApplicationModal = ({
   const [reworkReason, setReworkReason] = useState("");
 
   const currentExtension = selectedExtension || null;
+  const { openFile, downloadFile: fetchDownloadFile } = useProtectedFileFetcher();
 
   if (!open || !currentExtension) {
     return null;
@@ -255,7 +257,7 @@ const ExtensionApplicationModal = ({
           <Button
             size="small"
             icon={<EyeOutlined />}
-            onClick={() => openFileInNewTab(record.fileUrl || record.url)}
+            onClick={() => openFile(record.fileUrl || record.url).catch((err) => console.error(err))}
             disabled={!record.fileUrl && !record.url}
           >
             View
@@ -264,7 +266,7 @@ const ExtensionApplicationModal = ({
             size="small"
             icon={<DownloadOutlined />}
             onClick={() =>
-              downloadFile(record.fileUrl || record.url, record.name || record.originalName || "document")
+              fetchDownloadFile(record.fileUrl || record.url, record.name || record.originalName || "document").catch((err) => console.error(err))
             }
             disabled={!record.fileUrl && !record.url}
           >

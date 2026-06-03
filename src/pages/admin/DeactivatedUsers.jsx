@@ -175,12 +175,14 @@ const DeactivatedUsers = () => {
       render: (email) => <span className="admin-page__value admin-page__value--muted">{email}</span>,
     },
     {
-      title: "Customer #",
-      dataIndex: "customerNumber",
-      key: "customerNumber",
-      render: (customerNumber) => (
-        <span className="admin-page__value admin-page__value--mono admin-page__value--muted">
-          {customerNumber || "N/A"}
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
+      sorter: (a, b) =>
+        (a.department || "").localeCompare(b.department || ""),
+      render: (department) => (
+        <span className="admin-page__value admin-page__value--muted">
+          {department || "N/A"}
         </span>
       ),
     },

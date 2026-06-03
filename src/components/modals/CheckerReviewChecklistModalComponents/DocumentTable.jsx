@@ -6,7 +6,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { openFileInNewTab } from "../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 import { formatStatusForSnakeCase } from "../../../utils/statusColors";
 import "../../../styles/creatorDesignSystem.css";
 
@@ -54,6 +54,7 @@ const DocumentTable = ({
   handleDocReject,
   handleDocReset,
 }) => {
+  const { openFile } = useProtectedFileFetcher();
   const [viewModalFiles, setViewModalFiles] = React.useState(null);
   const viewModalData = viewModalFiles || { files: [], record: null };
 
@@ -349,7 +350,7 @@ const DocumentTable = ({
             <Button
               size="small"
               icon={<EyeOutlined />}
-              onClick={() => openFileInNewTab(files[0].fileUrl)}
+              onClick={() => openFile(files[0].fileUrl).catch((err) => console.error(err))}
               className="checker-modal-action"
               style={neutralButtonStyle}
             >
@@ -548,8 +549,8 @@ const DocumentTable = ({
                   }}
                 >
                   <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
-                    <span
-                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      <span
+                        onClick={() => openFile(file.fileUrl).catch((err) => console.error(err))}
                       style={{
                         fontSize: 13,
                         fontWeight: 600,
@@ -571,10 +572,10 @@ const DocumentTable = ({
                       </span>
                     )}
                   </div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <Button
                       size="small"
-                      onClick={() => openFileInNewTab(file.fileUrl)}
+                      onClick={() => openFile(file.fileUrl).catch((err) => console.error(err))}
                       style={{ fontFamily: cardFontFamily }}
                     >
                       View

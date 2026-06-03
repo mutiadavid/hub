@@ -10,7 +10,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { formatDateTime, getFullUrl } from "../../../utils/checklistUtils";
-import { openFileInNewTab, downloadFile } from "../../../utils/fileUtils";
+import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 import "../../../styles/creatorDesignSystem.css";
 
 const DRAWER_CLASS = "creator-review-document-sidebar";
@@ -21,6 +21,7 @@ const DocumentSidebar = ({
   open,
   onClose,
 }) => {
+  const { openFile, downloadFile } = useProtectedFileFetcher();
   const getRoleLabel = (role) => {
     const normalizedRole = String(role || "").trim().toLowerCase();
 
@@ -151,7 +152,9 @@ const DocumentSidebar = ({
 
   const handleDownloadFile = (fileName, fileUrl) => {
     try {
-      downloadFile(fileUrl, fileName || "document");
+      downloadFile(fileUrl, fileName || "document").catch((err) => {
+        console.error("Error downloading file:", err);
+      });
     } catch (error) {
       console.error("Error downloading file:", error);
     }
@@ -502,11 +505,9 @@ const DocumentSidebar = ({
                           icon={<EyeOutlined />}
                           onClick={(event) => {
                             event.stopPropagation();
-                            try {
-                              openFileInNewTab(doc.fileUrl);
-                            } catch (error) {
+                            openFile(doc.fileUrl).catch((error) => {
                               console.error("Error opening file:", error);
-                            }
+                            });
                           }}
                         >
                           View
