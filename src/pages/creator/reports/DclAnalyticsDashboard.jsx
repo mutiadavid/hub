@@ -293,6 +293,117 @@ export default function DclAnalyticsDashboard({ rows }) {
             </div>
           </Card>
         </Col>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24} xl={8}>
+          <Card title="Customer Classification" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.classificationRows} margin={{ top: 24, right: 16, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis
+                    dataKey="name"
+                    angle={-18}
+                    textAnchor="end"
+                    interval={0}
+                    height={68}
+                    tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }}
+                  />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} DCLs (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.name || "Classification",
+                    ]}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32}>
+                    {computed.classificationRows.map((entry, index) => (
+                      <Cell
+                        key={`${entry.name}-${index}`}
+                        fill={DCL_BAR_COLORS[(index + 2) % DCL_BAR_COLORS.length]}
+                      />
+                    ))}
+                    <LabelList dataKey="value" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} xl={8}>
+          <Card title="Sub Segments" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.subSegmentRows} margin={{ top: 24, right: 16, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis
+                    dataKey="name"
+                    angle={-18}
+                    textAnchor="end"
+                    interval={0}
+                    height={68}
+                    tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }}
+                  />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} DCLs (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.name || "Sub Segment",
+                    ]}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32}>
+                    {computed.subSegmentRows.map((entry, index) => (
+                      <Cell
+                        key={`${entry.name}-${index}`}
+                        fill={DCL_BAR_COLORS[(index + 4) % DCL_BAR_COLORS.length]}
+                      />
+                    ))}
+                    <LabelList dataKey="value" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} xl={8}>
+          <Card title="Customer Types" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.custTypeRows} margin={{ top: 24, right: 16, left: 0, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis
+                    dataKey="name"
+                    angle={-18}
+                    textAnchor="end"
+                    interval={0}
+                    height={68}
+                    tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }}
+                  />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} DCLs (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.name || "Customer Type",
+                    ]}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32}>
+                    {computed.custTypeRows.map((entry, index) => (
+                      <Cell
+                        key={`${entry.name}-${index}`}
+                        fill={DCL_BAR_COLORS[(index + 1) % DCL_BAR_COLORS.length]}
+                      />
+                    ))}
+                    <LabelList dataKey="value" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
       </Row>
     </div>
   );

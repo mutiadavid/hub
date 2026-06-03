@@ -152,7 +152,7 @@ export const generatePDFReport = (data, reportType, filters = {}) => {
     head: [columns],
     body: tableData,
     startY: yPosition,
-    margin: margin,
+    margin: { top: 30, bottom: 25, left: margin, right: margin },
     didDrawPage: () => addProfessionalFooter(doc),
     styles: {
       font: "helvetica",
@@ -941,7 +941,7 @@ export const generateChecklistPDF = (
 
   autoTable(doc, {
     startY: yPos,
-    margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
+    margin: { top: 30, bottom: 25, left: MARGIN_LEFT, right: MARGIN_RIGHT },
     theme: "grid",
     headStyles: {
       fillColor: [230, 230, 230],
@@ -997,7 +997,7 @@ export const generateChecklistPDF = (
 
   autoTable(doc, {
     startY: yPos,
-    margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
+    margin: { top: 30, bottom: 25, left: MARGIN_LEFT, right: MARGIN_RIGHT },
     head: [["CATEGORY", "DOCUMENT NAME", "CO STATUS", "RM STATUS", "CHECKER STATUS", "CO COMMENT", "EXPIRY STATUS"]],
     body: documentRows,
     theme: "grid",
@@ -1051,7 +1051,7 @@ export const generateChecklistPDF = (
 
     autoTable(doc, {
       startY: yPos,
-      margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
+      margin: { top: 30, bottom: 25, left: MARGIN_LEFT, right: MARGIN_RIGHT },
       head: [["Document Name", "Uploaded At", "Status"]],
       body: supportingDocs.map((item) => [
         item.name || item.documentName || "N/A",
@@ -1092,7 +1092,7 @@ export const generateChecklistPDF = (
 
     autoTable(doc, {
       startY: yPos,
-      margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
+      margin: { top: 30, bottom: 25, left: MARGIN_LEFT, right: MARGIN_RIGHT },
       head: [["User", "Role", "Date", "Comment"]],
       body: commentRows,
       theme: "striped",
@@ -1197,7 +1197,7 @@ export const generateDeferralPDF = (deferral, selectedApprovers = []) => {
       head: [["Approver Name", "Email", "Status", "Approval Date"]],
       body: approverData,
       startY: yPosition,
-      margin: margin,
+      margin: { top: 30, bottom: 25, left: margin, right: margin },
       didDrawPage: () => addProfessionalFooter(doc),
       styles: {
         fontSize: 8,
@@ -1254,7 +1254,7 @@ export const generateAuditPDF = (logs = [], title = "Audit Log Report") => {
       head: [["Date/Time", "User", "Action", "Description", "Status"]],
       body: logData,
       startY: yPosition,
-      margin: margin,
+      margin: { top: 30, bottom: 25, left: margin, right: margin },
       didDrawPage: () => addProfessionalFooter(doc),
       styles: {
         font: "helvetica",
@@ -1308,7 +1308,7 @@ export const generateStatsPDF = (statsData = {}, title = "Statistics Report") =>
       head: [["Metric", "Value"]],
       body: statsEntries,
       startY: yPosition,
-      margin: margin,
+      margin: { top: 30, bottom: 25, left: margin, right: margin },
       didDrawPage: () => addProfessionalFooter(doc),
       styles: {
         font: "helvetica",

@@ -1135,7 +1135,7 @@ const usePDFGenerator = () => {
 
       autoTable(doc, {
         startY: yPos,
-        margin: { left: margin, right: margin },
+        margin: { top: 30, bottom: 25, left: margin, right: margin },
         theme: 'grid',
         headStyles: {
           fillColor: [230, 230, 230], // Light Gray (GeoBuild style)
@@ -1218,7 +1218,7 @@ const usePDFGenerator = () => {
 
       autoTable(doc, {
         startY: yPos,
-        margin: { left: margin, right: margin },
+        margin: { top: 30, bottom: 25, left: margin, right: margin },
         head: [['CATEGORY', 'DOCUMENT NAME', 'CO STATUS', 'RM STATUS', 'CHECKER STATUS', 'CO COMMENT', 'EXPIRY STATUS']],
         body: docRows,
         theme: 'grid',
@@ -1271,7 +1271,7 @@ const usePDFGenerator = () => {
 
         autoTable(doc, {
           startY: yPos,
-          margin: { left: margin, right: margin },
+          margin: { top: 30, bottom: 25, left: margin, right: margin },
           head: [['Document Name', 'Uploaded At', 'Status']],
           body: supportingDocs.map(d => [d.name, dayjs(d.uploadedAt).format("YYYY-MM-DD HH:mm"), 'Uploaded']),
           theme: 'grid',
@@ -1328,7 +1328,7 @@ const usePDFGenerator = () => {
 
         autoTable(doc, {
           startY: yPos,
-          margin: { left: margin, right: margin },
+          margin: { top: 30, bottom: 25, left: margin, right: margin },
           head: [['User', 'Role', 'Date', 'Comment']],
           body: userComments.map(c => {
             const role = (c.userId?.role || c.role || "N/A").toLowerCase();

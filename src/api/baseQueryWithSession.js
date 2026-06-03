@@ -92,9 +92,6 @@ export const createBaseQueryWithSession = ({ baseUrl }) => {
         const statusCode = result.error?.data?.code;
         persistAuthStatusMessage(resolveAuthStatusMessage(statusCode));
         api.dispatch(logout());
-        if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-          window.location.href = "/login";
-        }
       }
     }
 

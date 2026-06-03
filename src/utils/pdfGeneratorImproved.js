@@ -166,7 +166,7 @@ export const generateChecklistPDF = async ({
             2: { cellWidth: 44, fontStyle: 'bold', textColor: [40, 40, 40] },
             3: { cellWidth: 46, textColor: [40, 40, 40] },
           },
-          margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
+          margin: { top: 30, bottom: 25, left: MARGIN_LEFT, right: MARGIN_RIGHT },
           didDrawCell: (data) => {
             // Make label cells (even columns) have light blue background
             if (data.column.index % 2 === 0 && data.section === 'body') {
@@ -254,7 +254,7 @@ export const generateChecklistPDF = async ({
             4: { cellWidth: 28, overflow: 'ellipsize' },
             5: { cellWidth: 24, halign: 'center', overflow: 'ellipsize' },
           },
-          margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
+          margin: { top: 30, bottom: 25, left: MARGIN_LEFT, right: MARGIN_RIGHT },
           willDrawCell: (data) => {
             if ((data.column.index === 2 || data.column.index === 3) && data.section === 'body') {
               const status = (data.cell.text[0] || '').toUpperCase();
@@ -315,7 +315,7 @@ export const generateChecklistPDF = async ({
               2: { cellWidth: 40 },
               3: { cellWidth: 48 },
             },
-            margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
+            margin: { top: 30, bottom: 25, left: MARGIN_LEFT, right: MARGIN_RIGHT },
           });
           yPos = doc.lastAutoTable.finalY + 10;
         } else {
@@ -394,7 +394,7 @@ export const generateChecklistPDF = async ({
               2: { cellWidth: 30 },
               3: { cellWidth: 90 },
             },
-            margin: { left: MARGIN_LEFT, right: MARGIN_RIGHT },
+            margin: { top: 30, bottom: 25, left: MARGIN_LEFT, right: MARGIN_RIGHT },
           });
           yPos = doc.lastAutoTable.finalY + 10;
         } else {
