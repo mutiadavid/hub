@@ -293,6 +293,7 @@ export default function DclAnalyticsDashboard({ rows }) {
             </div>
           </Card>
         </Col>
+      </Row>
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} xl={8}>
           <Card title="Customer Classification" size="small" style={{ borderRadius: 14 }}>
