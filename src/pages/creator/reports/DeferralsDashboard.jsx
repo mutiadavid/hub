@@ -346,6 +346,98 @@ export default function DeferralsDashboard({ rows }) {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} md={8}>
+          <Card title="Customer Classification" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.classificationChartData} margin={{ top: 24, right: 16, left: 16, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis dataKey="classification" angle={-18} textAnchor="end" height={64} interval={0} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} deferrals (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.classification || "Classification",
+                    ]}
+                  />
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={32}>
+                    {computed.classificationChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.classification}-${index}`}
+                        fill={DEFERRAL_BAR_COLORS[(index + 2) % DEFERRAL_BAR_COLORS.length]}
+                      />
+                    ))}
+                    <LabelList dataKey="total" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={8}>
+          <Card title="Sub Segments" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.subSegmentChartData} margin={{ top: 24, right: 16, left: 16, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis dataKey="subSegment" angle={-18} textAnchor="end" height={64} interval={0} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} deferrals (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.subSegment || "Sub Segment",
+                    ]}
+                  />
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={32}>
+                    {computed.subSegmentChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.subSegment}-${index}`}
+                        fill={DEFERRAL_BAR_COLORS[(index + 3) % DEFERRAL_BAR_COLORS.length]}
+                      />
+                    ))}
+                    <LabelList dataKey="total" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={8}>
+          <Card title="Customer Types" size="small" style={{ borderRadius: 14 }}>
+            <div style={{ width: "100%", height: 280 }}>
+              <ResponsiveContainer>
+                <BarChart data={computed.custTypeChartData} margin={{ top: 24, right: 16, left: 16, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={NCBA_REPORT_THEME.line} />
+                  <XAxis dataKey="custType" angle={-18} textAnchor="end" height={64} interval={0} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: NCBA_REPORT_THEME.inkSoft }} />
+                  <RechartsTooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value, _name, item) => [
+                      `${formatNumber(value)} deferrals (${getShareLabel(Number(value), computed.total)})`,
+                      item?.payload?.custType || "Customer Type",
+                    ]}
+                  />
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]} barSize={32}>
+                    {computed.custTypeChartData.map((entry, index) => (
+                      <Cell
+                        key={`${entry.custType}-${index}`}
+                        fill={DEFERRAL_BAR_COLORS[(index + 4) % DEFERRAL_BAR_COLORS.length]}
+                      />
+                    ))}
+                    <LabelList dataKey="total" position="top" fill={NCBA_REPORT_THEME.inkSoft} fontSize={11} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={8}>
           <Card size="small" title="Portfolio Signal" style={{ borderRadius: 14 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <Text strong style={{ color: NCBA_REPORT_THEME.brandDeep }}>

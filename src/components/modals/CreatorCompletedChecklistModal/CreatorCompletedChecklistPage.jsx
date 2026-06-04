@@ -32,6 +32,8 @@ const CreatorCompletedChecklistPage = ({
   readOnly = false,
 }) => {
   const reduxToken = useSelector((state) => state.auth.token);
+  const userRole = useSelector((state) => state.auth?.user?.role);
+  const isCoChecker = userRole === "CoChecker" || userRole === "Checker";
   const { id: routeId } = useParams();
   const navigate = useNavigate();
   const id = checklistIdProp || routeId;
@@ -405,7 +407,7 @@ const CreatorCompletedChecklistPage = ({
             >
               Close
             </Button>
-            {!readOnly && (
+            {!readOnly && !isCoChecker && (
               <Button
                 className="creator-completed-page-button"
                 icon={<RedoOutlined />}

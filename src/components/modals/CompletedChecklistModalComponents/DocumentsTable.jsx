@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Table, Button, Tooltip, Tabs, Badge } from "antd";
+import { Table, Button, Tooltip, Tabs, Badge, Modal, List } from "antd";
+import { EyeOutlined } from "@ant-design/icons";
 import { openFileInNewTab } from "../../../utils/fileUtils";
 import useProtectedFileFetcher from "../../../hooks/useProtectedFileFetcher";
 import {
@@ -40,6 +41,8 @@ const DocumentsTable = ({ docs, checklist }) => {
 
   const safeDocs = Array.isArray(docs) ? docs : [];
   const { openFile } = useProtectedFileFetcher();
+  const [viewModalFiles, setViewModalFiles] = useState(null);
+  const viewModalData = viewModalFiles || { files: [], record: null };
   const groupedDocs = groupDocumentsByCategory(safeDocs);
   const categories = Object.keys(groupedDocs);
 
@@ -161,23 +164,132 @@ const DocumentsTable = ({ docs, checklist }) => {
     {
       title: "View",
       key: "view",
-      width: 80,
-      render: (_, record) =>
-        record.fileUrl && (
-          <Tooltip title="View document">
-            <Button
-              size="small"
-              onClick={() => openFile(record.fileUrl || record.uploadData?.fileUrl).catch((err) => console.error(err))}
-              className="completed-modal-view-btn"
-            >
-              View
-            </Button>
-          </Tooltip>
-        ),
+      width: 100,
+      render: (_, record) => {
+        const files = [];
+        if (Array.isArray(record.uploads) && record.uploads.length > 0) {
+          files.push(...record.uploads);
+        } else if (record.fileUrl || record.uploadData?.fileUrl) {
+          files.push({
+            id: "legacy",
+            fileUrl: record.fileUrl || record.uploadData?.fileUrl,
+            fileName: record.fileName || record.name || record.documentName || "Document File",
+            uploadedBy: record.uploadedBy || record.uploadData?.uploadedBy,
+            uploadedByRole: record.uploadedByRole || record.uploadData?.uploadedByRole,
+            createdAt: record.uploadedAt || record.uploadData?.uploadedAt,
+          });
+        }
+
+        if (files.length === 0) {
+          return <span style={{ color: "#94a3b8", fontSize: 11, fontFamily: tableFontFamily }}>No files</span>;
+        }
+
+        if (files.length === 1) {
+          return (
+            <Tooltip title="View document">
+              <Button
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => openFile(files[0].fileUrl).catch((err) => console.error(err))}
+                className="completed-modal-view-btn"
+              >
+                View
+              </Button>
+            </Tooltip>
+          );
+        }
+
+        return (
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => setViewModalFiles({ files, record })}
+            className="completed-modal-view-btn"
+            style={{
+              borderColor: "#10b981",
+              color: "#10b981",
+            }}
+          >
+            View ({files.length} Files)
+          </Button>
+        );
+      },
     },
   ];
 
   const columns = getColumns();
+
+  const renderViewModal = () => (
+    <Modal
+      title={<div style={{ fontFamily: tableFontFamily, fontWeight: 600, color: "#1e293b" }}>Associated Files</div>}
+      open={!!viewModalFiles}
+      onCancel={() => setViewModalFiles(null)}
+      footer={[
+        <Button key="close" onClick={() => setViewModalFiles(null)} style={{ fontFamily: tableFontFamily }}>
+          Close
+        </Button>
+      ]}
+      width={480}
+      centered
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 8 }}>
+        <p style={{ fontSize: 13, color: "#64748b", margin: 0, fontFamily: tableFontFamily }}>
+          This document has multiple uploads. Click on any file to view it:
+        </p>
+        <List
+          dataSource={viewModalData.files || []}
+          renderItem={(file, idx) => (
+            <List.Item
+              style={{
+                padding: "10px 12px",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: 8,
+                marginBottom: 8,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, marginRight: 12 }}>
+                  <span
+                    onClick={() => openFile(file.fileUrl).catch((err) => console.error(err))}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#0f172a",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontFamily: tableFontFamily,
+                  }}
+                  title={file.fileName}
+                >
+                  {file.fileName || `Attachment ${idx + 1}`}
+                </span>
+                {file.uploadedBy && (
+                  <span style={{ fontSize: 11, color: "#64748b", marginTop: 2, fontFamily: tableFontFamily }}>
+                    Uploaded by: {file.uploadedBy} ({file.uploadedByRole || "Unknown"})
+                  </span>
+                )}
+              </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Button
+                  size="small"
+                  onClick={() => openFile(file.fileUrl).catch((err) => console.error(err))}
+                  style={{ fontFamily: tableFontFamily }}
+                >
+                  View
+                </Button>
+              </div>
+            </List.Item>
+          )}
+        />
+      </div>
+    </Modal>
+  );
 
   // Render table for a specific category (used for single category)
   const renderCategoryTable = (category) => {
@@ -371,6 +483,7 @@ const DocumentsTable = ({ docs, checklist }) => {
         `}</style>
 
         {categories.map((category) => renderCategoryTable(category))}
+        {renderViewModal()}
       </>
     );
   }
@@ -555,6 +668,7 @@ const DocumentsTable = ({ docs, checklist }) => {
           );
         })}
       </Tabs>
+      {renderViewModal()}
     </>
   );
 };

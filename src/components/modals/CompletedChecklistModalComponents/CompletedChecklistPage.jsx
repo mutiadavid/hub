@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Button, Empty, Spin, message } from "antd";
 import {
   LeftOutlined,
@@ -30,6 +31,10 @@ const CreatorCompletedChecklistPage = ({
   onClose,
   readOnly = false,
 }) => {
+  const userRole = useSelector((state) => state.auth?.user?.role);
+  const isCoChecker = userRole === "CoChecker" || userRole === "Checker";
+  const isRm = userRole === "RM" || userRole === "RelationshipManager";
+
   const { id: routeId } = useParams();
   const navigate = useNavigate();
   const id = checklistIdProp || routeId;
@@ -403,7 +408,7 @@ const CreatorCompletedChecklistPage = ({
             >
               Close
             </Button>
-            {!readOnly && (
+            {!readOnly && !isCoChecker && !isRm  (
               <Button
                 className="creator-completed-page-button"
                 icon={<RedoOutlined />}
