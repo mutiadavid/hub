@@ -162,6 +162,7 @@ const DeferralDetailsModal = (props) => {
   } = props;
 
   const [activeTab, setActiveTab] = useState("details");
+  const { openFile, downloadFile: fetchDownloadFile } = useProtectedFileFetcher();
 
   if (!deferral || !visible) return null;
 
@@ -693,6 +694,5 @@ const DeferralDetailsModal = (props) => {
     </>
   );
 };
-  const { openFile, downloadFile: fetchDownloadFile } = useProtectedFileFetcher();
 
 export default DeferralDetailsModal;
