@@ -47,6 +47,7 @@ const Navbar = ({ toggleSidebar }) => {
       case "checker":
         return dashboardOptions.checker;
       case "admin":
+      case "internal control":
         return dashboardOptions.admin;
       case "approver":
         return dashboardOptions.approver;
@@ -97,6 +98,7 @@ const Navbar = ({ toggleSidebar }) => {
     if (!role) return "";
     const key = role.toLowerCase().trim();
     if (key === "admin") return "System Administrator";
+    if (key === "internal control") return "Internal Control";
     if (key === "cocreator" || key === "co_creator" || key === "creator") return "CO Creator";
     if (key === "cochecker" || key === "checker") return "CO Checker";
     if (key === "rm") return "RM";

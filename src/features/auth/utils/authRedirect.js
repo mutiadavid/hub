@@ -9,6 +9,7 @@ export const redirectUserByRole = ({ navigate, role, successMessage }) => {
 
   switch (roleStr) {
     case "admin":
+    case "internal control":
       navigate("/admin");
       break;
     case "cochecker":
