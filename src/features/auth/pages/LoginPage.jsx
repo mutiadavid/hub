@@ -265,7 +265,7 @@ const LoginPage = () => {
               </div>
             ) : loginMethod === "select" ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <div style={{ textAlign: "center", marginBottom: "1.5rem", color: "#6B7280", fontSize: "0.875rem" }}>
+                {/* <div style={{ textAlign: "center", marginBottom: "1.5rem", color: "#6B7280", fontSize: "0.875rem" }}>
                   Please select your preferred sign-in method.
                 </div>
                 <button
@@ -278,7 +278,7 @@ const LoginPage = () => {
                 </button>
                 <div style={{ textAlign: "center", color: "#9CA3AF", fontSize: "0.875rem", margin: "0.5rem 0" }}>
                   — OR —
-                </div>
+                </div> */}
                 <button
                   id="microsoftSsoBtn"
                   type="button"
