@@ -5,7 +5,7 @@ import {
   UserDeleteOutlined,
   UserOutlined,
   AuditOutlined,
-  SnippetsOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import "../../styles/creatorDesignSystem.css";
 
@@ -15,12 +15,17 @@ const CreateUserDrawer = lazy(() => import("../../pages/admin/createUserDrawer.j
 const LiveUsers = lazy(() => import("../../pages/admin/LiveUsers.jsx"));
 const AuditLogsPage = lazy(() => import("../../pages/admin/AuditLogsPage"));
 const DeactivatedUsers = lazy(() => import("../../pages/admin/DeactivatedUsers.jsx"));
-const DraftsPage = lazy(() => import("../../components/shared/DraftsPage"));
 import Navbar from "../Navbar.jsx";
 import SharedSidebar from "../common/SharedSidebar";
 import { getSidebarWidth } from "../../utils/sidebarUtils";
+import { PlaySquareOutlined } from "@ant-design/icons";
+
+const InitiatedActions = lazy(() => import("../../pages/admin/InitiatedActions.jsx"));
 
 const getSelectedKeyFromPath = (pathname) => {
+  if (pathname.includes("/pending-items")) {
+    return "pending-items";
+  }
   if (pathname.includes("/deactivated-users")) {
     return "deactivated-users";
   }
@@ -30,8 +35,8 @@ const getSelectedKeyFromPath = (pathname) => {
   if (pathname.includes("/audit-logs")) {
     return "audit-logs";
   }
-  if (pathname.includes("/drafts")) {
-    return "drafts";
+  if (pathname.includes("/initiated-actions")) {
+    return "initiated-actions";
   }
   return "all-users";
 };
@@ -69,6 +74,16 @@ const AdminLayout = () => {
 
   const menuItems = [
     {
+      key: "pending-items",
+      label: "Pending Items",
+      icon: <BellOutlined />,
+    },
+    {
+      key: "initiated-actions",
+      label: "Initiated Actions",
+      icon: <PlaySquareOutlined />,
+    },
+    {
       key: "all-users",
       label: "All Users",
       icon: <TeamOutlined />,
@@ -89,11 +104,6 @@ const AdminLayout = () => {
       key: "audit-logs",
       label: "Audit Logs",
       icon: <AuditOutlined />,
-    },
-    {
-      key: "drafts",
-      label: "Drafts",
-      icon: <SnippetsOutlined />,
     },
   ];
 
@@ -131,10 +141,11 @@ const AdminLayout = () => {
           <Routes>
             <Route path="/" element={<AdminDashboard />} />
             <Route path="/all-users" element={<AdminDashboard />} />
+            <Route path="/pending-items" element={<AdminDashboard />} />
+            <Route path="/initiated-actions" element={<InitiatedActions />} />
             <Route path="/live-users" element={<LiveUsers />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />
             <Route path="/deactivated-users" element={<DeactivatedUsers />} />
-            <Route path="/drafts" element={<DraftsPage type="admin" />} />
           </Routes>
           </Suspense>
         </div>

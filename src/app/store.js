@@ -13,6 +13,7 @@ import { notificationApi } from "../api/notificationApi";
 import { adSearchApi } from "../api/adSearchApi"; // <-- added adSearchApi
 import { customerApi } from "../api/customerApi";  // <-- DataWarehouse customer search
 import { protectedUploadsApi } from "../api/protectedUploadsApi";
+import { adminActionsApi } from "../api/adminActionsApi"; // <-- added adminActionsApi
 
 
 export const store = configureStore({
@@ -31,6 +32,7 @@ export const store = configureStore({
     [notificationApi.reducerPath]: notificationApi.reducer,
     [customerApi.reducerPath]: customerApi.reducer,  // <-- DataWarehouse customer search
     [protectedUploadsApi.reducerPath]: protectedUploadsApi.reducer,
+    [adminActionsApi.reducerPath]: adminActionsApi.reducer, // <-- added adminActionsApi reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -46,6 +48,7 @@ export const store = configureStore({
       notificationApi.middleware,
       customerApi.middleware,  // <-- DataWarehouse customer search
       protectedUploadsApi.middleware,
+      adminActionsApi.middleware, // <-- added adminActionsApi middleware
     ),
   devTools: true,
 });

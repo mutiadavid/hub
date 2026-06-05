@@ -186,10 +186,6 @@ const handleClose = () => {
           color: "white",
         },
       }}
-      headerStyle={{
-        background: "linear-gradient(135deg, #164679 0%, #2d7a99 100%)",
-        borderBottom: "1px solid #4a90c4",
-      }}
     >
        <Form layout="vertical" onFinish={handleSubmit}>
         <Form.Item

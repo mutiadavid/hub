@@ -28,37 +28,41 @@ const normalizeUser = (user, token) => {
   };
 };
 
+const loadAuthState = () => {
+  try {
+    const serialized = sessionStorage.getItem("authState");
+    if (serialized === null) {
+      return { user: null, token: null };
+    }
+    return JSON.parse(serialized);
+  } catch (err) {
+    return { user: null, token: null };
+  }
+};
+
 const authSlice = createSlice({
   name: "auth",
-  // Start with no persisted state — the login flow will populate this
-  // after a successful /api/auth/login response.
-  initialState: {
-    user: null,
-    token: null,
-  },
+  initialState: loadAuthState(),
   reducers: {
     setCredentials: (state, { payload }) => {
       const normalizedUser = normalizeUser(payload.user, payload.token);
       state.user = normalizedUser;
-      // Keep the token in Redux memory so prepareHeaders can attach it
-      // as a Bearer header. The HttpOnly cookie is the authoritative session.
       state.token = payload.token || null;
       
-      // CRITICAL: Also save token to sessionStorage for utility functions like fileUtils
-      // that can't import Redux store directly (circular dependency issues)
-      if (payload.token) {
-        try {
+      try {
+        sessionStorage.setItem("authState", JSON.stringify({ user: state.user, token: state.token }));
+        if (payload.token) {
           sessionStorage.setItem("authToken", payload.token);
-        } catch (err) {
-          console.warn("Failed to persist token to sessionStorage:", err);
         }
+      } catch (err) {
+        console.warn("Failed to persist auth state to sessionStorage:", err);
       }
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
-      // Clear sessionStorage too
       try {
+        sessionStorage.removeItem("authState");
         sessionStorage.removeItem("authToken");
       } catch (err) {
         // Silently ignore

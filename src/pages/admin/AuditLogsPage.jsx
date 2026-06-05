@@ -307,14 +307,62 @@ const buildFullDescription = (log, normalized) => {
   const rawAction = String(log?.action || "").toUpperCase();
   const targetUserName = humanizeName(log?.targetName || log?.targetUser?.name || "");
 
+  // ── User management actions: use the rich Details field from the backend ──
+  // The backend already builds precise sentences like:
+  //   "Eric Mewa changed roles for Antony Gitonga from CoChecker to CoCreator."
+  //   "Eric Mewa created user Antony Gitonga (antony@bank.com) with role CoCreator."
+  if (rawAction === "CHANGE_ROLE") {
+    const details = sanitizeDescription(log?.details || "");
+    if (details) return details;
+    const subject = targetUserName || "a user";
+    // fallback: try to pull old/new role from metadata
+    const meta = parseJsonSafely(log?.metadataJson);
+    if (meta?.before?.role && meta?.after?.role) {
+      return `${userName} changed ${subject}'s role from ${meta.before.role} to ${meta.after.role}.`;
+    }
+    return `${userName} changed role for ${subject}.`;
+  }
+
+  if (rawAction === "UPDATE_ROLE") {
+    const details = sanitizeDescription(log?.details || "");
+    if (details) return details;
+    const subject = targetUserName || "a user";
+    return `${userName} updated role for ${subject}.`;
+  }
+
+  if (rawAction === "CREATE_USER" || rawAction === "CREATE_USER_FROM_AD") {
+    const details = sanitizeDescription(log?.details || "");
+    if (details) return details;
+    const subject = targetUserName || "a user";
+    return `${userName} created user account for ${subject}.`;
+  }
+
   // Activate / Deactivate — always about a named user
   if (rawAction === "ACTIVATE_USER") {
+    const details = sanitizeDescription(log?.details || "");
+    if (details) return details;
     const subject = targetUserName || "a user";
     return `${userName} activated user ${subject}.`;
   }
   if (rawAction === "DEACTIVATE_USER") {
+    const details = sanitizeDescription(log?.details || "");
+    if (details) return details;
     const subject = targetUserName || "a user";
     return `${userName} deactivated user ${subject}.`;
+  }
+
+  if (rawAction === "TOGGLE_ACTIVE") {
+    const details = sanitizeDescription(log?.details || "");
+    if (details) return details;
+    const subject = targetUserName || "a user";
+    return `${userName} toggled active status for ${subject}.`;
+  }
+
+  if (rawAction === "REASSIGN_TASKS" || rawAction === "REASSIGN") {
+    const details = sanitizeDescription(log?.details || "");
+    if (details) return details;
+    const subject = targetUserName || "a user";
+    return `${userName} reassigned tasks for ${subject}.`;
   }
 
   if (rawAction === "DELETE_DOCUMENT" && isDeferralOrDCL) {
@@ -332,6 +380,10 @@ const buildFullDescription = (log, normalized) => {
 
   if (log.errorMessage && String(log.errorMessage).trim()) return sanitizeDescription(String(log.errorMessage).trim());
 
+  // Generic fallback — but also try the backend details string first
+  const rawDetails = sanitizeDescription(log?.details || "");
+  if (rawDetails) return rawDetails;
+
   const subject = referenceNumber && referenceNumber !== "-" ? `${entityLabel} ${referenceNumber}` : entityLabel.toLowerCase();
   return `${userName} ${actionPhrase(actionCategory)} ${subject}.`;
 };
@@ -341,12 +393,31 @@ const buildBriefDescription = (log, normalized) => {
   const rawAction = String(log?.action || "").toUpperCase();
   const targetUserName = humanizeName(log?.targetName || log?.targetUser?.name || "");
 
-  // Specific labels for activate / deactivate
+  // ── Specific concise labels for user-management actions ──
+  if (rawAction === "CHANGE_ROLE" || rawAction === "UPDATE_ROLE") {
+    // Try to pull before/after roles from metadata for the brief label
+    const meta = parseJsonSafely(log?.metadataJson);
+    if (meta?.before?.role && meta?.after?.role && targetUserName) {
+      return `${targetUserName}: ${meta.before.role} → ${meta.after.role}`;
+    }
+    return targetUserName ? `Role changed for ${targetUserName}` : "Changed user role";
+  }
+
+  if (rawAction === "CREATE_USER" || rawAction === "CREATE_USER_FROM_AD") {
+    return targetUserName ? `Created ${targetUserName}` : "Created user account";
+  }
+
   if (rawAction === "ACTIVATE_USER") {
     return targetUserName ? `Activated ${targetUserName}` : "Activated user";
   }
   if (rawAction === "DEACTIVATE_USER") {
     return targetUserName ? `Deactivated ${targetUserName}` : "Deactivated user";
+  }
+  if (rawAction === "TOGGLE_ACTIVE") {
+    return targetUserName ? `Toggled status for ${targetUserName}` : "Toggled user status";
+  }
+  if (rawAction === "REASSIGN_TASKS" || rawAction === "REASSIGN") {
+    return targetUserName ? `Reassigned tasks for ${targetUserName}` : "Reassigned tasks";
   }
 
   const isDeferralEntity = ["Deferral", "DCL"].includes(entityLabel);

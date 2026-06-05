@@ -4,6 +4,7 @@ import {
   PoweroffOutlined,
   SwapOutlined,
   ReloadOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import {
   BarChart,
@@ -21,6 +22,7 @@ import ReassignModal from "./ReassignModal";
 import { useGetUsersQuery, useReassignTasksMutation, useToggleActiveMutation } from "../../api/userApi";
 import { toast } from "react-toastify";
 import { formatRoleLabel, normalizeRoleKey } from "./adminRoleUtils";
+import { downloadCSV } from "../../utils/csvExport";
 import "../../styles/creatorDesignSystem.css";
 
 const { Text } = Typography;
@@ -301,6 +303,24 @@ const DeactivatedUsers = () => {
             className="admin-page__action-button admin-page__action-button--ghost"
           >
             Refresh
+          </Button>
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={() => {
+              const COLS = [
+                { header: "Name", key: "name" },
+                { header: "Email", key: "email" },
+                { header: "Department", key: "department" },
+                { header: "Role", key: "role", accessor: (u) => formatRoleLabel(u.role) },
+                { header: "Failed Attempts", key: "failedLoginAttempts", accessor: (u) => u.failedLoginAttempts || 0 },
+                { header: "Deactivated At", key: "updatedAt", accessor: (u) => u.updatedAt ? new Date(u.updatedAt).toLocaleDateString() : "-" },
+              ];
+              downloadCSV(deactivatedUsers, COLS, "deactivated-users");
+              message.success("Deactivated users downloaded!");
+            }}
+            className="admin-page__action-button admin-page__action-button--ghost"
+          >
+            Download CSV
           </Button>
         </div>
       </section>

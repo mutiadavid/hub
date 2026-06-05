@@ -1,10 +1,13 @@
 import React, { useMemo, useState } from "react";
-import { Table, Button, Input, Select, Space, Typography } from "antd";
+import { Table, Button, Input, Select, Space, Typography, Tooltip } from "antd";
 import {
   SearchOutlined,
   PoweroffOutlined,
   SwapOutlined,
   UserOutlined,
+  ClockCircleOutlined,
+  TeamOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import {
   ADMIN_ASSIGNABLE_ROLE_OPTIONS,
@@ -105,14 +108,13 @@ const UserTable = ({
       onFilter: (value, record) => normalizeRoleKey(record.role) === value,
       render: (role) => {
         const roleKey = normalizeRoleKey(role);
-
         return (
-        <span
-          className="admin-page__status-text"
-          style={{ color: ROLE_COLORS[roleKey] || "var(--color-text-medium)" }}
-        >
-          {formatRoleLabel(role)}
-        </span>
+          <span
+            className="admin-page__status-text"
+            style={{ color: ROLE_COLORS[roleKey] || "var(--color-text-medium)" }}
+          >
+            {formatRoleLabel(role)}
+          </span>
         );
       },
     },
@@ -131,6 +133,73 @@ const UserTable = ({
           style={{ color: active ? "#40534C" : "#8f1d2c" }}
         >
           {active ? "Active" : "Inactive"}
+        </span>
+      ),
+    },
+    {
+      title: (
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <ClockCircleOutlined style={{ fontSize: 12 }} /> Last Login
+        </span>
+      ),
+      dataIndex: "lastLoginAt",
+      key: "lastLoginAt",
+      sorter: (a, b) => {
+        const ta = a.lastLoginAt ? new Date(a.lastLoginAt).getTime() : 0;
+        const tb = b.lastLoginAt ? new Date(b.lastLoginAt).getTime() : 0;
+        return ta - tb;
+      },
+      render: (lastLoginAt) => {
+        if (!lastLoginAt) {
+          return <span className="admin-page__value admin-page__value--muted" style={{ fontSize: 11 }}>Never</span>;
+        }
+        const date = new Date(lastLoginAt);
+        const formatted = date.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        const time = date.toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        return (
+          <Tooltip title={`${formatted} at ${time}`}>
+            <span className="admin-page__value" style={{ fontSize: 12 }}>{formatted}</span>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      title: (
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <TeamOutlined style={{ fontSize: 12 }} /> Created By
+        </span>
+      ),
+      dataIndex: "createdByName",
+      key: "createdByName",
+      sorter: (a, b) => (a.createdByName || "").localeCompare(b.createdByName || ""),
+      render: (createdByName) => (
+        <span className="admin-page__value admin-page__value--muted" style={{ fontSize: 12 }}>
+          {createdByName || <span style={{ color: "var(--color-text-light)", fontStyle: "italic" }}>N/A</span>}
+        </span>
+      ),
+    },
+    {
+      title: (
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <CheckCircleOutlined style={{ fontSize: 12 }} /> Approved By
+        </span>
+      ),
+      dataIndex: "approvedByName",
+      key: "approvedByName",
+      sorter: (a, b) => (a.approvedByName || "").localeCompare(b.approvedByName || ""),
+      render: (approvedByName) => (
+        <span
+          className="admin-page__value"
+          style={{ fontSize: 12, color: approvedByName ? "#40534C" : "var(--color-text-light)", fontStyle: approvedByName ? "normal" : "italic" }}
+        >
+          {approvedByName || "Pending / N/A"}
         </span>
       ),
     },
@@ -167,7 +236,7 @@ const UserTable = ({
               loading={isUpdating}
               onClick={async () => {
                 setUpdatingRoleIds((prev) => ({ ...prev, [userId]: true }));
-                const succeeded = await onChangeRole(userId, selectedRole);
+                const succeeded = await onChangeRole(userId, selectedRole, record);
                 setUpdatingRoleIds((prev) => ({ ...prev, [userId]: false }));
                 if (succeeded) {
                   setPendingRoles((prev) => {
@@ -192,7 +261,7 @@ const UserTable = ({
           <Button
             size="small"
             icon={<PoweroffOutlined />}
-            onClick={() => onToggleActive(record._id)}
+            onClick={() => onToggleActive(record._id, record)}
             className="admin-page__action-button admin-page__action-button--secondary admin-page__action-button--compact"
             danger
           >
