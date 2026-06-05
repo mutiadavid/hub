@@ -49,15 +49,7 @@ const ROLE_PERMISSIONS = {
       "View detailed deferral history and all attached client documents"
     ]
   },
-  customers: {
-    title: "Customers",
-    description: "Client accounts linked to their own credit facilities.",
-    permissions: [
-      "View their own active and historical deferrals",
-      "Track the live status of their checklist documents",
-      "Receive automated updates and notifications regarding their accounts"
-    ]
-  },
+
   cocreators: {
     title: "CO Creators",
     description: "Frontline staff responsible for preparing and initiating checklists and DCLs.",
@@ -117,13 +109,14 @@ const AdminDashboard = () => {
 
 
 
-  const usersByRole = useMemo(() => countUsersByRole(users), [users]);
+  const internalUsers = useMemo(() => users.filter((u) => String(u.role).toLowerCase() !== "customer"), [users]);
 
-  const totalUsers = users.length;
-  const activeUsers = users.filter((user) => user.active).length;
+  const usersByRole = useMemo(() => countUsersByRole(internalUsers), [internalUsers]);
+
+  const totalUsers = internalUsers.length;
+  const activeUsers = internalUsers.filter((user) => user.active).length;
   const inactiveUsers = totalUsers - activeUsers;
   const adminUsers = usersByRole.admin;
-  const customerUsers = usersByRole.customer;
   const approverUsers = usersByRole.approver;
   const coCreatorUsers = usersByRole.cocreator;
   const rmUsers = usersByRole.rm;
@@ -176,15 +169,7 @@ const AdminDashboard = () => {
         surface: "#ffffff",
         icon: <CheckCircleOutlined />,
       },
-      {
-        key: "customers",
-        label: "Customers",
-        value: customerUsers,
-        note: "Customer-facing accounts",
-        accent: "#7A5C2E",
-        surface: "#ffffff",
-        icon: <UserOutlined />,
-      },
+
       {
         key: "cocreators",
         label: "CO Creators",
@@ -219,7 +204,7 @@ const AdminDashboard = () => {
       inactiveUsers,
       adminUsers,
       approverUsers,
-      customerUsers,
+
       coCreatorUsers,
       rmUsers,
       coCheckerUsers,
@@ -358,7 +343,7 @@ const AdminDashboard = () => {
             Refresh
           </Button>
           <ExportMenu
-            data={users}
+            data={internalUsers}
             columns={[
               { header: "Name", key: "name" },
               { header: "Email", key: "email" },
@@ -398,7 +383,7 @@ const AdminDashboard = () => {
           </section>
 
           <UserTable
-            users={users}
+            users={internalUsers}
             onToggleActive={handleToggleActive}
             onChangeRole={handleChangeRole}
             loading={isLoading}
