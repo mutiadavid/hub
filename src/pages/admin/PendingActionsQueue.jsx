@@ -29,6 +29,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { ExportMenu } from "../../components/ExportMenu";
 import "../../styles/creatorDesignSystem.css";
 
 dayjs.extend(utc);
@@ -234,10 +235,27 @@ const PendingActionsQueue = ({ refreshTrigger = 0 }) => {
         borderColor: "rgba(226, 232, 240, 0.9)",
       }}
     >
-      <div className="creator-card__header">
+      <div className="creator-card__header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span>Pending Admin Actions</span>
           <Badge count={actions.length} style={{ backgroundColor: "#FF4D4F" }} />
+        </div>
+        <div>
+          <ExportMenu
+            data={actions}
+            columns={[
+              { header: "Action Type", key: "actionType", accessor: (a) => ACTION_TYPE_LABELS[a.actionType] || a.actionType },
+              { header: "Description", key: "description" },
+              { header: "Initiator (Maker)", key: "createdByAdminName", accessor: (a) => a.createdByAdminName || "N/A" },
+              { header: "Affected User", key: "affectedUserName", accessor: (a) => a.affectedUserName || "N/A" },
+              { header: "Status", key: "status" },
+              { header: "Created At", key: "createdAt", accessor: (a) => a.createdAt ? dayjs(a.createdAt).format("DD MMM YYYY, hh:mm:ss A") : "-" },
+            ]}
+            filename="pending-actions"
+            title="Pending Actions Queue"
+            loading={isLoading}
+            buttonText="Export Pending"
+          />
         </div>
       </div>
 

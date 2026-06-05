@@ -28,6 +28,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { ExportMenu } from "../../components/ExportMenu";
 import "../../styles/creatorDesignSystem.css";
 
 dayjs.extend(utc);
@@ -245,6 +246,22 @@ const InitiatedActions = () => {
           <Button icon={<SendOutlined />} onClick={refetch}>
             Refresh
           </Button>
+          <ExportMenu
+            data={myActions}
+            columns={[
+              { header: "Action Type", key: "actionType", accessor: (a) => ACTION_TYPE_LABELS[a.actionType] || a.actionType },
+              { header: "Description", key: "description" },
+              { header: "Status", key: "status" },
+              { header: "Reviewer (Checker)", key: "approvedByAdminName", accessor: (a) => a.approvedByAdminName || "N/A" },
+              { header: "Rejection Reason", key: "rejectionReason", accessor: (a) => a.rejectionReason || "N/A" },
+              { header: "Initiated At", key: "createdAt", accessor: (a) => a.createdAt ? dayjs(a.createdAt).format("DD MMM YYYY, hh:mm:ss A") : "-" },
+              { header: "Reviewed At", key: "approvedAt", accessor: (a) => a.approvedAt ? dayjs(a.approvedAt).format("DD MMM YYYY, hh:mm:ss A") : "-" },
+            ]}
+            filename="initiated-actions"
+            title="My Initiated Actions"
+            loading={isLoading}
+            buttonText="Export Actions"
+          />
         </div>
       </section>
 

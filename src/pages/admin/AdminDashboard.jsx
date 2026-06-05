@@ -23,6 +23,7 @@ import {
 import { useApproveActionMutation, useRejectActionMutation, useRecordUserCreationActionMutation, useRecordActionMutation } from "../../api/adminActionsApi";
 import { countUsersByRole } from "./adminRoleUtils";
 import { downloadCSV } from "../../utils/csvExport";
+import { ExportMenu } from "../../components/ExportMenu";
 import "../../styles/creatorDesignSystem.css";
 import CreateUserDrawer from "./createUserDrawer";
 
@@ -356,26 +357,23 @@ const AdminDashboard = () => {
           >
             Refresh
           </Button>
-          <Button
-            icon={<DownloadOutlined />}
-            onClick={() => {
-              const USER_CSV_COLUMNS = [
-                { header: "Name", key: "name" },
-                { header: "Email", key: "email" },
-                { header: "Department", key: "department" },
-                { header: "Role", key: "role" },
-                { header: "Status", key: "active", accessor: (u) => u.active ? "Active" : "Inactive" },
-                { header: "Last Login", key: "lastLoginAt", accessor: (u) => u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString("en-GB") : "Never" },
-                { header: "Created By", key: "createdByName", accessor: (u) => u.createdByName || "N/A" },
-                { header: "Approved By (Checker)", key: "approvedByName", accessor: (u) => u.approvedByName || "Pending / N/A" },
-              ];
-              downloadCSV(users, USER_CSV_COLUMNS, "all-users");
-              message.success("Users downloaded!");
-            }}
-            className="admin-page__action-button admin-page__action-button--ghost"
-          >
-            Download CSV
-          </Button>
+          <ExportMenu
+            data={users}
+            columns={[
+              { header: "Name", key: "name" },
+              { header: "Email", key: "email" },
+              { header: "Department", key: "department" },
+              { header: "Role", key: "role" },
+              { header: "Status", key: "active", accessor: (u) => u.active ? "Active" : "Inactive" },
+              { header: "Last Login", key: "lastLoginAt", accessor: (u) => u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString("en-GB") : "Never" },
+              { header: "Created By", key: "createdByName", accessor: (u) => u.createdByName || "N/A" },
+              { header: "Approved By (Checker)", key: "approvedByName", accessor: (u) => u.approvedByName || "Pending / N/A" },
+            ]}
+            filename="all-users"
+            title="System Users Directory"
+            loading={isLoading}
+            buttonText="Export Users"
+          />
           <Button
             type="primary"
             icon={<UserAddOutlined />}

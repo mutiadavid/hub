@@ -41,10 +41,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import relativeTime from "dayjs/plugin/relativeTime";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 import {
   BarChart,
   Bar,
@@ -60,6 +56,7 @@ import {
   AreaChart,
   Area,
 } from "recharts";
+import { ExportMenu } from "../../components/ExportMenu";
 import { useGetAuditLogsQuery, useLazyGetAuditLogsQuery, useGetAuditLogStatsQuery } from "../../api/auditApi";
 import { useGetUsersQuery } from "../../api/userApi";
 import "../../styles/creatorDesignSystem.css";
@@ -518,100 +515,6 @@ const EXPORT_COLUMNS = [
   { header: "IP address", key: "ipAddress" },
   { header: "Timestamp", key: "createdAtExact" },
 ];
-
-const logsToRows = (logs) =>
-  logs.map((log) =>
-    EXPORT_COLUMNS.reduce((row, col) => {
-      row[col.header] = log[col.key] ?? "-";
-      return row;
-    }, {}),
-  );
-
-const runExportCSV = (logs) => {
-  const headers = EXPORT_COLUMNS.map((c) => c.header);
-  const rows = logs.map((log) =>
-    EXPORT_COLUMNS.map((col) => {
-      const value = String(log[col.key] ?? "-").replace(/"/g, '""');
-      return `"${value}"`;
-    }).join(","),
-  );
-  const csv = [headers.join(","), ...rows].join("\r\n");
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-  saveAs(blob, `audit-logs-${dayjs().format("YYYY-MM-DD")}.csv`);
-};
-
-const runExportExcel = (logs) => {
-  const rows = logsToRows(logs);
-  const worksheet = XLSX.utils.json_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Audit Logs");
-  const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-  saveAs(new Blob([buffer], { type: "application/octet-stream" }), `audit-logs-${dayjs().format("YYYY-MM-DD")}.xlsx`);
-};
-
-const runExportPDF = (logs) => {
-  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-  doc.setFontSize(14);
-  doc.setTextColor(21, 49, 58);
-  doc.text("Business Audit Trail", 14, 16);
-  doc.setFontSize(9);
-  doc.setTextColor(98, 113, 127);
-  doc.text(`Exported on ${dayjs().format("DD MMM YYYY, HH:mm:ss")}  •  ${logs.length} record(s)`, 14, 22);
-  autoTable(doc, {
-    startY: 28,
-    head: [EXPORT_COLUMNS.map((c) => c.header)],
-    body: logs.map((log) => EXPORT_COLUMNS.map((col) => log[col.key] ?? "-")),
-    styles: { fontSize: 8, cellPadding: 3, overflow: "linebreak" },
-    headStyles: { fillColor: [255, 255, 255], textColor: [21, 49, 58], fontStyle: "bold", fontSize: 8 },
-    alternateRowStyles: { fillColor: [255, 255, 255] },
-    margin: { top: 28, left: 14, right: 14 },
-  });
-  doc.save(`business-audit-${dayjs().format("YYYY-MM-DD")}.pdf`);
-};
-
-const runExportWebView = (logs) => {
-  const headers = EXPORT_COLUMNS.map((c) => `<th>${c.header}</th>`).join("");
-  const bodyRows = logs.map((log) => {
-    const cells = EXPORT_COLUMNS.map((col) => `<td>${log[col.key] ?? "-"}</td>`).join("");
-    return `<tr>${cells}</tr>`;
-  }).join("");
-  const html = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/>
-<title>Business Audit Logs — ${dayjs().format("DD MMM YYYY")}</title>
-<style>
-  body{font-family:system-ui,sans-serif;background:#ffffff;color:#15313a;margin:0;padding:24px}
-  h1{font-size:22px;margin-bottom:4px} p{color:#62717f;font-size:13px;margin:0 0 20px}
-  table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06)}
-  th{background:#ffffff;color:#15313a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:10px 12px;text-align:left;border-bottom:1px solid rgba(21,49,58,.08)}
-  td{padding:9px 12px;font-size:13px;border-bottom:1px solid rgba(21,49,58,.06);vertical-align:top}
-  @media print{body{padding:0}}
-</style></head><body>
-<h1>Business Audit Trail</h1>
-<p>Exported ${dayjs().format("DD MMM YYYY, HH:mm:ss")} &nbsp;•&nbsp; ${logs.length} record(s)</p>
-<tr><thead><tr>${headers}</tr></thead><tbody>${bodyRows}</tbody></table>
-</body></html>`;
-  const blob = new Blob([html], { type: "text/html;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, "_blank");
-  if (win) win.addEventListener("load", () => URL.revokeObjectURL(url));
-};
-
-const EXPORT_DISPATCH = { pdf: runExportPDF, excel: runExportExcel, csv: runExportCSV, web: runExportWebView };
-
-const ExportMenu = ({ onExport, loading }) => {
-  const menuItems = [
-    { key: "pdf", label: "Export as PDF", icon: <FilePdfOutlined style={{ color: "#dc2626" }} />, onClick: () => onExport("pdf") },
-    { key: "excel", label: "Export as Excel", icon: <FileExcelOutlined style={{ color: "#16a34a" }} />, onClick: () => onExport("excel") },
-    { key: "csv", label: "Export as CSV", icon: <FileTextOutlined style={{ color: "#0284c7" }} />, onClick: () => onExport("csv") },
-    { type: "divider" },
-    { key: "web", label: "Open Web View", icon: <GlobalOutlined style={{ color: "#7c3aed" }} />, onClick: () => onExport("web") },
-  ];
-  return (
-    <Dropdown menu={{ items: menuItems }} placement="bottomRight" trigger={["click"]} disabled={loading}>
-      <Button icon={<DownloadOutlined />} loading={loading}>Export</Button>
-    </Dropdown>
-  );
-};
 
 // Dashboard Component with User & Role Analytics
 const AuditDashboard = ({ logs, stats, users, totalCount }) => {
@@ -1131,7 +1034,14 @@ const AuditLogsPage = () => {
                 <Title level={4} className="m-0" style={{ color: "#15313a" }}>Business Event Log</Title>
                 <Text type="secondary" className="text-sm">Showing {totalCount} business events</Text>
               </div>
-              <ExportMenu onExport={handleExportFormat} loading={isExporting} />
+              {/* The new universal ExportMenu handles everything internally now */}
+              <ExportMenu 
+                data={filteredAuditLogs} 
+                columns={EXPORT_COLUMNS} 
+                filename="business-audit-trail" 
+                title="Business Audit Trail" 
+                loading={isLogsFetching} 
+              />
             </div>
 
             {auditError ? (
