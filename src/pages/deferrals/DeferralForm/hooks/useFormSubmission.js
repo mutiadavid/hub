@@ -41,6 +41,14 @@ export const useFormSubmission = () => {
         postedComments,
         additionalFiles,
         draftId = null,
+        // Business segment fields (mirrors DCL creation payload)
+        classification,
+        businessSegment,
+        businessSegmentDesc,
+        subSegment,
+        subSegmentDesc,
+        custType,
+        customerBranchName,
       },
       setIsSubmitting
     ) => {
@@ -157,6 +165,14 @@ export const useFormSubmission = () => {
           facilities: normalizedFacilities,
           approvers: resolvedApprovers,
           selectedDocuments: selectedDocumentPayload,
+          // Business segment fields (mirrors DCL creation payload)
+          classification: classification || undefined,
+          businessSegment: businessSegment || undefined,
+          businessSegmentDesc: businessSegmentDesc || undefined,
+          subSegment: subSegment || undefined,
+          subSegmentDesc: subSegmentDesc || undefined,
+          custType: custType || undefined,
+          customerBranchName: customerBranchName || undefined,
           comments: postedComments.map((c) => ({
             text: c.message,
             createdAt: c.createdAt,

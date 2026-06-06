@@ -268,8 +268,8 @@ const LoginPage = () => {
                 <div style={{ textAlign: "center", marginBottom: "1.5rem", color: "#6B7280", fontSize: "0.875rem" }}>
                   Please select your preferred sign-in method.
                 </div>
-                {/* Admin Credentials sign-in option — temporarily hidden */}
-                {/* <button
+                {/* Admin Credentials sign-in option */}
+                <button
                   type="button"
                   className="login-btn"
                   onClick={() => setLoginMethod("admin")}
@@ -279,7 +279,7 @@ const LoginPage = () => {
                 </button>
                 <div style={{ textAlign: "center", color: "#9CA3AF", fontSize: "0.875rem", margin: "0.5rem 0" }}>
                   — OR —
-                </div> */}
+                </div>
                 <button
                   id="microsoftSsoBtn"
                   type="button"

@@ -25,6 +25,15 @@ export const useDeferralForm = () => {
   const [accountType, setAccountType] = useState("");
   const [loanType, setLoanType] = useState("");
 
+  // Business segment fields (mirrors DCL creation payload)
+  const [classification, setClassification] = useState("");
+  const [businessSegment, setBusinessSegment] = useState("");
+  const [businessSegmentDesc, setBusinessSegmentDesc] = useState("");
+  const [subSegment, setSubSegment] = useState("");
+  const [subSegmentDesc, setSubSegmentDesc] = useState("");
+  const [custType, setCustType] = useState("");
+  const [customerBranchName, setCustomerBranchName] = useState("");
+
   const [loanAmount, setLoanAmount] = useState("");
   const [dclNumber, setDclNumber] = useState("");
   const [deferralDescription, setDeferralDescription] = useState("");
@@ -88,6 +97,20 @@ export const useDeferralForm = () => {
     setAccountType,
     loanType,
     setLoanType,
+    classification,
+    setClassification,
+    businessSegment,
+    setBusinessSegment,
+    businessSegmentDesc,
+    setBusinessSegmentDesc,
+    subSegment,
+    setSubSegment,
+    subSegmentDesc,
+    setSubSegmentDesc,
+    custType,
+    setCustType,
+    customerBranchName,
+    setCustomerBranchName,
     loanAmount,
     setLoanAmount,
     dclNumber,

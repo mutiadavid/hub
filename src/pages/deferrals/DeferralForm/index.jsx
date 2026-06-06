@@ -105,6 +105,14 @@ export default function DeferralForm() {
     setPostedComments,
     setIsCustomerFetched,
     setShowSearchForm,
+    // Business segment setters
+    setClassification,
+    setBusinessSegment,
+    setBusinessSegmentDesc,
+    setSubSegment,
+    setSubSegmentDesc,
+    setCustType,
+    setCustomerBranchName,
   } = formState;
   const {
     setSelectedDocuments,
@@ -315,6 +323,14 @@ export default function DeferralForm() {
         } else if (d.loanType) {
           formState.setLoanType(d.loanType);
         }
+        // Business segment fields
+        if (d.classification)      formState.setClassification(d.classification);
+        if (d.businessSegment)     formState.setBusinessSegment(d.businessSegment);
+        if (d.businessSegmentDesc) formState.setBusinessSegmentDesc(d.businessSegmentDesc);
+        if (d.subSegment)          formState.setSubSegment(d.subSegment);
+        if (d.subSegmentDesc)      formState.setSubSegmentDesc(d.subSegmentDesc);
+        if (d.custType)            formState.setCustType(d.custType);
+        if (d.customerBranchName)  formState.setCustomerBranchName(d.customerBranchName);
         formState.setIsCustomerFetched(true);
         formState.setShowSearchForm(false);
         return;
@@ -359,6 +375,14 @@ export default function DeferralForm() {
           formState.setBusinessName(d.businessName || d.customerName || d.name || d.cusShortName || "");
           formState.setCustomerNumber(d.customerNumber || "");
           searchState.setSelectedCustomerId(d._id || d.id || d.customerNumber || null);
+          // Business segment fields
+          if (d.classification)      formState.setClassification(d.classification);
+          if (d.businessSegment)     formState.setBusinessSegment(d.businessSegment);
+          if (d.businessSegmentDesc) formState.setBusinessSegmentDesc(d.businessSegmentDesc);
+          if (d.subSegment)          formState.setSubSegment(d.subSegment);
+          if (d.subSegmentDesc)      formState.setSubSegmentDesc(d.subSegmentDesc);
+          if (d.custType)            formState.setCustType(d.custType);
+          if (d.customerBranchName)  formState.setCustomerBranchName(d.customerBranchName);
         } else {
           // Ensure data has _id and name for the UI component
           const mappedData = data.map((c) => ({
@@ -377,6 +401,14 @@ export default function DeferralForm() {
         formState.setBusinessName(d.businessName || d.customerName || d.name || d.cusShortName || "");
         formState.setCustomerNumber(d.customerNumber || "");
         searchState.setSelectedCustomerId(d._id || d.id || d.customerNumber || null);
+        // Business segment fields
+        if (d.classification)      formState.setClassification(d.classification);
+        if (d.businessSegment)     formState.setBusinessSegment(d.businessSegment);
+        if (d.businessSegmentDesc) formState.setBusinessSegmentDesc(d.businessSegmentDesc);
+        if (d.subSegment)          formState.setSubSegment(d.subSegment);
+        if (d.subSegmentDesc)      formState.setSubSegmentDesc(d.subSegmentDesc);
+        if (d.custType)            formState.setCustType(d.custType);
+        if (d.customerBranchName)  formState.setCustomerBranchName(d.customerBranchName);
       }
 
       if (searchState.searchLoanType) {
@@ -422,6 +454,15 @@ export default function DeferralForm() {
       ];
 
       searchState.setSelectedChecklistStatus(checklist.status || "");
+
+      // Populate business segment fields from the checklist
+      if (checklist.classification)     formState.setClassification(checklist.classification);
+      if (checklist.businessSegment)    formState.setBusinessSegment(checklist.businessSegment);
+      if (checklist.businessSegmentDesc) formState.setBusinessSegmentDesc(checklist.businessSegmentDesc);
+      if (checklist.subSegment)         formState.setSubSegment(checklist.subSegment);
+      if (checklist.subSegmentDesc)     formState.setSubSegmentDesc(checklist.subSegmentDesc);
+      if (checklist.custType)           formState.setCustType(checklist.custType);
+      if (checklist.customerBranchName) formState.setCustomerBranchName(checklist.customerBranchName);
 
       const allDocs = [];
       if (checklist.documents && Array.isArray(checklist.documents)) {
@@ -539,6 +580,14 @@ export default function DeferralForm() {
         postedComments: formState.postedComments,
         additionalFiles: documentState.additionalFiles,
         draftId,
+        // Business segment fields
+        classification: formState.classification,
+        businessSegment: formState.businessSegment,
+        businessSegmentDesc: formState.businessSegmentDesc,
+        subSegment: formState.subSegment,
+        subSegmentDesc: formState.subSegmentDesc,
+        custType: formState.custType,
+        customerBranchName: formState.customerBranchName,
       },
       formState.setIsSubmitting
     );
