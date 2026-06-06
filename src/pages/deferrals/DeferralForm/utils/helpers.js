@@ -123,6 +123,39 @@ export const normalizeFacilities = (facilities) => {
 };
 
 /**
+ * Normalize a raw customer record from the search API.
+ *
+ * The Data Warehouse returns customer fields under several different names
+ * (name / customerName / cusShortName, _id / id / customerNumber). This
+ * collapses those variants into canonical fields so callers don't repeat the
+ * same `||` fallback chains. The original raw fields (including the seven
+ * business-segment fields) are preserved via spread.
+ *
+ * - `name`         display label, falls back to "Unknown Customer"
+ * - `customerName` form input value, falls back to "" (empty)
+ * - `businessName` form input value, falls back to "" (empty)
+ * - `_id` / `id`   stable identity key used for cache lookup + React keys
+ */
+export const normalizeCustomer = (raw) => {
+  if (!raw) return raw;
+  const id =
+    raw._id ||
+    raw.id ||
+    raw.customerNumber ||
+    `customer-${Math.random().toString(36).substring(7)}`;
+  return {
+    ...raw,
+    name: raw.name || raw.customerName || raw.cusShortName || "Unknown Customer",
+    customerName: raw.customerName || raw.name || raw.cusShortName || "",
+    businessName:
+      raw.businessName || raw.customerName || raw.name || raw.cusShortName || "",
+    customerNumber: raw.customerNumber || "",
+    _id: id,
+    id,
+  };
+};
+
+/**
  * Validate approver IDs are valid GUIDs
  */
 export const areApproverIdsValid = (approvers, guidRegex) => {

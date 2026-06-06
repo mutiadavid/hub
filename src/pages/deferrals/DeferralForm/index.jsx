@@ -23,7 +23,7 @@ import CustomerSearch from "./components/CustomerSearch";
 import DeferralConfirmationPage from "./components/DeferralConfirmationPage";
 
 // Utils and helpers
-import { formatLoanType } from "./utils/helpers";
+import { formatLoanType, normalizeCustomer } from "./utils/helpers";
 import { validateCustomerSearch, validateDclSearch } from "./utils/validation";
 import { getDraftById } from "../../../utils/draftsUtils";
 
@@ -299,10 +299,25 @@ export default function DeferralForm() {
       }
 
       formState.setIsFetching(true);
-      const stored = JSON.parse(localStorage.getItem("user") || "null");
-      const token = reduxToken || stored?.token;
 
       let data = null;
+
+      // Apply the shared customer fields to the form. Branch-specific fields
+      // (loan type, selected id) are handled by the caller. Expects a customer
+      // already run through normalizeCustomer.
+      const applyCustomer = (d) => {
+        formState.setCustomerName(d.customerName || "");
+        formState.setBusinessName(d.businessName || "");
+        formState.setCustomerNumber(d.customerNumber || "");
+        // Business segment fields
+        if (d.classification)      formState.setClassification(d.classification);
+        if (d.businessSegment)     formState.setBusinessSegment(d.businessSegment);
+        if (d.businessSegmentDesc) formState.setBusinessSegmentDesc(d.businessSegmentDesc);
+        if (d.subSegment)          formState.setSubSegment(d.subSegment);
+        if (d.subSegmentDesc)      formState.setSubSegmentDesc(d.subSegmentDesc);
+        if (d.custType)            formState.setCustType(d.custType);
+        if (d.customerBranchName)  formState.setCustomerBranchName(d.customerBranchName);
+      };
 
       // If a customer was already chosen from the typeahead, use cached results
       const cachedCustomer =
@@ -314,35 +329,26 @@ export default function DeferralForm() {
 
       if (cachedCustomer) {
         // Use cached result — no extra network call needed
-        const d = cachedCustomer;
-        formState.setCustomerName(d.customerName || d.name || d.cusShortName || "");
-        formState.setBusinessName(d.businessName || d.customerName || d.name || d.cusShortName || "");
-        formState.setCustomerNumber(d.customerNumber || "");
+        applyCustomer(cachedCustomer);
         if (searchState.searchLoanType) {
           formState.setLoanType(searchState.searchLoanType);
-        } else if (d.loanType) {
-          formState.setLoanType(d.loanType);
+        } else if (cachedCustomer.loanType) {
+          formState.setLoanType(cachedCustomer.loanType);
         }
-        // Business segment fields
-        if (d.classification)      formState.setClassification(d.classification);
-        if (d.businessSegment)     formState.setBusinessSegment(d.businessSegment);
-        if (d.businessSegmentDesc) formState.setBusinessSegmentDesc(d.businessSegmentDesc);
-        if (d.subSegment)          formState.setSubSegment(d.subSegment);
-        if (d.subSegmentDesc)      formState.setSubSegmentDesc(d.subSegmentDesc);
-        if (d.custType)            formState.setCustType(d.custType);
-        if (d.customerBranchName)  formState.setCustomerBranchName(d.customerBranchName);
         formState.setIsCustomerFetched(true);
         formState.setShowSearchForm(false);
         return;
       }
 
-      // Otherwise hit the backend
+      // Otherwise hit the backend. Auth comes from the session cookie
+      // (credentials: include) plus the redux Bearer token — no localStorage.
       const url = `${API_BASE_URL}/customers/search`;
       const res = await fetch(url, {
         method: "POST",
+        credentials: "include",
         headers: {
           "content-type": "application/json",
-          ...(token ? { authorization: `Bearer ${token}` } : {}),
+          ...(reduxToken ? { authorization: `Bearer ${reduxToken}` } : {}),
         },
         body: JSON.stringify({
           customerNumber: searchState.searchCustomerNumber,
@@ -370,45 +376,20 @@ export default function DeferralForm() {
         }
 
         if (data.length === 1) {
-          const d = data[0];
-          formState.setCustomerName(d.customerName || d.name || d.cusShortName || "");
-          formState.setBusinessName(d.businessName || d.customerName || d.name || d.cusShortName || "");
-          formState.setCustomerNumber(d.customerNumber || "");
+          const d = normalizeCustomer(data[0]);
+          applyCustomer(d);
           searchState.setSelectedCustomerId(d._id || d.id || d.customerNumber || null);
-          // Business segment fields
-          if (d.classification)      formState.setClassification(d.classification);
-          if (d.businessSegment)     formState.setBusinessSegment(d.businessSegment);
-          if (d.businessSegmentDesc) formState.setBusinessSegmentDesc(d.businessSegmentDesc);
-          if (d.subSegment)          formState.setSubSegment(d.subSegment);
-          if (d.subSegmentDesc)      formState.setSubSegmentDesc(d.subSegmentDesc);
-          if (d.custType)            formState.setCustType(d.custType);
-          if (d.customerBranchName)  formState.setCustomerBranchName(d.customerBranchName);
         } else {
-          // Ensure data has _id and name for the UI component
-          const mappedData = data.map((c) => ({
-            ...c,
-            _id: c._id || c.id || `${c.customerNumber}-${Math.random().toString(36).substring(7)}`,
-            id:  c.id  || c._id,
-            name: c.name || c.customerName || c.cusShortName || "Unknown Customer",
-          }));
+          // Ensure each result has _id and name for the UI component
+          const mappedData = data.map(normalizeCustomer);
           searchState.setCustomerSearchResults(mappedData);
           searchState.setSelectCustomerModalVisible(true);
           return;
         }
       } else {
-        const d = data;
-        formState.setCustomerName(d.customerName || d.name || d.cusShortName || "");
-        formState.setBusinessName(d.businessName || d.customerName || d.name || d.cusShortName || "");
-        formState.setCustomerNumber(d.customerNumber || "");
+        const d = normalizeCustomer(data);
+        applyCustomer(d);
         searchState.setSelectedCustomerId(d._id || d.id || d.customerNumber || null);
-        // Business segment fields
-        if (d.classification)      formState.setClassification(d.classification);
-        if (d.businessSegment)     formState.setBusinessSegment(d.businessSegment);
-        if (d.businessSegmentDesc) formState.setBusinessSegmentDesc(d.businessSegmentDesc);
-        if (d.subSegment)          formState.setSubSegment(d.subSegment);
-        if (d.subSegmentDesc)      formState.setSubSegmentDesc(d.subSegmentDesc);
-        if (d.custType)            formState.setCustType(d.custType);
-        if (d.customerBranchName)  formState.setCustomerBranchName(d.customerBranchName);
       }
 
       if (searchState.searchLoanType) {
@@ -430,13 +411,11 @@ export default function DeferralForm() {
   // Fetch DCL file
   const fetchDclFile = async (checklistId, dclNumber) => {
     try {
-      const stored = JSON.parse(localStorage.getItem("user") || "null");
-      const token = reduxToken || stored?.token;
-
       const url = `${API_BASE_URL}/cocreatorChecklist/${checklistId}`;
       const res = await fetch(url, {
+        credentials: "include",
         headers: {
-          ...(token ? { authorization: `Bearer ${token}` } : {}),
+          ...(reduxToken ? { authorization: `Bearer ${reduxToken}` } : {}),
           "content-type": "application/json",
         },
       });

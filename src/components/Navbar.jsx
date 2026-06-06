@@ -13,16 +13,13 @@ import { useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import "../styles/creatorDesignSystem.css";
 import { showAuthSuccessToast } from "../utils/authToast";
-import { API_BASE_URL } from "../config/runtimeConfig";
 
 const Navbar = ({ toggleSidebar }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const user = useSelector((state) => state.auth.user);
-  const token = useSelector((state) => state.auth.token);
   const [logoutMutation] = useLogoutMutation();
-  // logout no longer requires email verification; keep flow simple
 
   // Get dashboard title and path based on user role
   const getDashboardInfo = () => {
@@ -68,8 +65,6 @@ const Navbar = ({ toggleSidebar }) => {
       navigate("/login", { replace: true });
     }
   };
-
-  // verification removed — logout is immediate
 
   const menuItems = [
     {
@@ -149,4 +144,3 @@ const Navbar = ({ toggleSidebar }) => {
 };
 
 export default Navbar;
-
