@@ -4,6 +4,7 @@ import { Row, Col, message } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import deferralApi from "../../../service/deferralApi";
 import { API_BASE_URL } from "../../../config/runtimeConfig";
+import { useLookupCustomerMutation } from "../../../api/customerApi";
 import { generateChecklistPDFBlob } from "../../../utils/reportGenerator";
 
 // Hooks
@@ -67,7 +68,8 @@ export default function DeferralForm() {
   const [searchParams] = useSearchParams();
   const restoredDraftIdRef = useRef(null);
   const reduxToken = useSelector((state) => state.auth.token);
-  
+  const [lookupCustomer] = useLookupCustomerMutation();
+
   // Draft management state
   const [draftId, setDraftId] = useState(null);
   const [isRestoringDraft, setIsRestoringDraft] = useState(false);
@@ -340,29 +342,20 @@ export default function DeferralForm() {
         return;
       }
 
-      // Otherwise hit the backend. Auth comes from the session cookie
-      // (credentials: include) plus the redux Bearer token — no localStorage.
-      const url = `${API_BASE_URL}/customers/search`;
-      const res = await fetch(url, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json",
-          ...(reduxToken ? { authorization: `Bearer ${reduxToken}` } : {}),
-        },
-        body: JSON.stringify({
+      // Otherwise hit the backend via the customerApi RTK Query slice, which
+      // handles cookie/session auth + the redux Bearer token (no localStorage).
+      try {
+        data = await lookupCustomer({
           customerNumber: searchState.searchCustomerNumber,
           loanType: searchState.searchLoanType,
-        }),
-      });
-
-      if (res.status === 401) {
-        message.error("Unauthorized: please login");
-        return;
+        }).unwrap();
+      } catch (err) {
+        if (err?.status === 401) {
+          message.error("Unauthorized: please login");
+          return;
+        }
+        throw new Error("Failed to fetch customers");
       }
-
-      if (!res.ok) throw new Error("Failed to fetch customers");
-      data = await res.json();
 
       if (!data) {
         message.info("No customer found");

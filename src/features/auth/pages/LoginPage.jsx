@@ -88,8 +88,8 @@ const LoginPage = () => {
         return;
       }
       
-      const finalUser = response?.user ?? response?.User;
-      const finalToken = response?.token ?? response?.Token;
+      const finalUser = response?.user;
+      const finalToken = response?.token;
 
       if (!finalUser || !finalToken) {
         throw new Error("Incomplete response from server. Please try again.");
@@ -99,7 +99,7 @@ const LoginPage = () => {
 
       redirectUserByRole({
         navigate,
-        role: finalUser?.role ?? finalUser?.Role,
+        role: finalUser?.role,
         successMessage: "Signed in successfully.",
       });
     } catch (err) {
@@ -150,9 +150,9 @@ const LoginPage = () => {
         }).unwrap();
       }
 
-      // Backend returns camelCase or PascalCase.
-      const finalUser = response?.user ?? response?.User;
-      const finalToken = response?.token ?? response?.Token;
+      // Backend returns a camelCase auth payload.
+      const finalUser = response?.user;
+      const finalToken = response?.token;
 
       if (!finalUser || !finalToken) {
         throw new Error("Incomplete response from server. Please try again.");
@@ -163,7 +163,7 @@ const LoginPage = () => {
 
       redirectUserByRole({
         navigate,
-        role: finalUser?.role ?? finalUser?.Role,
+        role: finalUser?.role,
         successMessage: "Signed in successfully.",
       });
     } catch (err) {
